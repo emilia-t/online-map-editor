@@ -1,0 +1,7 @@
+1.命名规范
+基本格式：
+[公开类型]__[API名]__[API类型]__(非公开的特定字符=scaffold)
+例如：
+一个接收会话登录账号密码，并返回cookie的php登录脚本
+public__link_server__sql.php
+sql表示这是一个主要操作数据库的API
