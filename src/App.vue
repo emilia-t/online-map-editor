@@ -3,7 +3,6 @@
   <div id="app">
     <map-box></map-box>
   </div>
-
 </template>
 
 <script>
