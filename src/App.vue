@@ -14,9 +14,11 @@
 <script>
 //import MapBox from "./components/mapBox";
 import dataLayer from "./components/dataLayer";
+import rulerLayer from "./components/rulerLayer";
+import backgroundLayer from "./components/backgroundLayer";
 export default {
   name: 'App',
-  components: {dataLayer},
+  components: {dataLayer,rulerLayer,backgroundLayer},
   data(){
     return {
 
