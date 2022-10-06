@@ -1,15 +1,15 @@
 <!--仅次于根的父组件-->
 <template>
   <div id="app">
-    <map-box></map-box>
+
   </div>
 </template>
 
 <script>
-import MapBox from "./components/mapBox";
+//import MapBox from "./components/mapBox";
 export default {
   name: 'App',
-  components: {MapBox},
+  components: {},
   data(){
     return {
 
