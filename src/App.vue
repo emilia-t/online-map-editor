@@ -21,6 +21,16 @@
     <create-layer>
 
     </create-layer>
+    <!--控制层-->
+    <!--用于控制一些操作用，例如编辑按钮、清空按钮-->
+    <control-layer>
+
+    </control-layer>
+    <!--面板层-->
+    <!--用于展示图层数据的-->
+    <panel-layer>
+
+    </panel-layer>
   </div>
 </template>
 
@@ -30,9 +40,11 @@ import dataLayer from "./components/dataLayer";
 import rulerLayer from "./components/rulerLayer";
 import backgroundLayer from "./components/backgroundLayer";
 import createLayer from "./components/createLayer";
+import controlLayer from "./components/controlLayer";
+import panelLayer from "./components/panelLayer";
 export default {
   name: 'App',
-  components: {dataLayer,rulerLayer,backgroundLayer,createLayer},
+  components: {dataLayer,rulerLayer,backgroundLayer,createLayer,controlLayer,panelLayer},
   data(){
     return {
 
