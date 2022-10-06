@@ -1,9 +1,13 @@
 <!--仅次于根的父组件-->
 <template>
   <div id="app">
+    <!--数据层-->
     <data-layer>
 
     </data-layer>
+    <!--标尺层-->
+    <!--背景层-->
+    <!--新建层-->
   </div>
 </template>
 
