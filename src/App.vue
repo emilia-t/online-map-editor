@@ -1,15 +1,18 @@
 <!--仅次于根的父组件-->
 <template>
   <div id="app">
+    <data-layer>
 
+    </data-layer>
   </div>
 </template>
 
 <script>
 //import MapBox from "./components/mapBox";
+import dataLayer from "./components/dataLayer";
 export default {
   name: 'App',
-  components: {},
+  components: {dataLayer},
   data(){
     return {
 
