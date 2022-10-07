@@ -1,6 +1,13 @@
 <!--仅次于根的父组件-->
 <template>
   <div id="app">
+    <!--------->
+    <!--测试用-->
+    <div class="test">
+      <button @click="">{{$store.state.name}}</button>
+    </div>
+    <!--测试用-->
+    <!--------->
     <!--数据层-->
     <!--用于显示和编辑数据用-->
     <data-layer>
@@ -66,21 +73,22 @@ import controlLayer from "./components/controlLayer";
 <!--用于展示图层数据的-->
 */
 import panelLayer from "./components/panelLayer";
-/*
-通信层
-用于各组件之间通信交流
-*/
-import communicationLayer from "./components/communicationLayer";
+
 export default {
   name: 'App',
   components: {
     //普通图层
-    dataLayer,rulerLayer,backgroundLayer,createLayer,controlLayer,panelLayer,
+    dataLayer,rulerLayer,backgroundLayer,createLayer,controlLayer,panelLayer
     //特殊图层
-    communicationLayer
   },
   data(){
     return {
+
+    }
+  },
+  methods:{
+    test:()=>{
+      //制作全局通讯用的组件或其他东西
 
     }
   }
