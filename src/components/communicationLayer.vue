@@ -4,7 +4,12 @@
 
 <script>
 export default {
-  name: "communicationLayer"
+  name: "communicationLayer",
+  data(){
+    return {
+      MY_NAME:"communicationLayer"
+    }
+  }
 }
 </script>
 

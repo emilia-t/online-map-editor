@@ -6,7 +6,12 @@
 
 <script>
 export default {
-  name: "backgroundLayer"
+  name: "backgroundLayer",
+  data(){
+    return {
+      MY_NAME:"backgroundLayer"
+    }
+  }
 }
 </script>
 

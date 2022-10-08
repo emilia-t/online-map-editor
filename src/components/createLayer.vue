@@ -6,7 +6,12 @@
 
 <script>
 export default {
-  name: "createLayer"
+  name: "createLayer",
+  data(){
+    return {
+      MY_NAME:"createLayer"
+    }
+  }
 }
 </script>
 

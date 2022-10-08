@@ -6,7 +6,12 @@
 
 <script>
 export default {
-  name: "controlLayer"
+  name: "controlLayer",
+  data(){
+    return {
+      MY_NAME:"controlLayer"
+    }
+  }
 }
 </script>
 

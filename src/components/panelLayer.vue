@@ -8,7 +8,12 @@
 
 <script>
 export default {
-  name: "panelLayer"
+  name: "panelLayer",
+  data(){
+    return {
+      MY_NAME:"panelLayer"
+    }
+  }
 }
 </script>
 
