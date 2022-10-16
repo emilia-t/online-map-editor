@@ -9,7 +9,25 @@ export default {
   name: "dataLayer",
   data(){
     return {
-      MY_NAME:"dataLayer"
+      MY_NAME:"dataLayer",
+      theData:{
+        moveStartPt:{
+          x:null,
+          y:null
+        },
+        moveMovePt:{
+          x:null,
+          y:null
+        },
+        moveEndPt:{
+          x:null,
+          y:null
+        },
+        //移动侦测器
+        moveObServer:null,
+        //移动过程中每隔11毫秒则监听1次鼠标位置会保存在此处,最大两个
+        moveObServerDt:[]
+      }
     }
   },
   methods:{
@@ -17,6 +35,8 @@ export default {
     startSetting(){
       //获取浏览器配置
       this.getBrowserConfig();
+      //获取屏幕中心点
+      this.getScreenCenter();
       //添加一条测试line
       this.createTestLine();
       //当前层级
@@ -30,20 +50,27 @@ export default {
     },
     //该函数用于初始化或移动时,将创建的数据进行相对移动
     visualAngleMove(){
-      let dataLayer=this.$refs.dataLayer;
-      for(let child=0;child<dataLayer.length;child++){
-        let theDataX=dataLayer.childNodes[child].getAttribute('data-r-x');//虚拟
-        let theDataY=dataLayer.childNodes[child].getAttribute('data-r-y');//虚拟
-        let A1=this.$store.state.mapConfig.A1;
-        let result={"x":theDataX-A1.x, "y":theDataY-A1.y};
-        dataLayer.childNodes[child].style.left=result.x+"px";
-        dataLayer.childNodes[child].style.top=result.y+"px";
-      }
+      console.log("A1有变化")
+      //2022-10/16-23:00留：正在做移动视角功能，现在已经可以通过鼠标左键移动A1的值了，请继续完成后续渲染工作
+      // let dataLayer=this.$refs.dataLayer;
+      // for(let child=0;child<dataLayer.length;child++){
+      //   let theDataX=dataLayer.childNodes[child].getAttribute('data-r-x');//虚拟
+      //   let theDataY=dataLayer.childNodes[child].getAttribute('data-r-y');//虚拟
+      //   let A1=this.$store.state.mapConfig.A1;
+      //   let result={"x":theDataX-A1.x, "y":theDataY-A1.y};
+      //   dataLayer.childNodes[child].style.left=result.x+"px";
+      //   dataLayer.childNodes[child].style.top=result.y+"px";
+      // }
     },
     //获取浏览器高度和宽度
     getBrowserConfig(){
       this.$store.state.mapConfig.browser.width=window.innerWidth;
       this.$store.state.mapConfig.browser.height=window.innerHeight;
+    },
+    //获取屏幕中心点
+    getScreenCenter(){
+      this.$store.state.mapConfig.centerPoint.x=window.innerWidth/2;
+      this.$store.state.mapConfig.centerPoint.y=window.innerHeight/2;
     },
     /**
     一条line的基本属性如下：
@@ -147,8 +174,10 @@ export default {
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mousedown',(e)=>{
         this.$store.state.cameraConfig.doNeedMoveMap=true;
-        console.log(e)
-
+        let point={x:null,y:null};
+        point.x=e.x;
+        point.y=e.y;
+        this.theData.moveStartPt=point;
       })
     },
     //dataLayer的鼠标移动监听-移动
@@ -156,17 +185,97 @@ export default {
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mousemove',(e)=>{
         if(this.$store.state.cameraConfig.doNeedMoveMap){
-          console.log(e)
+          let point={x:null,y:null};
+          point.x=e.x;
+          point.y=e.y;
+          this.theData.moveMovePt=point;
+          //启用移动侦测器
+          if(this.theData.moveObServer===null){
+            this.setMoveObServer();
+          }
         }
       })
     },
-    //dataLayer的鼠标移动监听-松开
+    //移动结束
     mapMoveEnd(){
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mouseup',(e)=>{
         this.$store.state.cameraConfig.doNeedMoveMap=false;
-        console.log(e)
+        let point={x:null,y:null};
+        point.x=e.x;
+        point.y=e.y;
+        this.theData.moveEndPt=point;
+        //停用移动侦测器
+        if(this.theData.moveObServer!==null){
+          this.removeMoveObServer();
+        }
       })
+    },
+    //dataLayer的鼠标移动监听-松开
+    //设置移动侦测器
+    setMoveObServer(){
+      if(this.theData.moveObServer===null){//必须是在已经移除了前一个侦测器的情况下
+        this.theData.moveObServer=setInterval(
+          ()=>{
+            try {
+              let pt=this.theData.moveMovePt;
+              let le=this.theData.moveObServerDt.length;
+              switch (le){
+                case 2:{//有两个
+                  this.theData.moveObServerDt.shift();
+                  this.theData.moveObServerDt.push(pt);
+                  let A1=this.theData.moveObServerDt[0];
+                  let A2=this.theData.moveObServerDt[1];
+                  let xc3=A2.x-A1.x;
+                  let yc4=(A2.y-A1.y)*-1;
+                  this.$store.state.mapConfig.A1.x+=xc3;
+                  this.$store.state.mapConfig.A1.y+=yc4;
+                  // console.log("==")
+                  // console.log(this.$store.state.mapConfig.A1.x)
+                  // console.log(this.$store.state.mapConfig.A1.y)
+                  // console.log("??")
+                  // console.log("---");
+                  // console.log(this.theData.moveObServerDt);
+                  // console.log("-+-");
+                  break;
+                }
+                case 0:{//空
+                  this.theData.moveObServerDt.push(pt);
+                  let Apt=this.theData.moveStartPt;
+                  let xc,yc;
+                  xc=pt.x-Apt.x;
+                  yc=(pt.y-Apt.y)*-1;
+                  this.$store.state.mapConfig.A1.x+=xc;
+                  this.$store.state.mapConfig.A1.y+=yc;
+                  break;
+                }
+                case 1:{
+                  this.theData.moveObServerDt.push(pt);
+                  let Bpt=this.theData.moveObServerDt[0];
+                  let xc2,yc2;
+                  xc2=pt.x-Bpt.x;
+                  yc2=(pt.y-Bpt.y)*-1;
+                  this.$store.state.mapConfig.A1.x+=xc2;
+                  this.$store.state.mapConfig.A1.y+=yc2;
+                  break;
+                }
+                default:{
+                  break;
+                }
+              }
+            }catch (e) {
+              console.log(e);
+            }
+          }
+          ,11)
+      }
+    },
+    //移除移动侦测器
+    removeMoveObServer(){
+      if(this.theData.moveObServer!==null) {//必须是存在的情况下
+        clearInterval(this.theData.moveObServer);
+        this.theData.moveObServer=null;
+      }
     },
     /**
      获取两点的渲染距离

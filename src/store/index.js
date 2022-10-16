@@ -43,6 +43,10 @@ export default new Vuex.Store({
       A1:{
         x:0,
         y:0
+      },
+      centerPoint:{
+        x:0,
+        y:0
       }
     },
     //地图数据
