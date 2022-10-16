@@ -3,6 +3,7 @@
     <h4>~控制台</h4>
     <div class="buttons">
      <button @click="createTestLine()">添加一条测试lane</button>
+     <button @click="TEST()">CESHI</button>
     </div>
     <div ref="consoleMap" class="consoleMap">
       浏览器宽度：{{$store.state.mapConfig.browser.width}}

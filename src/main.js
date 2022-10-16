@@ -55,6 +55,23 @@ new Vue({
           break;
         }
       }
+    },
+    /**
+     根据经纬度计算距离，参数分别为第一点的经度，纬度；第二点的经度，纬度
+     返回值的单位是km
+    **/
+    getDistances(x1, y1, x2, y2) {
+      const R=6371;//地球平均半径(km)
+      const {sin,cos,asin,PI,hypot} = Math;
+      let getPt=(x,y)=>{
+        x*=PI/180;
+        y*=PI/180;
+        return {x:cos(x)*cos(y),y:sin(x)*cos(y),z:sin(y)}
+      }
+      let p1=getPt(x1,y1);
+      let p2=getPt(x2,y2);
+      let a=hypot(p1.x-p2.x,p1.y-p2.y,p1.z-p2.z);
+      return asin(a/2)*2*R;
     }
   },
   created(){
