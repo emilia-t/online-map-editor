@@ -16,13 +16,14 @@
       <br>
       默认坐标：{{$store.state.mapConfig.startDefaultPoint.x}} , {{$store.state.mapConfig.startDefaultPoint.y}}
       <br>
-      当前坐标：
+      当前坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
       <br>
       commits：createTestLine:{{$store.state.commits.createTestLine}}
     </div>
   </div>
 </template>
 
++
 <script>
 export default {
   name: "consoleLayer",

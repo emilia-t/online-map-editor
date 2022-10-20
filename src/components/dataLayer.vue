@@ -43,24 +43,26 @@ export default {
       let nowLayer=this.$store.state.mapConfig.layer;
       //初始化视角
       this.visualAngleMove();
-      //提娜佳移动侦听
+      //添加移动侦听
       this.mapMoveStart();
       this.mapMoveIng();
       this.mapMoveEnd();
     },
     //该函数用于初始化或移动时,将创建的数据进行相对移动
     visualAngleMove(){
-      console.log("A1有变化")
-      //2022-10/16-23:00留：正在做移动视角功能，现在已经可以通过鼠标左键移动A1的值了，请继续完成后续渲染工作
-      // let dataLayer=this.$refs.dataLayer;
-      // for(let child=0;child<dataLayer.length;child++){
-      //   let theDataX=dataLayer.childNodes[child].getAttribute('data-r-x');//虚拟
-      //   let theDataY=dataLayer.childNodes[child].getAttribute('data-r-y');//虚拟
-      //   let A1=this.$store.state.mapConfig.A1;
-      //   let result={"x":theDataX-A1.x, "y":theDataY-A1.y};
-      //   dataLayer.childNodes[child].style.left=result.x+"px";
-      //   dataLayer.childNodes[child].style.top=result.y+"px";
-      // }
+      //2022-10/20-21:00留，在添加了移动监听器后初始化时使得生成的Line错误，请修复此bug，之后则开始缩放的功能开发
+      let elements=document.querySelectorAll('.element');
+      for (let i=0;i<elements.length;i++){
+        let nowElement=elements[i];
+        for(let c=0;c<nowElement.childNodes.length;c++){
+          let theDataX=nowElement.childNodes[c].getAttribute('data-r-x');//虚拟
+          let theDataY=nowElement.childNodes[c].getAttribute('data-r-y');//虚拟
+          let A1=this.$store.state.mapConfig.A1;
+          let result={"x":A1.x-theDataX, "y":theDataY-A1.y};
+          nowElement.childNodes[c].style.left=result.x+"px";
+          nowElement.childNodes[c].style.top=result.y+"px";
+        }
+      }
     },
     //获取浏览器高度和宽度
     getBrowserConfig(){
@@ -86,6 +88,9 @@ export default {
       let box=this.$refs.dataLayer;
       //0.1lineBox
       let lineBox=document.createElement('DIV');
+      //line
+      lineBox.classList.add("element");
+      lineBox.classList.add("line");
       //#.设定基本的参数
       let lineConfig={
         position:[{x:0.0000621,y:-0.0000302},{x:0.0000631,y:-0.0000322},{x:0.0000661,y:-0.0000352}],
@@ -209,6 +214,8 @@ export default {
         if(this.theData.moveObServer!==null){
           this.removeMoveObServer();
         }
+        //清空移动缓存
+        this.clearMoveCache();
       })
     },
     //dataLayer的鼠标移动监听-松开
@@ -276,6 +283,16 @@ export default {
         clearInterval(this.theData.moveObServer);
         this.theData.moveObServer=null;
       }
+    },
+    //清空移动缓存
+    clearMoveCache(){
+      this.theData.moveStartPt.x=null;
+      this.theData.moveStartPt.y=null;
+      this.theData.moveMovePt.x=null;
+      this.theData.moveMovePt.y=null;
+      this.theData.moveEndPt.x=null;
+      this.theData.moveEndPt.y=null;
+      this.theData.moveObServerDt.length=0;
     },
     /**
      获取两点的渲染距离
