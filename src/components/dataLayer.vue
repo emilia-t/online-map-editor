@@ -41,26 +41,28 @@ export default {
       this.createTestLine();
       //当前层级
       let nowLayer=this.$store.state.mapConfig.layer;
-      //初始化视角
-      this.visualAngleMove();
       //添加移动侦听
       this.mapMoveStart();
       this.mapMoveIng();
       this.mapMoveEnd();
+      //初始化视角
+      this.visualAngleMove();
     },
     //该函数用于初始化或移动时,将创建的数据进行相对移动
     visualAngleMove(){
-      //2022-10/20-21:00留，在添加了移动监听器后初始化时使得生成的Line错误，请修复此bug，之后则开始缩放的功能开发
+      //2022-10/23-19:10留，请开始缩放视角功能的开发
       let elements=document.querySelectorAll('.element');
       for (let i=0;i<elements.length;i++){
         let nowElement=elements[i];
         for(let c=0;c<nowElement.childNodes.length;c++){
-          let theDataX=nowElement.childNodes[c].getAttribute('data-r-x');//虚拟
-          let theDataY=nowElement.childNodes[c].getAttribute('data-r-y');//虚拟
+          let DataX=nowElement.childNodes[c].getAttribute('data-r-x');//经度
+          let DataY=nowElement.childNodes[c].getAttribute('data-r-y');//纬度
+          let pos={x:DataX,y:DataY};
+          let rep=this.positionTransformInt(pos);//转化后的
           let A1=this.$store.state.mapConfig.A1;
-          let result={"x":A1.x-theDataX, "y":theDataY-A1.y};
+          let result={"x":rep.x-A1.x, "y":rep.y-A1.y};
           nowElement.childNodes[c].style.left=result.x+"px";
-          nowElement.childNodes[c].style.top=result.y+"px";
+          nowElement.childNodes[c].style.top=((result.y)*-1)+"px";
         }
       }
     },
@@ -120,9 +122,6 @@ export default {
       for (let c=0;c<linePosition.length-1;c++){
         lineLength.push(this.getLength(linePosition[c],linePosition[c+1]))
       }
-      console.log(linePosition);
-      console.log(lineAngle);
-      console.log(lineLength);
       //3创建span
        for(let d=0;d<linePosition.length-1;d++){
          let newSpan=document.createElement('SPAN');
@@ -233,25 +232,18 @@ export default {
                   this.theData.moveObServerDt.push(pt);
                   let A1=this.theData.moveObServerDt[0];
                   let A2=this.theData.moveObServerDt[1];
-                  let xc3=A2.x-A1.x;
-                  let yc4=(A2.y-A1.y)*-1;
+                  let xc3=((A2.x-A1.x)*-1);
+                  let yc4=(A2.y-A1.y);
                   this.$store.state.mapConfig.A1.x+=xc3;
                   this.$store.state.mapConfig.A1.y+=yc4;
-                  // console.log("==")
-                  // console.log(this.$store.state.mapConfig.A1.x)
-                  // console.log(this.$store.state.mapConfig.A1.y)
-                  // console.log("??")
-                  // console.log("---");
-                  // console.log(this.theData.moveObServerDt);
-                  // console.log("-+-");
                   break;
                 }
                 case 0:{//空
                   this.theData.moveObServerDt.push(pt);
                   let Apt=this.theData.moveStartPt;
                   let xc,yc;
-                  xc=pt.x-Apt.x;
-                  yc=(pt.y-Apt.y)*-1;
+                  xc=(pt.x-Apt.x)*-1;
+                  yc=(pt.y-Apt.y);
                   this.$store.state.mapConfig.A1.x+=xc;
                   this.$store.state.mapConfig.A1.y+=yc;
                   break;
@@ -260,8 +252,8 @@ export default {
                   this.theData.moveObServerDt.push(pt);
                   let Bpt=this.theData.moveObServerDt[0];
                   let xc2,yc2;
-                  xc2=pt.x-Bpt.x;
-                  yc2=(pt.y-Bpt.y)*-1;
+                  xc2=(pt.x-Bpt.x)*-1;
+                  yc2=pt.y-Bpt.y;
                   this.$store.state.mapConfig.A1.x+=xc2;
                   this.$store.state.mapConfig.A1.y+=yc2;
                   break;
@@ -405,7 +397,7 @@ export default {
 
   },
   mounted:function(){
-    this.startSetting();
+    this.startSetting()
   },
   computed:{
     commits() {
