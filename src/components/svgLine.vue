@@ -1,0 +1,19 @@
+<template>
+  <svg width="100%" height="100%" version="1.1"
+       xmlns="http://www.w3.org/2000/svg">
+
+    <polyline points="0,0 0,20 20,20 20,40 40,40 40,60"
+              style="fill:white;stroke:red;stroke-width:2"/>
+
+  </svg>
+</template>
+
+<script>
+export default {
+  name: "svgLine"
+}
+</script>
+
+<style scoped>
+
+</style>

@@ -1,12 +1,14 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer">
-
+    <svg-line ref="line" id="line"></svg-line>
   </div>
 </template>
 
 <script>
+import SvgLine from "./svgLine";
 export default {
   name: "dataLayer",
+  components: {SvgLine},
   data(){
     return {
       MY_NAME:"dataLayer",
@@ -37,6 +39,15 @@ export default {
       this.getBrowserConfig();
       //获取屏幕中心点
       this.getScreenCenter();
+      //
+      //测试
+      //
+      //新增一个组件
+
+      this.setCp();
+      //
+      //测试
+      //
       //添加一条测试line
       this.createTestLine();
       //当前层级
@@ -48,6 +59,20 @@ export default {
       //初始化视角
       this.visualAngleMove();
     },
+    setCp(){
+      // import Vue from 'vue';
+      // import line from './svgLine';
+      // let ref=this.$refs.dataLayer;
+      // console.log("aaa");
+      // let LineComponent=Vue.extend(line);
+      // console.log(LineComponent);
+
+      let line=document.querySelector('#line')
+      console.log(line.firstChild);
+      let clone=line.firstChild.cloneNode(true);
+      line.appendChild(clone);
+      //2022-11-06 通过克隆可以实现复用svg
+    },
     //该函数用于缩放视角
     visualAngleScale(){
 
@@ -55,10 +80,12 @@ export default {
     //该函数用于初始化或移动时,将创建的数据进行相对移动
     visualAngleMove(){
       //2022-10/23-19:10留，请开始缩放视角功能的开发,注意，本地图非高精地图，缩放不必在意小误差，
-      //缩放的基本思考：缩放的本质是用更多的像素点或更少的像素点来表达单位1，目前在没有缩放的清空下1像素就是地图大小的单位1
-      //如果要进行缩小，那么就要用更多的像素点来表达单位1，比如用10像素表达，这个时候，两个点之间的位置将会放大10倍，例如点A(20,20)与点B(30,30)
-      //计算这两点时的距离会应为缩放值(10x)而被扩大10倍
-      //请继续完成缩放功能的开发
+      //2022-11-06 21:15留，我认为单纯使用DIV+CSS无法合理的实现地图缩放的功能，所有我决定将重构此项目，改用SVG+JS的方式制作地图
+      //https://segmentfault.com/a/1190000041018595?sort=newest  svg03——用 js
+      // 创建svg，需要安装插件才能用
+      // 2022-11-06 23:18 留 如何复用组件（在已经加载完毕页面后）？例如用户点击创建一条线，这时候再生成对应这条线的svg组件
+      // 或者可以试试先加载一个基础的line dom
+      //地图的各个要素都线封装为一个vue组件，然后在使用
       let elements=document.querySelectorAll('.element');
       for (let i=0;i<elements.length;i++){
         let nowElement=elements[i];

@@ -29,11 +29,11 @@
     </control-layer>
     <!--面板层-->
     <!--用于展示图层数据的-->
-    <panel-layer>
-    </panel-layer>
+<!--    <panel-layer>-->
+<!--    </panel-layer>-->
     <!--调试面板-->
-    <console-layer>
-    </console-layer>
+<!--    <console-layer>-->
+<!--    </console-layer>-->
   </div>
 </template>
 
