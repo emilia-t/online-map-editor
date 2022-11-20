@@ -1,6 +1,8 @@
 <template>
-  <div class="dataLayer" id="dataLayer" ref="dataLayer">
-    <svg-line ref="line" id="line"></svg-line>
+  <div class="dataLayer" id="dataLayer" ref="dataLayer" >
+    <svg class="polyLineData" id="polyLineData" ref="polyLineData" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" >
+      <svg-line v-for="line in theData.polyLineData" :key="line.id" :poly-line-config="line"></svg-line>
+    </svg>
   </div>
 </template>
 
@@ -13,6 +15,53 @@ export default {
     return {
       MY_NAME:"dataLayer",
       theData:{
+        /**数据结构
+        {
+         不能空 | id:mini-type+number  ;字符串数据
+         不能空 | type:四种：1.line 轨迹 缩写为l ;2.point 点 缩写为p ;3.area 区域 缩写为a; 4.relation 关系 缩写为r ;字符串数据
+            细说四种数据：
+            1.point 最基础的数据，由一个坐标点构成其物理形态，它可以承载兴趣点名称、地址、邮箱、经纬度坐标、电话、坐标等信息
+            2.line 由两个及以上的点依照顺序进行连接构成其物理形态，它可以承载地铁、道路、航线、地平线、海岸线、经纬线、长度等信息
+            3.area 由三个及以上的点依照顺序构造的多边形物理形态，它可以承载小区范围、政治管辖区范围、广场、学校、面积等信息
+            4.relation 由一个及以上的任意数据类型所构成的数据集合或对象，它可以承载结构化的地理信息数据例如人行横道的区域area与人性横道的中心线line
+         不能空 | points:[{x:number,y:number},{x:number,y:number}...]//对于特殊的关系数据类型，该值为第一个childNode的第一个point
+         不能空 | point:{x:number,y:number}//点的坐标;对于line数据类型该值为起点，对与area改值为起点，用于区块渲染数据用；对于特殊的关系数据类型，该值为第一个childNode的第一个point
+         可以空 | color:'#224466'//16进制的RGB颜色字符串,对于特殊的关系数据类型，该值为空
+         可以空 | length:number//单位是m;线的长度，对于point数据类型而言该值为空，对于line数据类型而言该值为线长度，对于area而言该值为空；该值允许为空
+         可以空 | width://单位是px;形如线的宽度，默认为2
+         可以空 | size:number//单位是m^2;仅使用在area数据类型上，且该值允许为空
+         可以空 | childRelations:[‘r1544201’,'r5545122'...]//此数据类型下的子关系id，可以是多个也可以为空
+         可以空 | fatherRelation:''//对于有关系类型的数据类型的上级关系id，可以为空
+         可以空 | childNodes:[]//对于关系类型的数据类型的成员节点，节点可以是任意四种数据类型之一，可以为空
+         可以空 | fatherNode:''//对于关系类型的数据类型的父节点，节点可以是任意四种数据类型之一，可以为空
+        }
+        **/
+        polyLineData:[
+          {
+            id:'l3001',
+            type:'line',
+            points:[{x:0.0000621,y:0.0000302},{x:0.0000631,y:0.0000322},{x:0.0000661,y:0.0000352}],
+            point:{x:0.0000621,y:-0.0000302},
+            color:'#ff3030',
+            width:2
+          },
+          {
+            id:'l3002',
+            type:'line',
+            points:[{x:0.0000798,y:0.0000211},{x:0.0000991,y:0.0000601},{x:0.0000444,y:0.0000555}],
+            point:{x:0.0000621,y:-0.0000302},
+            color:'#7cffea',
+            width:4
+          },
+          {
+            id:'l3002',
+            type:'line',
+            points:[{x:0.0003798,y:0.0000211},{x:0.0003991,y:0.0000601},{x:0.0003444,y:0.0000555}],
+            point:{x:0.0000621,y:-0.0000302},
+            color:'#7cffea',
+            width:4
+          }
+        ],
         moveStartPt:{
           x:null,
           y:null
@@ -42,14 +91,12 @@ export default {
       //
       //测试
       //
-      //新增一个组件
-
-      this.setCp();
+      //
       //
       //测试
       //
       //添加一条测试line
-      this.createTestLine();
+      //this.createTestLine();
       //当前层级
       let nowLayer=this.$store.state.mapConfig.layer;
       //添加移动侦听
@@ -59,6 +106,8 @@ export default {
       //初始化视角
       this.visualAngleMove();
     },
+    //
+    //
     setCp(){
       // import Vue from 'vue';
       // import line from './svgLine';
@@ -67,11 +116,10 @@ export default {
       // let LineComponent=Vue.extend(line);
       // console.log(LineComponent);
 
-      let line=document.querySelector('#line')
-      console.log(line.firstChild);
-      let clone=line.firstChild.cloneNode(true);
-      line.appendChild(clone);
-      //2022-11-06 通过克隆可以实现复用svg
+      // let line=document.querySelector('#line')
+      // console.log(line.firstChild);
+      // let clone=line.firstChild.cloneNode(true);
+      // line.appendChild(clone);
     },
     //该函数用于缩放视角
     visualAngleScale(){
@@ -79,7 +127,9 @@ export default {
     },
     //该函数用于初始化或移动时,将创建的数据进行相对移动
     visualAngleMove(){
-      //2022-10/23-19:10留，请开始缩放视角功能的开发,注意，本地图非高精地图，缩放不必在意小误差，
+      //2022-11-20 20:45留，基于SVG的移动功能已经加入进去了，现在我希望把之前的旧的方式和代码进行删减，请完成这个工作，之后做缩放和编辑的功能(SVG)
+      //2022-11-13 21:33留，可以使用模组重复使用svg，但是仙子啊问题是添加后不能正常显示，位置和box都正常出现了，但是就是不能显示，解决此问题，然后制作移动视角的功能SVG端
+      //2022-10-23 19:10留，请开始缩放视角功能的开发,注意，本地图非高精地图，缩放不必在意小误差，
       //2022-11-06 21:15留，我认为单纯使用DIV+CSS无法合理的实现地图缩放的功能，所有我决定将重构此项目，改用SVG+JS的方式制作地图
       //https://segmentfault.com/a/1190000041018595?sort=newest  svg03——用 js
       // 创建svg，需要安装插件才能用
@@ -87,6 +137,8 @@ export default {
       // 或者可以试试先加载一个基础的line dom
       //地图的各个要素都线封装为一个vue组件，然后在使用
       let elements=document.querySelectorAll('.element');
+      let mouseMove={"x":null,"y":null};
+      let A1=this.$store.state.mapConfig.A1;
       for (let i=0;i<elements.length;i++){
         let nowElement=elements[i];
         for(let c=0;c<nowElement.childNodes.length;c++){
@@ -94,12 +146,21 @@ export default {
           let DataY=nowElement.childNodes[c].getAttribute('data-r-y');//纬度
           let pos={x:DataX,y:DataY};
           let rep=this.positionTransformInt(pos);//转化后的
-          let A1=this.$store.state.mapConfig.A1;
           let result={"x":rep.x-A1.x, "y":rep.y-A1.y};
           nowElement.childNodes[c].style.left=result.x+"px";
           nowElement.childNodes[c].style.top=((result.y)*-1)+"px";
         }
       }
+      /**
+       * 以下是关于SVG的移动功能
+       **/
+      let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
+      for(let i=0;i<polyLineDataChildNodes.length;i++){
+        polyLineDataChildNodes[i].style.transform='translate('+(A1.x)*-1+'px, '+A1.y+'px) rotate(0deg) scale(1)';
+      }
+      /**
+       * 以上是关于SVG的移动功能
+       **/
     },
     //获取浏览器高度和宽度
     getBrowserConfig(){
@@ -470,9 +531,11 @@ export default {
 </script>
 
 <style scoped>
+
 #dataLayer{
   width: 100%;
   height: 100%;
 }
 .line{position: fixed;}
+.polyLineData{width: 100%;height: 100%;}
 </style>

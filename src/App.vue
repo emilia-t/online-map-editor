@@ -32,8 +32,8 @@
 <!--    <panel-layer>-->
 <!--    </panel-layer>-->
     <!--调试面板-->
-<!--    <console-layer>-->
-<!--    </console-layer>-->
+    <console-layer>
+    </console-layer>
   </div>
 </template>
 
@@ -99,6 +99,7 @@ export default {
 #app {
   width: 100%;
   height: 100%;
+  background: #0a0a0a;
 }
 body, html {
   width: 100%;
