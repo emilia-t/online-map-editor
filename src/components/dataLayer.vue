@@ -54,7 +54,7 @@ export default {
             width:4
           },
           {
-            id:'l3002',
+            id:'l3003',
             type:'line',
             points:[{x:0.0003798,y:0.0000211},{x:0.0003991,y:0.0000601},{x:0.0003444,y:0.0000555}],
             point:{x:0.0000621,y:-0.0000302},
@@ -94,39 +94,110 @@ export default {
       //
       //
       //测试
-      //
-      //添加一条测试line
-      //this.createTestLine();
       //当前层级
       let nowLayer=this.$store.state.mapConfig.layer;
       //添加移动侦听
       this.mapMoveStart();
       this.mapMoveIng();
       this.mapMoveEnd();
-      //初始化视角
-      this.visualAngleMove();
-    },
-    //
-    //
-    setCp(){
-      // import Vue from 'vue';
-      // import line from './svgLine';
-      // let ref=this.$refs.dataLayer;
-      // console.log("aaa");
-      // let LineComponent=Vue.extend(line);
-      // console.log(LineComponent);
+      //添加滚轮侦听
 
-      // let line=document.querySelector('#line')
-      // console.log(line.firstChild);
-      // let clone=line.firstChild.cloneNode(true);
-      // line.appendChild(clone);
+      //初始化移动视角
+      this.visualAngleMove();
+      //初始化缩放视角
+      this.visualAngleScale();
     },
+    //
     //该函数用于缩放视角
     visualAngleScale(){
-
+      let browserAgent=window.navigator.userAgent;
+      let browser=null;
+      if(browserAgent.indexOf('Firefox')!==-1){
+        browser='firefox';
+      }
+      else if(browserAgent.indexOf('Chrome')!==-1){
+        browser='chrome';
+      }
+      switch (browser){
+        case 'firefox':{
+          this.$refs.dataLayer.addEventListener('DOMMouseScroll',e=>Callback(e,'firefox'));
+          break;
+        }
+        case 'chrome':{
+          this.$refs.dataLayer.addEventListener('mousewheel',e=>Callback(e,'chrome'));
+          break;
+        }
+        default:{
+          this.$refs.dataLayer.addEventListener('mousewheel',e=>Callback(e,'chrome'));
+        }
+      }
+      //
+      let Callback=(e,browser)=>{
+        let tp=null;
+        switch (browser){
+          case 'chrome':{
+            tp=e.wheelDelta;
+            break;
+          }
+          case 'firefox':{
+            tp=(e.detail)*-1;
+            break;
+          }
+        }
+        if(tp>0){//下
+          up(e);
+        }else {//上
+          down(e);
+        }
+      }
+      let up=(e)=>{
+        let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
+        for(let i=0;i<polyLineDataChildNodes.length;i++){
+          console.log("开发中")
+        }
+      }
+      let down=(e)=>{
+        this.$store.state.mapConfig.layer-=1;//层级下调
+        let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
+        //对于缩放，我采用用户鼠标为中心点，其余元素进行缩放的操作
+        //如何实现？
+        //1获取鼠标位置
+        let mouse={x:null,y:null};
+        mouse.x=e.x;
+        mouse.y=e.y;
+        for(let i=0;i<polyLineDataChildNodes.length;i++){
+          //2判断元素与鼠标的位置
+          let nowEle=polyLineDataChildNodes[i];
+          let nowPos=nowEle.getAttribute('data-compile-points');
+          let arr=splitPoint(nowPos);
+          //798,211 991,601 444,555
+          //2022-12-11 19:47 留言：现在需要一个专门用于计算缩小后的新坐标的函数，之后将这个坐标重新赋予原来的dom Element
+          //3移动一个layer的距离到用户鼠标的位置
+          //4缩短元素一个layer的长度
+        }
+      }
+      //分割坐标点用，返回一个数组，数组下是多个包含坐标x与y的对象
+      let splitPoint=(string)=>{
+        let arr=string.split(' ');
+        for(let i=0;i<arr.length;i++){
+          if(arr[i]===''){
+            arr.splice(i,1);
+          }
+        }
+        let newArr=[];
+        let obj={x:null,y:null};
+        for (let i=0;i<arr.length;i++){
+          let xy=arr[i].split(',');
+          obj.x=xy[0];
+          obj.y=xy[1];
+          newArr.push(obj);
+        }
+        return newArr;
+      }
     },
     //该函数用于初始化或移动时,将创建的数据进行相对移动
     visualAngleMove(){
+      //2022-11-27 留，做缩放和编辑的功能
       //2022-11-20 20:45留，基于SVG的移动功能已经加入进去了，现在我希望把之前的旧的方式和代码进行删减，请完成这个工作，之后做缩放和编辑的功能(SVG)
       //2022-11-13 21:33留，可以使用模组重复使用svg，但是仙子啊问题是添加后不能正常显示，位置和box都正常出现了，但是就是不能显示，解决此问题，然后制作移动视角的功能SVG端
       //2022-10-23 19:10留，请开始缩放视角功能的开发,注意，本地图非高精地图，缩放不必在意小误差，
@@ -136,27 +207,13 @@ export default {
       // 2022-11-06 23:18 留 如何复用组件（在已经加载完毕页面后）？例如用户点击创建一条线，这时候再生成对应这条线的svg组件
       // 或者可以试试先加载一个基础的line dom
       //地图的各个要素都线封装为一个vue组件，然后在使用
-      let elements=document.querySelectorAll('.element');
-      let mouseMove={"x":null,"y":null};
-      let A1=this.$store.state.mapConfig.A1;
-      for (let i=0;i<elements.length;i++){
-        let nowElement=elements[i];
-        for(let c=0;c<nowElement.childNodes.length;c++){
-          let DataX=nowElement.childNodes[c].getAttribute('data-r-x');//经度
-          let DataY=nowElement.childNodes[c].getAttribute('data-r-y');//纬度
-          let pos={x:DataX,y:DataY};
-          let rep=this.positionTransformInt(pos);//转化后的
-          let result={"x":rep.x-A1.x, "y":rep.y-A1.y};
-          nowElement.childNodes[c].style.left=result.x+"px";
-          nowElement.childNodes[c].style.top=((result.y)*-1)+"px";
-        }
-      }
       /**
        * 以下是关于SVG的移动功能
        **/
+      let A1=this.$store.state.mapConfig.A1;
       let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
       for(let i=0;i<polyLineDataChildNodes.length;i++){
-        polyLineDataChildNodes[i].style.transform='translate('+(A1.x)*-1+'px, '+A1.y+'px) rotate(0deg) scale(1)';
+        polyLineDataChildNodes[i].style.transform='translate('+(A1.x)*-1+'px, '+A1.y+'px)';
       }
       /**
        * 以上是关于SVG的移动功能
@@ -172,16 +229,10 @@ export default {
       this.$store.state.mapConfig.centerPoint.x=window.innerWidth/2;
       this.$store.state.mapConfig.centerPoint.y=window.innerHeight/2;
     },
-    /**
-    一条line的基本属性如下：
-     position：表示这条line的组成点的数组集合，且至少有两个点[{x:float,y:float},{x,y}...]
-     angle：表示这条line的旋转角度，默认为0,一般不要设置
-     length：表示这条line的长度，这里的长度是依据经纬度计算的，当然在平面上是被拉伸后的，所以这个参数并不代表这条line的显示长度
-     color：表示这条line的显示颜色，仅支持16进制的rgb颜色
-     width：表示这条line的线宽，这里是固定的px单位，默认为1px
-    **/
     //创建一条测试用的Line
     createTestLine(){
+      console.log('请求拒绝');
+      /**
       //0.box
       let box=this.$refs.dataLayer;
       //0.1lineBox
@@ -239,35 +290,14 @@ export default {
          //202210091919留言生成的line似乎与实际不同，检查并修复此bug，然后做移动功能，然后做缩放功能，然后做编辑功能，然后做登录功能，然后做后端
        }
        box.appendChild(lineBox);
-      //4如果还有下一点，则循环
-      /**
-      lineConfig.position=this.positionTransformInt(lineConfig.position);
-      let newEle=document.createElement('SPAN');
-      newEle.className='line';
-      //绑定基本数据
-      newEle.setAttribute('data-r-x',lineConfig.x);
-      newEle.setAttribute('data-r-y',lineConfig.y);
-      newEle.setAttribute('data-width',lineConfig.width);
-      newEle.setAttribute('data-color',lineConfig.color);
-      newEle.setAttribute('data-r-length',lineConfig.length);
-      newEle.setAttribute('data-r-angle',lineConfig.angle);
-      newEle.style.left=lineConfig.position.x+'px';
-      newEle.style.top=lineConfig.position.y+'px';
-      newEle.style.background=lineConfig.color;
-      newEle.style.width=lineConfig.length+'px';
-      newEle.style.height=lineConfig.width+'px';
-      newEle.style.transform=lineConfig.angle;
-      newEle.style.transformOrigin="left top";//固定属性
-      newEle.style.position="fixed";//固定属性
-      newEle.style.transform="rotate("+lineConfig.angle+"deg)";//角度
-      box.appendChild(newEle);
-      console.log(lineConfig);
       **/
     },
-    //一条line应有的事件
-    lineEvents(){
-
-
+    //鼠标滚轮监听
+    mapScale(){
+      let dataLayer=this.$refs.dataLayer;
+      dataLayer.addEventListener('',(e)=>{
+        0
+      })
     },
     //dataLayer的鼠标移动监听-按下
     mapMoveStart(){
@@ -535,6 +565,7 @@ export default {
 #dataLayer{
   width: 100%;
   height: 100%;
+  overflow: hidden
 }
 .line{position: fixed;}
 .polyLineData{width: 100%;height: 100%;}

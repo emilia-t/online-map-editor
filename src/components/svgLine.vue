@@ -1,5 +1,5 @@
 <template>
-    <polyline :points="nowConfig.pointsStr" :id="nowConfig.id" :style="{fill:'rgba(255,255,255,0)',stroke:nowConfig.color,strokeWidth:nowConfig.width}"/>
+    <polyline :points="nowConfig.pointsStr" :id="nowConfig.id" :data-source-points="nowConfig.pointsStr" :data-compile-points="nowConfig.pointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:nowConfig.color,strokeWidth:nowConfig.width}"/>
 </template>
 <script>
 export default {
@@ -45,7 +45,6 @@ export default {
       let newStr='';
       this.nowConfig=this.polyLineConfig;
       newArr=this.polyLineConfig.points;
-      console.log(newArr);
       //处理为字符串 x,y x,y ...
       for (let i=0;i<newArr.length;i++){
         let a=this.translateCoordinate(newArr[i].x);
