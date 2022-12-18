@@ -22,6 +22,8 @@ export default new Vuex.Store({
     //地图配置
     mapConfig:{
       layer:0,
+      zoomAdd:0.2,
+      zoomSub:-0.2,
       browser:{
         width:null,
         height:null

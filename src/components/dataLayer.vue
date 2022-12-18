@@ -157,7 +157,8 @@ export default {
         }
       }
       let down=(e)=>{
-        this.$store.state.mapConfig.layer-=1;//层级下调
+        //2022-12-18-21:04 留言：缩小的功能基本完成，放大是相同的道理，请将这些函数封装到外部(dataLayer.vue.meth，这里只需要复制加减layer即可，由watch监听layer并执行)
+        this.$store.state.mapConfig.layer+=1;//层级下调
         let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
         //对于缩放，我采用用户鼠标为中心点，其余元素进行缩放的操作
         //如何实现？
@@ -165,16 +166,66 @@ export default {
         let mouse={x:null,y:null};
         mouse.x=e.x;
         mouse.y=e.y;
+        //获取所有要素的初始提取值(以数组存放的字符串格式)
+        let AllPosStrArr=[];
         for(let i=0;i<polyLineDataChildNodes.length;i++){
           //2判断元素与鼠标的位置
           let nowEle=polyLineDataChildNodes[i];
-          let nowPos=nowEle.getAttribute('data-compile-points');
-          let arr=splitPoint(nowPos);
-          //798,211 991,601 444,555
-          //2022-12-11 19:47 留言：现在需要一个专门用于计算缩小后的新坐标的函数，之后将这个坐标重新赋予原来的dom Element
-          //3移动一个layer的距离到用户鼠标的位置
-          //4缩短元素一个layer的长度
+          AllPosStrArr.push(nowEle.getAttribute('data-compile-points'));
         }
+        //转化为[{}]数组对象
+        let AllPosArrObj=[];
+        for (let i=0;i<AllPosStrArr.length;i++){
+          AllPosArrObj.push(splitPoint(AllPosStrArr[i]))
+        }
+        //重新计算新的坐标
+        let AllNewPosArr=[];
+        for(let i=0;i<AllPosStrArr.length;i++){
+          AllNewPosArr.push(computedPos(mouse,AllPosArrObj[i]))
+        }
+        //组合为字符串
+        //[一条lane[{x,y},{x,y}],第二条lane[{},{}]]
+        let AllNewPointStr=[];
+        for(let i=0;i<AllPosStrArr.length;i++){
+          AllNewPointStr.push(posArrObjTranStr(AllNewPosArr[i]))
+        }
+        //赋予
+        for(let i=0;i<polyLineDataChildNodes.length;i++){
+          polyLineDataChildNodes[i].setAttribute('points',AllNewPointStr[i]);
+        }
+      }
+      let posArrObjTranStr=(posArrObj)=>{
+        let newArr=[];
+        for (let i=0;i<posArrObj.length;i++){
+            newArr.push([posArrObj[i].x,posArrObj[i].y].toString())
+        }
+        return newArr.join(' ');
+      }
+      //计算一个要素缩小后的所有新坐标,所需参数：鼠标坐标，元素坐标组
+      let computedPos=(mousePos,pointPosArr)=>{
+        let newPosArr=[];
+        for (let i=0;i<pointPosArr.length;i++){
+          let pointPos=pointPosArr[i];
+          let layer=this.$store.state.mapConfig.layer;
+          let axSize=mousePos.x-pointPos.x;
+          let aySize=mousePos.y-pointPos.y;
+          let newPos={x:null,y:null};
+          let zoom=null;
+          //判断是缩放还是放大
+          if(layer===0){
+            newPosArr.push(pointPos);
+          }else{
+            if (layer>0){//放大
+              zoom=this.$store.state.mapConfig.zoomAdd;
+            }else {//缩小
+              zoom=this.$store.state.mapConfig.zoomSub;
+            }
+            newPos.x=pointPos.x+((zoom*axSize)*layer);
+            newPos.y=pointPos.y+((zoom*aySize)*layer);
+            newPosArr.push(newPos);
+          }
+        }
+        return newPosArr;
       }
       //分割坐标点用，返回一个数组，数组下是多个包含坐标x与y的对象
       let splitPoint=(string)=>{
@@ -185,12 +236,11 @@ export default {
           }
         }
         let newArr=[];
-        let obj={x:null,y:null};
         for (let i=0;i<arr.length;i++){
           let xy=arr[i].split(',');
-          obj.x=xy[0];
-          obj.y=xy[1];
-          newArr.push(obj);
+          let x=parseFloat(xy[0]);
+          let y=parseFloat(xy[1]);
+          newArr.push({x,y});
         }
         return newArr;
       }
