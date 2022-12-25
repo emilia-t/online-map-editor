@@ -1,23 +1,19 @@
 <template>
-  <div class="consoleLayer">
-    <h4>~控制台</h4>
-    <div class="buttons">
-     <button @click="createTestLine()">添加一条测试lane</button>
-    </div>
+  <div class="consoleLayer" ref="consoleLayer" v-if="view">
+    <h4 class="consoleTitle">F4 调试面板</h4>
     <div ref="consoleMap" class="consoleMap">
-      浏览器宽度：{{$store.state.mapConfig.browser.width}}
-      <br>
-      浏览器高度：{{$store.state.mapConfig.browser.height}}
+      浏览器尺寸：{{$store.state.mapConfig.browser.width}} x {{$store.state.mapConfig.browser.height}}
       <br>
       地图X轴大小：{{$store.state.mapConfig.mapSize.width.x1}} ~ {{$store.state.mapConfig.mapSize.width.x2}}
       <br>
       地图Y轴大小：{{$store.state.mapConfig.mapSize.height.y1}} ~ {{$store.state.mapConfig.mapSize.height.y2}}
       <br>
-      默认坐标：{{$store.state.mapConfig.startDefaultPoint.x}} , {{$store.state.mapConfig.startDefaultPoint.y}}
+      初始坐标：{{$store.state.mapConfig.startDefaultPoint.x}} , {{$store.state.mapConfig.startDefaultPoint.y}}
       <br>
-      当前坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
+      A1坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
       <br>
-      commits：createTestLine:{{$store.state.commits.createTestLine}}
+      层级：{{$store.state.mapConfig.layer}}
+      <br>
     </div>
   </div>
 </template>
@@ -27,34 +23,57 @@ export default {
   name: "consoleLayer",
   data(){
     return {
-      MY_NAME:"consoleLayer"
+      MY_NAME:"consoleLayer",
+      view:false
     }
   },
   methods:{
     createTestLine() {
       this.$root.sendInstruct('createTestLine')
+    },
+    openF4DebugBord(){
+      this.view=!this.view;
     }
+  },
+  computed:{
+    commitsDebugBordHide() {
+      return this.$store.state.commits.openF4DebugBord;
+    }
+  },
+  watch:{
+    commitsDebugBordHide:{
+      handler(newValue,oldValue){
+        this.openF4DebugBord();
+      },
+      deep:true
+    },
   }
 }
 </script>
 
 <style scoped>
+.consoleTitle{
+  padding: 0px;
+  margin: 10px 0px;
+}
 .consoleLayer{
-  width: 400px;
-  height: 400px;
-  background: rgba(88, 88, 88, 0.9);
+  width: 490px;
+  height: 490px;
+  background: rgba(170, 170, 170, 0.9);
   color: rgba(255, 255, 255, 0.9);
   display: flex;
   flex-direction: column;
   position: fixed;
-  top:70px;
+  top:15px;
   left:15px;
   z-index: 99999;
+  pointer-events:none;
+  padding: 5px;
 }
 .consoleMap{
   display: flex;
   flex-direction: column;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 100;
   line-height: 22px;
 }

@@ -11,13 +11,29 @@ Vue.config.productionTip = false
 new Vue({
   el:'#app',
   data(){return{
-    general_script
+    general_script,
+    commitsConfig:{
+      disabledList:[],//请使用类似于：/user/的正则表达式
+      anonymousInstruct:{pass:0,intercept:0},
+      createTestLine:{pass:0,intercept:0},
+      openF4DebugBord:{pass:0,intercept:0},
+    }
   }},
   router,
   store,
   components:{App},
   template:'<app></app>',
   methods:{
+    filter(name){
+      let list=this.commitsConfig.disabledList;
+      let lock=true;
+      for (let i=0;i<list.length;i++){
+        if (name.match(list[i])!==null){
+          lock=false
+        }
+      }
+      return lock
+    },
     /**
     请在下方三个函数内注册您的命令
      基本格式为：
@@ -30,8 +46,13 @@ new Vue({
     sendDataInstruct(name,price){
       switch (name) {
         case 'anonymousInstruct':{
-          this.$store.state.anonymousInstruct.name=name;
-          this.$store.state.anonymousInstruct.data=price;
+          if(this.filter(name)){
+            this.$store.state.anonymousInstruct.name=name;
+            this.$store.state.anonymousInstruct.data=price;
+            this.commitsConfig.anonymousInstruct.pass++;
+          }else {
+            this.commitsConfig.anonymousInstruct.intercept++;
+          }
           break;
         }
       }
@@ -48,8 +69,23 @@ new Vue({
     sendInstruct(name){
       switch (name){
         case 'createTestLine':{
-          let ran=Math.floor(Math.random()*100000000);
-          this.$store.state.commits.createTestLine=ran;
+          if(this.filter(name)){
+            let ran=Math.floor(Math.random()*100000000);
+            this.$store.state.commits.createTestLine=ran;
+            this.commitsConfig.createTestLine.pass++;
+          }else {
+            this.commitsConfig.createTestLine.intercept++;
+          }
+          break;
+        }
+        case 'openF4DebugBord':{
+          if(this.filter(name)){
+            let ran=Math.floor(Math.random()*100000000);
+            this.$store.state.commits.openF4DebugBord=ran;
+            this.commitsConfig.openF4DebugBord.pass++;
+          }else {
+            this.commitsConfig.openF4DebugBord.intercept++;
+          }
           break;
         }
         default:{
@@ -57,23 +93,6 @@ new Vue({
         }
       }
     },
-    /**
-     根据经纬度计算距离，参数分别为第一点的经度，纬度；第二点的经度，纬度
-     返回值的单位是km
-    **/
-    getDistances(x1, y1, x2, y2) {
-      const R=6371;//地球平均半径(km)
-      const {sin,cos,asin,PI,hypot} = Math;
-      let getPt=(x,y)=>{
-        x*=PI/180;
-        y*=PI/180;
-        return {x:cos(x)*cos(y),y:sin(x)*cos(y),z:sin(y)}
-      }
-      let p1=getPt(x1,y1);
-      let p2=getPt(x2,y2);
-      let a=hypot(p1.x-p2.x,p1.y-p2.y,p1.z-p2.z);
-      return asin(a/2)*2*R;
-    }
   },
   created(){
 

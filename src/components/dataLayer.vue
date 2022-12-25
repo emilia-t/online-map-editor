@@ -56,7 +56,7 @@ export default {
           {
             id:'l3003',
             type:'line',
-            points:[{x:0.0003798,y:0.0000211},{x:0.0003991,y:0.0000601},{x:0.0003444,y:0.0000555}],
+            points:[{x:0.0003798,y:0.0000211},{x:0.0003891,y:0.0000601},{x:0.00034420,y:0.0000695}],
             point:{x:0.0000621,y:-0.0000302},
             color:'#7cffea',
             width:4
@@ -107,6 +107,23 @@ export default {
       //初始化缩放视角
       this.visualAngleScale();
     },
+    /**
+     根据经纬度计算距离，参数分别为第一点的经度，纬度；第二点的经度，纬度
+     返回值的单位是km
+     **/
+    getDistances(x1, y1, x2, y2) {
+      const R=6371;//地球平均半径(km)
+      const {sin,cos,asin,PI,hypot} = Math;
+      let getPt=(x,y)=>{
+        x*=PI/180;
+        y*=PI/180;
+        return {x:cos(x)*cos(y),y:sin(x)*cos(y),z:sin(y)}
+      }
+      let p1=getPt(x1,y1);
+      let p2=getPt(x2,y2);
+      let a=hypot(p1.x-p2.x,p1.y-p2.y,p1.z-p2.z);
+      return asin(a/2)*2*R;
+    },
     //
     //该函数用于缩放视角
     visualAngleScale(){
@@ -144,19 +161,41 @@ export default {
             break;
           }
         }
-        if(tp>0){//下
+        if(tp>0){//滚轮前进，放大
           up(e);
-        }else {//上
+        }else {//滚轮后退，缩放
           down(e);
         }
-      }
+      };
       let up=(e)=>{
+        this.$store.state.mapConfig.layer-=1;//层级下调
         let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
+        let mouse={x:null,y:null};
+        mouse.x=e.x;
+        mouse.y=e.y;
+        let AllPosStrArr=[];
         for(let i=0;i<polyLineDataChildNodes.length;i++){
-          console.log("开发中")
+          let nowEle=polyLineDataChildNodes[i];
+          AllPosStrArr.push(nowEle.getAttribute('data-compile-points'));
         }
-      }
+        let AllPosArrObj=[];
+        for (let i=0;i<AllPosStrArr.length;i++){
+          AllPosArrObj.push(splitPoint(AllPosStrArr[i]))
+        }
+        let AllNewPosArr=[];
+        for(let i=0;i<AllPosStrArr.length;i++){
+          AllNewPosArr.push(computedPos(mouse,AllPosArrObj[i]),1)
+        }
+        let AllNewPointStr=[];
+        for(let i=0;i<AllPosStrArr.length;i++){
+          AllNewPointStr.push(posArrObjTranStr(AllNewPosArr[i]))
+        }
+        for(let i=0;i<polyLineDataChildNodes.length;i++){
+          polyLineDataChildNodes[i].setAttribute('points',AllNewPointStr[i]);
+        }
+      };
       let down=(e)=>{
+        //2022-12-25-20:06 留言：缩放后部分lane消失了，请修复此bug，缩放层级大于4后出现图像反转，请修复此bug
         //2022-12-18-21:04 留言：缩小的功能基本完成，放大是相同的道理，请将这些函数封装到外部(dataLayer.vue.meth，这里只需要复制加减layer即可，由watch监听layer并执行)
         this.$store.state.mapConfig.layer+=1;//层级下调
         let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
@@ -181,7 +220,7 @@ export default {
         //重新计算新的坐标
         let AllNewPosArr=[];
         for(let i=0;i<AllPosStrArr.length;i++){
-          AllNewPosArr.push(computedPos(mouse,AllPosArrObj[i]))
+          AllNewPosArr.push(computedPos(mouse,AllPosArrObj[i]),-1)
         }
         //组合为字符串
         //[一条lane[{x,y},{x,y}],第二条lane[{},{}]]
@@ -193,20 +232,20 @@ export default {
         for(let i=0;i<polyLineDataChildNodes.length;i++){
           polyLineDataChildNodes[i].setAttribute('points',AllNewPointStr[i]);
         }
-      }
+      };
       let posArrObjTranStr=(posArrObj)=>{
         let newArr=[];
         for (let i=0;i<posArrObj.length;i++){
             newArr.push([posArrObj[i].x,posArrObj[i].y].toString())
         }
         return newArr.join(' ');
-      }
-      //计算一个要素缩小后的所有新坐标,所需参数：鼠标坐标，元素坐标组
-      let computedPos=(mousePos,pointPosArr)=>{
+      };
+      //计算一个要素缩小后的所有新坐标,所需参数：鼠标坐标，元素坐标组，类型是放大还是缩小,大于0则为放大，小于0则为缩小
+      let computedPos=(mousePos,pointPosArr,type)=>{
         let newPosArr=[];
         for (let i=0;i<pointPosArr.length;i++){
           let pointPos=pointPosArr[i];
-          let layer=this.$store.state.mapConfig.layer;
+          let layer=-this.$store.state.mapConfig.layer;
           let axSize=mousePos.x-pointPos.x;
           let aySize=mousePos.y-pointPos.y;
           let newPos={x:null,y:null};
@@ -215,7 +254,7 @@ export default {
           if(layer===0){
             newPosArr.push(pointPos);
           }else{
-            if (layer>0){//放大
+            if (type>0){//放大
               zoom=this.$store.state.mapConfig.zoomAdd;
             }else {//缩小
               zoom=this.$store.state.mapConfig.zoomSub;
@@ -226,7 +265,7 @@ export default {
           }
         }
         return newPosArr;
-      }
+      };
       //分割坐标点用，返回一个数组，数组下是多个包含坐标x与y的对象
       let splitPoint=(string)=>{
         let arr=string.split(' ');
@@ -243,7 +282,7 @@ export default {
           newArr.push({x,y});
         }
         return newArr;
-      }
+      };
     },
     //该函数用于初始化或移动时,将创建的数据进行相对移动
     visualAngleMove(){
@@ -570,14 +609,13 @@ export default {
         }
       }
     },
-
   },
   mounted:function(){
     this.startSetting()
   },
   computed:{
-    commits() {
-      return this.$store.state.commits;
+    commitsCreateTestLine() {
+      return this.$store.state.commits.createTestLine;
     },
     anonymousInstruct() {
       return this.$store.state.anonymousInstruct;
@@ -587,9 +625,9 @@ export default {
     }
   },
   watch:{
-    commits:{
+    commitsCreateTestLine:{
       handler(newValue,oldValue){
-        this.instruction(newValue,oldValue);
+        this.createTestLine();
       },
       deep:true
     },

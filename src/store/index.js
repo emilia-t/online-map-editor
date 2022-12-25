@@ -10,9 +10,10 @@ export default new Vuex.Store({
       name:null,
       data:null
     },
-    //命令的缓存
+    //命令的缓存,各组件根据需求监听这里的数据变化，也可以监听整个commits
     commits:{
-      createTestLine:null
+      createTestLine:null,
+      openF4DebugBord:null,
     },
     //相机配置
     cameraConfig:{

@@ -11,6 +11,29 @@ export default {
     return {
       MY_NAME:"controlLayer"
     }
+  },
+  methods:{
+    startSetting(){
+      this.KeyListen();//开启键盘监听
+    },
+    //用于监听单个按键的
+    KeyListen(){
+      document.body.addEventListener('keyup',(e)=>{
+        let KEY=e.key;
+        switch (KEY){
+          case 'F4':{
+            this.F4Event();
+          }
+        }
+      })
+    },
+    //F4的事件
+    F4Event(){
+      this.$root.sendInstruct('openF4DebugBord');
+    }
+  },
+  mounted() {
+    this.startSetting();
   }
 }
 </script>
