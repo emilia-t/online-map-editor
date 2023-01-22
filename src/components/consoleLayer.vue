@@ -12,7 +12,11 @@
       <br>
       A1坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
       <br>
+      mouse：{{$store.state.mapConfig.mousePoint.x}} , {{$store.state.mapConfig.mousePoint.y}}
+      <br>
       层级：{{$store.state.mapConfig.layer}}
+      <br>
+      Old层级：{{$store.state.mapConfig.oldLayer}}
       <br>
     </div>
   </div>

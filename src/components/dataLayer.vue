@@ -8,6 +8,7 @@
 
 <script>
 import SvgLine from "./svgLine";
+import InstructComprehensive from "../class/InstructComprehensive";
 export default {
   name: "dataLayer",
   components: {SvgLine},
@@ -49,7 +50,7 @@ export default {
             id:'l3002',
             type:'line',
             points:[{x:0.0000798,y:0.0000211},{x:0.0000991,y:0.0000601},{x:0.0000444,y:0.0000555}],
-            point:{x:0.0000621,y:-0.0000302},
+            point:{x:0.0000798,y:0.0000211},
             color:'#7cffea',
             width:4
           },
@@ -57,7 +58,7 @@ export default {
             id:'l3003',
             type:'line',
             points:[{x:0.0003798,y:0.0000211},{x:0.0003891,y:0.0000601},{x:0.00034420,y:0.0000695}],
-            point:{x:0.0000621,y:-0.0000302},
+            point:{x:0.0003798,y:0.0000211},
             color:'#7cffea',
             width:4
           }
@@ -81,6 +82,7 @@ export default {
       }
     }
   },
+  //2023-1-20留，请完成PHP后端的开发，至少保证有几个基础接口供客户端操作数据库
   methods:{
     //初始化设置
     startSetting(){
@@ -91,21 +93,25 @@ export default {
       //
       //测试
       //
-      //
+      this.testLinkServer();
       //
       //测试
-      //当前层级
-      let nowLayer=this.$store.state.mapConfig.layer;
+      //实时获取鼠标位置
+      this.getMousePos();
       //添加移动侦听
       this.mapMoveStart();
       this.mapMoveIng();
       this.mapMoveEnd();
-      //添加滚轮侦听
-
-      //初始化移动视角
-      this.visualAngleMove();
-      //初始化缩放视角
+      //启用滚轮监听
       this.visualAngleScale();
+    },
+    //连接服务器
+    testLinkServer(){
+      let newServer=new InstructComprehensive('','','ws://192.168.31.105:9998')
+    },
+    //实时获取鼠标位置：
+    getMousePos(){
+      document.addEventListener("mousemove", (e)=>{this.$store.state.mapConfig.mousePoint.x=e.x;this.$store.state.mapConfig.mousePoint.y=e.y;})
     },
     /**
      根据经纬度计算距离，参数分别为第一点的经度，纬度；第二点的经度，纬度
@@ -124,15 +130,13 @@ export default {
       let a=hypot(p1.x-p2.x,p1.y-p2.y,p1.z-p2.z);
       return asin(a/2)*2*R;
     },
-    //
     //该函数用于缩放视角
     visualAngleScale(){
       let browserAgent=window.navigator.userAgent;
       let browser=null;
       if(browserAgent.indexOf('Firefox')!==-1){
         browser='firefox';
-      }
-      else if(browserAgent.indexOf('Chrome')!==-1){
+      } else if(browserAgent.indexOf('Chrome')!==-1){
         browser='chrome';
       }
       switch (browser){
@@ -148,7 +152,6 @@ export default {
           this.$refs.dataLayer.addEventListener('mousewheel',e=>Callback(e,'chrome'));
         }
       }
-      //
       let Callback=(e,browser)=>{
         let tp=null;
         switch (browser){
@@ -162,151 +165,13 @@ export default {
           }
         }
         if(tp>0){//滚轮前进，放大
-          up(e);
+          this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer
+          this.$store.state.mapConfig.layer-=1;//层级下调
         }else {//滚轮后退，缩放
-          down(e);
+          this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer
+          this.$store.state.mapConfig.layer+=1;//层级下调
         }
       };
-      let up=(e)=>{
-        this.$store.state.mapConfig.layer-=1;//层级下调
-        let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
-        let mouse={x:null,y:null};
-        mouse.x=e.x;
-        mouse.y=e.y;
-        let AllPosStrArr=[];
-        for(let i=0;i<polyLineDataChildNodes.length;i++){
-          let nowEle=polyLineDataChildNodes[i];
-          AllPosStrArr.push(nowEle.getAttribute('data-compile-points'));
-        }
-        let AllPosArrObj=[];
-        for (let i=0;i<AllPosStrArr.length;i++){
-          AllPosArrObj.push(splitPoint(AllPosStrArr[i]))
-        }
-        let AllNewPosArr=[];
-        for(let i=0;i<AllPosStrArr.length;i++){
-          AllNewPosArr.push(computedPos(mouse,AllPosArrObj[i]),1)
-        }
-        let AllNewPointStr=[];
-        for(let i=0;i<AllPosStrArr.length;i++){
-          AllNewPointStr.push(posArrObjTranStr(AllNewPosArr[i]))
-        }
-        for(let i=0;i<polyLineDataChildNodes.length;i++){
-          polyLineDataChildNodes[i].setAttribute('points',AllNewPointStr[i]);
-        }
-      };
-      let down=(e)=>{
-        //2022-12-25-20:06 留言：缩放后部分lane消失了，请修复此bug，缩放层级大于4后出现图像反转，请修复此bug
-        //2022-12-18-21:04 留言：缩小的功能基本完成，放大是相同的道理，请将这些函数封装到外部(dataLayer.vue.meth，这里只需要复制加减layer即可，由watch监听layer并执行)
-        this.$store.state.mapConfig.layer+=1;//层级下调
-        let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
-        //对于缩放，我采用用户鼠标为中心点，其余元素进行缩放的操作
-        //如何实现？
-        //1获取鼠标位置
-        let mouse={x:null,y:null};
-        mouse.x=e.x;
-        mouse.y=e.y;
-        //获取所有要素的初始提取值(以数组存放的字符串格式)
-        let AllPosStrArr=[];
-        for(let i=0;i<polyLineDataChildNodes.length;i++){
-          //2判断元素与鼠标的位置
-          let nowEle=polyLineDataChildNodes[i];
-          AllPosStrArr.push(nowEle.getAttribute('data-compile-points'));
-        }
-        //转化为[{}]数组对象
-        let AllPosArrObj=[];
-        for (let i=0;i<AllPosStrArr.length;i++){
-          AllPosArrObj.push(splitPoint(AllPosStrArr[i]))
-        }
-        //重新计算新的坐标
-        let AllNewPosArr=[];
-        for(let i=0;i<AllPosStrArr.length;i++){
-          AllNewPosArr.push(computedPos(mouse,AllPosArrObj[i]),-1)
-        }
-        //组合为字符串
-        //[一条lane[{x,y},{x,y}],第二条lane[{},{}]]
-        let AllNewPointStr=[];
-        for(let i=0;i<AllPosStrArr.length;i++){
-          AllNewPointStr.push(posArrObjTranStr(AllNewPosArr[i]))
-        }
-        //赋予
-        for(let i=0;i<polyLineDataChildNodes.length;i++){
-          polyLineDataChildNodes[i].setAttribute('points',AllNewPointStr[i]);
-        }
-      };
-      let posArrObjTranStr=(posArrObj)=>{
-        let newArr=[];
-        for (let i=0;i<posArrObj.length;i++){
-            newArr.push([posArrObj[i].x,posArrObj[i].y].toString())
-        }
-        return newArr.join(' ');
-      };
-      //计算一个要素缩小后的所有新坐标,所需参数：鼠标坐标，元素坐标组，类型是放大还是缩小,大于0则为放大，小于0则为缩小
-      let computedPos=(mousePos,pointPosArr,type)=>{
-        let newPosArr=[];
-        for (let i=0;i<pointPosArr.length;i++){
-          let pointPos=pointPosArr[i];
-          let layer=-this.$store.state.mapConfig.layer;
-          let axSize=mousePos.x-pointPos.x;
-          let aySize=mousePos.y-pointPos.y;
-          let newPos={x:null,y:null};
-          let zoom=null;
-          //判断是缩放还是放大
-          if(layer===0){
-            newPosArr.push(pointPos);
-          }else{
-            if (type>0){//放大
-              zoom=this.$store.state.mapConfig.zoomAdd;
-            }else {//缩小
-              zoom=this.$store.state.mapConfig.zoomSub;
-            }
-            newPos.x=pointPos.x+((zoom*axSize)*layer);
-            newPos.y=pointPos.y+((zoom*aySize)*layer);
-            newPosArr.push(newPos);
-          }
-        }
-        return newPosArr;
-      };
-      //分割坐标点用，返回一个数组，数组下是多个包含坐标x与y的对象
-      let splitPoint=(string)=>{
-        let arr=string.split(' ');
-        for(let i=0;i<arr.length;i++){
-          if(arr[i]===''){
-            arr.splice(i,1);
-          }
-        }
-        let newArr=[];
-        for (let i=0;i<arr.length;i++){
-          let xy=arr[i].split(',');
-          let x=parseFloat(xy[0]);
-          let y=parseFloat(xy[1]);
-          newArr.push({x,y});
-        }
-        return newArr;
-      };
-    },
-    //该函数用于初始化或移动时,将创建的数据进行相对移动
-    visualAngleMove(){
-      //2022-11-27 留，做缩放和编辑的功能
-      //2022-11-20 20:45留，基于SVG的移动功能已经加入进去了，现在我希望把之前的旧的方式和代码进行删减，请完成这个工作，之后做缩放和编辑的功能(SVG)
-      //2022-11-13 21:33留，可以使用模组重复使用svg，但是仙子啊问题是添加后不能正常显示，位置和box都正常出现了，但是就是不能显示，解决此问题，然后制作移动视角的功能SVG端
-      //2022-10-23 19:10留，请开始缩放视角功能的开发,注意，本地图非高精地图，缩放不必在意小误差，
-      //2022-11-06 21:15留，我认为单纯使用DIV+CSS无法合理的实现地图缩放的功能，所有我决定将重构此项目，改用SVG+JS的方式制作地图
-      //https://segmentfault.com/a/1190000041018595?sort=newest  svg03——用 js
-      // 创建svg，需要安装插件才能用
-      // 2022-11-06 23:18 留 如何复用组件（在已经加载完毕页面后）？例如用户点击创建一条线，这时候再生成对应这条线的svg组件
-      // 或者可以试试先加载一个基础的line dom
-      //地图的各个要素都线封装为一个vue组件，然后在使用
-      /**
-       * 以下是关于SVG的移动功能
-       **/
-      let A1=this.$store.state.mapConfig.A1;
-      let polyLineDataChildNodes=this.$refs.polyLineData.childNodes;
-      for(let i=0;i<polyLineDataChildNodes.length;i++){
-        polyLineDataChildNodes[i].style.transform='translate('+(A1.x)*-1+'px, '+A1.y+'px)';
-      }
-      /**
-       * 以上是关于SVG的移动功能
-       **/
     },
     //获取浏览器高度和宽度
     getBrowserConfig(){
@@ -321,82 +186,18 @@ export default {
     //创建一条测试用的Line
     createTestLine(){
       console.log('请求拒绝');
-      /**
-      //0.box
-      let box=this.$refs.dataLayer;
-      //0.1lineBox
-      let lineBox=document.createElement('DIV');
-      //line
-      lineBox.classList.add("element");
-      lineBox.classList.add("line");
-      //#.设定基本的参数
-      let lineConfig={
-        position:[{x:0.0000621,y:-0.0000302},{x:0.0000631,y:-0.0000322},{x:0.0000661,y:-0.0000352}],
-        angle:0,//角度
-        length:0,//长度
-        color:'#de3838',//颜色
-        width:2//宽度
-      }
-      //1.解析数据
-      //基本实现方式
-      //1转化为整数
-      let linePosition=[];//line的生成起始点位置
-      let lineAngle=[];//line的下一跳位置与上一点的角度关系
-      let lineLength=[];//到下一跳的距离
-      for (let i=0;i<lineConfig.position.length;i++){
-        let sou={x:null,y:null};
-        sou.x=lineConfig.position[i].x;
-        sou.y=lineConfig.position[i].y;
-        let obj=this.positionTransformInt(sou);
-        linePosition.push(obj);
-      }
-      //2依次将两点进行角度计算
-      for (let b=0;b<linePosition.length-1;b++){
-        lineAngle.push(this.getAngle(linePosition[b],linePosition[b+1]))
-      }
-      //3依次将两点进行长度计算
-      for (let c=0;c<linePosition.length-1;c++){
-        lineLength.push(this.getLength(linePosition[c],linePosition[c+1]))
-      }
-      //3创建span
-       for(let d=0;d<linePosition.length-1;d++){
-         let newSpan=document.createElement('SPAN');
-         newSpan.setAttribute('data-r-x',lineConfig.position[d].x);
-         newSpan.setAttribute('data-r-y',lineConfig.position[d].y);
-         newSpan.setAttribute('data-length',lineConfig.length);
-         newSpan.setAttribute('data-width',lineConfig.width);
-         newSpan.setAttribute('data-color',lineConfig.color);
-         newSpan.setAttribute('data-angle',lineConfig.angle);
-         newSpan.style.background=lineConfig.color;
-         newSpan.style.left=linePosition[d].x+'px';
-         newSpan.style.top=((linePosition[d].y)*-1)+'px';//渲染的时候需要取反
-         newSpan.style.width=lineLength[d]+'px';
-         newSpan.style.height=lineConfig.width+'px';
-         newSpan.style.transformOrigin="left top";//固定属性
-         newSpan.style.position="fixed";//固定属性
-         newSpan.style.transform="rotate("+lineAngle[d]+"deg)";//角度
-         lineBox.appendChild(newSpan);
-         //202210091919留言生成的line似乎与实际不同，检查并修复此bug，然后做移动功能，然后做缩放功能，然后做编辑功能，然后做登录功能，然后做后端
-       }
-       box.appendChild(lineBox);
-      **/
-    },
-    //鼠标滚轮监听
-    mapScale(){
-      let dataLayer=this.$refs.dataLayer;
-      dataLayer.addEventListener('',(e)=>{
-        0
-      })
     },
     //dataLayer的鼠标移动监听-按下
     mapMoveStart(){
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mousedown',(e)=>{
-        this.$store.state.cameraConfig.doNeedMoveMap=true;
-        let point={x:null,y:null};
-        point.x=e.x;
-        point.y=e.y;
-        this.theData.moveStartPt=point;
+        if(e.button===0){
+          this.$store.state.cameraConfig.doNeedMoveMap=true;
+          let point={x:null,y:null};
+          point.x=e.x;
+          point.y=e.y;
+          this.theData.moveStartPt=point;
+        }
       })
     },
     //dataLayer的鼠标移动监听-移动
@@ -404,11 +205,7 @@ export default {
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mousemove',(e)=>{
         if(this.$store.state.cameraConfig.doNeedMoveMap){
-          let point={x:null,y:null};
-          point.x=e.x;
-          point.y=e.y;
-          this.theData.moveMovePt=point;
-          //启用移动侦测器
+          this.theData.moveMovePt={x:e.x,y:e.y};
           if(this.theData.moveObServer===null){
             this.setMoveObServer();
           }
@@ -419,17 +216,19 @@ export default {
     mapMoveEnd(){
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mouseup',(e)=>{
-        this.$store.state.cameraConfig.doNeedMoveMap=false;
-        let point={x:null,y:null};
-        point.x=e.x;
-        point.y=e.y;
-        this.theData.moveEndPt=point;
-        //停用移动侦测器
-        if(this.theData.moveObServer!==null){
-          this.removeMoveObServer();
+        if(e.button===0){
+          this.$store.state.cameraConfig.doNeedMoveMap=false;
+          let point={x:null,y:null};
+          point.x=e.x;
+          point.y=e.y;
+          this.theData.moveEndPt=point;
+          //停用移动侦测器
+          if(this.theData.moveObServer!==null){
+            this.removeMoveObServer();
+          }
+          //清空移动缓存
+          this.clearMoveCache();
         }
-        //清空移动缓存
-        this.clearMoveCache();
       })
     },
     //dataLayer的鼠标移动监听-松开
@@ -478,10 +277,11 @@ export default {
                 }
               }
             }catch (e) {
+              console.log('moveObServer bug');
               console.log(e);
             }
           }
-          ,11)
+          ,this.frameTime)
       }
     },
     //移除移动侦测器
@@ -611,9 +411,12 @@ export default {
     },
   },
   mounted:function(){
-    this.startSetting()
+    this.startSetting();
   },
   computed:{
+    frameTime() {
+      return this.$store.state.cameraConfig.frameTime;
+    },
     commitsCreateTestLine() {
       return this.$store.state.commits.createTestLine;
     },
@@ -636,25 +439,12 @@ export default {
         this.instruction(newValue,oldValue);
       },
       deep:true
-    },
-    //监听移动
-    A1:{
-      handler(newValue,oldValue){
-        this.visualAngleMove();
-      },
-      deep:true
-    },
+    }
   }
 }
 </script>
-
 <style scoped>
-
-#dataLayer{
-  width: 100%;
-  height: 100%;
-  overflow: hidden
-}
+#dataLayer{width: 100%;height: 100%;overflow: hidden}
 .line{position: fixed;}
 .polyLineData{width: 100%;height: 100%;}
 </style>

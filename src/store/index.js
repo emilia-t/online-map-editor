@@ -13,18 +13,21 @@ export default new Vuex.Store({
     //命令的缓存,各组件根据需求监听这里的数据变化，也可以监听整个commits
     commits:{
       createTestLine:null,
-      openF4DebugBord:null,
+      openF4DebugBord:null
     },
     //相机配置
     cameraConfig:{
       //是否需要移动地图
       doNeedMoveMap:false,
+      //帧时间
+      frameTime:11
     },
     //地图配置
     mapConfig:{
       layer:0,
+      oldLayer:null,
       zoomAdd:0.2,
-      zoomSub:-0.2,
+      zoomSub:-0.1666666666666,
       browser:{
         width:null,
         height:null
@@ -48,6 +51,10 @@ export default new Vuex.Store({
         y:0
       },
       centerPoint:{
+        x:0,
+        y:0
+      },
+      mousePoint:{
         x:0,
         y:0
       }
