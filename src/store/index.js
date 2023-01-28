@@ -5,6 +5,264 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   //提供唯一的公共数据源，所有共享的数据统一放到store的state进行储存数据，相当于data
   state: {
+    classList:{
+      //综合指令类
+      InstructComprehensive:class InstructComprehensive {
+        constructor(url){
+          this.url=url || 'ws://127.0.0.1:9998';
+          this.isLink=false;
+          this.isLogin=false;
+          this.numberOfLoginAttempts=0;
+          this.socket=undefined;//会话
+          this.messages=[];//收到的指令
+          this.publickey='';
+          this.userData=null;
+          this.mapData=[];
+          this.otherA1=[];
+          this.typeList=['broadcast','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData'];
+          this.Instruct={
+            //类似于coumputed
+            //登录指令
+            login(email,password) {
+              this.email=email || '';
+              this.password=password || '';
+              return {type:"login",data:{email:this.email,password:this.password}}
+            },
+            //获取公钥指令
+            get_publickey() {
+              return {type:"get_publickey"}
+            },
+            //获取用户数据指令
+            get_userData(){
+              return {type:"get_userData"}
+            },
+            //获取地图数据指令
+            get_mapData(){
+              return {type:"get_mapData"}
+            },
+            //广播我的A1位置
+            broadcast_A1(x,y,color,name){
+              //广播类型数据必须要规定class
+              return {type:"broadcast",class:"A1",data: {x,y,color,name}}
+            },
+            //以广播的形式发送新增点数据
+            broadcast_point(data){
+              return {type:"broadcast",class:"point",data}
+            }
+          };
+          this.startSetting();
+          this.heartbeat();
+        }
+        //初始化配置
+        startSetting(){
+          this.getServerPublickey();
+        }
+        //清除本地数据
+        clearLocalData(){
+          //1.清除会话内的用户数据
+          this.userData=null;
+          //2.清除他人的A1
+          this.otherA1=[];
+          //3.清除地图数据
+          this.mapData=[];
+        }
+        //广播A1
+        broadcastMyA1(x,y,color,name){
+          this.send(this.Instruct.broadcast_A1(x,y,color,name));
+        }
+        //心跳回应，防止断开连接
+        heartbeat(){
+          setInterval(()=>{
+            if(this.socket!==undefined){
+              this.socket.send('');
+            }
+          },55000)
+        }
+        //断开服务器连接(注意是断开会话，不会删除账号数据)
+        closeLink(){
+          this.socket.close();
+          //更新登录状态未登录
+          this.isLogin=false;
+        }
+        //本地存储接口
+        handleLocalStorage(method, key, value) {
+          switch (method) {
+            case 'get' : {
+              let temp = window.localStorage.getItem(key);
+              if (temp) {
+                return temp
+              } else {
+                return false
+              }
+            }
+            case 'set' : {
+              window.localStorage.setItem(key, value);
+              break
+            }
+            case 'remove': {
+              window.localStorage.removeItem(key);
+              break
+            }
+            default : {
+              return false
+            }
+          }
+        }
+        //获取用户数据
+        getUserData(){
+          this.send(this.Instruct.get_userData());
+        }
+        //获取地图数据
+        getMapData(){
+          this.send(this.Instruct.get_mapData());
+        }
+        //获取服务器公钥
+        getServerPublickey(){
+          this.send(this.Instruct.get_publickey());
+        }
+        //登录方法
+        login(email,password){
+          //1.检查用户输入
+          if (check(''+email+password)){
+            this.send(this.Instruct.login(email,password));
+          }
+          function check(text){
+            let pat=new RegExp("[^a-zA-Z0-9\_@.+/=-]","i");
+            if(pat.test(text)===true) {
+              alert("邮箱及密码只能是：字母，数字，下划线 @ . - ，如果您的邮箱包含除此之外的字符，请联系站长");
+              return false;
+            }else {return true}
+          }
+        }
+        //连接服务器方法
+        link(){
+          this.socket=new WebSocket(this.url)
+          this.socket.onopen=(ev)=>this.onOpen(ev)
+          this.socket.onmessage=(ev)=>this.onMessage(ev);
+          this.socket.onclose=(ev)=>this.onClose(ev);
+          this.socket.onerror=(ev)=>this.onError(ev);
+          return true;
+        }
+        //发送数据
+        send(instructObj){//该方法将指令类编译为json数据格式
+          if(this.isLink){
+            //1.数据检查
+            if(this.instructObjCheck(instructObj)){
+              let json=JSON.stringify(instructObj);
+              this.socket.send(json);
+            }
+          }
+        }
+        //指令检查
+        instructObjCheck(instructObj){
+          //1.检测是否为一个对象
+          if(Object.prototype.toString.call(instructObj)!=="[object Object]"){
+            return false;
+          }
+          //2.检测是否存在'type'属性
+          if(instructObj.type===undefined){
+            return false;
+          }
+          //3.检测是否存在不允许的数据类型
+          if(this.typeList.indexOf(instructObj.type)===-1){
+            return false;
+          }else {
+            return true;
+          }
+          //4.检测是否属于广播类
+          if(instructObj.type==='broadcast'){
+
+          }
+        }
+        //收到消息事件
+        onMessage(ev){
+          //1.转化json
+          let jsonData=JSON.parse(ev.data);
+          //2.检测是否存在必要值'type'
+          if(jsonData.type!==undefined){
+          //3.处理数据
+          let nowType=jsonData.type;
+          switch (nowType){
+            //服务器发来公钥
+            case 'publickey':{
+              //保存公钥
+              this.publickey=jsonData.data;
+              break;
+            }
+            //服务器发来登录状态
+            case 'loginStatus':{
+              if(jsonData.data){
+                //1更新登录状态
+                this.isLogin=true;
+                this.numberOfLoginAttempts++;
+              }else {
+                this.isLogin=false;
+                this.numberOfLoginAttempts++;
+              }
+              break;
+            }
+            //服务器发来的用户数据
+            case 'send_userData':{
+              this.userData=jsonData.data;
+              break;
+            }
+            //服务器发来的地图数据
+            case 'send_mapData':{
+              this.mapData=jsonData.data;
+              break;
+            }
+            //服务器发来的广播
+            case 'broadcast':{
+              //otherA1:
+              //[
+              //data{color,email,name,x,y},...
+              //]
+              //处理数据-新的则接入---旧的则更新
+              let oldLength=this.otherA1.length;//曾经的长度
+              let newEm=jsonData.data.email;//新收到的
+              let lock=true;//是新增吗，锁止
+              for (let i=0;i<oldLength;i++){
+                let nowEm=this.otherA1[i].email;
+                if(nowEm==newEm){//更新旧数据
+                  lock=false;
+                  this.otherA1[i].color=jsonData.data.color;
+                  this.otherA1[i].name=jsonData.data.name;
+                  this.otherA1[i].x=jsonData.data.x;
+                  this.otherA1[i].y=jsonData.data.y;
+                }
+              }
+              //再新增
+              if(lock){
+                this.otherA1.push(jsonData.data);
+              }
+              break;
+            }
+            default:{
+              //console.log(jsonData);
+            }
+          }
+          }
+        }
+        //断开连接事件
+        onClose(ev){
+          console.log("服务器连接断开");
+          this.isLink=false;
+          return true;
+        }
+        //连接失败事件
+        onError(ev){
+          console.log("服务器连接失败");
+          this.isLink=false;
+          return true;
+        }
+        //连接成功事件
+        onOpen(ev){
+          console.log("已经连接服务器");
+          this.isLink=true;
+          return true;
+        }
+      },
+    },
     //匿名命令的临时缓存
     anonymousInstruct:{
       name:null,
@@ -50,6 +308,7 @@ export default new Vuex.Store({
         x:0,
         y:0
       },
+      A1Layer:0,
       centerPoint:{
         x:0,
         y:0
@@ -59,13 +318,16 @@ export default new Vuex.Store({
         y:0
       }
     },
-    //地图数据
-    mapData:{
-
-    },
-    //用户数据
-    userData:{
-
+    //服务器相关数据
+    serverData:{
+      //1.服务器连接会话
+      socket:undefined,
+      //2.用户名//目前已经移交至socket会话的数据中，此处仅作实例
+      userName:'神秘用户',
+      //3.用户邮箱//目前已经移交至socket会话的数据中，此处仅作实例
+      userEmail:'Anyone@Any.com',
+      //4.用户QQ,默认为1077365277//目前已经移交至socket会话的数据中，此处仅作实例
+      userQq:1077365277
     }
   },
   //类似于vue中的computed，进行缓存，对于Store中的数据进行加工处理形成新的数据

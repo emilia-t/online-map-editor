@@ -3,14 +3,18 @@
   <div id="app">
     <!--------->
     <!--测试用-->
-    <div class="test">
-    </div>
+
     <!--测试用-->
     <!--------->
+    <!--用户层-->
+    <!--用于显示用户数据-->
+    <user-layer>
+    </user-layer>
     <!--数据层-->
-    <!--用于显示和编辑数据用-->
+    <!--用于显示(view)和添加(new)数据用-，其下的子组件例如svgLine组件拥有移动(move)，缩放(scale)、编辑(edit)、删除(del)的功能-->
     <data-layer>
     </data-layer>
+
     <!--标尺层-->
     <!--用于显示上策和左侧经纬度标尺-->
     <ruler-layer>
@@ -73,9 +77,11 @@ import panelLayer from "./components/panelLayer";
 <!--调试面板-->
 */
 import consoleLayer from "./components/consoleLayer";
+import UserLayer from "./components/userLayer";
 export default {
   name: 'App',
   components: {
+    UserLayer,
     //普通图层
     dataLayer,rulerLayer,backgroundLayer,createLayer,controlLayer,panelLayer,
     //特殊图层
@@ -99,7 +105,7 @@ export default {
 #app {
   width: 100%;
   height: 100%;
-  background: #0a0a0a;
+  background: #fff;
 }
 body, html {
   width: 100%;
@@ -113,8 +119,8 @@ body, html {
   --panelHight:90%;/*图层面板高度*/
   --panelLeft: 15px;/*图层面板左边距*/
   --panelTop: 15px;/*图层面板上边距*/
-  --controlWidth:700px;/*控制面板宽度*/
-  --controlHeight:48px;/*控制面板宽度*/
+  --controlWidth:500px;/*控制面板宽度*/
+  --controlHeight:60px;/*控制面板宽度*/
   --controlLeft:0.5;/*控制面板左边距的比例*/
   --controlTop:15px;/*控制面板顶部边距*/
   --borderType01:15px;/*圆角样式*/

@@ -1,17 +1,21 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer" >
     <svg class="polyLineData" id="polyLineData" ref="polyLineData" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" >
-      <svg-line v-for="line in theData.polyLineData" :key="line.id" :poly-line-config="line"></svg-line>
+      <svg-line v-for="line in theData.MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line>
+
+      <svg-a1-circle></svg-a1-circle>
+      <svg-other-a1-circle></svg-other-a1-circle>
     </svg>
   </div>
 </template>
 
 <script>
 import SvgLine from "./svgLine";
-import InstructComprehensive from "../class/InstructComprehensive";
+import SvgA1Circle from "./svgA1Circle";
+import SvgOtherA1Circle from "./svgOtherA1Circle";
 export default {
   name: "dataLayer",
-  components: {SvgLine},
+  components: {SvgLine,SvgA1Circle,SvgOtherA1Circle},
   data(){
     return {
       MY_NAME:"dataLayer",
@@ -37,31 +41,11 @@ export default {
          可以空 | fatherNode:''//对于关系类型的数据类型的父节点，节点可以是任意四种数据类型之一，可以为空
         }
         **/
-        polyLineData:[
-          {
-            id:'l3001',
-            type:'line',
-            points:[{x:0.0000621,y:0.0000302},{x:0.0000631,y:0.0000322},{x:0.0000661,y:0.0000352}],
-            point:{x:0.0000621,y:-0.0000302},
-            color:'#ff3030',
-            width:2
-          },
-          {
-            id:'l3002',
-            type:'line',
-            points:[{x:0.0000798,y:0.0000211},{x:0.0000991,y:0.0000601},{x:0.0000444,y:0.0000555}],
-            point:{x:0.0000798,y:0.0000211},
-            color:'#7cffea',
-            width:4
-          },
-          {
-            id:'l3003',
-            type:'line',
-            points:[{x:0.0003798,y:0.0000211},{x:0.0003891,y:0.0000601},{x:0.00034420,y:0.0000695}],
-            point:{x:0.0003798,y:0.0000211},
-            color:'#7cffea',
-            width:4
-          }
+        MyPolyLineData:[
+
+        ],
+        MyPointData:[
+
         ],
         moveStartPt:{
           x:null,
@@ -93,9 +77,11 @@ export default {
       //
       //测试
       //
-      this.testLinkServer();
+
       //
       //测试
+      //初始连接服务器
+      this.startLinkServer();
       //实时获取鼠标位置
       this.getMousePos();
       //添加移动侦听
@@ -106,8 +92,11 @@ export default {
       this.visualAngleScale();
     },
     //连接服务器
-    testLinkServer(){
-      let newServer=new InstructComprehensive('','','ws://192.168.31.105:9998')
+    startLinkServer(){
+      //创建新综合指令对象
+      this.$store.state.serverData.socket=new this.$store.state.classList.InstructComprehensive('ws://192.168.31.105:9998');
+      //连接服务器
+      this.$store.state.serverData.socket.link();
     },
     //实时获取鼠标位置：
     getMousePos(){
@@ -425,9 +414,43 @@ export default {
     },
     A1() {
       return this.$store.state.mapConfig.A1;
+    },
+    polyLineData(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.mapData;
+      }else {
+        return [];
+      }
     }
   },
   watch:{
+    polyLineData:{
+      handler(newValue){
+        if(newValue.length!==0){
+            let TpArr=this.polyLineData;
+            //1.将其中的points转化一下,此处尝试处理源数据
+            try{
+              for (let i=0;i<TpArr.length;i++){
+                //1.将base64转化为普通字符
+                let baseA=window.atob(TpArr[i].points);
+                let baseB=window.atob(TpArr[i].point);
+                let Ps=JSON.parse(baseA);
+                let Pt=JSON.parse(baseB);
+                TpArr[i].points=Ps;
+                TpArr[i].point=Pt;
+              }
+            }catch (e) {
+
+            }
+            this.theData.MyPolyLineData=TpArr;
+            return true;
+        }else {
+          this.theData.MyPolyLineData=[];
+          return true;
+        }
+      },
+      deep:true
+    },
     commitsCreateTestLine:{
       handler(newValue,oldValue){
         this.createTestLine();
