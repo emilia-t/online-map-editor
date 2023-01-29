@@ -1,6 +1,6 @@
 <template>
   <!--显示我的A1，同时广播我的A1给其他人-->
-  <g>
+  <g :elementId="elementId">
     <circle :cx="-A1.x" :cy="A1.y" r="3"  stroke-width="1" :style="'fill:'+color"/>
     <text class="selectNone" :x="-A1.x" :y="A1.y-10" text-anchor="middle" :style="'fill:'+color">A1</text>
   </g>
@@ -11,6 +11,7 @@ export default {
   name: "svgA1Circle",
   data(){
     return {
+      elementId:'A1',
       color:'#c49dec',
       A1Temp:null,
       obSever:null,

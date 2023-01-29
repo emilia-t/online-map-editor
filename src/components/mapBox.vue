@@ -1,4 +1,4 @@
-<!--位于APP根组件的次级组件-->
+<!--旧的版本-位于APP根组件的次级组件-->
 <template>
 <div class="mapBox">
   <data-map></data-map>

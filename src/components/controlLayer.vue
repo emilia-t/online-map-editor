@@ -55,7 +55,6 @@ export default {
     addInterestPointDone(){
       this.isAddPoint=true;//更改添加点状态为“可用”
       this.Url0Color='#e72323';//更改背景色
-      console.log("1")
     },
     //用于监听单个按键的
     KeyListen(){

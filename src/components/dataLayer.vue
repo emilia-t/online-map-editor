@@ -1,9 +1,13 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer" >
-    <svg class="polyLineData" id="polyLineData" ref="polyLineData" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" >
+    <svg class="elementData" id="elementData" ref="elementData" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" >
+      <!--线段数据-->
       <svg-line v-for="line in theData.MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line>
-
+      <!--点位数据-->
+      <svg-point v-for="point in theData.MyPointData" :key="point.id" :point-config="point"></svg-point>
+      <!--我的A1位置-->
       <svg-a1-circle></svg-a1-circle>
+      <!--其他人的A1位置-->
       <svg-other-a1-circle></svg-other-a1-circle>
     </svg>
   </div>
@@ -13,9 +17,10 @@
 import SvgLine from "./svgLine";
 import SvgA1Circle from "./svgA1Circle";
 import SvgOtherA1Circle from "./svgOtherA1Circle";
+import SvgPoint from "./svgPoint";
 export default {
   name: "dataLayer",
-  components: {SvgLine,SvgA1Circle,SvgOtherA1Circle},
+  components: {SvgPoint,SvgLine,SvgA1Circle,SvgOtherA1Circle},
   data(){
     return {
       MY_NAME:"dataLayer",
@@ -33,19 +38,66 @@ export default {
          不能空 | point:{x:number,y:number}//点的坐标;对于line数据类型该值为起点，对与area改值为起点，用于区块渲染数据用；对于特殊的关系数据类型，该值为第一个childNode的第一个point
          可以空 | color:'#224466'//16进制的RGB颜色字符串,对于特殊的关系数据类型，该值为空
          可以空 | length:number//单位是m;线的长度，对于point数据类型而言该值为空，对于line数据类型而言该值为线长度，对于area而言该值为空；该值允许为空
-         可以空 | width://单位是px;形如线的宽度，默认为2
+         可以空 | width:number//单位是px;形如线的宽度，或者点圆的宽度，默认为2
          可以空 | size:number//单位是m^2;仅使用在area数据类型上，且该值允许为空
          可以空 | childRelations:[‘r1544201’,'r5545122'...]//此数据类型下的子关系id，可以是多个也可以为空
          可以空 | fatherRelation:''//对于有关系类型的数据类型的上级关系id，可以为空
          可以空 | childNodes:[]//对于关系类型的数据类型的成员节点，节点可以是任意四种数据类型之一，可以为空
          可以空 | fatherNode:''//对于关系类型的数据类型的父节点，节点可以是任意四种数据类型之一，可以为空
+         可以空 | details:''//自定义的一些数据，可以是任何数据类型
         }
         **/
         MyPolyLineData:[
 
         ],
+        /**数据结构
+         {
+          不能空 | id:mini-type+number  ;字符串数据
+          不能空 | type:point ;字符串数据
+          不能空 | points:[{x:number,y:number}] ;字符串数据，数组类型
+          不能空 | point:{x:number,y:number} ;字符串数据，对象类型
+          可以空 | color:'#fff' ;字符串数据，点的背景颜色，默认是红色
+          可以空 | length:没用，空着
+          可以空 | width:number;点圆的宽度，默认为2px
+          可以空 | size:没用，空着
+          可以空 | childRelations:[‘r1544201’,'r5545122'...]//此数据类型下的子关系id，可以是多个也可以为空
+          可以空 | fatherRelation:''//对于有关系类型的数据类型的上级关系id，可以为空
+          可以空 | childNodes:[]//对于关系类型的数据类型的成员节点，节点可以是任意四种数据类型之一，可以为空
+          可以空 | fatherNode:''//对于关系类型的数据类型的父节点，节点可以是任意四种数据类型之一，可以为空
+          可以空 | details:''//自定义的一些数据，可以是任何数据类型
+         }
+         **/
         MyPointData:[
-
+          {
+            id:'p20003',
+            type:'point',
+            points:[{x:-0.0000180,y:0.0000180}],
+            point:{x:-0.0000180,y:0.0000180},
+            color:'#fd5226',
+            length:null,
+            width:8,
+            size:null,
+            childRelations:null,
+            fatherRelation:null,
+            childNodes:null,
+            fatherNode:null,
+            details:null
+          },
+          {
+            id:'p20004',
+            type:'point',
+            points:[{x:-0.0000290,y:0.0000290}],
+            point:{x:-0.0000290,y:0.0000290},
+            color:'#31ff2b',
+            length:null,
+            width:8,
+            size:null,
+            childRelations:null,
+            fatherRelation:null,
+            childNodes:null,
+            fatherNode:null,
+            details:null
+          }
         ],
         moveStartPt:{
           x:null,
@@ -415,7 +467,7 @@ export default {
     A1() {
       return this.$store.state.mapConfig.A1;
     },
-    polyLineData(){
+    mapData(){
       if(this.$store.state.serverData.socket){
         return this.$store.state.serverData.socket.mapData;
       }else {
@@ -424,28 +476,51 @@ export default {
     }
   },
   watch:{
-    polyLineData:{
-      handler(newValue){
+    mapData:{
+      handler(newValue,oldValue){
         if(newValue.length!==0){
-            let TpArr=this.polyLineData;
-            //1.将其中的points转化一下,此处尝试处理源数据
-            try{
-              for (let i=0;i<TpArr.length;i++){
-                //1.将base64转化为普通字符
-                let baseA=window.atob(TpArr[i].points);
-                let baseB=window.atob(TpArr[i].point);
-                let Ps=JSON.parse(baseA);
-                let Pt=JSON.parse(baseB);
-                TpArr[i].points=Ps;
-                TpArr[i].point=Pt;
-              }
-            }catch (e) {
-
+          //拿取数据
+          let TpArr=this.mapData;
+          //1.将其中的points转化一下,尝试处理源数据,如果已经处理好则不会处理
+          try{
+            for (let i=0;i<TpArr.length;i++){
+              //1.将base64转化为普通字符
+              let baseA=window.atob(TpArr[i].points);
+              let baseB=window.atob(TpArr[i].point);
+              let Ps=JSON.parse(baseA);
+              let Pt=JSON.parse(baseB);
+              TpArr[i].points=Ps;
+              TpArr[i].point=Pt;
             }
-            this.theData.MyPolyLineData=TpArr;
-            return true;
+          }catch (e) {
+
+          }
+          //2.检测类型分组存放
+          let LineArr=[];
+          let PointArr=[];
+          for (let x=0;x<TpArr.length;x++){
+            if(TpArr[x].hasOwnProperty('type')){
+              let nowType=TpArr[x].type;
+              switch (nowType){
+                case 'line':{
+                  LineArr.push(TpArr[x]);
+                  break;
+                }
+                case 'point':{
+                  PointArr.push(TpArr[x]);
+                  break;
+                }
+              }
+            }
+          }
+          this.theData.MyPolyLineData=LineArr;
+          //暂时不要给我服务器上的数据，需要做前端
+          //this.theData.MyPointData=PointArr;
+          return true;
         }else {
           this.theData.MyPolyLineData=[];
+          //暂时不要给我服务器上的数据，需要做前端
+          //this.theData.MyPointData=[];
           return true;
         }
       },
@@ -469,5 +544,5 @@ export default {
 <style scoped>
 #dataLayer{width: 100%;height: 100%;overflow: hidden}
 .line{position: fixed;}
-.polyLineData{width: 100%;height: 100%;}
+.elementData{width: 100%;height: 100%;}
 </style>

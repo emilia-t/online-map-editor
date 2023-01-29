@@ -1,4 +1,5 @@
 <template>
+  <!--旧的版本-基于全局平面坐标系的地图-->
 <!--数据地图-->
 <!--地图画布初始为20000米，若要重新创建一个画布，请考虑清楚初始地图实际大小，该实际大小不可二次修改-->
   <div class="dataMap" id="dataMap" ref="dataMap" @mousedown="mouseDown($event)" @mousemove="mouseMove($event)" @mouseup="mouseUp($event)">

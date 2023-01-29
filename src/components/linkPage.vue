@@ -1,4 +1,5 @@
 <template>
+  <!--旧的版本-登录面板-->
 <div class="linkPage" v-if="display">
   <div class="linkPageBox">
     <!--表头-->
