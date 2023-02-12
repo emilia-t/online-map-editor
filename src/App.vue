@@ -33,8 +33,8 @@
     </layer-control>
     <!--面板层-->
     <!--用于展示图层数据的-->
-<!--    <panel-layer>-->
-<!--    </panel-layer>-->
+<!--    <layer-panel>-->
+<!--    </layer-panel>-->
     <!--调试面板-->
     <layer-console>
     </layer-console>
@@ -42,7 +42,6 @@
 </template>
 
 <script>
-//import MapBox from "./components/mapBox";
 /*
 数据层
 用于显示和编辑数据用
@@ -72,7 +71,7 @@ import LayerControl from "./components/LayerControl";
 <!--面板层-->
 <!--用于展示图层数据的-->
 */
-import panelLayer from "./components/panelLayer";
+import LayerPanel from "./components/LayerPanel";
 /*
 <!--调试面板-->
 */
@@ -83,7 +82,7 @@ export default {
   components: {
     LayerUser,
     //普通图层
-    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,panelLayer,
+    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerPanel,
     //特殊图层
     LayerConsole
   },

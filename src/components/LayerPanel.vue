@@ -8,10 +8,10 @@
 
 <script>
 export default {
-  name: "panelLayer",
+  name: "LayerPanel",
   data(){
     return {
-      MY_NAME:"panelLayer"
+      MY_NAME:"LayerPanel"
     }
   }
 }
