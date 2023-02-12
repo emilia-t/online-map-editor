@@ -11,15 +11,15 @@
         <span>{{email}}</span>
       </div>
     </div>
-    <login-bord-level v-show="isOpenBord"></login-bord-level>
+    <banana-login-bord v-show="isOpenBord"></banana-login-bord>
   </div>
 </template>
 
 <script>
-import LoginBordLevel from "./loginBordLevel";
+import BananaLoginBord from "./BananaLoginBord";
 export default {
   name: "userLayer",
-  components: {LoginBordLevel},
+  components: {BananaLoginBord},
   data(){
     return {
       isOpenBord:false,

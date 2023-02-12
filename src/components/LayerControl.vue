@@ -3,24 +3,28 @@
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
     <!--按钮-->
     <!--添加-->
-    <control-button-level ref="controlButton0" :color="Url0Color" :button-img-prop="Url0" :right-pos="'10px'" :top-pos="'100px'"></control-button-level>
-    <control-button-level ref="controlButton1" :button-img-prop="Url1" :right-pos="'10px'" :top-pos="'180px'"></control-button-level>
-    <control-button-level ref="controlButton2" :button-img-prop="Url2" :right-pos="'10px'" :top-pos="'260px'"></control-button-level>
-    <control-button-level ref="controlButton3" :button-img-prop="Url3" :right-pos="'10px'" :top-pos="'340px'"></control-button-level>
+    <banana-control-button ref="controlButton0" :color="Url0Color" :button-img-prop="Url0" :right-pos="'10px'" :top-pos="'100px'"></banana-control-button>
+    <banana-control-button ref="controlButton1" :button-img-prop="Url1" :right-pos="'10px'" :top-pos="'180px'"></banana-control-button>
+    <banana-control-button ref="controlButton2" :button-img-prop="Url2" :right-pos="'10px'" :top-pos="'260px'"></banana-control-button>
+    <banana-control-button ref="controlButton3" :button-img-prop="Url3" :right-pos="'10px'" :top-pos="'340px'"></banana-control-button>
+    <!--编辑属性面板-->
+    <BananaPointAttributeBoard></BananaPointAttributeBoard>
   </div>
 </template>
 
 <script>
-import controlButtonLevel from "./controlButtonLevel";
+import BananaControlButton from "./BananaControlButton";
+import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
 import interestPoint from '../../static/interestPoint.png';//关注点
 import constructionPoint from '../../static/constructionPoint.png';//施工点
 import lineImg from '../../static/line.png';//线段类型
-import regionImg from '../../static/region.png';//区域类型
+import regionImg from '../../static/region.png';
+//区域类型
 //#e72323 红色
 //
 export default {
   name: "controlLayer",
-  components:{controlButtonLevel},
+  components:{BananaControlButton, BananaPointAttributeBoard},
   data(){
     return {
       MY_NAME:"controlLayer",
