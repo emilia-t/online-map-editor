@@ -6,10 +6,10 @@
 
 <script>
 export default {
-  name: "createLayer",
+  name: "LayerCreate",
   data(){
     return {
-      MY_NAME:"createLayer"
+      MY_NAME:"LayerCreate"
     }
   }
 }

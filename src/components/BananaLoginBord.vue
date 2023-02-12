@@ -1,6 +1,6 @@
 <template>
   <!--用来登录、注册、切换账号的-->
-<div class="loginBordLevel">
+<div class="BananaLoginBord">
   <!--登录面板-->
   <div v-if="!isLogin" class="session">
     <div class="left">
@@ -63,7 +63,7 @@
 import {JSEncrypt} from "jsencrypt";
 
 export default {
-  name: "loginBordLevel",
+  name: "BananaLoginBord",
   data(){
     return {
       email:'',//仅用于登录，并不是用户的名称
@@ -247,7 +247,7 @@ export default {
   justify-content: right;
   align-items: center;
 }
-.loginBordLevel{
+.BananaLoginBord{
   position: fixed;
   width: 600px;height: auto;
   top:calc(50% - 220px);

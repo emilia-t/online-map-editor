@@ -23,11 +23,11 @@ import regionImg from '../../static/region.png';
 //#e72323 红色
 //
 export default {
-  name: "controlLayer",
+  name: "LayerControl",
   components:{BananaControlButton, BananaPointAttributeBoard},
   data(){
     return {
-      MY_NAME:"controlLayer",
+      MY_NAME:"LayerControl",
       Url0:interestPoint,
       Url0Color:'#fffb3d',//#e72323&#e72323
       Url1:constructionPoint,

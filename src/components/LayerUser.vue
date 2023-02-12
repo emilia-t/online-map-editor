@@ -18,7 +18,7 @@
 <script>
 import BananaLoginBord from "./BananaLoginBord";
 export default {
-  name: "userLayer",
+  name: "LayerUser",
   components: {BananaLoginBord},
   data(){
     return {

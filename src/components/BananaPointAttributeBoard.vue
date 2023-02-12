@@ -1,6 +1,6 @@
 <template>
 <!--点数据属性面板-->
-  <div class="pointAttributeBoardLevel">
+  <div class="BananaPointAttributeBoard">
     <!--头部名称-->
     <textarea class="headName" contenteditable="true" v-model="name" rows="2" maxlength="30">
 
@@ -128,7 +128,7 @@
 
 <script>
 export default {
-  name: "pointAttributeBoardLevel",
+  name: "BananaPointAttributeBoard",
   data(){
     return {
       name:"顺德一中",
@@ -273,7 +273,7 @@ export default {
 .animationB{
   animation: buttonAnimationB .5s forwards;
 }
-.pointAttributeBoardLevel{
+.BananaPointAttributeBoard{
   position: fixed;
   top: 400px;
   left: 100px;

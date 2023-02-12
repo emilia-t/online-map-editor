@@ -8,36 +8,36 @@
     <!--------->
     <!--用户层-->
     <!--用于显示用户数据-->
-    <user-layer>
-    </user-layer>
+    <layer-user>
+    </layer-user>
     <!--数据层-->
     <!--用于显示(view)和添加(new)数据用-，其下的子组件例如svgLine组件拥有移动(move)，缩放(scale)、编辑(edit)、删除(del)的功能-->
-    <data-layer>
-    </data-layer>
+    <layer-data>
+    </layer-data>
 
     <!--标尺层-->
     <!--用于显示上策和左侧经纬度标尺-->
-    <ruler-layer>
-    </ruler-layer>
+    <layer-ruler>
+    </layer-ruler>
     <!--背景层-->
     <!--用于显示背景，例如谷歌给地图-->
-    <background-layer>
-    </background-layer>
+    <layer-background>
+    </layer-background>
     <!--新建层-->
     <!--用于创建新的要素-->
-    <create-layer>
-    </create-layer>
+    <layer-create>
+    </layer-create>
     <!--控制层-->
     <!--用于控制一些操作用，例如编辑按钮、清空按钮-->
-    <control-layer>
-    </control-layer>
+    <layer-control>
+    </layer-control>
     <!--面板层-->
     <!--用于展示图层数据的-->
 <!--    <panel-layer>-->
 <!--    </panel-layer>-->
     <!--调试面板-->
-    <console-layer>
-    </console-layer>
+    <layer-console>
+    </layer-console>
   </div>
 </template>
 
@@ -47,27 +47,27 @@
 数据层
 用于显示和编辑数据用
 */
-import dataLayer from "./components/dataLayer";
+import LayerData from "./components/LayerData";
 /*
 标尺层
 用于显示上策和左侧经纬度标尺
 */
-import rulerLayer from "./components/rulerLayer";
+import LayerRuler from "./components/LayerRuler";
 /*
 背景层
 用于显示背景，例如谷歌给地图
 */
-import backgroundLayer from "./components/backgroundLayer";
+import LayerBackground from "./components/LayerBackground";
 /*
 <!--新建层-->
 <!--用于创建新的要素-->
 */
-import createLayer from "./components/createLayer";
+import LayerCreate from "./components/LayerCreate";
 /*
 <!--控制层-->
 <!--用于控制一些操作用，例如编辑按钮、清空按钮-->
 */
-import controlLayer from "./components/controlLayer";
+import LayerControl from "./components/LayerControl";
 /*
 <!--面板层-->
 <!--用于展示图层数据的-->
@@ -76,16 +76,16 @@ import panelLayer from "./components/panelLayer";
 /*
 <!--调试面板-->
 */
-import consoleLayer from "./components/consoleLayer";
-import UserLayer from "./components/userLayer";
+import LayerConsole from "./components/LayerConsole";
+import LayerUser from "./components/LayerUser";
 export default {
   name: 'App',
   components: {
-    UserLayer,
+    LayerUser,
     //普通图层
-    dataLayer,rulerLayer,backgroundLayer,createLayer,controlLayer,panelLayer,
+    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,panelLayer,
     //特殊图层
-    consoleLayer
+    LayerConsole
   },
   data(){
     return {

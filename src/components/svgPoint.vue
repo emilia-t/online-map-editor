@@ -1,6 +1,6 @@
 <template>
   <g :elementId="this.pointConfig.id">
-    <circle :cx="-(this.translateCoordinate(pointConfig.point.x)+this.A1.x)" :cy="this.translateCoordinate(pointConfig.point.y)+this.A1.y" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+pointConfig.color"/>
+    <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+pointConfig.color"/>
   </g>
 </template>
 
@@ -11,7 +11,7 @@ export default {
     return {
       dataSourcePoints:null,//数据源保存
       occurredMoveMap:false,//移动状态
-      A1Cache:{x:0,y:0}//a1的缓存，用于每次移动时扣除上一次移动产生的A1距离
+      A1Cache:{x:0,y:0}
     }
   },
   props:{
@@ -52,26 +52,57 @@ export default {
     reTranslateCoordinate(float){
       return float/10000000;
     },
+    //移动（移动结束后固定数据）
+    move(){
+      if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
+        let A1mvX=this.A1.x-this.A1Cache.x;
+        let A1mvY=this.A1.y-this.A1Cache.y;
+        let newArr=this.pointConfig.point;
+        this.pointConfig.point.x=this.reTranslateCoordinate(this.translateCoordinate(newArr.x)+A1mvX);
+        this.pointConfig.point.y=this.reTranslateCoordinate(this.translateCoordinate(newArr.y)+A1mvY);
+        this.A1Cache.x=this.A1.x;
+        this.A1Cache.y=this.A1.y;
+        this.occurredMoveMap=false;//告知已经处理本次移动过程
+      }
+      return true;
+    },
     //缩放（直接修改数据）
     scale(){
       let layer=this.layer;
       let oldLayer=this.oldLayer;
-      let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomAdd:this.$store.state.mapConfig.zoomSub;
+      let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
       const MOX=this.mouse.x;
       const MOY=this.mouse.y;
       const pointPos=this.pointConfig.point;
-      const TRX=this.translateCoordinate(pointPos.x);
+      const TRX=-this.translateCoordinate(pointPos.x);
       const TRY=this.translateCoordinate(pointPos.y);
-      const axSize=MOX+TRX;
+      const axSize=MOX-TRX;
       const aySize=MOY-TRY;
-      console.log({TRX,TRY});
-      console.log(this.mouse);
-      this.pointConfig.point.x=this.reTranslateCoordinate(TRX-((zoom*axSize)));
-      this.pointConfig.point.y=this.reTranslateCoordinate(TRY+((zoom*aySize)));
+      this.pointConfig.point.x=-this.reTranslateCoordinate(TRX-((zoom*axSize)));
+      this.pointConfig.point.y=this.reTranslateCoordinate(TRY-((zoom*aySize)));
       //2023-1-28日：点缩放后的位置偏移很严重：连续缩小三次然后连续放大三次后位置完全变了，修复此bug，然后做添加点数据的功能
     }
   },
   computed:{
+    dynamicPointsX(){
+      if(this.doNeedMoveMap && this.occurredMoveMap===true){
+        let A1mvX=this.A1.x-this.A1Cache.x;
+        return -this.translateCoordinate(this.pointConfig.point.x) - A1mvX;
+      }else {
+        return -this.translateCoordinate(this.pointConfig.point.x);
+      }
+    },
+    dynamicPointsY(){
+      if(this.doNeedMoveMap && this.occurredMoveMap===true){
+        let A1mvY=this.A1.y-this.A1Cache.y;
+        return this.translateCoordinate(this.pointConfig.point.y) + A1mvY;
+      }else {
+        return this.translateCoordinate(this.pointConfig.point.y);
+      }
+    },
+    doNeedMoveMap(){
+      return this.$store.state.cameraConfig.doNeedMoveMap;
+    },
     sourcePointStr(){
       let st1=this.translateCoordinate(this.pointConfig.point.x);
       let st2=this.translateCoordinate(this.pointConfig.point.y);
@@ -94,6 +125,11 @@ export default {
     layer:{
       handler(newValue,oldValue){
         this.scale();
+      }
+    },
+    doNeedMoveMap:{
+      handler(newValue,oldValue){
+        this.move();
       }
     }
   }

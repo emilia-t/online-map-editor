@@ -54,7 +54,7 @@ export default {
         }
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
-        this.$store.state.cameraConfig.occurredMoveMap=false;//告知已经处理本次移动过程
+        this.occurredMoveMap=false;//告知已经处理本次移动过程
       }
       return true;
     },

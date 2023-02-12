@@ -6,10 +6,10 @@
 
 <script>
 export default {
-  name: "rulerLayer",
+  name: "LayerRuler",
   data(){
     return {
-      MY_NAME:"rulerLayer"
+      MY_NAME:"LayerRuler"
     }
   }
 }

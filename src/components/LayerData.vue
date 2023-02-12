@@ -44,11 +44,11 @@ import SvgA1Circle from "./svgA1Circle";
 import SvgOtherA1Circle from "./svgOtherA1Circle";
 import SvgPoint from "./svgPoint";
 export default {
-  name: "dataLayer",
+  name: "LayerData",
   components: {SvgPoint,SvgLine,SvgA1Circle,SvgOtherA1Circle},
   data(){
     return {
-      MY_NAME:"dataLayer",
+      MY_NAME:"LayerData",
       theData:{
         /**数据结构
         {

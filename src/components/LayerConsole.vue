@@ -24,10 +24,10 @@
 
 <script>
 export default {
-  name: "consoleLayer",
+  name: "LayerConsole",
   data(){
     return {
-      MY_NAME:"consoleLayer",
+      MY_NAME:"LayerConsole",
       view:false
     }
   },

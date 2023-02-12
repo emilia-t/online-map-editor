@@ -51,11 +51,11 @@ export default new Vuex.Store({
             }
           };
           this.startSetting();
-          this.heartbeat();
         }
         //初始化配置
         startSetting(){
           this.getServerPublickey();
+          this.heartbeat();
         }
         //清除本地数据
         clearLocalData(){
@@ -65,6 +65,97 @@ export default new Vuex.Store({
           this.otherA1=[];
           //3.清除地图数据
           this.mapData=[];
+        }
+        //发送关注点数据
+        broadcastSendPoint(data){
+          try {
+            //0.检查数据
+            //0.1检查是否属于object
+            if(Object.prototype.toString.call(data)!=="[object Object]"){return false;}
+            //0.2检查是否包含class类型
+            if(data.hasOwnProperty("class")===false){return false;}
+            //0.3检查class类型是否为point
+            if(data.class!=="point"){return false;}
+            //0.4检查是否包含point类型
+            if(data.hasOwnProperty("point")===false){return false;}
+            //0.5检查point是否为object
+            if(Object.prototype.toString.call(data.point)!=="[object Object]"){return false;}
+            //0.6检查point是否由xy
+            if(data.point.hasOwnProperty("x")===false){return false;}
+            if(data.point.hasOwnProperty("y")===false){return false;}
+            //0.7检查xy是否是数字[object Number]
+            if(Object.prototype.toString.call(data.point.x)!=="[object Number]"){return false;}
+            if(Object.prototype.toString.call(data.point.y)!=="[object Number]"){return false;}
+            //0.8检查color
+            if(data.hasOwnProperty("color")===false){return false;}
+            //0.9检查颜色是否为字符
+            if(Object.prototype.toString.call(data.color)!=="[object String]"){return false;}
+            //0.10检查颜色是否为16进制的格式
+            let Exp=/^#[0-9A-F]{6}$/i;
+            if(Exp.test(data.color)===false){alert("请输入正确的16进制颜色格式例如#123456");return false;}
+            //0.11检查是否存在width并检查是否为数字并检查是否超过最大值
+            if(data.hasOwnProperty("width")){
+              if(Object.prototype.toString.call(data.width)!=="[object Number]"){
+                alert("宽度为数字，范围为int2~64");
+                return false;
+              }else {
+                if(data.width>64 || data.width<2){
+                  data.width=~~(data.width);
+                }
+              }
+            }
+            //0.12检查details,details必须是一个数组，且每个值都是一个由key=>value组成的对象
+            if(data.hasOwnProperty("details")){
+            //0.12.1检查是否为数组
+            if(Object.prototype.toString.call(data.details)!=="[object Array]"){
+            //0.12.2循环检查类型
+            for(let i=0;i<data.details.length;i++){
+            //0.12.3检查是否为对象
+            if(Object.prototype.toString.call(data.details[i])!=="[object object]"){
+            //0.12.4检查是否包含key，value属性
+            if(data.details[i].hasOwnProperty("key") && data.details[i].hasOwnProperty("value")){
+            //0.12.5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
+            //0.12.6key正则表达式
+              //20230206-接着写正则表达式并测试，然后写添加点(检查输入(ing)->上传->后端敏感检查->上传数据库->后端广播数据->前端接收数据)的功能
+              const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;
+              const ValueExp=/[\[\]{}#`'"]|(-){2}|(\/){2}|(%){2}|\/\*/m;
+              //key
+              if(KeyExp.test(data.details[i].key)){
+                alert("列名错误，仅允许使用字母、数字、汉字、下划线");
+                return false;
+              }
+              //value
+              if(ValueExp.test(data.details[i].value)){
+                alert("列值错误，不允许使用如下字符[]、{}、#、`、'、\"、--、//、%%、/*");
+                return false;
+              }
+            }else{return false;}}else{return false;}}}else{return false;}}
+            //1.0构建点数据基本结构
+            let basicStructure={
+              id:0,//由服务端生成最终id，客户端用数字0代替
+              type:'point',
+              points:[],
+              point:null,//必要
+              color:'',//必要
+              length:null,//这里为空--不接收客户传参
+              width:2,//建议要--最大为64
+              size:null,//这里为空--不接收客户传参
+              childRelations:[],//这里为空--不接收客户传参--暂定
+              fatherRelation:'',//这里为空--不接收客户传参--暂定
+              childNodes:[],//这里为空--不接收客户传参--暂定
+              fatherNode:'',//这里为空--不接收客户传参--暂定
+              details:[]//建议要
+            };
+            //2.0归档
+            basicStructure.points[0]=data.point;
+            basicStructure.point=data.point;
+            basicStructure.color=data.color;
+            basicStructure.width=data.width || basicStructure.width;
+            basicStructure.details=data.details || basicStructure.details;
+            //3.0广播
+            this.send(this.Instruct.broadcast_point(basicStructure));
+            //20230208-前端检测和发送数据写完了，请在后端完成接收
+          }catch (e) {}
         }
         //广播A1
         broadcastMyA1(x,y,color,name){
@@ -312,6 +403,14 @@ export default new Vuex.Store({
       centerPoint:{
         x:0,
         y:0
+      },
+      p0:{
+        id:'p0',
+        type:'point',
+        points:[{x:0,y:0}],
+        point:{x:0,y:0},
+        color:'#000000',
+        width:5
       },
       mousePoint:{
         x:0,

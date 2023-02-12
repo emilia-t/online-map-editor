@@ -6,10 +6,10 @@
 
 <script>
 export default {
-  name: "controlButtonLevel",
+  name: "BananaControlButton",
   data(){
     return {
-      MY_NAME:"controlButtonLevel",
+      MY_NAME:"BananaControlButton",
       A1:{x:0, y:0},
       doNeedMove:false,
       frameTime:8,
