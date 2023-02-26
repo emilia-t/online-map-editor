@@ -1,4 +1,8 @@
 <template>
+  <!--
+  职责：显示前端地图各项参数
+  权限：允许访问$store.*
+  -->
   <div class="consoleLayer" ref="consoleLayer" v-if="view">
     <h4 class="consoleTitle">F4 调试面板</h4>
     <div ref="consoleMap" class="consoleMap">

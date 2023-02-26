@@ -1,6 +1,6 @@
 <template>
 <!--点数据属性面板-->
-  <div class="BananaPointAttributeBoard">
+  <div class="BananaPointAttributeBoard" v-bind:style="BoardPos">
     <!--头部名称-->
     <textarea class="headName" contenteditable="true" v-model="name" rows="2" maxlength="30">
 
@@ -71,6 +71,28 @@
           <div class="doneSleBtn"></div>
         </div>
       </div>
+      <div class="centerListItem">
+        <!--左侧属性名-->
+        <div class="leftAttribute">
+          <!--名称-->
+          <div>
+            宽度
+          </div>
+        </div>
+        <!--中间的分割线-->
+        <div class="centerLine">
+
+        </div>
+        <!--右侧属性值-->
+        <!--右侧属性值-->
+        <textarea class="rightValue" contenteditable="true" v-model="width" rows="1" maxlength="7">
+
+        </textarea>
+        <!--勾选按钮-->
+        <div class="doneTickButton">
+          <div class="doneSleBtn"></div>
+        </div>
+      </div>
       <div class="centerListItem" v-for="detail in details">
         <!--左侧属性名-->
         <div class="leftAttribute">
@@ -133,8 +155,9 @@ export default {
     return {
       name:"顺德一中",
       id:"p10001",
-      color:"#ffffff",
-      point:{x:0.00020001,y:-0.00002001},
+      color:"ffffff",
+      width:2,
+      point:{x:0,y:0},
       details:[
         {"key":"详细地址","value":"深圳市坪山区坑梓街道秀新社区锦绣中路聚龙山生态公园内"},
         {"key":"曾用名","value":"顺德县第一中学"},
@@ -148,6 +171,16 @@ export default {
         color:"",
         details:[]
       }
+    }
+  },
+  props:{
+    StyleTop:{
+      type:Number,
+      default:0
+    },
+    StyleLeft:{
+      type:Number,
+      default:-400
     }
   },
   mounted() {
@@ -172,7 +205,17 @@ export default {
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
-      this.buttonAnimation(ev)
+      this.buttonAnimation(ev);
+      //信息汇总
+      let obj={
+        class:"point",
+        point:this.point,
+        color:this.color,
+        width:this.width,
+        details:this.details
+      };
+      //上传到服务器
+      this.$store.state.serverData.socket.broadcastSendPoint(obj);
     },
     //取消-从缓存中恢复源数据
     cancelEdit(ev){
@@ -246,6 +289,25 @@ export default {
         }
       ,1000)
     }
+  },
+  computed:{
+    BoardPos(){
+      return "left:"+this.StyleLeft+"px;top:"+this.StyleTop+"px"
+    },
+    TempPoint(){
+      return this.$store.state.mapConfig.tempPoint.point;
+      //2023-2-12 继续写添加点的功能，这里前端已经完成大半了，下一步是在属性面板界面修改后，点击发送时发送数据到服务器
+      //2023-2-12 1.bug:取消添加点后面板上的 坐标 属性xy值仍然在变化(tempPoint)
+    }
+  },
+  watch:{
+    TempPoint:{
+      handler(newValue){
+        this.point.x=newValue.x;
+        this.point.y=newValue.y;
+      },
+      deep:true
+    }
   }
 }
 </script>
@@ -275,8 +337,6 @@ export default {
 }
 .BananaPointAttributeBoard{
   position: fixed;
-  top: 400px;
-  left: 100px;
   width: 300px;
   height: 400px;
   background: #fefefe;

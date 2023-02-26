@@ -1,4 +1,8 @@
 <template>
+  <!--
+  职责：显示地图整体的简要属性、例如地图大小、以列表方式展示数据
+  允许访问、修改、删除$store.state.serverData内的数据
+  -->
   <div class="panelLayer">
     <div class="title">
       Map title

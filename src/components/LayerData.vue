@@ -1,12 +1,24 @@
 <template>
-  <div class="dataLayer" id="dataLayer" ref="dataLayer" >
-    <svg class="elementData" id="elementData" ref="elementData" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" >
+  <!--
+  职责：
+  1.显示（包括地图的移动、缩放）存储在socket.mapData内的数据
+  2.编辑地图数据（包括修改点位置、删除点、删除地图要素）
+  3.显示临时的地图数据
+  权限：
+  允许访问、修改、删除$store.state.mapConfig、$store.state.serverData内的数据
+  -->
+  <div class="dataLayer" id="dataLayer" ref="dataLayer">
+    <svg class="elementData" id="elementData" ref="elementData" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
       <!--线段数据-->
       <svg-line v-for="line in theData.MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line>
       <!--点位数据-->
       <svg-point v-for="point in theData.MyPointData" :key="point.id" :point-config="point"></svg-point>
       <!--p0位置-->
-      <svg-point :point-config="this.$store.state.mapConfig.p0"></svg-point>
+      <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"></svg-point-p0>
+      <!--临时点数据-->
+      <svg-point-temp :point-config="this.$store.state.mapConfig.tempPoint"></svg-point-temp>
+      <!--临时线数据-->
+<!--      <svg-line-temp></svg-line-temp>-->
       <!--关于如何获取鼠标点的位置：
       20230209
       首先P0是固定点，（0,0）
@@ -33,7 +45,7 @@
       <!--我的A1位置-->
       <svg-a1-circle></svg-a1-circle>
       <!--其他人的A1位置-->
-      <svg-other-a1-circle></svg-other-a1-circle>
+      <svg-a1-circle-other></svg-a1-circle-other>
     </svg>
   </div>
 </template>
@@ -41,11 +53,14 @@
 <script>
 import SvgLine from "./svgLine";
 import SvgA1Circle from "./svgA1Circle";
-import SvgOtherA1Circle from "./svgOtherA1Circle";
+import SvgA1CircleOther from "./svgA1CircleOther";
 import SvgPoint from "./svgPoint";
+import SvgPointP0 from "./svgPointP0";
+import SvgLineTemp from "./svgLineTemp";
+import SvgPointTemp from "./svgPointTemp";
 export default {
   name: "LayerData",
-  components: {SvgPoint,SvgLine,SvgA1Circle,SvgOtherA1Circle},
+  components: {SvgPoint,SvgLine,SvgPointP0,SvgA1Circle,SvgA1CircleOther,SvgLineTemp,SvgPointTemp},
   data(){
     return {
       MY_NAME:"LayerData",
@@ -125,7 +140,11 @@ export default {
       //
       //测试
       //
-      //setInterval(()=>{console.log(this.$store.state.serverData.socket.mapData[0].points[0].x)},1000);
+      //尝试获取P0与鼠标之间的关系
+      // setInterval(()=>{
+      //   let el=this.$refs.ElementP0;
+      //
+      // },1000)
       //
       //测试
       //初始连接服务器

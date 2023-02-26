@@ -1,4 +1,8 @@
 <template>
+  <!--
+  职责：显示用户的属性、用户登录、用户注册、登出等功能
+  权限：允许访问$store.state.serverData内的数据
+  -->
 <!--右上角用来登录和显示用户数据的-->
   <div class="userLayer selectNone">
     <div class="userLayerBox" ref="userLayer" v-bind:style="UserLayerTranslate">

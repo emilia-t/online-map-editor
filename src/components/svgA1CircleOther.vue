@@ -8,7 +8,7 @@
 
 <script>
 export default {
-  name: "svgOtherA1Circle",
+  name: "svgA1CircleOther",
   data(){
     return{
       elementId:'OtherA1',

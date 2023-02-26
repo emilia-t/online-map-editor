@@ -91,11 +91,12 @@ export default new Vuex.Store({
             //0.9检查颜色是否为字符
             if(Object.prototype.toString.call(data.color)!=="[object String]"){return false;}
             //0.10检查颜色是否为16进制的格式
-            let Exp=/^#[0-9A-F]{6}$/i;
+            let Exp=/^[0-9A-F]{6}$/i;
             if(Exp.test(data.color)===false){alert("请输入正确的16进制颜色格式例如#123456");return false;}
             //0.11检查是否存在width并检查是否为数字并检查是否超过最大值
             if(data.hasOwnProperty("width")){
-              if(Object.prototype.toString.call(data.width)!=="[object Number]"){
+              let $num1=parseInt(data.width);
+              if(Object.prototype.toString.call($num1)!=="[object Number]"){
                 alert("宽度为数字，范围为int2~64");
                 return false;
               }else {
@@ -107,13 +108,13 @@ export default new Vuex.Store({
             //0.12检查details,details必须是一个数组，且每个值都是一个由key=>value组成的对象
             if(data.hasOwnProperty("details")){
             //0.12.1检查是否为数组
-            if(Object.prototype.toString.call(data.details)!=="[object Array]"){
+            if(Object.prototype.toString.call(data.details)==="[object Array]"){
             //0.12.2循环检查类型
             for(let i=0;i<data.details.length;i++){
             //0.12.3检查是否为对象
             if(Object.prototype.toString.call(data.details[i])!=="[object object]"){
             //0.12.4检查是否包含key，value属性
-            if(data.details[i].hasOwnProperty("key") && data.details[i].hasOwnProperty("value")){
+              if(data.details[i].hasOwnProperty("key") && data.details[i].hasOwnProperty("value")){
             //0.12.5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
             //0.12.6key正则表达式
               //20230206-接着写正则表达式并测试，然后写添加点(检查输入(ing)->上传->后端敏感检查->上传数据库->后端广播数据->前端接收数据)的功能
@@ -153,6 +154,7 @@ export default new Vuex.Store({
             basicStructure.width=data.width || basicStructure.width;
             basicStructure.details=data.details || basicStructure.details;
             //3.0广播
+            //console.log(basicStructure);
             this.send(this.Instruct.broadcast_point(basicStructure));
             //20230208-前端检测和发送数据写完了，请在后端完成接收
           }catch (e) {}
@@ -412,6 +414,14 @@ export default new Vuex.Store({
         color:'#000000',
         width:5
       },
+      tempPoint:{
+        id:'tempPoint',
+        type:'point',
+        points:[{x:0,y:0}],
+        point:{x:0,y:0},
+        color:'#000000',
+        width:0
+      },
       mousePoint:{
         x:0,
         y:0
@@ -421,11 +431,13 @@ export default new Vuex.Store({
     serverData:{
       //1.服务器连接会话
       socket:undefined,
-      //2.用户名//目前已经移交至socket会话的数据中，此处仅作实例
+      //2.底图背景数据
+      underlay:undefined,
+      //3.用户名//目前已经移交至socket会话的数据中，此处仅作实例
       userName:'神秘用户',
-      //3.用户邮箱//目前已经移交至socket会话的数据中，此处仅作实例
+      //4.用户邮箱//目前已经移交至socket会话的数据中，此处仅作实例
       userEmail:'Anyone@Any.com',
-      //4.用户QQ,默认为1077365277//目前已经移交至socket会话的数据中，此处仅作实例
+      //5.用户QQ,默认为1077365277//目前已经移交至socket会话的数据中，此处仅作实例
       userQq:1077365277
     }
   },

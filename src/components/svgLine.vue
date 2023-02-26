@@ -1,6 +1,6 @@
 <template>
   <g :elementId="this.polyLineConfig.id">
-    <polyline :points="dynamicPointsStr" :id="polyLineConfig.id" :data-source-points="dataSourcePoints" :style="{fill:'rgba(255,255,255,0)',stroke:polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
+    <polyline :points="dynamicPointsStr" :id="polyLineConfig.id" :data-source-points="dataSourcePoints" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
     <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
@@ -23,7 +23,7 @@ export default {
           type:'point',
           points:[{x:0.0000001,y:-0.0000001}],
           point:{x:0.0000001,y:-0.0000001},
-          color:'#ec3232'
+          color:'ec3232'
         }
       }
     }
