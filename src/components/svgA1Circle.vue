@@ -85,7 +85,6 @@ export default {
       newPos.y=TRY-((zoom*aySize));
       this.$store.state.mapConfig.A1.x=newPos.x;
       this.$store.state.mapConfig.A1.y=newPos.y;
-      //2023-1-17 留言：请再svgLine.vue内实现缩放和移动，将dataLayer.vue内的缩放和移动功能移除，转为只负责更新A1和layer
     },
   },
   computed:{

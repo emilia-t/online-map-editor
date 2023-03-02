@@ -153,15 +153,15 @@ export default {
   name: "BananaPointAttributeBoard",
   data(){
     return {
-      name:"顺德一中",
-      id:"p10001",
-      color:"ffffff",
+      name:"无名点",
+      id:"-1",
+      color:"000000",
       width:2,
       point:{x:0,y:0},
       details:[
-        {"key":"详细地址","value":"深圳市坪山区坑梓街道秀新社区锦绣中路聚龙山生态公园内"},
-        {"key":"曾用名","value":"顺德县第一中学"},
-        {"key":"类型","value":"学校"}
+        {"key":"详细地址","value":""},
+        {"key":"曾用名","value":""},
+        {"key":"类型","value":""}
       ],
       theConfig:{
         selectNum:-1
@@ -185,7 +185,6 @@ export default {
   },
   mounted() {
     // this.test();
-    //20230205-写添加点(检查输入->上传->后端敏感检查->上传数据库->后端广播数据->前端接收数据)的功能，点属性面板已完成
     this.startSetting();
   },
   methods:{
@@ -296,8 +295,6 @@ export default {
     },
     TempPoint(){
       return this.$store.state.mapConfig.tempPoint.point;
-      //2023-2-12 继续写添加点的功能，这里前端已经完成大半了，下一步是在属性面板界面修改后，点击发送时发送数据到服务器
-      //2023-2-12 1.bug:取消添加点后面板上的 坐标 属性xy值仍然在变化(tempPoint)
     }
   },
   watch:{

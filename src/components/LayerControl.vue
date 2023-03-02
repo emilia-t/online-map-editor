@@ -118,13 +118,6 @@ export default {
       this.$store.state.mapConfig.tempPoint.point.x=-this.reTranslateCoordinate(newValue.x);
       this.$store.state.mapConfig.tempPoint.point.y=this.reTranslateCoordinate(newValue.y);
     },
-    /*
-    20230212
-    需要在layerData内新增两个临时图层（拷贝一份svgPoint和svgLine）
-    这两个图层用于显示由control layer创建的临时数据
-    不要多搞一层svg，后期无法联动、很麻烦
-
-    * */
     //添加关注点
     addInterestPointStart(){
       if(!this.isAddPoint){

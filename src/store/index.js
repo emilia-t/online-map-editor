@@ -117,7 +117,6 @@ export default new Vuex.Store({
               if(data.details[i].hasOwnProperty("key") && data.details[i].hasOwnProperty("value")){
             //0.12.5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
             //0.12.6key正则表达式
-              //20230206-接着写正则表达式并测试，然后写添加点(检查输入(ing)->上传->后端敏感检查->上传数据库->后端广播数据->前端接收数据)的功能
               const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;
               const ValueExp=/[\[\]{}#`'"]|(-){2}|(\/){2}|(%){2}|\/\*/m;
               //key
@@ -156,7 +155,6 @@ export default new Vuex.Store({
             //3.0广播
             //console.log(basicStructure);
             this.send(this.Instruct.broadcast_point(basicStructure));
-            //20230208-前端检测和发送数据写完了，请在后端完成接收
           }catch (e) {}
         }
         //广播A1

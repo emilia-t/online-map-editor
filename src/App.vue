@@ -31,10 +31,11 @@
     <!--用于控制一些操作用，例如编辑按钮、清空按钮-->
     <layer-control>
     </layer-control>
-    <!--面板层-->
+    <!--元素面板层-->
     <!--用于展示图层数据的-->
-<!--    <layer-panel>-->
-<!--    </layer-panel>-->
+    <layer-element-panel></layer-element-panel>
+    <!--属性面板层-->
+    <layer-details-panel></layer-details-panel>
     <!--调试面板-->
     <layer-console>
     </layer-console>
@@ -71,18 +72,19 @@ import LayerControl from "./components/LayerControl";
 <!--面板层-->
 <!--用于展示图层数据的-->
 */
-import LayerPanel from "./components/LayerPanel";
+import LayerElementPanel from "./components/LayerElementPanel";
 /*
 <!--调试面板-->
 */
 import LayerConsole from "./components/LayerConsole";
 import LayerUser from "./components/LayerUser";
+import LayerDetailsPanel from "./components/LayerDetailsPanel";
 export default {
   name: 'App',
   components: {
     LayerUser,
     //普通图层
-    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerPanel,
+    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerDetailsPanel,
     //特殊图层
     LayerConsole
   },
@@ -115,7 +117,7 @@ body, html {
 /*css变量，用于统一样式*/
 :root{
   --panelWidth:350px;/*图层面板宽度*/
-  --panelHight:90%;/*图层面板高度*/
+  --panelHight:calc(100% - (var(--panelTop) * 2));/*图层面板高度*/
   --panelLeft: 15px;/*图层面板左边距*/
   --panelTop: 15px;/*图层面板上边距*/
   --controlWidth:500px;/*控制面板宽度*/
@@ -148,6 +150,6 @@ body, html {
   /*4*/
   --BottomBackgroundColor:#fdfdfd;
   /*13*/
-  --BottomShadowColor:0px 0px 6px #e7e7e7;
+  --BottomShadowColor:2px 2px 10px #d8d8d8;
 }
 </style>

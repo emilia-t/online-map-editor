@@ -1,6 +1,6 @@
 <template>
   <g :elementId="this.pointConfig.id">
-    <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
+    <circle @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
   </g>
 </template>
 
@@ -37,6 +37,10 @@ export default {
     startSetting(){
       this.dataSourcePoints=this.sourcePointStr;
       this.mouseEvent();
+    },
+    //展示自身details
+    showDetails(){
+      console.log(this.pointConfig.details[0]);
     },
     //监听鼠标移动
     mouseEvent(){
@@ -80,7 +84,6 @@ export default {
       const aySize=MOY-TRY;
       this.pointConfig.point.x=-this.reTranslateCoordinate(TRX-((zoom*axSize)));
       this.pointConfig.point.y=this.reTranslateCoordinate(TRY-((zoom*aySize)));
-      //2023-1-28日：点缩放后的位置偏移很严重：连续缩小三次然后连续放大三次后位置完全变了，修复此bug，然后做添加点数据的功能
     }
   },
   computed:{

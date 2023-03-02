@@ -78,7 +78,6 @@ export default {
         newPosArr.push(newPos);
       }
       this.polyLineConfig.points=newPosArr;
-      //2023-1-17 留言：请再svgLine.vue内实现缩放和移动，将dataLayer.vue内的缩放和移动功能移除，转为只负责更新A1和layer
     },
     //监听鼠标移动
     mouseEvent(){

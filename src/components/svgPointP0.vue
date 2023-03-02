@@ -85,7 +85,6 @@ export default {
       const aySize=MOY-TRY;
       this.pointConfig.point.x=-this.reTranslateCoordinate(TRX-((zoom*axSize)));
       this.pointConfig.point.y=this.reTranslateCoordinate(TRY-((zoom*aySize)));
-      //2023-1-28日：点缩放后的位置偏移很严重：连续缩小三次然后连续放大三次后位置完全变了，修复此bug，然后做添加点数据的功能
     }
   },
   computed:{

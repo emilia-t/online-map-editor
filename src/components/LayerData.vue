@@ -19,29 +19,6 @@
       <svg-point-temp :point-config="this.$store.state.mapConfig.tempPoint"></svg-point-temp>
       <!--临时线数据-->
 <!--      <svg-line-temp></svg-line-temp>-->
-      <!--关于如何获取鼠标点的位置：
-      20230209
-      首先P0是固定点，（0,0）
-      当地图出现移动、缩放操作后，p0仍然代表(0,0)
-      此时的鼠标位置加上p0的位置
-      例如：
-      设鼠标初始位置在(100,0)
-      设p0初始位置为(0,0)
-      向右移动p0后p0为：(100,0)
-      此时的鼠标在浏览器的位置为(200,0)
-      此时鼠标的实际坐标为：(200-100,0)
-
-      下面是缩放后的例子
-      设鼠标初始位置为(100,0)
-      设p0初始位置为(0,0)
-
-      鼠标滚轮缩小
-
-      此时的鼠标在浏览器的位置为(100,0)
-      此时的p0在浏览器的位置为(16,0)
-      此时的鼠标实际位置为((100-16))*(1.1904761904761904)=100（可以还原缩放前的距离存疑）
-      //20230209请尝试通过次方法获取点位置，并继续写发送到服务端的功能
-      -->
       <!--我的A1位置-->
       <svg-a1-circle></svg-a1-circle>
       <!--其他人的A1位置-->
@@ -129,7 +106,6 @@ export default {
       }
     }
   },
-  //2023-1-20留，请完成PHP后端的开发，至少保证有几个基础接口供客户端操作数据库
   methods:{
     //初始化设置
     startSetting(){
@@ -500,17 +476,45 @@ export default {
           try{
             for (let i=0;i<TpArr.length;i++){
               //1.将base64转化为普通字符
-              let baseA=window.atob(TpArr[i].points);
-              let baseB=window.atob(TpArr[i].point);
-              let Ps=JSON.parse(baseA);
-              let Pt=JSON.parse(baseB);
-              TpArr[i].points=Ps;
-              TpArr[i].point=Pt;
+              let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
+              try{
+                baseA=window.atob(TpArr[i].points);
+                baseB=window.atob(TpArr[i].point);
+              }
+              catch(e){lock=false;}
+              try{
+                if(lock){
+                  Ps=JSON.parse(baseA);
+                  Pt=JSON.parse(baseB);
+                }
+              }
+              catch(e){lock=false;}
+              if(lock){
+                TpArr[i].points=Ps;
+                TpArr[i].point=Pt;
+              }
             }
-          }catch (e) {
-
-          }
-          //2.检测类型分组存放
+          }catch(e){}
+          //2.解析details
+          try{
+            for (let i=0;i<TpArr.length;i++){
+              //1.将base64转化为普通字符
+              let [lock,baseA,Ps]=[true,null,null];
+              try{
+                baseA=window.atob(TpArr[i].details);
+              }
+              catch(e){lock=false;}
+              try {
+                if(lock){
+                  Ps=JSON.parse(baseA);
+                }
+              }catch(e){lock=false;}
+              if(lock){
+                TpArr[i].details=Ps;
+              }
+            }
+          }catch(e){}
+          //3.检测类型分组存放
           let LineArr=[];
           let PointArr=[];
           for (let x=0;x<TpArr.length;x++){

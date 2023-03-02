@@ -1,9 +1,9 @@
 <template>
   <!--
-  职责：显示地图整体的简要属性、例如地图大小、以列表方式展示数据
+  职责：显示地图整体的简要属性、例如地图大小、以列表方式展示数据（类似于谷歌地图左侧的的面板）
   允许访问、修改、删除$store.state.serverData内的数据
   -->
-  <div class="panelLayer">
+  <div class="LayerElementPanel">
     <div class="title">
       Map title
     </div>
@@ -12,17 +12,17 @@
 
 <script>
 export default {
-  name: "LayerPanel",
+  name: "LayerElementPanel",
   data(){
     return {
-      MY_NAME:"LayerPanel"
+      MY_NAME:"LayerElementPanel"
     }
   }
 }
 </script>
 
 <style scoped>
-.panelLayer{
+.LayerElementPanel{
   width: var(--panelWidth);
   height: var(--panelHight);
   display: flex;
@@ -30,7 +30,7 @@ export default {
   background: var(--BottomBackgroundColor);
   left: var(--panelLeft);
   top:var(--panelTop);
-  border-radius: var(--borderType01);
+  border-radius: var(--borderType02);
   overflow: hidden;
   box-shadow: var(--BottomShadowColor);
 }
