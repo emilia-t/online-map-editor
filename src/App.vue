@@ -146,7 +146,7 @@ body, html {
   13.底层阴影颜色--BottomShadowColor:;
   */
   /*0*/
-  --ProminentBackgroundColor:#ff4949;
+  --ProminentBackgroundColor:#edd976;
   /*4*/
   --BottomBackgroundColor:#fdfdfd;
   /*13*/

@@ -30,7 +30,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     },
     hot: true,
     //关闭自动刷新
-    inline:false,
+    inline:true,
     //
     contentBase: false, // since we use CopyWebpackPlugin.
     compress: true,

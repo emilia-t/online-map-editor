@@ -5,7 +5,7 @@
   -->
   <div class="LayerElementPanel">
     <div class="title">
-      Map title
+      地图要素面板
     </div>
   </div>
 </template>
@@ -36,12 +36,13 @@ export default {
 }
 .title{
   width: 100%;
-  height: 48px;
+  height: 50px;
   display: flex;
   justify-content: center;
-  background: var(--ProminentBackgroundColor);
+  border-bottom: 2px dashed #e7e1e5;
+  background: #f1e486;
   font-size: 24px;
   line-height:calc(24px * 2);
-  color: rgba(255,255,255,0.8);
+  color: rgba(50, 50, 50, 0.85);
 }
 </style>

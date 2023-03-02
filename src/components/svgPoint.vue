@@ -1,6 +1,8 @@
 <template>
   <g :elementId="this.pointConfig.id">
-    <circle @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
+    <circle ref="element" @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
+    <!--动效-->
+    <circle v-if="selectStatus" ref="element" @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="((pointConfig.width+0)/10+radius[0])+'px'" :data-source-points="dataSourcePoints" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
   </g>
 </template>
 
@@ -11,7 +13,9 @@ export default {
     return {
       dataSourcePoints:null,//数据源保存
       occurredMoveMap:false,//移动状态
-      A1Cache:{x:0,y:0}
+      A1Cache:{x:0,y:0},
+      selectStatus:false,
+      radius:[1,2,3,4,5,6,5,4,3,2]
     }
   },
   props:{
@@ -31,16 +35,26 @@ export default {
   },
   mounted() {
     this.startSetting();
+    setInterval(()=>{
+      this.radius.push(this.radius.shift());
+    },110)
   },
   methods:{
     //初始化配置
     startSetting(){
       this.dataSourcePoints=this.sourcePointStr;
       this.mouseEvent();
+      this.$refs.element.addEventListener('click',(ev)=>this.selectAnimation(ev))
+    },
+    //被选中时的动效
+    selectAnimation(ev){
+      console.log(ev);
+
     },
     //展示自身details
     showDetails(){
-      console.log(this.pointConfig.details[0]);
+      this.selectStatus=!this.selectStatus;
+      console.log(this.pointConfig);
     },
     //监听鼠标移动
     mouseEvent(){
