@@ -133,6 +133,8 @@ export default {
       this.mapMoveEnd();
       //启用滚轮监听
       this.visualAngleScale();
+      //启用点击空白处清除选中
+      this.clearSelect();
     },
     //连接服务器
     startLinkServer(){
@@ -441,6 +443,17 @@ export default {
         }
       }
     },
+    //清除选中要素及选中要素数据
+    clearSelect(){
+      this.$refs.elementData.addEventListener('click',(ev)=>{
+        //1.可以被选中的要素nodeName合集
+        let nodeNames=['polyline','circle'];
+        if(nodeNames.indexOf(ev.target.nodeName)===-1){
+          this.$store.state.detailsPanelConfig.target=-1;
+          this.$store.state.detailsPanelConfig.data={};
+        }
+      })
+    }
   },
   mounted:function(){
     this.startSetting();
@@ -470,7 +483,7 @@ export default {
     mapData:{
       handler(newValue,oldValue){
         if(newValue.length!==0){
-          //拿取数据
+          //拿取数据,此处是引用数据会修改原始数据
           let TpArr=this.mapData;
           //1.将其中的points转化一下,尝试处理源数据,如果已经处理好则不会处理
           try{

@@ -14,10 +14,11 @@ new Vue({
   data(){return{
     general_script,
     commitsConfig:{
-      disabledList:[],//请使用类似于：/user/的正则表达式
+      disabledList:['createTestLine'],//请使用类似于：/user/的正则表达式
       anonymousInstruct:{pass:0,intercept:0},
       createTestLine:{pass:0,intercept:0},
       openF4DebugBord:{pass:0,intercept:0},
+      openDetailsPanel:{pass:0,intercept:0},
     }
   }},
   router,
@@ -71,8 +72,7 @@ new Vue({
       switch (name){
         case 'createTestLine':{
           if(this.filter(name)){
-            let ran=Math.floor(Math.random()*100000000);
-            this.$store.state.commits.createTestLine=ran;
+            this.$store.state.commits.createTestLine=!this.$store.state.commits.createTestLine;
             this.commitsConfig.createTestLine.pass++;
           }else {
             this.commitsConfig.createTestLine.intercept++;
@@ -81,11 +81,19 @@ new Vue({
         }
         case 'openF4DebugBord':{
           if(this.filter(name)){
-            let ran=Math.floor(Math.random()*100000000);
-            this.$store.state.commits.openF4DebugBord=ran;
+            this.$store.state.commits.openF4DebugBord=!this.$store.state.commits.openF4DebugBord;
             this.commitsConfig.openF4DebugBord.pass++;
           }else {
             this.commitsConfig.openF4DebugBord.intercept++;
+          }
+          break;
+        }
+        case 'openDetailsPanel':{
+          if(this.filter(name)){
+            this.$store.state.commits.openDetailsPanel=!this.$store.state.commits.openDetailsPanel;
+            this.commitsConfig.openDetailsPanel.pass++;
+          }else {
+            this.commitsConfig.openDetailsPanel.intercept++;
           }
           break;
         }

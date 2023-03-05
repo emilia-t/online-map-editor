@@ -2,26 +2,27 @@
   <!--左侧的详细信息编辑面板-->
   <!--职责-监听需要编辑的要素id并展示被选中的要素id的各种属性，并提供编辑属性值功能-->
   <!--权限-允许访问store.state.mapconfig-->
-  <div class="LayerDetailsPanel">
+  <div class="LayerDetailsPanel" ref="LayerDetailsPanel">
     <!--顶部标题-->
     <div class="top">
       元素信息面板
     </div>
+    <div>基本信息</div>
     <!--内容-->
     <div class="content">
       <!--id-->
       <div class="listBox">
         <div class="boxLeft">
-          ID
+          序列号
         </div>
         <div class="boxRight">
           {{exampleConfig.id}}
         </div>
       </div>
       <!--type-->
-      <div class="listBox">
+      <div class="listBox"  v-show="exampleConfig.type">
         <div class="boxLeft">
-          Type
+          元素类型
         </div>
         <div class="boxRight">
           {{exampleConfig.type}}
@@ -29,7 +30,7 @@
       </div>
       <div class="listBox" v-show="exampleConfig.color">
         <div class="boxLeft">
-          Color
+          显示颜色
         </div>
         <div class="boxRight">
           {{exampleConfig.color}}
@@ -37,7 +38,7 @@
       </div>
       <div class="listBox" v-show="exampleConfig.length">
         <div class="boxLeft">
-          Length
+          长度
         </div>
         <div class="boxRight">
           {{exampleConfig.length}}
@@ -45,7 +46,7 @@
       </div>
       <div class="listBox" v-show="exampleConfig.width">
         <div class="boxLeft">
-          Width
+          宽度
         </div>
         <div class="boxRight">
           {{exampleConfig.width}}
@@ -53,12 +54,15 @@
       </div>
       <div class="listBox" v-show="exampleConfig.size">
         <div class="boxLeft">
-          Size
+          面积
         </div>
         <div class="boxRight">
           {{exampleConfig.size}}
         </div>
       </div>
+    </div>
+    <div>详细信息</div>
+    <div class="content">
       <!--details-->
       <div v-show="exampleConfig.details" v-for="detail in exampleConfig.details">
         <div class="listBox">
@@ -80,49 +84,53 @@ export default {
   data(){
     return {
       exampleConfig:{
-        "id": "10",
-        "type": "point",
-        "points": [
-          {
-            "x": -0.0000632,
-            "y": 0.0000335
-          }
-        ],
-        "point": {
-          "x": -0.0000632,
-          "y": 0.0000335
-        },
-        "color": "c9ff6c",
-        "length": null,
-        "width": "10",
-        "size": null,
-        "child_relations": null,
-        "father_relation": null,
-        "child_nodes": null,
-        "father_node": null,
-        "details": [
-          {
-            "key": "详细地址",
-            "value": "测试11111"
-          },
-          {
-            "key": "曾用名",
-            "value": "测试22222"
-          },
-          {
-            "key": "类型",
-            "value": "自定义类型"
-          }
-        ]
+        "id":"-1",
+        "type":"",
+        "points":[{"x":null,"y":null}],
+        "point":{"x":null,"y":null},
+        "color":null,
+        "length":null,
+        "width":null,
+        "size":null,
+        "child_relations":null,
+        "father_relation":null,
+        "child_nodes":null,
+        "father_node":null,
+        "details":[]
       }
     }
   },
   mounted() {
-    //this.online();
+    this.startSetting();
   },
   methods:{
-    online(){
-      setTimeout(()=>{window.location.reload()},5000)
+    startSetting(){
+
+    },
+    //隐藏面板
+    hidden(){
+      this.$refs.LayerDetailsPanel.style.left='-350px';
+    },
+    //显示面板
+    show(){
+      this.$refs.LayerDetailsPanel.style.left='0px';
+    }
+  },
+  computed:{
+    targetId(){
+      return this.$store.state.detailsPanelConfig.target;
+    }
+  },
+  watch:{
+    targetId:{
+      handler(newValue){
+        if(newValue===-1){
+          this.hidden();
+        }else {
+          this.show();
+        }
+        this.exampleConfig=this.$store.state.detailsPanelConfig.data;
+      }
     }
   }
 }
@@ -135,7 +143,7 @@ export default {
   background: #f8f8f8;
   position: fixed;
   top:0;
-  left: 0;
+  left: -350px;
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
   box-shadow: #b8b8b8 3px 3px 10px;
@@ -143,6 +151,7 @@ export default {
   justify-content: flex-start;
   align-items: center;
   flex-direction: column;
+  transition: 0.4s;
 }
 .top{
   width: 100%;

@@ -2,7 +2,7 @@
   <g :elementId="this.pointConfig.id">
     <circle ref="element" @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
     <!--动效-->
-    <circle v-if="selectStatus" ref="element" @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="((pointConfig.width+0)/10+radius[0])+'px'" :data-source-points="dataSourcePoints" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
+    <circle v-if="selectId===myId" ref="element" @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="((pointConfig.width+0)/10+radius[0])+'px'" :data-source-points="dataSourcePoints" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
   </g>
 </template>
 
@@ -14,7 +14,8 @@ export default {
       dataSourcePoints:null,//数据源保存
       occurredMoveMap:false,//移动状态
       A1Cache:{x:0,y:0},
-      selectStatus:false,
+      myId:null,
+      selectId:-1,//被选中的id
       radius:[1,2,3,4,5,6,5,4,3,2]
     }
   },
@@ -42,19 +43,15 @@ export default {
   methods:{
     //初始化配置
     startSetting(){
+      this.myId=this.pointConfig.id;
       this.dataSourcePoints=this.sourcePointStr;
       this.mouseEvent();
-      this.$refs.element.addEventListener('click',(ev)=>this.selectAnimation(ev))
-    },
-    //被选中时的动效
-    selectAnimation(ev){
-      console.log(ev);
-
     },
     //展示自身details
     showDetails(){
-      this.selectStatus=!this.selectStatus;
-      console.log(this.pointConfig);
+      //1.广播被选中id（myId）
+      this.$store.state.detailsPanelConfig.target=this.myId;
+      this.$store.state.detailsPanelConfig.data=this.pointConfig;
     },
     //监听鼠标移动
     mouseEvent(){
@@ -136,6 +133,9 @@ export default {
     },
     mouse(){
       return {x:this.$store.state.mapConfig.mousePoint.x,y:this.$store.state.mapConfig.mousePoint.y};
+    },
+    targetId(){
+      return this.$store.state.detailsPanelConfig.target;
     }
   },
   watch:{
@@ -147,6 +147,11 @@ export default {
     doNeedMoveMap:{
       handler(newValue,oldValue){
         this.move();
+      }
+    },
+    targetId:{
+      handler(newValue){
+        this.selectId=newValue;
       }
     }
   }

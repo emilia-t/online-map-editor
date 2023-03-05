@@ -360,9 +360,11 @@ export default new Vuex.Store({
       data:null
     },
     //命令的缓存,各组件根据需求监听这里的数据变化，也可以监听整个commits
+    //命令是用于个体组件与外界进行通讯的手段之一，请在main.js的sendInstruct进行注册
     commits:{
-      createTestLine:null,
-      openF4DebugBord:null
+      createTestLine:false,
+      openF4DebugBord:false,
+      openDetailsPanel:false
     },
     //相机配置
     cameraConfig:{
@@ -424,6 +426,13 @@ export default new Vuex.Store({
         x:0,
         y:0
       }
+    },
+    //左侧元素信息面板显示的数据
+    detailsPanelConfig:{
+      data:{
+
+      },
+      target:null
     },
     //服务器相关数据
     serverData:{

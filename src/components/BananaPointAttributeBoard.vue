@@ -2,11 +2,11 @@
 <!--点数据属性面板-->
   <div class="BananaPointAttributeBoard" v-bind:style="BoardPos">
     <!--头部名称-->
-    <textarea class="headName" contenteditable="true" v-model="name" rows="2" maxlength="30">
-
-    </textarea>
+    <div class="headName mouseType1" contenteditable="false">
+      新增点编辑面板
+    </div>
     <!--属性列表-->
-    <div class="centerList">
+    <div class="centerList mouseDefault">
       <!--单列-->
       <div class="centerListItem">
         <!--左侧属性名-->
@@ -116,7 +116,7 @@
       </div>
     </div>
     <!--底部按钮-->
-    <div class="bottomButton">
+    <div class="bottomButton mouseType1">
       <button @click="insertRow($event)">插入列</button>
       <button @click="removeRow($event)">删除列</button>
       <button @click="cancelEdit($event)">取消</button>
@@ -153,15 +153,16 @@ export default {
   name: "BananaPointAttributeBoard",
   data(){
     return {
-      name:"无名点",
       id:"-1",
       color:"000000",
       width:2,
       point:{x:0,y:0},
       details:[
-        {"key":"详细地址","value":""},
-        {"key":"曾用名","value":""},
-        {"key":"类型","value":""}
+        {"key":"名称","value":""},
+        {"key":"地址","value":""},
+        {"key":"类型","value":""},
+        {"key":"备注","value":""},
+        {"key":"区域","value":""}
       ],
       theConfig:{
         selectNum:-1
@@ -170,7 +171,8 @@ export default {
         name:"",
         color:"",
         details:[]
-      }
+      },
+      tempId:1
     }
   },
   props:{
@@ -211,7 +213,7 @@ export default {
         point:this.point,
         color:this.color,
         width:this.width,
-        details:this.details
+        details:this.details,
       };
       //上传到服务器
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
@@ -240,7 +242,6 @@ export default {
           sleBtn[i].classList.remove('sleBtnSelected');
         }
       }
-      console.log(this.theConfig.selectNum)
     },
     //插入列
     insertRow(ev){
@@ -336,8 +337,8 @@ export default {
   position: fixed;
   width: 300px;
   height: 400px;
-  background: #fefefe;
-  box-shadow: #f4f4f4 2px 2px 5px;
+  background: #fafafa;
+  box-shadow: #b1b1b1 2px 2px 10px;
   border-radius: 10px;
   padding: 5px;
 }
@@ -345,16 +346,23 @@ export default {
   width: calc(100% - 10px);
   height: 35px;
   line-height: 34px;
-  /*background: #97d4d9;*/
-  background: #8fcfd1;
   display: flex;
   justify-content: left;
   align-items: center;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 400;
   border-radius: 5px;
   padding: 0px 5px;
-  color: #fcffff;
+  color: #5e5e5e;
+  box-shadow:1px 0px 4px #c1c1c1;
+  position: relative;
+  z-index: 400;
+}
+.mouseDefault{
+  cursor:no-drop
+}
+.mouseType1{
+  cursor: default;
 }
 .centerList{
   width: 100%;
@@ -365,10 +373,12 @@ export default {
   display: flex;
   justify-content: left;
   flex-direction: column;
+  position:relative;
+  z-index: 200;
 }
 .centerListItem{
-  min-width: 100%;
-  margin: 3px 0px;
+  min-width: calc(100% - 10px);
+  margin: 3px 10px 3px 0px;
   padding: 2px;
   display: flex;
   justify-content: center;
@@ -376,17 +386,19 @@ export default {
   flex-direction: row;
   /*overflow: hidden;*/
   background: #fafafa;
-  border-radius: 5px;
+  border-radius: 3px;
+  border:1px dashed #d8d8d8;
 }
 .bottomButton{
   width: 100%;
   height: 25px;
-  background: #e8eff5;
   border-radius: 5px;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-
+  box-shadow: 1px 0px 4px #c1c1c1;
+  position:relative;
+  z-index: 400;
 }
 button{
   background: white;
@@ -404,7 +416,9 @@ button{
   flex-direction: column;
   justify-content: left;
   color: rgba(50, 50, 50, 0.8);
+  font-weight: 600;
 }
+.leftAttribute textarea{font-weight: 600}
 .leftAttribute div{
   margin: 3px 0px;
   padding: 2px 0px;
@@ -424,7 +438,7 @@ button{
   overflow-y: auto;
   font-size: 12px;
   padding:0px 4px;
-  color: rgba(255, 77, 77, 0.8);
+  color: rgb(45, 45, 45);
   line-height: 18px;
 }
 .doneTickButton{
@@ -454,7 +468,7 @@ button{
   height: 14px;
   border: 1px solid #a9a9a9;
   border-radius: 15px;
-  background: #7b7b7b;
+  background: #aaaaaa;
   overflow: hidden;
 }
 .sleBtn{
@@ -466,7 +480,7 @@ button{
   overflow: hidden;
 }
 .sleBtnSelected{
-  background: #3590ff;
+  background: #4b9bfd;
 }
 textarea{
   border:none;
@@ -474,6 +488,7 @@ textarea{
   resize: none;/*禁止拉伸*/
   background:#fafafa;
   appearance:none;
+  cursor: text;
 }
 *::-webkit-scrollbar {
   width: 4px;
