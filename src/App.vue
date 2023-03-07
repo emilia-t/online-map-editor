@@ -152,4 +152,15 @@ body, html {
   /*13*/
   --BottomShadowColor:2px 2px 10px #d8d8d8;
 }
+*::-webkit-scrollbar {
+  width: 4px;
+}
+*::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(0,0,0,0.2);
+}
+*::-webkit-scrollbar-track {
+  border-radius: 0;
+  background: rgba(0,0,0,0.1);
+}
 </style>

@@ -1,6 +1,7 @@
 <template>
   <g :elementId="this.pointConfig.id">
-    <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+pointConfig.color"/>
+    <circle :cx="mouseClick.x" :cy="mouseClick.y" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+pointConfig.color"/>
+    <!--实际坐标的y轴是反的，改正，后端广播新增点-->
   </g>
 </template>
 
@@ -71,8 +72,8 @@ export default {
       let layer=this.layer;
       let oldLayer=this.oldLayer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
-      const MOX=this.mouse.x;
-      const MOY=this.mouse.y;
+      const MOX=this.mousePoint.x;
+      const MOY=this.mousePoint.y;
       const pointPos=this.pointConfig.point;
       const TRX=-this.translateCoordinate(pointPos.x);
       const TRY=this.translateCoordinate(pointPos.y);
@@ -83,6 +84,7 @@ export default {
     }
   },
   computed:{
+    //这里考虑是否需要用到
     dynamicPointsX(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
@@ -116,8 +118,11 @@ export default {
     oldLayer(){
       return this.$store.state.mapConfig.oldLayer;
     },
-    mouse(){
-      return {x:this.$store.state.mapConfig.mousePoint.x,y:this.$store.state.mapConfig.mousePoint.y};
+    mousePoint(){
+      return this.$store.state.mapConfig.mousePoint;
+    },
+    mouseClick(){
+      return this.$store.state.mapConfig.mouseClick;
     }
   },
   watch:{

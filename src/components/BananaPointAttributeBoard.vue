@@ -43,7 +43,9 @@
         </div>
         <!--右侧属性值-->
         <div class="rightValue">
-          x:{{point.x}},y:{{point.y}}
+          x:{{point.x}}
+          <br/>
+          y:{{point.y}}
         </div>
         <!--勾选按钮-->
         <div class="doneTickButton">
@@ -489,17 +491,6 @@ textarea{
   background:#fafafa;
   appearance:none;
   cursor: text;
-}
-*::-webkit-scrollbar {
-  width: 4px;
-}
-*::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background: rgba(0,0,0,0.2);
-}
-*::-webkit-scrollbar-track {
-  border-radius: 0;
-  background: rgba(0,0,0,0.1);
 }
 
 </style>

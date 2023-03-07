@@ -60,6 +60,16 @@
           {{exampleConfig.size}}
         </div>
       </div>
+      <div class="listBox" v-show="exampleConfig.point.x">
+        <div class="boxLeft">
+          坐标
+        </div>
+        <div class="boxRight">
+          x:{{exampleConfig.point.x}}
+          <br/>
+          y:{{exampleConfig.point.y}}
+        </div>
+      </div>
     </div>
     <div>详细信息</div>
     <div class="content">

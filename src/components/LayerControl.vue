@@ -105,18 +105,64 @@ export default {
             //判断target
             let tag=ev.target.nodeName;
             if(tag=="svg" || tag=="polyline" || tag=="circle"){
-              this.theConfig.addPointPos.x=ev.x;
-              this.theConfig.addPointPos.y=ev.y;
+              //计算新增点位置
+              let Pos=this.computeMouseActualPos(ev)
+              this.theConfig.addPointPos.x=Pos.x;
+              this.theConfig.addPointPos.y=Pos.y;
             }
           }
         })
       }
     },
+    //计算用户鼠标点与p0的位置距离并返回用户鼠标点击位置的真实坐标
+    computeMouseActualPos(mouseEvent){
+      try{
+        //1.获取必要值 layer\mousePos\p0Pos
+        let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
+        layer=this.$store.state.mapConfig.layer;
+        mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
+        p0Pos.x=this.$store.state.mapConfig.p0.point.x;
+        p0Pos.y=this.$store.state.mapConfig.p0.point.y;
+        //2.开始计算
+        //没有缩放
+        if(layer===0){
+          refPos.x=-(this.reTranslateCoordinate(mousePos.x)+this.$store.state.mapConfig.p0.point.x);
+          refPos.y=this.reTranslateCoordinate(mousePos.y)-this.$store.state.mapConfig.p0.point.y;
+          return refPos;
+        }
+        //缩小
+        if(layer>0){
+          //1.拿到鼠标与p0的屏幕显示距离px
+          refPos.x=-(this.reTranslateCoordinate(mousePos.x)+this.$store.state.mapConfig.p0.point.x);
+          refPos.y=this.reTranslateCoordinate(mousePos.y)-this.$store.state.mapConfig.p0.point.y;
+          //2.转化
+          for (let i=0;i<layer;i++){
+            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
+            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
+          }
+          return refPos;
+        }
+        //放大
+        if(layer<0){
+          //1.拿到鼠标与p0的屏幕显示距离px
+          refPos.x=-(this.reTranslateCoordinate(mousePos.x)+this.$store.state.mapConfig.p0.point.x);
+          refPos.y=this.reTranslateCoordinate(mousePos.y)-this.$store.state.mapConfig.p0.point.y;
+          //2.转化
+          for(let i=0;i>layer;i--){
+            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
+            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
+          }
+          return refPos;
+        }
+      }catch (e) {
+        return false;
+      }
+    },
     //更新临时SVG图层和临时点的数据
     updateTempData(newValue){
       this.$store.state.mapConfig.tempPoint.width=10;
-      this.$store.state.mapConfig.tempPoint.point.x=-this.reTranslateCoordinate(newValue.x);
-      this.$store.state.mapConfig.tempPoint.point.y=this.reTranslateCoordinate(newValue.y);
+      this.$store.state.mapConfig.tempPoint.point.x=newValue.x;
+      this.$store.state.mapConfig.tempPoint.point.y=newValue.y;
     },
     //添加关注点
     addInterestPointStart(){
@@ -177,8 +223,8 @@ export default {
         //1更新临时数据
         this.updateTempData(newValue);
         //2调整属性面板位置
-        this.theConfig.bordPosLeft=newValue.x+10;
-        this.theConfig.bordPosTop=newValue.y+10;
+        this.theConfig.bordPosLeft=this.$store.state.mapConfig.mousePoint.x+10;
+        this.theConfig.bordPosTop=this.$store.state.mapConfig.mousePoint.y+10;
         //
       },
       deep:true

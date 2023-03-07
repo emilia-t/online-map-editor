@@ -425,6 +425,10 @@ export default new Vuex.Store({
       mousePoint:{
         x:0,
         y:0
+      },
+      mouseClick:{
+        x:0,
+        y:0
       }
     },
     //左侧元素信息面板显示的数据

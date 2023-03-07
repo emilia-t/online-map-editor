@@ -20,7 +20,6 @@
     </div>
   </div>
 </template>
-<!--20230305修复缩放后添加的点位置偏移的bug-->
 <script>
 export default {
   name: "LayerElementPanel",
@@ -136,12 +135,12 @@ export default {
       try {
         let details=ele.details;
         for (let i=0;i<details.length;i++){
-          if(details[i].key=='名称'){
+          if(details[i].key==='名称'){
             return details[i].value;
           }
         }
       }catch (e) {
-        return "空值";
+        return "未命名";
       }
     }
   },
@@ -165,11 +164,13 @@ export default {
 </script>
 
 <style scoped>
+
 .content{
   width: 100%;
   height: auto;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 }
 .listBox{
   width: calc(100% - 6px - 2px);

@@ -14,13 +14,17 @@
       <br>
       初始坐标：{{$store.state.mapConfig.startDefaultPoint.x}} , {{$store.state.mapConfig.startDefaultPoint.y}}
       <br>
-      A1坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
+      A1相对坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
       <br>
-      mouse：{{$store.state.mapConfig.mousePoint.x}} , {{$store.state.mapConfig.mousePoint.y}}
+      P0相对坐标：{{$store.state.mapConfig.p0.point.x}} , {{$store.state.mapConfig.p0.point.y}}
       <br>
-      层级：{{$store.state.mapConfig.layer}}
+      鼠标位置：{{$store.state.mapConfig.mousePoint.x}} , {{$store.state.mapConfig.mousePoint.y}}
       <br>
-      Old层级：{{$store.state.mapConfig.oldLayer}}
+      点击位置：{{$store.state.mapConfig.mouseClick.x}} , {{$store.state.mapConfig.mouseClick.y}}
+      <br>
+      新层级：{{$store.state.mapConfig.layer}}
+      <br>
+      旧层级：{{$store.state.mapConfig.oldLayer}}
       <br>
     </div>
   </div>
@@ -72,8 +76,8 @@ export default {
   display: flex;
   flex-direction: column;
   position: fixed;
-  top:15px;
-  left:15px;
+  top:0px;
+  left:0px;
   z-index: 99999;
   pointer-events:none;
   padding: 5px;

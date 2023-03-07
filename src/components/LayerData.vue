@@ -135,6 +135,8 @@ export default {
       this.visualAngleScale();
       //启用点击空白处清除选中
       this.clearSelect();
+      //启用鼠标点击监听
+      this.getMouseClick();
     },
     //连接服务器
     startLinkServer(){
@@ -142,6 +144,10 @@ export default {
       this.$store.state.serverData.socket=new this.$store.state.classList.InstructComprehensive('ws://192.168.31.105:9998');
       //连接服务器
       this.$store.state.serverData.socket.link();
+    },
+    //获取鼠标点击位置
+    getMouseClick(){
+      document.addEventListener("click", (e)=>{this.$store.state.mapConfig.mouseClick.x=e.x;this.$store.state.mapConfig.mouseClick.y=e.y;})
     },
     //实时获取鼠标位置：
     getMousePos(){
@@ -450,7 +456,9 @@ export default {
         let nodeNames=['polyline','circle'];
         if(nodeNames.indexOf(ev.target.nodeName)===-1){
           this.$store.state.detailsPanelConfig.target=-1;
-          this.$store.state.detailsPanelConfig.data={};
+          this.$store.state.detailsPanelConfig.data={
+            point:{x:null,y:null}
+          };
         }
       })
     }
