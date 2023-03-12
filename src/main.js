@@ -1,10 +1,11 @@
 // 根实例
-import Vue from 'vue'
-import router from './router'
+import Vue from 'vue';
+import router from './router';
 import App from "./App";
-import general_script from './js/general_script_v1.1'
-import store from './store'
-import '@/icons'//icon
+import general_script from './js/general_script_v1.1';
+import CONFIG from './js/config';
+import store from './store';
+import '@/icons';
 import {JSEncrypt} from "jsencrypt";
 //允许生产环境输入错误信息
 Vue.config.productionTip = false
@@ -12,6 +13,7 @@ Vue.config.productionTip = false
 new Vue({
   el:'#app',
   data(){return{
+    CONFIG,
     general_script,
     commitsConfig:{
       disabledList:['createTestLine'],//请使用类似于：/user/的正则表达式

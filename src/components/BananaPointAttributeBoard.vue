@@ -157,7 +157,7 @@ export default {
     return {
       id:"-1",
       color:"000000",
-      width:2,
+      width:5,
       point:{x:0,y:0},
       details:[
         {"key":"名称","value":""},

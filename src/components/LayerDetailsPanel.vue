@@ -65,9 +65,9 @@
           坐标
         </div>
         <div class="boxRight">
-          x:{{exampleConfig.point.x}}
+          x:{{sourcePoint.x}}
           <br/>
-          y:{{exampleConfig.point.y}}
+          y:{{sourcePoint.y}}
         </div>
       </div>
     </div>
@@ -107,6 +107,10 @@ export default {
         "child_nodes":null,
         "father_node":null,
         "details":[]
+      },
+      sourcePoint:{
+        x:null,
+        y:null
       }
     }
   },
@@ -140,6 +144,7 @@ export default {
           this.show();
         }
         this.exampleConfig=this.$store.state.detailsPanelConfig.data;
+        this.sourcePoint=this.$store.state.detailsPanelConfig.sourcePoint;
       }
     }
   }

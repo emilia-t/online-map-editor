@@ -1,8 +1,8 @@
 <template>
   <g :elementId="this.pointConfig.id">
-    <circle ref="element" @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
+    <circle ref="element" @click="showDetails()" :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
     <!--动效-->
-    <circle v-if="selectId===myId" ref="element" @click="showDetails()" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="((pointConfig.width+0)/10+radius[0])+'px'" :data-source-points="dataSourcePoints" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
+    <circle v-if="selectId===myId" ref="element" @click="showDetails()" :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="((pointConfig.width+0)/10+radius[0])+'px'" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
   </g>
 </template>
 
@@ -11,7 +11,7 @@ export default {
   name: "svgPoint",
   data(){
     return {
-      dataSourcePoints:null,//数据源保存
+      dataSourcePoint:{},//源点
       occurredMoveMap:false,//移动状态
       A1Cache:{x:0,y:0},
       myId:null,
@@ -44,7 +44,7 @@ export default {
     //初始化配置
     startSetting(){
       this.myId=this.pointConfig.id;
-      this.dataSourcePoints=this.sourcePointStr;
+      Object.assign(this.dataSourcePoint,this.pointConfig.point);
       this.mouseEvent();
     },
     //展示自身details
@@ -52,6 +52,8 @@ export default {
       //1.广播被选中id（myId）
       this.$store.state.detailsPanelConfig.target=this.myId;
       this.$store.state.detailsPanelConfig.data=this.pointConfig;
+      this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
+      console.log(this.sourcePointStr);
     },
     //监听鼠标移动
     mouseEvent(){
@@ -70,8 +72,8 @@ export default {
     //移动（移动结束后固定数据）
     move(){
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
-        let A1mvX=this.A1.x-this.A1Cache.x;
-        let A1mvY=this.A1.y-this.A1Cache.y;
+        let A1mvX=this.A1Cache.x-this.A1.x;
+        let A1mvY=this.A1Cache.y-this.A1.y;
         let newArr=this.pointConfig.point;
         this.pointConfig.point.x=this.reTranslateCoordinate(this.translateCoordinate(newArr.x)+A1mvX);
         this.pointConfig.point.y=this.reTranslateCoordinate(this.translateCoordinate(newArr.y)+A1mvY);
@@ -86,21 +88,22 @@ export default {
       let layer=this.layer;
       let oldLayer=this.oldLayer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
+      let pointPos={};
+      Object.assign(pointPos,this.pointConfig.point)
       const MOX=this.mouse.x;
       const MOY=this.mouse.y;
-      const pointPos=this.pointConfig.point;
-      const TRX=-this.translateCoordinate(pointPos.x);
-      const TRY=this.translateCoordinate(pointPos.y);
+      const TRX=this.translateCoordinate(pointPos.x);
+      const TRY=-this.translateCoordinate(pointPos.y);
       const axSize=MOX-TRX;
       const aySize=MOY-TRY;
-      this.pointConfig.point.x=-this.reTranslateCoordinate(TRX-((zoom*axSize)));
-      this.pointConfig.point.y=this.reTranslateCoordinate(TRY-((zoom*aySize)));
+      this.pointConfig.point.x=this.reTranslateCoordinate(TRX-((zoom*axSize)));
+      this.pointConfig.point.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
     }
   },
   computed:{
     dynamicPointsX(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
-        let A1mvX=this.A1.x-this.A1Cache.x;
+        let A1mvX=this.A1Cache.x-this.A1.x;
         return -this.translateCoordinate(this.pointConfig.point.x) - A1mvX;
       }else {
         return -this.translateCoordinate(this.pointConfig.point.x);
@@ -108,19 +111,14 @@ export default {
     },
     dynamicPointsY(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
-        let A1mvY=this.A1.y-this.A1Cache.y;
-        return this.translateCoordinate(this.pointConfig.point.y) + A1mvY;
+        let A1mvY=this.A1Cache.y-this.A1.y;
+        return -(this.translateCoordinate(this.pointConfig.point.y) + A1mvY);
       }else {
-        return this.translateCoordinate(this.pointConfig.point.y);
+        return -(this.translateCoordinate(this.pointConfig.point.y));
       }
     },
     doNeedMoveMap(){
       return this.$store.state.cameraConfig.doNeedMoveMap;
-    },
-    sourcePointStr(){
-      let st1=this.translateCoordinate(this.pointConfig.point.x);
-      let st2=this.translateCoordinate(this.pointConfig.point.y);
-      return st1+','+st2;
     },
     A1(){
       return this.$store.state.mapConfig.A1;

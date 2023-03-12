@@ -113,16 +113,6 @@ export default {
       this.getBrowserConfig();
       //获取屏幕中心点
       this.getScreenCenter();
-      //
-      //测试
-      //
-      //尝试获取P0与鼠标之间的关系
-      // setInterval(()=>{
-      //   let el=this.$refs.ElementP0;
-      //
-      // },1000)
-      //
-      //测试
       //初始连接服务器
       this.startLinkServer();
       //实时获取鼠标位置
@@ -137,11 +127,14 @@ export default {
       this.clearSelect();
       //启用鼠标点击监听
       this.getMouseClick();
+      //实时获取svg点击位置
+      this.elementDataClick();
     },
     //连接服务器
     startLinkServer(){
+      const serverAdr=this.$root.CONFIG.__SERVER_ADDRESS__;
       //创建新综合指令对象
-      this.$store.state.serverData.socket=new this.$store.state.classList.InstructComprehensive('ws://192.168.31.105:9998');
+      this.$store.state.serverData.socket=new this.$store.state.classList.InstructComprehensive(serverAdr);
       //连接服务器
       this.$store.state.serverData.socket.link();
     },
@@ -152,6 +145,10 @@ export default {
     //实时获取鼠标位置：
     getMousePos(){
       document.addEventListener("mousemove", (e)=>{this.$store.state.mapConfig.mousePoint.x=e.x;this.$store.state.mapConfig.mousePoint.y=e.y;})
+    },
+    //实时获取svg点击位置
+    elementDataClick(){
+      this.$refs.elementData.addEventListener("click",(e)=>{this.$store.state.mapConfig.svgClick.x=e.x;this.$store.state.mapConfig.svgClick.y=e.y;})
     },
     /**
      根据经纬度计算距离，参数分别为第一点的经度，纬度；第二点的经度，纬度
@@ -286,8 +283,8 @@ export default {
                   this.theData.moveObServerDt.push(pt);
                   let A1=this.theData.moveObServerDt[0];
                   let A2=this.theData.moveObServerDt[1];
-                  let xc3=((A2.x-A1.x)*-1);
-                  let yc4=(A2.y-A1.y);
+                  let xc3=-(A2.x-A1.x);
+                  let yc4=A2.y-A1.y;
                   this.$store.state.mapConfig.A1.x+=xc3;
                   this.$store.state.mapConfig.A1.y+=yc4;
                   break;
@@ -296,8 +293,8 @@ export default {
                   this.theData.moveObServerDt.push(pt);
                   let Apt=this.theData.moveStartPt;
                   let xc,yc;
-                  xc=(pt.x-Apt.x)*-1;
-                  yc=(pt.y-Apt.y);
+                  xc=-(pt.x-Apt.x);
+                  yc=pt.y-Apt.y;
                   this.$store.state.mapConfig.A1.x+=xc;
                   this.$store.state.mapConfig.A1.y+=yc;
                   break;
@@ -306,7 +303,7 @@ export default {
                   this.theData.moveObServerDt.push(pt);
                   let Bpt=this.theData.moveObServerDt[0];
                   let xc2,yc2;
-                  xc2=(pt.x-Bpt.x)*-1;
+                  xc2=-(pt.x-Bpt.x);
                   yc2=pt.y-Bpt.y;
                   this.$store.state.mapConfig.A1.x+=xc2;
                   this.$store.state.mapConfig.A1.y+=yc2;

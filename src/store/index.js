@@ -397,6 +397,16 @@ export default new Vuex.Store({
         x:0,
         y:0
       },
+      /**
+        将相机坐标系与地图坐标系更改为顺向的，
+       这将会影响如下部分：
+       1.移动函数，缩放函数
+       2.显示，
+       请按照如下步骤尝试更正坐标系
+       1.更改移动函数为双逆向（即鼠标从左往右滑动，地图元素向左移动）
+       2.更改地图元素显示部分为双逆向（此时鼠标移动恢复正常）
+       3.更改地图添加点时计算问题
+      */
       A1:{
         x:0,
         y:0
@@ -429,12 +439,20 @@ export default new Vuex.Store({
       mouseClick:{
         x:0,
         y:0
+      },
+      svgClick:{
+        x:0,
+        y:0
       }
     },
     //左侧元素信息面板显示的数据
     detailsPanelConfig:{
       data:{
 
+      },
+      sourcePoint:{
+        x:null,
+        y:null
       },
       target:null
     },

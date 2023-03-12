@@ -1,8 +1,8 @@
 <template>
   <!--显示我的A1，同时广播我的A1给其他人-->
   <g :elementId="elementId">
-    <circle :cx="-A1.x" :cy="A1.y" r="3"  stroke-width="1" :style="'fill:'+color"/>
-    <text class="selectNone" :x="-A1.x" :y="A1.y-10" text-anchor="middle" :style="'fill:'+color">A1</text>
+    <circle :cx="CX" :cy="CY" r="3"  stroke-width="1" :style="'fill:'+color"/>
+    <text class="selectNone" :x="CX" :y="CY2" text-anchor="middle" :style="'fill:'+color">A1</text>
   </g>
 </template>
 
@@ -90,6 +90,15 @@ export default {
   computed:{
     A1(){
       return this.$store.state.mapConfig.A1;
+    },
+    CX(){
+      return -this.$store.state.mapConfig.A1.x;
+    },
+    CY(){
+      return this.$store.state.mapConfig.A1.y;
+    },
+    CY2(){
+      return this.$store.state.mapConfig.A1.y-10;
     },
     layer(){
       return this.$store.state.mapConfig.layer;
