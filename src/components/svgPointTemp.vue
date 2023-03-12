@@ -1,7 +1,6 @@
 <template>
   <g :elementId="this.pointConfig.id">
     <circle :cx="svgClick.x" :cy="svgClick.y" :r="pointConfig.width+'px'" :data-source-points="dataSourcePoints" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+pointConfig.color"/>
-    <!--实际坐标的y轴是反的，改正，后端广播新增点-->
   </g>
 </template>
 

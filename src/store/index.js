@@ -304,27 +304,74 @@ export default new Vuex.Store({
             }
             //服务器发来的广播
             case 'broadcast':{
-              //otherA1:
-              //[
-              //data{color,email,name,x,y},...
-              //]
-              //处理数据-新的则接入---旧的则更新
-              let oldLength=this.otherA1.length;//曾经的长度
-              let newEm=jsonData.data.email;//新收到的
-              let lock=true;//是新增吗，锁止
-              for (let i=0;i<oldLength;i++){
-                let nowEm=this.otherA1[i].email;
-                if(nowEm==newEm){//更新旧数据
-                  lock=false;
-                  this.otherA1[i].color=jsonData.data.color;
-                  this.otherA1[i].name=jsonData.data.name;
-                  this.otherA1[i].x=jsonData.data.x;
-                  this.otherA1[i].y=jsonData.data.y;
+              //获取广播类型
+              let classIs=jsonData.class;
+              switch (classIs){
+                //A1位置广播
+                case 'A1':{
+                  let oldLength=this.otherA1.length;//曾经的长度
+                  let newEm=jsonData.data.email;//新收到的
+                  let lock=true;//是新增吗，锁止
+                  for (let i=0;i<oldLength;i++){
+                    let nowEm=this.otherA1[i].email;
+                    if(nowEm==newEm){//更新旧数据
+                      lock=false;
+                      this.otherA1[i].color=jsonData.data.color;
+                      this.otherA1[i].name=jsonData.data.name;
+                      this.otherA1[i].x=jsonData.data.x;
+                      this.otherA1[i].y=jsonData.data.y;
+                    }
+                  }
+                  //再新增
+                  if(lock){
+                    this.otherA1.push(jsonData.data);
+                  }
+                  break;
                 }
-              }
-              //再新增
-              if(lock){
-                this.otherA1.push(jsonData.data);
+                //新增点数据广播
+                case 'NewPoint':{
+                  console.log(jsonData);
+                  //一、解析坐标
+                  try{
+                    //1.将base64转化为普通字符
+                    let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
+                    try{
+                      baseA=window.atob(jsonData.data.points);
+                      baseB=window.atob(jsonData.data.point);
+                    }
+                    catch(e){lock=false;}
+                    try{
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                        Pt=JSON.parse(baseB);
+                      }
+                    }
+                    catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.points=Ps;
+                      jsonData.data.point=Pt;
+                    }
+                  }catch(e){}
+                  //二、解析详细描述信息
+                  try{
+                    //1.将base64转化为普通字符
+                    let [lock,baseA,Ps]=[true,null,null];
+                    try{
+                      baseA=window.atob(jsonData.data.details);
+                    }
+                    catch(e){lock=false;}
+                    try {
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                      }
+                    }catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.details=Ps;
+                    }
+                  }catch(e){}
+                  //添加到mapData
+                  this.mapData.push(jsonData.data);
+                }
               }
               break;
             }
