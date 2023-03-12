@@ -1,7 +1,14 @@
 # map
 
-> A Vue.js project
+> A client online map
 
+## Config set
+
+``` bash
+cd js
+vim config.js
+__SERVER_ADDRESS__:"url address of your online map server"
+```
 ## Build Setup
 
 ``` bash
