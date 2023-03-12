@@ -5,8 +5,7 @@
 ## Config set
 
 ``` bash
-cd src
-cd js
+cd src/js
 vim config.js
 __SERVER_ADDRESS__:"url address of your online map server"
 ```
