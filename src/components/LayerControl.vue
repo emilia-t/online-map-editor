@@ -126,15 +126,15 @@ export default {
         //2.开始计算
         //没有缩放
         if(layer===0){
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+this.$store.state.mapConfig.p0.point.x;
-          refPos.y=-(this.reTranslateCoordinate(mousePos.y)-this.$store.state.mapConfig.p0.point.y);
+          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
+          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
           return refPos;
         }
         //缩小
         if(layer>0){
           //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+this.$store.state.mapConfig.p0.point.x;
-          refPos.y=-(this.reTranslateCoordinate(mousePos.y)-this.$store.state.mapConfig.p0.point.y);
+          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
+          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
           //2.转化
           for (let i=0;i<layer;i++){
             refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
@@ -145,8 +145,8 @@ export default {
         //放大
         if(layer<0){
           //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+this.$store.state.mapConfig.p0.point.x;
-          refPos.y=-(this.reTranslateCoordinate(mousePos.y)-this.$store.state.mapConfig.p0.point.y);
+          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
+          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
           //2.转化
           for(let i=0;i>layer;i--){
             refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
@@ -189,7 +189,7 @@ export default {
       document.body.addEventListener('keyup',(e)=>{
         let KEY=e.key;
         switch (KEY){
-          case 'F4':{
+          case 'F8':{
             this.F4Event();
           }
         }

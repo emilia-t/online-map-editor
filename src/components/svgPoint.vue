@@ -36,16 +36,23 @@ export default {
   },
   mounted() {
     this.startSetting();
-    setInterval(()=>{
-      this.radius.push(this.radius.shift());
-    },110)
   },
   methods:{
     //初始化配置
     startSetting(){
+      //拷贝id
       this.myId=this.pointConfig.id;
+      //拷贝源点数据
       Object.assign(this.dataSourcePoint,this.pointConfig.point);
+      //监听鼠标移动
       this.mouseEvent();
+      //初始化时就移动到相应的位置上,这一步不要提前否则影响源点的拷贝
+      this.initializePosition();
+      //简陋的动效
+      setInterval(()=>{this.radius.push(this.radius.shift());},110)
+      //初始化A1cache
+      this.A1Cache.x=this.A1.x;
+      this.A1Cache.y=this.A1.y;
     },
     //展示自身details
     showDetails(){
@@ -68,6 +75,58 @@ export default {
     //逆向转化坐标
     reTranslateCoordinate(float){
       return float/10000000;
+    },
+    //初始化定位
+    initializePosition(){
+      try{
+        //1.获取必要值 layer\pointPos\p0Pos
+        let [layer,pointPos,p0Pos,refPos,tempPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null},{x:null,y:null}];
+        layer=this.$store.state.mapConfig.layer;
+        pointPos.x=this.pointConfig.point.x;pointPos.y=this.pointConfig.point.y;
+        p0Pos.x=-this.$store.state.mapConfig.p0.point.x;
+        p0Pos.y=-this.$store.state.mapConfig.p0.point.y;
+        //2.开始计算
+        //无缩放
+        if(layer===0){
+          refPos.x=pointPos.x+p0Pos.x;
+          refPos.y=pointPos.y+p0Pos.y;
+          this.pointConfig.point.x=refPos.x;
+          this.pointConfig.point.y=refPos.y;
+        }
+        //有缩小
+        if(layer>0){
+          //1.计算缩小后-p0（0,0）与新点之间的距离
+          for (let i=0;i<layer;i++){
+            pointPos.x=pointPos.x+(pointPos.x*this.$store.state.mapConfig.zoomSub);
+            pointPos.y=pointPos.y+(pointPos.y*this.$store.state.mapConfig.zoomSub);
+          }
+          //添加p0
+          refPos.x=pointPos.x+p0Pos.x;
+          refPos.y=pointPos.y+p0Pos.y;
+          //修改p
+          this.pointConfig.point.x=refPos.x;
+          this.pointConfig.point.y=refPos.y;
+          return true;
+        }
+        //放大
+         if(layer<0){
+           //1.计算缩小后-p0（0,0）与新点之间的距离
+           for(let i=0;i>layer;i--){
+             pointPos.x=pointPos.x+(pointPos.x*this.$store.state.mapConfig.zoomAdd);
+             pointPos.y=pointPos.y+(pointPos.y*this.$store.state.mapConfig.zoomAdd);
+           }
+           //添加p0
+           refPos.x=pointPos.x+p0Pos.x;
+           refPos.y=pointPos.y+p0Pos.y;
+           //修改p
+           this.pointConfig.point.x=refPos.x;
+           this.pointConfig.point.y=refPos.y;
+           return true;
+         }
+        return true;
+        }catch (e) {
+        return false;
+      }
     },
     //移动（移动结束后固定数据）
     move(){

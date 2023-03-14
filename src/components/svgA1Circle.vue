@@ -2,7 +2,7 @@
   <!--显示我的A1，同时广播我的A1给其他人-->
   <g :elementId="elementId">
     <circle :cx="CX" :cy="CY" r="3"  stroke-width="1" :style="'fill:'+color"/>
-    <text class="selectNone" :x="CX" :y="CY2" text-anchor="middle" :style="'fill:'+color">A1</text>
+    <text class="selectNone" :x="CX" :y="CY2" text-anchor="middle" :style="'fill:'+color">MyA1</text>
   </g>
 </template>
 

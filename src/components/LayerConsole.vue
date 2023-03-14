@@ -4,7 +4,7 @@
   权限：允许访问$store.*
   -->
   <div class="consoleLayer" ref="consoleLayer" v-if="view">
-    <h4 class="consoleTitle">F4 调试面板</h4>
+    <h4 class="consoleTitle">F8 调试面板</h4>
     <div ref="consoleMap" class="consoleMap">
       浏览器尺寸：{{$store.state.mapConfig.browser.width}} x {{$store.state.mapConfig.browser.height}}
       <br>
