@@ -293,8 +293,19 @@ export default {
     }
   },
   computed:{
+    browserSize(){
+      return this.$store.state.mapConfig.browser;
+    },
     BoardPos(){
-      return "left:"+this.StyleLeft+"px;top:"+this.StyleTop+"px"
+      let [Sl,St]=[this.StyleLeft,this.StyleTop];
+      //判断y轴是否大于浏览器页面高度
+      if(Sl>this.browserSize.width-325){
+        Sl=this.browserSize.width-335;
+      }
+      if(St>this.browserSize.height-425){
+        St=this.browserSize.height-435;
+      }
+      return "left:"+Sl+"px;top:"+St+"px"
     },
     TempPoint(){
       return this.$store.state.mapConfig.tempPoint.point;

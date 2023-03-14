@@ -129,6 +129,8 @@ export default {
       this.getMouseClick();
       //实时获取svg点击位置
       this.elementDataClick();
+      //检测浏览器窗口大小变化
+      this.listenBrowserSize();
     },
     //连接服务器
     startLinkServer(){
@@ -137,6 +139,10 @@ export default {
       this.$store.state.serverData.socket=new this.$store.state.classList.InstructComprehensive(serverAdr);
       //连接服务器
       this.$store.state.serverData.socket.link();
+    },
+    //检测浏览器窗口大小变化
+    listenBrowserSize(){
+      window.addEventListener("resize",()=>{this.getBrowserConfig();})
     },
     //获取鼠标点击位置
     getMouseClick(){
