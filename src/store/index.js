@@ -330,7 +330,6 @@ export default new Vuex.Store({
                 }
                 //新增点数据广播
                 case 'NewPoint':{
-                  console.log(jsonData);
                   //一、解析坐标
                   try{
                     //1.将base64转化为普通字符
@@ -369,6 +368,9 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
+                  //更新messages
+                  let NewMessageObj={'type':'broadcast','class':'NewPoint','conveyor':jsonData.conveyor,'elementId':jsonData.data.id};
+                  this.messages.push(NewMessageObj);
                   //添加到mapData
                   this.mapData.push(jsonData.data);
                 }
@@ -504,7 +506,7 @@ export default new Vuex.Store({
       //4.用户邮箱//目前已经移交至socket会话的数据中，此处仅作实例
       userEmail:'Anyone@Any.com',
       //5.用户QQ,默认为1077365277//目前已经移交至socket会话的数据中，此处仅作实例
-      userQq:1077365277
+      userQq:1077365277,
     }
   },
   //类似于vue中的computed，进行缓存，对于Store中的数据进行加工处理形成新的数据

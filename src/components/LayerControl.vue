@@ -9,10 +9,15 @@
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
     <!--按钮-->
     <!--添加-->
-    <banana-control-button ref="controlButton0" :color="Url0Color" :button-img-prop="Url0" :right-pos="'10px'" :top-pos="'100px'"></banana-control-button>
-    <banana-control-button ref="controlButton1" :button-img-prop="Url1" :right-pos="'10px'" :top-pos="'180px'"></banana-control-button>
-    <banana-control-button ref="controlButton2" :button-img-prop="Url2" :right-pos="'10px'" :top-pos="'260px'"></banana-control-button>
-    <banana-control-button ref="controlButton3" :button-img-prop="Url3" :right-pos="'10px'" :top-pos="'340px'"></banana-control-button>
+    <div class="controlButtonBox">
+      <banana-control-button ref="controlButton0" :color="Url1Color" :button-img-prop="Url1"></banana-control-button>
+      <span class="controlButtonName">兴趣点</span>
+      <banana-control-button ref="controlButton1" :color="Url2Color" :button-img-prop="Url2"></banana-control-button>
+      <span class="controlButtonName">路径线</span>
+      <banana-control-button ref="controlButton2" :color="Url3Color" :button-img-prop="Url3"></banana-control-button>
+      <span class="controlButtonName">区域面</span>
+    </div>
+
     <!--编辑属性面板-->
     <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"></banana-point-attribute-board>
   </div>
@@ -21,10 +26,9 @@
 <script>
 import BananaControlButton from "./BananaControlButton";
 import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
-import interestPoint from '../../static/interestPoint.png';//关注点
-import constructionPoint from '../../static/constructionPoint.png';//施工点
-import lineImg from '../../static/line.png';//线段类型
-import regionImg from '../../static/region.png';
+import interestPoint from '../../static/point.png';//关注点
+import lineImg from '../../static/route.png';//线段类型
+import regionImg from '../../static/area.png';
 //区域类型
 //#e72323 红色
 //
@@ -34,11 +38,12 @@ export default {
   data(){
     return {
       MY_NAME:"LayerControl",
-      Url0:interestPoint,
-      Url0Color:'#fffb3d',//#e72323&#e72323
-      Url1:constructionPoint,
+      Url1:interestPoint,
+      Url1Color:'#009aa6',//#e72323&#e72323#fffb3d
       Url2:lineImg,
+      Url2Color:'#ffffff',
       Url3:regionImg,
+      Url3Color:'#ffffff',
       isAddPoint:false,
       theConfig:{
         buttonA:false,
@@ -168,12 +173,12 @@ export default {
     addInterestPointStart(){
       if(!this.isAddPoint){
         this.isAddPoint=true;//更改添加点状态为“可用”
-        this.Url0Color='#e72323';//更改背景色
+        this.Url1Color='#e72323';//更改背景色
         //更改按钮状态
         this.theConfig.buttonA=true;
       }else {
         this.isAddPoint=false;//更改添加点状态为“可用”
-        this.Url0Color='#fffb3d';//更改背景色
+        this.Url1Color='#009aa6';//更改背景色e72323
         //更改按钮状态
         this.theConfig.buttonA=false;
       }
@@ -253,5 +258,27 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
+}
+.controlButtonBox{
+  width: 90px;
+  height: 300px;
+  /*background: red;*/
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: fixed;
+  right: 0px;
+  top:100px;
+  background: rgba(248,248,248,0.85);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  box-shadow:  #c5c5c5 0px 0px 6px;
+}
+.controlButtonName{
+  font-size: 15px;
+  font-weight: 400;
+  margin-bottom: 10px;
+  color: rgba(42,42,42,0.8);
 }
 </style>

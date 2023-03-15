@@ -14,7 +14,10 @@
     <!--用于显示(view)和添加(new)数据用-，其下的子组件例如svgLine组件拥有移动(move)，缩放(scale)、编辑(edit)、删除(del)的功能-->
     <layer-data>
     </layer-data>
-
+    <!--消息层-->
+    <!--显示编辑历史等信息-->
+    <layer-message>
+    </layer-message>
     <!--标尺层-->
     <!--用于显示上策和左侧经纬度标尺-->
     <layer-ruler>
@@ -79,12 +82,13 @@ import LayerElementPanel from "./components/LayerElementPanel";
 import LayerConsole from "./components/LayerConsole";
 import LayerUser from "./components/LayerUser";
 import LayerDetailsPanel from "./components/LayerDetailsPanel";
+import LayerMessage from "./components/LayerMessage";
 export default {
   name: 'App',
   components: {
     LayerUser,
     //普通图层
-    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerDetailsPanel,
+    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerDetailsPanel,LayerMessage,
     //特殊图层
     LayerConsole
   },
