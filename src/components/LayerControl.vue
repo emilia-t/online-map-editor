@@ -39,7 +39,7 @@ export default {
     return {
       MY_NAME:"LayerControl",
       Url1:interestPoint,
-      Url1Color:'#009aa6',//#e72323&#e72323#fffb3d
+      Url1Color:'#ffffff',//#e72323&#e72323#fffb3d
       Url2:lineImg,
       Url2Color:'#ffffff',
       Url3:regionImg,
@@ -173,12 +173,12 @@ export default {
     addInterestPointStart(){
       if(!this.isAddPoint){
         this.isAddPoint=true;//更改添加点状态为“可用”
-        this.Url1Color='#e72323';//更改背景色
+        this.Url1Color='#d2d2d2';//更改背景色
         //更改按钮状态
         this.theConfig.buttonA=true;
       }else {
         this.isAddPoint=false;//更改添加点状态为“可用”
-        this.Url1Color='#009aa6';//更改背景色e72323
+        this.Url1Color='#ffffff';//更改背景色e72323
         //更改按钮状态
         this.theConfig.buttonA=false;
       }
@@ -260,8 +260,8 @@ export default {
   height: 100%;
 }
 .controlButtonBox{
-  width: 90px;
-  height: 300px;
+  width: 70px;
+  height: 260px;
   /*background: red;*/
   display: flex;
   justify-content: center;

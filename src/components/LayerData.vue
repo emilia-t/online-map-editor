@@ -136,7 +136,7 @@ export default {
     startLinkServer(){
       const serverAdr=this.$root.CONFIG.__SERVER_ADDRESS__;
       //创建新综合指令对象
-      this.$store.state.serverData.socket=new this.$store.state.classList.InstructComprehensive(serverAdr);
+      this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(serverAdr);
       //连接服务器
       this.$store.state.serverData.socket.link();
     },

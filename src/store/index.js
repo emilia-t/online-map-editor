@@ -1,13 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 Vue.use(Vuex)
-//vuex3.0基本操作https://blog.csdn.net/qq_56989560/article/details/124706021
 export default new Vuex.Store({
   //提供唯一的公共数据源，所有共享的数据统一放到store的state进行储存数据，相当于data
   state: {
     classList:{
-      //综合指令类
-      InstructComprehensive:class InstructComprehensive {
+      //综合的一个连接服务端的通讯类
+      comprehensive:class comprehensive {
         constructor(url){
           this.url=url || 'ws://127.0.0.1:9998';
           this.isLink=false;
@@ -19,7 +18,9 @@ export default new Vuex.Store({
           this.userData=null;
           this.mapData=[];
           this.otherA1=[];
+          //指令类型合集
           this.typeList=['broadcast','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData'];
+          //指令合集
           this.Instruct={
             //类似于coumputed
             //登录指令
@@ -48,6 +49,14 @@ export default new Vuex.Store({
             //以广播的形式发送新增点数据
             broadcast_point(data){
               return {type:"broadcast",class:"point",data}
+            },
+            //以广播的形式删除某一要素
+            broadcast_deleteElement(elementId){
+              return {type:"broadcast",class:"deleteElement",data:{elementId}}
+            },
+            //广播普通文字消息
+            broadcast_textMessage(data){
+              return {type:'broadcast',class:'textMessage',data}
             }
           };
           this.startSetting();
@@ -65,6 +74,10 @@ export default new Vuex.Store({
           this.otherA1=[];
           //3.清除地图数据
           this.mapData=[];
+        }
+        //广播普通文本信息
+        broadcastSendText(data){
+          this.send(this.Instruct.broadcast_textMessage(data));
         }
         //发送关注点数据
         broadcastSendPoint(data){
@@ -329,7 +342,7 @@ export default new Vuex.Store({
                   break;
                 }
                 //新增点数据广播
-                case 'NewPoint':{
+                case 'point':{
                   //一、解析坐标
                   try{
                     //1.将base64转化为普通字符
@@ -369,10 +382,25 @@ export default new Vuex.Store({
                     }
                   }catch(e){}
                   //更新messages
-                  let NewMessageObj={'type':'broadcast','class':'NewPoint','conveyor':jsonData.conveyor,'elementId':jsonData.data.id};
+                  let NewMessageObj={'type':'broadcast','class':'point','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);
                   //添加到mapData
                   this.mapData.push(jsonData.data);
+                  break;
+                }
+                //删除要素的广播
+                case 'deleteElement':{
+                  console.log(jsonData.data);
+                  break;
+                }
+                //普通文本消息
+                case 'textMessage':{
+                  //更新messages
+                  let NewMessageObj={'type':'broadcast','class':'textMessage','conveyor':jsonData.conveyor,'time':jsonData.time,'data':jsonData.data};
+                  this.messages.push(NewMessageObj);
+                  //添加到mapData
+                  this.mapData.push(jsonData.data);
+                  break;
                 }
               }
               break;
@@ -507,39 +535,26 @@ export default new Vuex.Store({
       userEmail:'Anyone@Any.com',
       //5.用户QQ,默认为1077365277//目前已经移交至socket会话的数据中，此处仅作实例
       userQq:1077365277,
+      //6.用户头像背景色(在消息面板处用)
+      userHeadColor:'ffffff',
+      //7.默认值
+      default:{
+        "user_email": "神秘用户",
+        "user_name": "神秘用户",
+        "map_layer": "0",
+        "default_a1": "{x:0,y:0}",
+        "save_point": null,
+        "user_qq": "1077365277",
+        "head_color": "ffffff"
+      }
     }
   },
-  //类似于vue中的computed，进行缓存，对于Store中的数据进行加工处理形成新的数据
   getters: {
 
   },
-  //里面定义方法，操作state方发
-  //Vuex 中的 mutation 非常类似于事件：每个 mutation 都有一个字符串的事件类型 (type)和一个回调函数 (handler)。
   mutations: {
-    /**经纬度坐标系转化为整数坐标
-    1.功能：用于将带有负号，小数点符号的经纬度转化为纯整数的数字坐标
-    2.传参：point,必要的,默认为{0,0},代表经纬度的x,y值;check,可选的,默认为false,若check传入true则表示需要对此经纬度的格式进行检查
-    3.返参：obj,{x:int,y:int},返回一个含有x,y值的对象
-    **/
-    // longitudeLatitudeToInt(point,check){
-    //   let mapW=this.state.mapConfig.mapSize.width;
-    //   let mapH=this.state.mapConfig.mapSize.height;
-    //   //1.将经纬度转化为整数
-    //   let x=point.x || 0;
-    //   let y=point.y || 0;
-    //   let checkOut=check || false;
-    //   let obj={x,y};
-    //   if(checkOut){
-    //     if(x>180 || y>90){
-    //       return obj;
-    //     }
-    //   }
-    //   obj.x=((mapW/2)+(Math.round(obj.x*10000000)));
-    //   obj.y=((mapH/2)-(Math.round(obj.y*10000000)));
-    //   return obj;
-    // }
+
   },
-  // 操作异步操作mutation
   actions: {
 
   }

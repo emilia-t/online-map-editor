@@ -21,7 +21,7 @@ export default {
     },
     "color":{
       type:String,
-      default:'#009aa6'
+      default:'#ffffff'
     }
   },
   methods:{
@@ -41,16 +41,16 @@ export default {
 <style scoped>
 .controlLayerButtons{
   padding: 10px 10px 4px 10px;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
 }
 .controlLayerButtons img{
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 5px;
   overflow: hidden;
   transition: 0.3s;

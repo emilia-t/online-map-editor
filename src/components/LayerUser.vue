@@ -212,6 +212,17 @@ export default {
       }else {
         return this.$store.state.serverData.userQq
       }
+    },
+    headColor(){
+      if(this.$store.state.serverData.socket!==undefined){
+        if(this.$store.state.serverData.socket.userData!==null){
+          return this.$store.state.serverData.socket.userData.head_color;
+        }else {
+          return this.$store.state.serverData.userHeadColor
+        }
+      }else {
+        return this.$store.state.serverData.userHeadColor
+      }
     }
   }
 }
