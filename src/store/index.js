@@ -52,7 +52,7 @@ export default new Vuex.Store({
             },
             //以广播的形式删除某一要素
             broadcast_deleteElement(elementId){
-              return {type:"broadcast",class:"deleteElement",data:{elementId}}
+              return {type:"broadcast",class:"deleteElement",data:{id:elementId}}
             },
             //广播普通文字消息
             broadcast_textMessage(data){
@@ -74,6 +74,10 @@ export default new Vuex.Store({
           this.otherA1=[];
           //3.清除地图数据
           this.mapData=[];
+        }
+        //广播删除某一要素
+        broadcastDeleteElement(id){
+          this.send(this.Instruct.broadcast_deleteElement(id));
         }
         //广播普通文本信息
         broadcastSendText(data){
@@ -390,7 +394,19 @@ export default new Vuex.Store({
                 }
                 //删除要素的广播
                 case 'deleteElement':{
-                  console.log(jsonData.data);
+                  try{
+                    let ID=jsonData.data.id;
+                    //查找并删除该id
+                    this.mapData.some((item, index)=>{
+                      if (item.id==ID){
+                        this.mapData.splice(index,1);
+                        return true;
+                      }
+                    });
+                    //更新消息
+                    this.messages.push(jsonData);
+                  }
+                  catch (e) {}
                   break;
                 }
                 //普通文本消息
@@ -452,6 +468,7 @@ export default new Vuex.Store({
     },
     //地图配置
     mapConfig:{
+      A1Layer:0,
       layer:0,
       oldLayer:null,
       zoomAdd:0.2,
@@ -470,15 +487,10 @@ export default new Vuex.Store({
           y2:-900000000
         }
       },
-      startDefaultPoint:{
-        x:0,
-        y:0
-      },
       A1:{
         x:0,
         y:0
       },
-      A1Layer:0,
       centerPoint:{
         x:0,
         y:0
@@ -499,6 +511,10 @@ export default new Vuex.Store({
         color:'#000000',
         width:0
       },
+      startDefaultPoint:{
+        x:0,
+        y:0
+      },
       mousePoint:{
         x:0,
         y:0
@@ -510,6 +526,10 @@ export default new Vuex.Store({
       svgClick:{
         x:0,
         y:0
+      },
+      operated:{
+        //被操作元素id
+        id:null
       }
     },
     //左侧元素信息面板显示的数据

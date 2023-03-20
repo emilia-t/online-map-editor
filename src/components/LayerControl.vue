@@ -1,7 +1,7 @@
 <template>
   <!--
   职责：
-  1.允许用户向服务器添加地图数据、地图配置
+  1.提供删除、添加地图数据的功能、提供打开控制台的功能
   权限：
   允许访问、修改、删除$store.state.mapConfig、$store.state.serverData内的数据
   -->
@@ -17,13 +17,15 @@
       <banana-control-button ref="controlButton2" :color="Url3Color" :button-img-prop="Url3"></banana-control-button>
       <span class="controlButtonName">区域面</span>
     </div>
-
+    <!--元素右键编辑面板-->
+    <banana-element-operation-board></banana-element-operation-board>
     <!--编辑属性面板-->
     <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"></banana-point-attribute-board>
   </div>
 </template>
 
 <script>
+import BananaElementOperationBoard from "./BananaElementOperationBoard";
 import BananaControlButton from "./BananaControlButton";
 import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
 import interestPoint from '../../static/point.png';//关注点
@@ -34,7 +36,7 @@ import regionImg from '../../static/area.png';
 //
 export default {
   name: "LayerControl",
-  components:{BananaControlButton, BananaPointAttributeBoard},
+  components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard},
   data(){
     return {
       MY_NAME:"LayerControl",
@@ -211,6 +213,9 @@ export default {
     },
     addNewPos(){
       return this.theConfig.addPointPos;
+    },
+    operated(){
+      return this.$store.state.mapConfig.operated;
     }
   },
   watch:{
@@ -233,6 +238,12 @@ export default {
         //
       },
       deep:true
+    },
+    operated:{
+      handler(newValue){
+          //这里要应该显示操作条
+      },
+      deep:true
     }
   }
 }
@@ -242,15 +253,6 @@ export default {
 .controlLayer{
   width: auto;
   height: auto;
-  /*background: red;*/
-  /*display: flex;*/
-  /*position: fixed;*/
-  /*justify-content: center;*/
-  /*left: calc((100% - (var(--panelWidth) + var(--panelLeft))) * var(--controlLeft));*/
-  /*top: var(--controlTop);*/
-  /*border-radius: var(--borderType02);*/
-  /*box-shadow: var(--BottomShadowColor);*/
-  /*background: var(--BottomBackgroundColor);*/
 }
 .tempSvg{
   position: fixed;

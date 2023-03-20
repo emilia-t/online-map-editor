@@ -1,6 +1,6 @@
 <template>
-  <g :elementId="this.pointConfig.id">
-    <circle ref="element" @click="showDetails()" :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
+  <g :elementId="this.myId">
+    <circle ref="element" @click="showDetails()"  :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color" @contextmenu="rightClickOperation($event)"/>
     <!--动效-->
     <circle v-if="selectId===myId" ref="element" @click="showDetails()" :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="((pointConfig.width+0)/10+radius[0])+'px'" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
   </g>
@@ -109,22 +109,22 @@ export default {
           return true;
         }
         //放大
-         if(layer<0){
-           //1.计算缩小后-p0（0,0）与新点之间的距离
-           for(let i=0;i>layer;i--){
-             pointPos.x=pointPos.x+(pointPos.x*this.$store.state.mapConfig.zoomAdd);
-             pointPos.y=pointPos.y+(pointPos.y*this.$store.state.mapConfig.zoomAdd);
-           }
-           //添加p0
-           refPos.x=pointPos.x+p0Pos.x;
-           refPos.y=pointPos.y+p0Pos.y;
-           //修改p
-           this.pointConfig.point.x=refPos.x;
-           this.pointConfig.point.y=refPos.y;
-           return true;
-         }
+        if(layer<0){
+          //1.计算缩小后-p0（0,0）与新点之间的距离
+          for(let i=0;i>layer;i--){
+            pointPos.x=pointPos.x+(pointPos.x*this.$store.state.mapConfig.zoomAdd);
+            pointPos.y=pointPos.y+(pointPos.y*this.$store.state.mapConfig.zoomAdd);
+          }
+          //添加p0
+          refPos.x=pointPos.x+p0Pos.x;
+          refPos.y=pointPos.y+p0Pos.y;
+          //修改p
+          this.pointConfig.point.x=refPos.x;
+          this.pointConfig.point.y=refPos.y;
+          return true;
+        }
         return true;
-        }catch (e) {
+      }catch (e) {
         return false;
       }
     },
@@ -157,6 +157,11 @@ export default {
       const aySize=MOY-TRY;
       this.pointConfig.point.x=this.reTranslateCoordinate(TRX-((zoom*axSize)));
       this.pointConfig.point.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
+    },
+    rightClickOperation(mouseEvent){
+      mouseEvent.preventDefault();
+      this.$store.state.mapConfig.operated.id=this.myId;
+      return mouseEvent;
     }
   },
   computed:{
