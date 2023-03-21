@@ -1,5 +1,5 @@
 <template>
-  <div class="BananaElementOperationBoard">
+  <div class="BananaElementOperationBoard" v-show="this.$store.state.elementOperationBoardConfig.display" :style="style">
     <div class="panel">
       <div class="deleteButtonBox selectNone" ref="deleteButtonBox">
         <img @click="deleteElement()" class="deleteButton" draggable="false" alt="按钮" :src="deleteButton" :style="'background:'+this.button1Color"/>
@@ -29,6 +29,15 @@ export default {
       //select id
       let id=this.$store.state.mapConfig.operated.id;
       this.$store.state.serverData.socket.broadcastDeleteElement(id);
+      //关闭 element operation board
+      this.$store.state.elementOperationBoardConfig.display=false;
+    }
+  },
+  computed:{
+    style(){
+      let x=this.$store.state.elementOperationBoardConfig.posX+30;
+      let y=this.$store.state.elementOperationBoardConfig.posY+30;
+      return 'left:'+x+'px;top:'+y+'px'
     }
   }
 }

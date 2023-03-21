@@ -463,6 +463,8 @@ export default {
             point:{x:null,y:null}
           };
         }
+        //关闭element operation board
+        this.$store.state.elementOperationBoardConfig.display=false;
       })
     }
   },

@@ -159,6 +159,10 @@ export default {
       this.pointConfig.point.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
     },
     rightClickOperation(mouseEvent){
+      //对右侧悬浮条的位置和显示状态操作
+      this.$store.state.elementOperationBoardConfig.display=true;
+      this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
+      this.$store.state.elementOperationBoardConfig.posY=mouseEvent.y;
       mouseEvent.preventDefault();
       this.$store.state.mapConfig.operated.id=this.myId;
       return mouseEvent;

@@ -527,9 +527,10 @@ export default new Vuex.Store({
         x:0,
         y:0
       },
+      //元素被右键选择
       operated:{
         //被操作元素id
-        id:null
+        id:null,
       }
     },
     //左侧元素信息面板显示的数据
@@ -542,6 +543,11 @@ export default new Vuex.Store({
         y:null
       },
       target:null
+    },
+    elementOperationBoardConfig:{
+      posX:null,
+      posY:null,
+      display:false
     },
     //服务器相关数据
     serverData:{
