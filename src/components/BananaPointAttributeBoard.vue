@@ -1,9 +1,9 @@
 <template>
 <!--点数据属性面板-->
-  <div class="BananaPointAttributeBoard" v-bind:style="BoardPos">
+  <div class="BananaPointAttributeBoard" v-bind:style="BoardPos" v-show="show">
     <!--头部名称-->
     <div class="headName mouseType1" contenteditable="false">
-      新增点编辑面板
+      编辑新增点
     </div>
     <!--属性列表-->
     <div class="centerList mouseDefault">
@@ -65,13 +65,15 @@
 
         </div>
         <!--右侧属性值-->
-        <textarea class="rightValue" contenteditable="true" v-model="color" rows="1" maxlength="7">
+        <textarea class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7">
 
         </textarea>
         <!--勾选按钮-->
-        <div class="doneTickButton">
-          <div class="doneSleBtn"></div>
-        </div>
+<!--        <div class="doneTickButton">-->
+<!--          <div class="doneSleBtn"></div>-->
+<!--        </div>-->
+        <!--调色板-->
+        <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ff0000'"></orange-color-palette>
       </div>
       <div class="centerListItem">
         <!--左侧属性名-->
@@ -87,13 +89,14 @@
         </div>
         <!--右侧属性值-->
         <!--右侧属性值-->
-        <textarea class="rightValue" contenteditable="true" v-model="width" rows="1" maxlength="7">
-
+        <textarea class="widthInput" contenteditable="true" v-model="width" maxlength="7">
         </textarea>
         <!--勾选按钮-->
-        <div class="doneTickButton">
-          <div class="doneSleBtn"></div>
-        </div>
+<!--        <div class="doneTickButton">-->
+<!--          <div class="doneSleBtn"></div>-->
+<!--        </div>-->
+        <!--滑块-->
+        <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :max="64" :min="2" :default="5"></orange-slide-block>
       </div>
       <div class="centerListItem" v-for="detail in details">
         <!--左侧属性名-->
@@ -121,38 +124,18 @@
     <div class="bottomButton mouseType1">
       <button @click="insertRow($event)">插入列</button>
       <button @click="removeRow($event)">删除列</button>
-      <button @click="cancelEdit($event)">取消</button>
-      <button @click="submitEdit($event)">提交</button>
-      <!--按钮逻辑-->
-      <!--
-
-      勾选框只能单选
-
-      1.新增点：
-      默认会有几个列：颜色、名字
-
-      2.插入行：
-      点击右侧的勾选框可以选择该行
-      在左下角按钮可以点击“插入列”并在该选中行上方插入空列
-      空列输入后可以点击右下角提交按钮
-      如果不想插入了
-      可以在右下角点击取消
-
-      3.删除列
-      点击右侧勾选框选择要删除的行
-      在左下角按钮点击“删除列”
-
-      4.数据保存
-      编辑完成点数据后点击右下角提交上传数据库
-
-      -->
+      <button @click="cancelEdit($event)">重置</button>
+      <button @click="submitEdit($event)">上传</button>
     </div>
   </div>
 </template>
 
 <script>
+import OrangeColorPalette from "./OrangeColorPalette";
+import OrangeSlideBlock from "./OrangeSlideBlock";
 export default {
   name: "BananaPointAttributeBoard",
+  components:{OrangeSlideBlock,OrangeColorPalette},
   data(){
     return {
       id:"-1",
@@ -174,7 +157,8 @@ export default {
         color:"",
         details:[]
       },
-      tempId:1
+      tempId:1,
+      show:false
     }
   },
   props:{
@@ -199,6 +183,14 @@ export default {
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
     },
+    //调色板的监听，接收来自调色板的值
+    paletteHandle(data){
+      this.color=data;
+    },
+    //滑块的监听，接收来自滑块的值
+    sliderHandle(data){
+      this.width=data;
+    },
     //按钮动画
     buttonAnimation(ev){
       ev.target.classList.contains('animation')?ev.target.classList.toggle('animationB'):ev.target.classList.toggle('animation');
@@ -219,13 +211,15 @@ export default {
       };
       //上传到服务器
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
+      //隐藏面板
+      this.show=false;
     },
     //取消-从缓存中恢复源数据
     cancelEdit(ev){
       this.name=this.cache.name;
       this.color=this.cache.color;
       this.details=JSON.parse(JSON.stringify(this.cache.details));
-      this.buttonAnimation(ev)
+      this.buttonAnimation(ev);
     },
     //选择列
     selectList(ev){
@@ -318,6 +312,37 @@ export default {
         this.point.y=newValue.y;
       },
       deep:true
+    },
+    //被移动位置时触发
+    BoardPos:{
+      handler(newValue){
+        this.show=true;
+      }
+    },
+    color:{
+      handler(newValue,oldValue){
+        //检测颜色格式是否正确
+        let Exp=/^[0-9A-F]{6}$/i;
+        if(Exp.test(newValue)===false){
+          this.color=oldValue;
+        }else {
+          this.$store.state.mapConfig.tempPoint.color=newValue;
+        }
+      }
+    },
+    width:{
+      handler(newValue,oldValue){
+        //检测宽度格式是否正确
+        function isNumber(input) {return /^\d+$/.test(input);}
+        let Exp=/^(6[0-4]|[1-5]\d|\d)$/;
+        if(Exp.test(newValue)===false){
+          if(newValue!==''){
+            this.width=oldValue;
+          }
+        }else {
+          this.$store.state.mapConfig.tempPoint.width=newValue;
+        }
+      }
     }
   }
 }
@@ -350,7 +375,7 @@ export default {
   position: fixed;
   width: 300px;
   height: 400px;
-  background: #fafafa;
+  background: #fdfdfd;
   box-shadow: #b1b1b1 2px 2px 10px;
   border-radius: 10px;
   padding: 5px;
@@ -367,7 +392,6 @@ export default {
   border-radius: 5px;
   padding: 0px 5px;
   color: #5e5e5e;
-  box-shadow:1px 0px 4px #c1c1c1;
   position: relative;
   z-index: 400;
 }
@@ -380,7 +404,6 @@ export default {
 .centerList{
   width: 100%;
   height: calc(100% - 35px - 25px);
-  /*background: #34bdff;*/
   overflow-x: hidden;
   overflow-y: auto;
   display: flex;
@@ -398,7 +421,7 @@ export default {
   align-items: flex-start;
   flex-direction: row;
   /*overflow: hidden;*/
-  background: #fafafa;
+  background: #fdfdfd;
   border-radius: 3px;
   border:1px dashed #d8d8d8;
 }
@@ -499,9 +522,26 @@ textarea{
   border:none;
   outline: none;/*边线不显示*/
   resize: none;/*禁止拉伸*/
-  background:#fafafa;
+  background:#fdfdfd;
   appearance:none;
   cursor: text;
 }
-
+.widthInput{
+  width: calc(100% - 2px - 70px - 100px - 4px);
+  height: 35px;
+  border: none;
+  padding: 0px 0px 0px 4px;
+  font-size: 12px;
+  vertical-align:middle;
+  line-height: 35px;
+}
+.colorInput{
+  width: calc(100% - 2px - 70px - 45px - 4px);
+  height: 35px;
+  border: none;
+  padding: 0px 0px 0px 4px;
+  font-size: 12px;
+  vertical-align:middle;
+  line-height: 35px;
+}
 </style>

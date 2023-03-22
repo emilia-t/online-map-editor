@@ -167,7 +167,7 @@ export default {
     },
     //更新临时SVG图层和临时点的数据
     updateTempData(newValue){
-      this.$store.state.mapConfig.tempPoint.width=10;
+      this.$store.state.mapConfig.tempPoint.width=this.$store.state.mapConfig.tempPoint.defaultWidth;
       this.$store.state.mapConfig.tempPoint.point.x=newValue.x;
       this.$store.state.mapConfig.tempPoint.point.y=newValue.y;
     },

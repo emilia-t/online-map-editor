@@ -508,8 +508,9 @@ export default new Vuex.Store({
         type:'point',
         points:[{x:0,y:0}],
         point:{x:0,y:0},
-        color:'#000000',
-        width:0
+        color:'000000',
+        width:0,
+        defaultWidth:5
       },
       startDefaultPoint:{
         x:0,
@@ -544,6 +545,14 @@ export default new Vuex.Store({
       },
       target:null
     },
+    //控制层的配置
+    layerControlConfig:{
+    },
+    //点添加属性面板的配置
+    pointAttributeBoardConfig:{
+
+    },
+    //元素右键操作面板的配置
     elementOperationBoardConfig:{
       posX:null,
       posY:null,

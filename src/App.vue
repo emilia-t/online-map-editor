@@ -36,7 +36,7 @@
     </layer-control>
     <!--元素面板层-->
     <!--用于展示图层数据的-->
-<!--    <layer-element-panel></layer-element-panel>-->
+    <layer-element-panel></layer-element-panel>
     <!--属性面板层-->
     <layer-details-panel></layer-details-panel>
     <!--调试面板-->
@@ -166,5 +166,8 @@ body, html {
 *::-webkit-scrollbar-track {
   border-radius: 0;
   background: rgba(0,0,0,0.1);
+}
+*{
+  font-family: Roboto;
 }
 </style>

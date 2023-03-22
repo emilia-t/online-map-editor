@@ -173,7 +173,7 @@ export default {
   height: 50px;
   display: flex;
   justify-content: center;
-  background: #ecd2c5;
+  background: #ffffff;
   font-size: 24px;
   font-weight: 400;
   align-items: center;
@@ -197,7 +197,7 @@ export default {
   font-size: 17px;
 }
 .boxLeft{
-  width: calc(30% - 1px);
+  width: calc(24% - 1px);
   height: auto;
   padding: 10px;
   border-right: 1px dashed #c7c5c7;

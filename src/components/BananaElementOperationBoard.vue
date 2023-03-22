@@ -20,8 +20,8 @@ export default {
     return {
       deleteButton,
       moreButton,
-      button1Color:"#ffffff",
-      button2Color:"#ffffff",
+      button1Color:"rgba(255,255,255,0.8)",
+      button2Color:"rgba(255,255,255,0.8)",
     }
   },
   methods:{
@@ -59,6 +59,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-items: flex-start;
+  background: rgba(255,255,255,0.85);
 }
 .deleteButtonBox{
   width: 30px;

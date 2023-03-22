@@ -219,7 +219,7 @@ export default {
   display: flex;
   justify-content: center;
   border-bottom: 2px dashed #e7e1e5;
-  background: #f1e486;
+  background: #ffffff;
   font-size: 24px;
   line-height:calc(24px * 2);
   color: rgba(50, 50, 50, 0.85);

@@ -16,7 +16,7 @@
       <!--p0位置-->
       <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"></svg-point-p0>
       <!--临时点数据-->
-      <svg-point-temp :point-config="this.$store.state.mapConfig.tempPoint"></svg-point-temp>
+      <svg-point-temp></svg-point-temp>
       <!--临时线数据-->
 <!--      <svg-line-temp></svg-line-temp>-->
       <!--我的A1位置-->
