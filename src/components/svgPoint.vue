@@ -2,7 +2,7 @@
   <g :elementId="this.myId">
     <circle ref="element" @click="showDetails()"  :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color" @contextmenu="rightClickOperation($event)"/>
     <!--动效-->
-    <circle v-if="selectId===myId" ref="element" @click="showDetails()" :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="((pointConfig.width+0)/10+radius[0])+'px'" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
+    <circle v-if="selectId===myId" ref="element" @click="showDetails()" :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="dynamicStyle" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
   </g>
 </template>
 
@@ -31,7 +31,8 @@ export default {
           color:'#ec3232',
           width:2
         }
-      }
+      },
+      required:true
     }
   },
   mounted() {
@@ -159,16 +160,24 @@ export default {
       this.pointConfig.point.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
     },
     rightClickOperation(mouseEvent){
+      //阻止默认事件
+      mouseEvent.preventDefault();
       //对右侧悬浮条的位置和显示状态操作
       this.$store.state.elementOperationBoardConfig.display=true;
       this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
       this.$store.state.elementOperationBoardConfig.posY=mouseEvent.y;
-      mouseEvent.preventDefault();
+      //设置operated
       this.$store.state.mapConfig.operated.id=this.myId;
+      //同步该元素的数据
+      this.$store.state.mapConfig.operated.data=this.pointConfig;
       return mouseEvent;
     }
   },
   computed:{
+    //简陋的选中动效样式
+    dynamicStyle(){
+      return ((this.pointConfig.width+0)/10+this.radius[0])+'px'
+    },
     dynamicPointsX(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let A1mvX=this.A1Cache.x-this.A1.x;

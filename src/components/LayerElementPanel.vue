@@ -1,9 +1,9 @@
 <template>
   <!--
   职责：显示地图整体的简要属性、例如地图大小、以列表方式展示数据（类似于谷歌地图左侧的的面板）
-  允许访问、修改、删除$store.state.serverData内的数据
+  允许访问、修改、删除$store.state.serverData内的数据elementPanelLayer
   -->
-  <div class="LayerElementPanel">
+  <div class="elementPanelLayer">
     <div class="title">
       地图元素面板
     </div>
@@ -200,7 +200,7 @@ export default {
   justify-content: flex-start;
   /*background: #b5a4c9;*/
 }
-.LayerElementPanel{
+.elementPanelLayer{
   width: var(--panelWidth);
   height: var(--panelHight);
   display: flex;
@@ -209,7 +209,7 @@ export default {
   background: var(--BottomBackgroundColor);
   left: var(--panelLeft);
   top:var(--panelTop);
-  border-radius: var(--borderType02);
+  border-radius: var(--borderType03);
   overflow: hidden;
   box-shadow: var(--BottomShadowColor);
 }

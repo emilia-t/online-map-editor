@@ -54,9 +54,13 @@ export default new Vuex.Store({
             broadcast_deleteElement(elementId){
               return {type:"broadcast",class:"deleteElement",data:{id:elementId}}
             },
-            //广播普通文字消息
+            //以广播普通文字消息
             broadcast_textMessage(data){
               return {type:'broadcast',class:'textMessage',data}
+            },
+            //以广播更新元素数据
+            broadcast_updateElement(data){
+              return {type:'broadcast',class:'updateElement',data}
             }
           };
           this.startSetting();
@@ -74,6 +78,68 @@ export default new Vuex.Store({
           this.otherA1=[];
           //3.清除地图数据
           this.mapData=[];
+        }
+        //广播更新某一要素
+        broadcastUpdateElement(data){
+          try {
+            //0.检查数据
+            //0.1检查是否属于object
+            if(Object.prototype.toString.call(data)!=="[object Object]"){return false;}
+            //0.2检查是否存在changes
+            if(data.hasOwnProperty("changes")){
+              //0.3检查是否存在color
+              if(data.changes.hasOwnProperty("color")){
+                //0.3.1检查颜色是否为字符
+                if(Object.prototype.toString.call(data.changes.color)!=="[object String]"){return false;}
+                //0.3.2检查颜色是否为16进制的格式
+                let Exp=/^[0-9A-F]{6}$/i;
+                if(Exp.test(data.changes.color)===false){alert("请输入正确的16进制颜色格式例如#123456");return false;}
+              }
+              //0.4检查是否存在width
+              if(data.changes.hasOwnProperty("width")){
+                let $num1=parseInt(data.changes.width);
+                if(Object.prototype.toString.call($num1)!=="[object Number]"){
+                  alert("宽度为数字，范围为2~64");
+                  return false;
+                }else {
+                  if($num1>64 || $num1<2){
+                    alert("宽度范围为2~64");
+                    return false;
+                  }else {
+                    data.changes.width=~~(data.changes.width);
+                  }
+                }
+              }
+              //0.5检查是否存在details
+              if(data.changes.hasOwnProperty("details")){
+                //0.5.1检查是否为数组
+                if(Object.prototype.toString.call(data.changes.details)==="[object Array]"){
+                  //0.5.2循环检查类型
+                  for(let i=0;i<data.changes.details.length;i++){
+                    //0.5.3检查是否为对象
+                    if(Object.prototype.toString.call(data.changes.details[i])!=="[object object]"){
+                      //0.5.4检查是否包含key，value属性
+                      if(data.changes.details[i].hasOwnProperty("key") && data.changes.details[i].hasOwnProperty("value")){
+                        //0.5.5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
+                        //0.5.6key正则表达式
+                        const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;
+                        const ValueExp=/[\[\]{}#`'"]|(-){2}|(\/){2}|(%){2}|\/\*/m;
+                        //key
+                        if(KeyExp.test(data.changes.details[i].key)){
+                          alert("列名错误，仅允许使用字母、数字、汉字、下划线");
+                          return false;
+                        }
+                        //value
+                        if(ValueExp.test(data.changes.details[i].value)){
+                          alert("列值错误，不允许使用如下字符[]、{}、#、`、'、\"、--、//、%%、/*");
+                          return false;
+                        }
+                      }else{return false;}}else{return false;}}}else{return false;}}
+              //end广播
+              this.send(this.Instruct.broadcast_updateElement(data));
+            }
+          }catch (e) {}
+
         }
         //广播删除某一要素
         broadcastDeleteElement(id){
@@ -114,10 +180,13 @@ export default new Vuex.Store({
             if(data.hasOwnProperty("width")){
               let $num1=parseInt(data.width);
               if(Object.prototype.toString.call($num1)!=="[object Number]"){
-                alert("宽度为数字，范围为int2~64");
+                alert("宽度为数字，范围为2~64");
                 return false;
               }else {
                 if(data.width>64 || data.width<2){
+                  alert("宽度范围为2~64");
+                  return false;
+                }else {
                   data.width=~~(data.width);
                 }
               }
@@ -392,7 +461,7 @@ export default new Vuex.Store({
                   this.mapData.push(jsonData.data);
                   break;
                 }
-                //删除要素的广播
+                //删除某一元素的广播
                 case 'deleteElement':{
                   try{
                     let ID=jsonData.data.id;
@@ -414,8 +483,29 @@ export default new Vuex.Store({
                   //更新messages
                   let NewMessageObj={'type':'broadcast','class':'textMessage','conveyor':jsonData.conveyor,'time':jsonData.time,'data':jsonData.data};
                   this.messages.push(NewMessageObj);
-                  //添加到mapData
-                  this.mapData.push(jsonData.data);
+                  break;
+                }
+                //更新某一元素的广播
+                case 'updateElement':{
+                  try{
+                    //解码details如果有的话
+                    if(jsonData.data.hasOwnProperty('details')){
+                      jsonData.data.details=JSON.parse(window.atob(jsonData.data.details));
+                    }
+                    //提取id
+                    let eId=jsonData.data.id;
+                    //查找相应的地图数据并修改地图数据
+                    for (let i=0;i<this.mapData.length;i++){
+                      if(eId==this.mapData[i].id){
+                        Object.assign(this.mapData[i],jsonData.data);
+                        //更新message
+                        this.messages.push(jsonData);
+                        break;
+                      }
+                    }
+                  }catch (e) {
+
+                  }
                   break;
                 }
               }
@@ -532,6 +622,8 @@ export default new Vuex.Store({
       operated:{
         //被操作元素id
         id:null,
+        //被操作元素的元素数据
+        data:null
       }
     },
     //左侧元素信息面板显示的数据

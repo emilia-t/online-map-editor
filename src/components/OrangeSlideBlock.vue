@@ -58,7 +58,7 @@ export default {
   top: 50%;
   left: 0;
   -webkit-appearance: none;
-  background-color: #ccc;
+  background-color: #c6c6c6;
   height: 4px;
   border-radius: 2px;
   width: 100%;
@@ -71,7 +71,7 @@ export default {
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  background-color: #00bcd4;
+  background-color: #1296db;
   border-radius: 50%;
   cursor: pointer;
   margin-top: 0px;

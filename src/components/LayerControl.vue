@@ -264,7 +264,6 @@ export default {
 .controlButtonBox{
   width: 70px;
   height: 260px;
-  /*background: red;*/
   display: flex;
   justify-content: center;
   align-items: center;
@@ -272,7 +271,7 @@ export default {
   position: fixed;
   right: 0px;
   top:100px;
-  background: rgba(248,248,248,0.85);
+  background: rgba(250,250,250,0.85);
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
   box-shadow:  #c5c5c5 0px 0px 6px;

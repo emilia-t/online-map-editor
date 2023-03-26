@@ -1,47 +1,36 @@
 <!--仅次于根的父组件-->
 <template>
   <div id="app">
-    <!--------->
-    <!--测试用-->
-
-    <!--测试用-->
-    <!--------->
     <!--用户层-->
     <!--用于显示用户数据-->
-    <layer-user>
-    </layer-user>
+    <layer-user></layer-user>
     <!--数据层-->
     <!--用于显示(view)和添加(new)数据用-，其下的子组件例如svgLine组件拥有移动(move)，缩放(scale)、编辑(edit)、删除(del)的功能-->
-    <layer-data>
-    </layer-data>
+    <layer-data></layer-data>
     <!--消息层-->
     <!--显示编辑历史等信息-->
-    <layer-message>
-    </layer-message>
+    <layer-message></layer-message>
     <!--标尺层-->
     <!--用于显示上策和左侧经纬度标尺-->
-    <layer-ruler>
-    </layer-ruler>
+    <layer-ruler></layer-ruler>
     <!--背景层-->
     <!--用于显示背景，例如谷歌给地图-->
-    <layer-background>
-    </layer-background>
+    <layer-background></layer-background>
     <!--新建层-->
     <!--用于创建新的要素-->
-    <layer-create>
-    </layer-create>
+    <layer-create></layer-create>
     <!--控制层-->
     <!--用于控制一些操作用，例如编辑按钮、清空按钮-->
-    <layer-control>
-    </layer-control>
+    <layer-control></layer-control>
     <!--元素面板层-->
     <!--用于展示图层数据的-->
     <layer-element-panel></layer-element-panel>
     <!--属性面板层-->
     <layer-details-panel></layer-details-panel>
     <!--调试面板-->
-    <layer-console>
-    </layer-console>
+    <layer-console></layer-console>
+    <!--底部锚-->
+    <layer-bottom-anchor></layer-bottom-anchor>
   </div>
 </template>
 
@@ -83,12 +72,13 @@ import LayerConsole from "./components/LayerConsole";
 import LayerUser from "./components/LayerUser";
 import LayerDetailsPanel from "./components/LayerDetailsPanel";
 import LayerMessage from "./components/LayerMessage";
+import LayerBottomAnchor from "./components/LayerBottomAnchor";
 export default {
   name: 'App',
   components: {
     LayerUser,
     //普通图层
-    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerDetailsPanel,LayerMessage,
+    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerDetailsPanel,LayerMessage,LayerBottomAnchor,
     //特殊图层
     LayerConsole
   },
@@ -98,10 +88,7 @@ export default {
     }
   },
   methods:{
-    test:()=>{
-      //制作全局通讯用的组件或其他东西
 
-    }
   }
 }
 </script>

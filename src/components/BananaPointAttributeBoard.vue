@@ -7,51 +7,6 @@
     </div>
     <!--属性列表-->
     <div class="centerList mouseDefault">
-      <!--单列-->
-      <div class="centerListItem">
-        <!--左侧属性名-->
-        <div class="leftAttribute">
-          <!--名称-->
-          <div>
-            id
-          </div>
-        </div>
-        <!--中间的分割线-->
-        <div class="centerLine">
-
-        </div>
-        <!--右侧属性值-->
-        <div class="rightValue">
-          {{id}}
-        </div>
-        <!--不可勾选按钮-->
-        <div class="doneTickButton">
-          <div class="doneSleBtn"></div>
-        </div>
-      </div>
-      <div class="centerListItem">
-        <!--左侧属性名-->
-        <div class="leftAttribute">
-          <!--名称-->
-          <div>
-            坐标
-          </div>
-        </div>
-        <!--中间的分割线-->
-        <div class="centerLine">
-
-        </div>
-        <!--右侧属性值-->
-        <div class="rightValue">
-          x:{{point.x}}
-          <br/>
-          y:{{point.y}}
-        </div>
-        <!--勾选按钮-->
-        <div class="doneTickButton">
-          <div class="doneSleBtn"></div>
-        </div>
-      </div>
       <div class="centerListItem">
         <!--左侧属性名-->
         <div class="leftAttribute">
@@ -68,11 +23,6 @@
         <textarea class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7">
 
         </textarea>
-        <!--勾选按钮-->
-<!--        <div class="doneTickButton">-->
-<!--          <div class="doneSleBtn"></div>-->
-<!--        </div>-->
-        <!--调色板-->
         <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ff0000'"></orange-color-palette>
       </div>
       <div class="centerListItem">
@@ -146,8 +96,8 @@ export default {
         {"key":"名称","value":""},
         {"key":"地址","value":""},
         {"key":"类型","value":""},
-        {"key":"备注","value":""},
-        {"key":"区域","value":""}
+        {"key":"区域","value":""},
+        {"key":"备注","value":""}
       ],
       theConfig:{
         selectNum:-1
@@ -377,7 +327,7 @@ export default {
   height: 400px;
   background: #fdfdfd;
   box-shadow: #b1b1b1 2px 2px 10px;
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 5px;
 }
 .headName{
@@ -428,7 +378,7 @@ export default {
 .bottomButton{
   width: 100%;
   height: 25px;
-  border-radius: 5px;
+  border-radius: 3px;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
@@ -441,7 +391,7 @@ button{
   border: none;
   border-radius: 3px;
   font-size: 13px;
-  box-shadow: 1px 1px 1px #adadad;
+  box-shadow: 0px 0px 1px #adadad;
 }
 
 .leftAttribute{
@@ -452,19 +402,22 @@ button{
   flex-direction: column;
   justify-content: left;
   color: rgba(50, 50, 50, 0.8);
-  font-weight: 600;
+  font-weight: 400;
 }
-.leftAttribute textarea{font-weight: 600}
+.leftAttribute textarea{
+  font-weight: 400;
+  font-size: 14px;
+}
 .leftAttribute div{
   margin: 3px 0px;
-  padding: 2px 0px;
-  font-size: 13px;
+  padding: 2px 2px;
+  font-size: 14px;
 }
 .centerLine{
   width: 2px;
   height: 100%;
   overflow: hidden;
-  background: #fff1aa;
+  background: #fdfdfd;
 }
 .rightValue{
   width: calc(100% - 70px - 2px - 8px - 20px - 4px);
@@ -472,7 +425,7 @@ button{
   /*background: #8dffdf;*/
   overflow-x: hidden;
   overflow-y: auto;
-  font-size: 12px;
+  font-size: 14px;
   padding:0px 4px;
   color: rgb(45, 45, 45);
   line-height: 18px;
@@ -514,6 +467,7 @@ button{
   border-radius: 15px;
   background: #ffffff;
   overflow: hidden;
+  cursor: pointer;
 }
 .sleBtnSelected{
   background: #4b9bfd;
@@ -531,7 +485,7 @@ textarea{
   height: 35px;
   border: none;
   padding: 0px 0px 0px 4px;
-  font-size: 12px;
+  font-size: 14px;
   vertical-align:middle;
   line-height: 35px;
 }
@@ -540,7 +494,7 @@ textarea{
   height: 35px;
   border: none;
   padding: 0px 0px 0px 4px;
-  font-size: 12px;
+  font-size: 14px;
   vertical-align:middle;
   line-height: 35px;
 }

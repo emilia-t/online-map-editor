@@ -30,6 +30,15 @@
           </div>
           <div class="messageData">我删除了一个元素，id为：{{message.data.id}}</div>
         </div>
+        <!--更新元素消息-->
+        <div v-if="message.class==='updateElement'" class="messageItemA">
+          <div class="messageTime">{{message.time}}</div>
+          <div class="messageConveyor">
+            <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
+            {{message.conveyor}}
+          </div>
+          <div class="messageData">我更新了一个元素，id为：{{message.data.id}}</div>
+        </div>
       </div>
     </div>
     <div class="inputBox">
@@ -46,7 +55,7 @@ export default {
     return {
       isResizing: false,
       lastX: 0,
-      illegalChars:["`", "#", "$", "%", "^", "&", "*", "(", ")" , "{", "}", "[", "]", "|", "\\", ";", ":", "'", "\"", "<", ">", ",", ".", "/"],
+      illegalChars:["`", "#", "$", "%", "^", "&", "*", "(", ")" , "{", "}", "[", "]", "|", "\\", ";", ":", "'", "\"", "<", ">", ",", "/"],
     }
   },
   mounted() {
@@ -54,18 +63,30 @@ export default {
   },
   methods:{
     sendMessage() {
-      let message = this.$refs.inputTextBox.value;
+      let messages = this.$refs.inputTextBox.value;
+      //去除首尾的多余字符
+      let message = messages.trim();
       let headColor=this.userData.head_color;
       let name=this.userData.user_name;
       let data={message,headColor,name};
-      if (message) {
-        if(this.checkMessage(message)){// 检测非法字符
-          this.$store.state.serverData.socket.broadcastSendText(data);
-          document.querySelector('.inputTextBox').value = '';
-        }
+      if(this.checkMessage(message)){// 检测非法字符
+        this.$store.state.serverData.socket.broadcastSendText(data);
+        // 清空输入框内容和换行符
+        setTimeout(
+          ()=>{
+            // 清空输入框内容和换行符
+            this.$refs.inputTextBox.value='';
+            this.$refs.inputTextBox.innerText='';
+            this.$refs.inputTextBox.textContent='';
+          },4)
       }
     },
     checkMessage(message) {
+      // 如果仅包含空格或者换行符，则视为非法字符
+      if (message.length === 0 || /^[\n\r]+$/.test(message)) {
+        this.$root.general_script.alert_tips('消息内容不能为空或仅包含空格或换行符');
+        return false;
+      }
       const illegalCharPositions = [];
       const regExp = new RegExp(`[${this.illegalChars.join("\\")}]`, "g");
       let match;
@@ -172,7 +193,9 @@ export default {
   position: fixed;
   width: 250px;
   min-width: 200px;
-  height: 500px;
+  height: 50%;
+  max-height: calc(100% - 365px);
+  min-height: 120px;
   background: #f5f5f5;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
