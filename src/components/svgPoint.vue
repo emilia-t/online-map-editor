@@ -61,7 +61,6 @@ export default {
       this.$store.state.detailsPanelConfig.target=this.myId;
       this.$store.state.detailsPanelConfig.data=this.pointConfig;
       this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
-      console.log(this.sourcePointStr);
     },
     //监听鼠标移动
     mouseEvent(){

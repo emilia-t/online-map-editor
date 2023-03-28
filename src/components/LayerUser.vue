@@ -144,8 +144,7 @@ export default {
                 }
               }
             }catch (e) {
-              console.log('moveObServer bug');
-              console.log(e);
+
             }
           }
           ,this.frameTime)

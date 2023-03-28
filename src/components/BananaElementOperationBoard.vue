@@ -3,17 +3,17 @@
     <!--右键菜单-->
     <div class="panel">
       <div class="ButtonBox" ref="deleteButtonBox">
-        <img @click="deleteElement()" class="ButtonImg" draggable="false" alt="按钮" :src="deleteButton" :style="'background:'+this.button1Color"/>
+        <img @click="deleteElement()" class="ButtonImg" draggable="false" alt="按钮" :src="deleteButton"/>
       </div>
       <div class="ButtonBox" ref="editButtonBox">
-        <img @click="editElement()" class="ButtonImg" draggable="false" alt="按钮" :src="editButton" :style="'background:'+this.button2Color"/>
+        <img @click="editElement()" class="ButtonImg" draggable="false" alt="按钮" :src="editButton"/>
       </div>
       <div class="ButtonBox" ref="moreButtonBox">
-        <img class="ButtonImg" draggable="false" alt="按钮" :src="moreButton" :style="'background:'+this.button8Color"/>
+        <img class="ButtonImg" draggable="false" alt="按钮" :src="moreButton"/>
       </div>
     </div>
     <!--编辑面板-->
-    <div v-show="editPanelShow">
+    <div v-show="editPanelShow" class="EditPanel">
       <div class="BananaPointAttributeBoard">
         <div class="headName mouseType1" contenteditable="false">编辑元素</div>
         <div class="centerList mouseDefault">
@@ -65,10 +65,7 @@ export default {
       deleteButton,
       moreButton,
       editButton,
-      button1Color:"rgba(255,255,255,0.8)",
-      button2Color:"rgba(255,255,255,0.8)",
-      button8Color:"rgba(255,255,255,0.8)",
-      editPanelShow:true,
+      editPanelShow:false,
       theConfig:{
         selectNum:-1
       },
@@ -92,10 +89,6 @@ export default {
     //提交-更新缓存-同时上传数据
     submitEdit(ev){
       this.buttonAnimation(ev);
-      //上传到服务器
-      console.log(this.operatedCache);
-      //看看源数据
-      console.log(this.operatedBack);
       //检测两个对象的区别{isChange:true,changes:[['width','33'],['details',[{k:v}]]]}
       let changes=this.compareObjects(this.operatedBack,this.operatedCache)
       if(changes.isChange){
@@ -201,7 +194,8 @@ export default {
     },
     //编辑操作
     editElement(){
-
+      //展开编辑面板
+      this.editPanelShow=!this.editPanelShow;
     },
     //删除操作
     deleteElement(){
@@ -214,8 +208,8 @@ export default {
   },
   computed:{
     style(){
-      let x=this.$store.state.elementOperationBoardConfig.posX+30;
-      let y=this.$store.state.elementOperationBoardConfig.posY+30;
+      let x=this.$store.state.elementOperationBoardConfig.posX+14;
+      let y=this.$store.state.elementOperationBoardConfig.posY+5;
       return 'left:'+x+'px;top:'+y+'px'
     },
     operated() {
@@ -261,6 +255,10 @@ export default {
 </script>
 
 <style scoped>
+.EditPanel{
+  position: absolute;
+  left: 40px;
+}
 .BananaElementOperationBoard{
   position: fixed;
   top: 50%;
@@ -268,6 +266,8 @@ export default {
   transform: translate(-50%, -50%);
 }
 .panel{
+  position: absolute;
+  left: 0px;
   width: 30px;
   height: auto;
   min-height: 70px;
@@ -287,6 +287,11 @@ export default {
   align-items: center;
   margin: 5px 0px;
   cursor: pointer;
+  transition: 0.3s;
+  background: rgba(255,255,255,0.8);
+}
+.ButtonBox:hover{
+  background: rgba(220,220,220,0.8);
 }
 .ButtonImg{
   width: 25px;
@@ -315,7 +320,7 @@ export default {
   animation: buttonAnimationB .5s forwards;
 }
 .BananaPointAttributeBoard{
-  position: fixed;
+  position: absolute;
   width: 300px;
   height: 400px;
   background: #fdfdfd;

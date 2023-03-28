@@ -512,26 +512,22 @@ export default new Vuex.Store({
               break;
             }
             default:{
-              //console.log(jsonData);
             }
           }
           }
         }
         //断开连接事件
         onClose(ev){
-          console.log("服务器连接断开");
           this.isLink=false;
           return true;
         }
         //连接失败事件
         onError(ev){
-          console.log("服务器连接失败");
           this.isLink=false;
           return true;
         }
         //连接成功事件
         onOpen(ev){
-          console.log("已经连接服务器");
           this.isLink=true;
           return true;
         }

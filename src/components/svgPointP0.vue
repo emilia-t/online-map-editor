@@ -40,10 +40,6 @@ export default {
       this.dataSourcePoints=this.sourcePointStr;
       this.mouseEvent();
     },
-    //本地广播自身位置
-    updateP0Pos(){
-      console.log(this.pointConfig.point.x);
-    },
     //监听鼠标移动
     mouseEvent(){
       document.body.addEventListener('mousemove',(e)=>{

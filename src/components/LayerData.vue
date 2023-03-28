@@ -228,7 +228,7 @@ export default {
     },
     //创建一条测试用的Line
     createTestLine(){
-      console.log('请求拒绝');
+
     },
     //dataLayer的鼠标移动监听-按下
     mapMoveStart(){
@@ -320,8 +320,7 @@ export default {
                 }
               }
             }catch (e) {
-              console.log('moveObServer bug');
-              console.log(e);
+
             }
           }
           ,this.frameTime)

@@ -122,7 +122,6 @@ export default {
     }
   },
   mounted() {
-    // this.test();
     this.startSetting();
   },
   methods:{
@@ -204,7 +203,6 @@ export default {
       }
       //重置选择
       this.theConfig.selectNum=-1;
-      console.log(this.theConfig.selectNum);
       this.buttonAnimation(ev)
     },
     //删除列
@@ -226,14 +224,6 @@ export default {
       //重置选择
       this.theConfig.selectNum=-1;
       this.buttonAnimation(ev)
-    },
-    //测试
-    test(){
-      setInterval(
-        ()=>{
-          console.log(this.cache.name)
-        }
-      ,1000)
     }
   },
   computed:{

@@ -75,12 +75,16 @@ export default {
   },
   mounted() {
     this.startSetting();
-    //setInterval(()=>{console.log(this.buttonA);console.log(this.theConfig.buttonsState[0])},100)
   },
   methods:{
     startSetting(){
       this.KeyListen();//开启键盘监听
       this.$refs.controlButton0.$el.addEventListener('click',()=>this.addInterestPointStart());//添加关注点添加事件
+      this.$refs.controlButton1.$el.addEventListener('click',()=>this.addLineWayStart());//添加关注点添加事件
+    },
+    //添加路径线事件
+    addLineWayStart(){
+      console.log("开始做添加路径线功能");
     },
     //转化坐标
     translateCoordinate(float){

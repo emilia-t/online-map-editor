@@ -31,7 +31,7 @@ export default {
             if(text.match(ptt)!==null){
                 en_word_leng=text.match(ptt).length;
             }
-            if(conf!==undefined){this.GS_log.alert_tips.work_num=0;console.log('alert conf undefined ');}else {console.log('alert conf is default');}
+            if(conf!==undefined){this.GS_log.alert_tips.work_num=0;}else {}
             let config={positionX:null,positionY:null,height:null,border:null,zh_font_width:16,en_font_width:9,font_size:16,life_time:5000};
             config=conf || this.GS_log.alert_tips.default_config;
             let time=life_time || this.GS_log.alert_tips.default_config.life_time;

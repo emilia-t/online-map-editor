@@ -63,7 +63,7 @@ export default {
             let name=this.$store.state.serverData.socket.userData.user_name;
             this.$store.state.serverData.socket.broadcastMyA1(this.A1.x,this.A1.y,this.color,name);
           }catch (e) {
-            console.log(e)
+
           }
         }
       }
