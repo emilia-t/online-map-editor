@@ -65,7 +65,54 @@ export default {
         }
         **/
         MyPolyLineData:[
-
+          {
+            "id": "99999",
+            "type": "line",
+            "points": [
+              {
+                "x": 0.000055,
+                "y": -0.00005
+              },
+              {
+                "x": 0.00006,
+                "y": -0.00006
+              }
+            ],
+            "point": {
+              "x": 0.00005,
+              "y": -0.00005
+            },
+            "color": "00ffff",
+            "length": null,
+            "width": "5",
+            "size": null,
+            "child_relations": null,
+            "father_relation": null,
+            "child_nodes": null,
+            "father_node": null,
+            "details": [
+              {
+                "key": "名称",
+                "value": "测算缩放后两点之间的关系"
+              },
+              {
+                "key": "地址",
+                "value": ""
+              },
+              {
+                "key": "类型",
+                "value": ""
+              },
+              {
+                "key": "备注",
+                "value": ""
+              },
+              {
+                "key": "区域",
+                "value": ""
+              }
+            ]
+          }
         ],
         /**数据结构
          {
@@ -557,11 +604,11 @@ export default {
               }
             }
           }
-          this.theData.MyPolyLineData=LineArr;
+          //this.theData.MyPolyLineData=LineArr;
           this.theData.MyPointData=PointArr;
           return true;
         }else {
-          this.theData.MyPolyLineData=[];
+          //this.theData.MyPolyLineData=[];
           this.theData.MyPointData=[];
           return true;
         }

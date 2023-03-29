@@ -1,7 +1,7 @@
 <template>
   <g :elementId="this.polyLineConfig.id">
     <polyline :points="dynamicPointsStr" :id="polyLineConfig.id" :data-source-points="dataSourcePoints" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
-    <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
+    <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
 <script>
@@ -19,8 +19,8 @@ export default {
       type:Object,
       default: function (){
         return {
-          id:'p0000',
-          type:'point',
+          id:'l0000',
+          type:'line',
           points:[{x:0.0000001,y:-0.0000001}],
           point:{x:0.0000001,y:-0.0000001},
           color:'ec3232'
@@ -46,7 +46,7 @@ export default {
     move(){
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
-        let A1mvY=this.A1.y-this.A1Cache.y;
+        let A1mvY=this.A1Cache.y-this.A1.y;
         let newArr=this.polyLineConfig.points;
         for (let i=0;i<newArr.length;i++){
           this.polyLineConfig.points[i].x=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].x)-A1mvX);
@@ -69,12 +69,12 @@ export default {
         const MOY=this.mouse.y;
         const pointPos=this.polyLineConfig.points[i];
         const TRX=this.translateCoordinate(pointPos.x);
-        const TRY=this.translateCoordinate(pointPos.y);
+        const TRY=-this.translateCoordinate(pointPos.y);
         const axSize=MOX-TRX;
         const aySize=MOY-TRY;
         let newPos={x:null,y:null};
         newPos.x=this.reTranslateCoordinate(TRX-((zoom*axSize)));
-        newPos.y=this.reTranslateCoordinate(TRY-((zoom*aySize)));
+        newPos.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
         newPosArr.push(newPos);
       }
       this.polyLineConfig.points=newPosArr;
@@ -112,11 +112,11 @@ export default {
         let newArr = [];
         let newStr = '';
         let A1mvX=this.A1.x-this.A1Cache.x;
-        let A1mvY=this.A1.y-this.A1Cache.y;
+        let A1mvY=this.A1Cache.y-this.A1.y;
         newArr = this.polyLineConfig.points;
         for (let i = 0; i < newArr.length; i++) {
           let a = this.translateCoordinate(newArr[i].x) - A1mvX;
-          let b = this.translateCoordinate(newArr[i].y) + A1mvY;
+          let b = -(this.translateCoordinate(newArr[i].y) + A1mvY);
           if (i === newArr.length - 1) {
             newStr += a + ',' + b;
           } else {
@@ -130,7 +130,7 @@ export default {
         newArr = this.polyLineConfig.points;
         for (let i = 0; i < newArr.length; i++) {
           let a = this.translateCoordinate(newArr[i].x);
-          let b = this.translateCoordinate(newArr[i].y);
+          let b = -this.translateCoordinate(newArr[i].y);
           if (i === newArr.length - 1) {
             newStr += a + ',' + b;
           } else {
