@@ -12,8 +12,6 @@
       <br>
       地图Y轴大小：{{$store.state.mapConfig.mapSize.height.y1}} ~ {{$store.state.mapConfig.mapSize.height.y2}}
       <br>
-      初始坐标：{{$store.state.mapConfig.startDefaultPoint.x}} , {{$store.state.mapConfig.startDefaultPoint.y}}
-      <br>
       A1相对坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
       <br>
       P0相对坐标：{{$store.state.mapConfig.p0.point.x}} , {{$store.state.mapConfig.p0.point.y}}
@@ -21,6 +19,8 @@
       鼠标位置：{{$store.state.mapConfig.mousePoint.x}} , {{$store.state.mapConfig.mousePoint.y}}
       <br>
       点击位置：{{$store.state.mapConfig.mouseClick.x}} , {{$store.state.mapConfig.mouseClick.y}}
+      <br>
+      双击位置：{{$store.state.mapConfig.svgDbClick.x}} , {{$store.state.mapConfig.svgDbClick.y}}
       <br>
       新层级：{{$store.state.mapConfig.layer}}
       <br>

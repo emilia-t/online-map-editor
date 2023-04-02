@@ -1,7 +1,7 @@
 <template>
-  <g :elementId="this.polyLineConfig.id">
-    <polyline :points="dynamicPointsStr" :id="polyLineConfig.id" :data-source-points="dataSourcePoints" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
-    <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
+  <g :elementId="tempLine.id">
+    <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+tempLine.color,strokeWidth:tempLine.width}"/>
+    <circle v-show="!doNeedMoveMap" v-for="point in tempLine.showPos"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
 <script>
@@ -14,25 +14,14 @@ export default {
       A1Cache:{x:0,y:0}//a1的缓存，用于每次移动时扣除上一次移动产生的A1距离
     }
   },
-  props:{
-    "polyLineConfig":{
-      type:Object,
-      default: function (){
-        return {
-          id:'l0000',
-          type:'line',
-          points:[{x:0.0000001,y:-0.0000001}],
-          point:{x:0.0000001,y:-0.0000001},
-          color:'ec3232'
-        }
-      }
-    }
-  },
   methods:{
     //初始化配置
     startSetting(){
       this.dataSourcePoints=this.dynamicPointsStr;
       this.mouseEvent();
+      //初始化A1cache
+      this.A1Cache.x=this.A1.x;
+      this.A1Cache.y=this.A1.y;
     },
     //转化坐标
     translateCoordinate(float){
@@ -47,10 +36,10 @@ export default {
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1Cache.y-this.A1.y;
-        let newArr=this.polyLineConfig.points;
+        let newArr=this.tempLine.showPos;
         for (let i=0;i<newArr.length;i++){
-          this.polyLineConfig.points[i].x=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].x)-A1mvX);
-          this.polyLineConfig.points[i].y=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].y)+A1mvY);
+          this.tempLine.showPos[i].x=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].x)-A1mvX);
+          this.tempLine.showPos[i].y=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].y)+A1mvY);
         }
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
@@ -64,10 +53,10 @@ export default {
       let oldLayer=this.oldLayer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
       let newPosArr=[];
-      for (let i=0;i<this.polyLineConfig.points.length;i++){
+      for (let i=0;i<this.tempLine.showPos.length;i++){
         const MOX=this.mouse.x;
         const MOY=this.mouse.y;
-        const pointPos=this.polyLineConfig.points[i];
+        const pointPos=this.tempLine.showPos[i];
         const TRX=this.translateCoordinate(pointPos.x);
         const TRY=-this.translateCoordinate(pointPos.y);
         const axSize=MOX-TRX;
@@ -77,7 +66,7 @@ export default {
         newPos.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
         newPosArr.push(newPos);
       }
-      this.polyLineConfig.points=newPosArr;
+      this.tempLine.showPos=newPosArr;
     },
     //监听鼠标移动
     mouseEvent(){
@@ -88,10 +77,11 @@ export default {
   },
   mounted:function (){
     this.startSetting();
-    //this.scale();
-    //this.move();
   },
   computed:{
+    tempLine(){
+      return this.$store.state.mapConfig.tempLine;
+    },
     doNeedMoveMap(){
       return this.$store.state.cameraConfig.doNeedMoveMap;
     },
@@ -110,34 +100,38 @@ export default {
     dynamicPointsStr() {
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let newArr = [];
-        let newStr = '';
+        let refArr = [];
+        let tempA = null;
+        let tempB = null;
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1Cache.y-this.A1.y;
-        newArr = this.polyLineConfig.points;
+        newArr = this.tempLine.showPos;
         for (let i = 0; i < newArr.length; i++) {
-          let a = this.translateCoordinate(newArr[i].x) - A1mvX;
-          let b = -(this.translateCoordinate(newArr[i].y) + A1mvY);
-          if (i === newArr.length - 1) {
-            newStr += a + ',' + b;
-          } else {
-            newStr += a + ',' + b + ' ';
+          let x = this.translateCoordinate(newArr[i].x) - A1mvX;
+          let y = -(this.translateCoordinate(newArr[i].y) + A1mvY);
+          if(tempA!==null){
+            refArr.push({a:tempA,b:tempB,c:x,d:y})
           }
+          tempA=x;
+          tempB=y;
         }
-        return newStr
+        return refArr
       }else {
         let newArr = [];
-        let newStr = '';
-        newArr = this.polyLineConfig.points;
+        let refArr = [];
+        let tempA = null;
+        let tempB = null;
+        newArr = this.tempLine.showPos;
         for (let i = 0; i < newArr.length; i++) {
-          let a = this.translateCoordinate(newArr[i].x);
-          let b = -this.translateCoordinate(newArr[i].y);
-          if (i === newArr.length - 1) {
-            newStr += a + ',' + b;
-          } else {
-            newStr += a + ',' + b + ' ';
+          let x = this.translateCoordinate(newArr[i].x);
+          let y = -this.translateCoordinate(newArr[i].y);
+          if(tempA!==null){
+            refArr.push({a:tempA,b:tempB,c:x,d:y})
           }
+          tempA=x;
+          tempB=y;
         }
-        return newStr;
+        return refArr;
       }
     }
   },

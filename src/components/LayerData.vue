@@ -8,7 +8,7 @@
   允许访问、修改、删除$store.state.mapConfig、$store.state.serverData内的数据
   -->
   <div class="dataLayer" id="dataLayer" ref="dataLayer">
-    <svg class="elementData" id="elementData" ref="elementData" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <svg class="elementData" id="elementData" ref="elementData" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
       <!--线段数据-->
       <svg-line v-for="line in theData.MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line>
       <!--点位数据-->
@@ -18,7 +18,7 @@
       <!--临时点数据-->
       <svg-point-temp></svg-point-temp>
       <!--临时线数据-->
-<!--      <svg-line-temp></svg-line-temp>-->
+      <svg-line-temp></svg-line-temp>
       <!--我的A1位置-->
       <svg-a1-circle></svg-a1-circle>
       <!--其他人的A1位置-->
@@ -76,6 +76,10 @@ export default {
               {
                 "x": 0.00006,
                 "y": -0.00006
+              },
+              {
+                "x": 0.000065,
+                "y": -0.000065
               }
             ],
             "point": {
@@ -84,7 +88,7 @@ export default {
             },
             "color": "00ffff",
             "length": null,
-            "width": "5",
+            "width": "3",
             "size": null,
             "child_relations": null,
             "father_relation": null,
@@ -93,7 +97,7 @@ export default {
             "details": [
               {
                 "key": "名称",
-                "value": "测算缩放后两点之间的关系"
+                "value": "测试路线"
               },
               {
                 "key": "地址",
@@ -203,6 +207,11 @@ export default {
     elementDataClick(){
       this.$refs.elementData.addEventListener("click",(e)=>{this.$store.state.mapConfig.svgClick.x=e.x;this.$store.state.mapConfig.svgClick.y=e.y;})
     },
+    //双击svg事件
+    elementDataDbClick(e){
+      this.$store.state.mapConfig.svgDbClick.x=e.x;
+      this.$store.state.mapConfig.svgDbClick.y=e.y;
+    },
     /**
      根据经纬度计算距离，参数分别为第一点的经度，纬度；第二点的经度，纬度
      返回值的单位是km
@@ -288,6 +297,10 @@ export default {
           point.y=e.y;
           this.theData.moveStartPt=point;
         }
+        //更改cursor
+        if(this.$store.state.mapConfig.cursorLock===false){
+          this.$store.state.mapConfig.cursor='grabbing';
+        }
       })
     },
     //dataLayer的鼠标移动监听-移动
@@ -319,7 +332,11 @@ export default {
           //清空移动缓存
           this.clearMoveCache();
         }
-      })
+        //更改cursor
+        if(this.$store.state.mapConfig.cursorLock===false){
+          this.$store.state.mapConfig.cursor='default';
+        }
+      });
     },
     //dataLayer的鼠标移动监听-松开
     //设置移动侦测器
@@ -518,6 +535,9 @@ export default {
     this.startSetting();
   },
   computed:{
+    cursor(){
+      return this.$store.state.mapConfig.cursor;
+    },
     frameTime() {
       return this.$store.state.cameraConfig.frameTime;
     },
@@ -632,6 +652,5 @@ export default {
 </script>
 <style scoped>
 #dataLayer{width: 100%;height: 100%;overflow: hidden}
-.line{position: fixed;}
-.elementData{width: 100%;height: 100%;}
+.elementData{width: 100%;height: 100%;cursor: default}
 </style>

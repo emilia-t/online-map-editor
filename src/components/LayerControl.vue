@@ -10,17 +10,25 @@
     <!--按钮-->
     <!--添加-->
     <div class="controlButtonBox">
-      <banana-control-button ref="controlButton0" :color="Url1Color" :button-img-prop="Url1"></banana-control-button>
-      <span class="controlButtonName">兴趣点</span>
-      <banana-control-button ref="controlButton1" :color="Url2Color" :button-img-prop="Url2"></banana-control-button>
-      <span class="controlButtonName">路径线</span>
-      <banana-control-button ref="controlButton2" :color="Url3Color" :button-img-prop="Url3"></banana-control-button>
-      <span class="controlButtonName">区域面</span>
+      <div @click="addInterestPointStart()" class="ButtonOut">
+        <banana-control-button :color="Url1Color" :button-img-prop="Url1"></banana-control-button>
+        <span class="controlButtonName">兴趣点</span>
+      </div>
+      <div @click="addRouteLineStart()" class="ButtonOut">
+        <banana-control-button :color="Url2Color" :button-img-prop="Url2"></banana-control-button>
+        <span class="controlButtonName">路径线</span>
+      </div>
+      <div @click="addAreaStart()" class="ButtonOut">
+        <banana-control-button :color="Url3Color" :button-img-prop="Url3"></banana-control-button>
+        <span class="controlButtonName">区域面</span>
+      </div>
     </div>
     <!--元素右键编辑面板-->
     <banana-element-operation-board></banana-element-operation-board>
-    <!--编辑属性面板-->
+    <!--点编辑属性面板-->
     <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"></banana-point-attribute-board>
+    <!--线编辑属性面板-->
+    <banana-line-attribute-board :style-top="theConfig.lineBoardTop" :style-left="theConfig.lineBoardLeft"></banana-line-attribute-board>
   </div>
 </template>
 
@@ -28,30 +36,31 @@
 import BananaElementOperationBoard from "./BananaElementOperationBoard";
 import BananaControlButton from "./BananaControlButton";
 import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
+import BananaLineAttributeBoard from "./BananaLineAttributeBoard";
 import interestPoint from '../../static/point.png';//关注点
 import lineImg from '../../static/route.png';//线段类型
 import regionImg from '../../static/area.png';
-//区域类型
-//#e72323 红色
-//
 export default {
   name: "LayerControl",
-  components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard},
+  components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaLineAttributeBoard},
   data(){
     return {
       MY_NAME:"LayerControl",
       Url1:interestPoint,
-      Url1Color:'#ffffff',//#e72323&#e72323#fffb3d
+      Url1Color:'#ffffff',
       Url2:lineImg,
       Url2Color:'#ffffff',
       Url3:regionImg,
       Url3Color:'#ffffff',
       isAddPoint:false,
+      isAddLine:false,
+      addLineClock:false,//false表示未锁止
       theConfig:{
         buttonA:false,
         buttonB:false,
         buttonC:false,
         buttonD:false,
+        addLinePos:[],
         addPointPos:{
           x:null,
           y:null
@@ -65,9 +74,12 @@ export default {
           color:'#000000',
           width:0
         },
-        //属性面板的位置
+        //点属性面板的位置
         bordPosTop:0,
         bordPosLeft:-400,
+        //线属性面板的位置
+        lineBoardTop:0,
+        lineBoardLeft:-400,
         //观察者
         obServe:false
       }
@@ -79,23 +91,90 @@ export default {
   methods:{
     startSetting(){
       this.KeyListen();//开启键盘监听
-      this.$refs.controlButton0.$el.addEventListener('click',()=>this.addInterestPointStart());//添加关注点添加事件
-      this.$refs.controlButton1.$el.addEventListener('click',()=>this.addLineWayStart());//添加关注点添加事件
     },
-    //添加路径线事件
-    addLineWayStart(){
-      console.log("开始做添加路径线功能");
-      //添加线段的流程：
-      //1.点击右侧控制面板中间的路径线按钮------
-      //2.鼠标点击地图上的任意一个点(A)---这个点击一定是click
-      //2.1再地图SVG上生成一个虚拟的(临时的)灰点，直径为5px，计算该点的位置
-      //3.鼠标移动到除了A以外的任何一个SVG位置（期间允许移动和缩放地图）
+    addAreaStart(){},
+    //添加线段的流程：
+    //1.点击右侧控制面板中间的路径线按钮------
+    //2.鼠标点击地图上的任意一个点(A)---这个点击一定是click
+    //2.1再地图SVG上生成一个虚拟的(临时的)灰点，直径为5px，计算该点的位置
+    //3.鼠标移动到除了A以外的任何一个SVG位置（期间允许移动和缩放地图）
 
-      //补充：鼠标再确认下一个点的位置时鼠标与上一个点之间需要有一条随鼠标而移动的连接线A->Mouse
+    //补充：鼠标再确认下一个点的位置时鼠标与上一个点之间需要有一条随鼠标而移动的连接线A->Mouse
 
-      //3.2鼠标点击SVG上的一个地方----这个点击一定是click
-      //3.3再地图SVG上生成另一个虚拟的灰点，直接为5px，并计算该点的位置(B)
-      //4.鼠标双击svg结束绘制，保存前面的所有点位置，并展开一个线段属性编辑面板
+    //3.2鼠标点击SVG上的一个地方----这个点击一定是click
+    //3.3再地图SVG上生成另一个虚拟的灰点，直接为5px，并计算该点的位置(B)
+    //4.鼠标双击svg结束绘制，保存前面的所有点位置，并展开一个线段属性编辑面板
+    //添加路径线
+    addRouteLineStart(){
+      if(!this.isAddLine){
+        this.isAddLine=true;//更改添加点状态为“可用”
+        this.Url2Color='#d2d2d2';//更改背景色
+        //更改按钮状态
+        this.theConfig.buttonB=true;
+        //修改svg鼠标悬浮样式
+        if(this.$store.state.mapConfig.cursorLock===false){
+          this.$store.state.mapConfig.cursor='crosshair';
+        }
+        //更改其他按钮状态
+        if(this.isAddPoint){
+          this.addInterestPointStart();
+        }
+        //禁用更新指针
+        this.$store.state.mapConfig.cursorLock=true;
+      }else {
+        this.isAddLine=false;//更改添加点状态为“可用”
+        this.Url2Color='#ffffff';//更改背景色e72323
+        //更改按钮状态
+        this.theConfig.buttonB=false;
+        //修改svg鼠标悬浮样式
+        if(this.$store.state.mapConfig.cursorLock===false){
+          this.$store.state.mapConfig.cursor='default';
+        }
+      }
+    },
+    //取消添加线
+    addLineCancel(){
+      //允许更新指针
+      this.$store.state.mapConfig.cursorLock=false;
+      //1.重置临时线位置
+      this.$store.state.mapConfig.tempLine.point.x=0;
+      this.$store.state.mapConfig.tempLine.point.y=0;
+      this.$store.state.mapConfig.tempLine.points=[];
+      this.$store.state.mapConfig.tempLine.showPos=[];
+      //2.观察者模式关闭
+      this.theConfig.obServe=false;
+      //3.重置属性面板位置
+      this.theConfig.lineBoardLeft=-400;
+      this.theConfig.lineBoardTop=0;
+      //4.停用锁止
+      this.addLineClock=false;
+    },
+    //添加点
+    addLine(){
+      //1监听下一次的鼠标点击位置
+      if(this.theConfig.obServe===false){
+        this.theConfig.obServe=true;
+        document.addEventListener("click",(ev)=>{
+          if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false){
+            //判断target
+            let tag=ev.target.nodeName;
+            if(tag=="svg" || tag=="polyline" || tag=="circle"){
+              //计算新增点位置
+              let Pos=this.computeMouseActualPos(ev)
+              this.theConfig.addLinePos.push(Pos);
+            }
+          }
+        })
+      }
+    },
+    //双击结束添加线段
+    addLineEnd(){
+      //禁用点更新
+      this.addLineClock=true;
+      //再双击的位置打开一个线段编辑面板
+      //2调整属性面板位置
+      this.theConfig.lineBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;
+      this.theConfig.lineBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
     },
     //转化坐标
     translateCoordinate(float){
@@ -116,6 +195,8 @@ export default {
       //3.重置属性面板位置
       this.theConfig.bordPosLeft=-400;
       this.theConfig.bordPosTop=0;
+      //允许更新指针
+      this.$store.state.mapConfig.cursorLock=false;
     },
     //添加点
     addPoint(){
@@ -123,7 +204,7 @@ export default {
       if(this.theConfig.obServe===false){
         this.theConfig.obServe=true;
         document.addEventListener("click",(ev)=>{
-          if(this.theConfig.obServe===true){
+          if(this.theConfig.obServe===true && this.isAddPoint===true){
             //判断target
             let tag=ev.target.nodeName;
             if(tag=="svg" || tag=="polyline" || tag=="circle"){
@@ -180,12 +261,6 @@ export default {
         return false;
       }
     },
-    //更新临时SVG图层和临时点的数据
-    updateTempData(newValue){
-      this.$store.state.mapConfig.tempPoint.width=this.$store.state.mapConfig.tempPoint.defaultWidth;
-      this.$store.state.mapConfig.tempPoint.point.x=newValue.x;
-      this.$store.state.mapConfig.tempPoint.point.y=newValue.y;
-    },
     //添加关注点
     addInterestPointStart(){
       if(!this.isAddPoint){
@@ -193,18 +268,26 @@ export default {
         this.Url1Color='#d2d2d2';//更改背景色
         //更改按钮状态
         this.theConfig.buttonA=true;
+        //修改svg鼠标悬浮样式
+        if(this.$store.state.mapConfig.cursorLock===false){
+          this.$store.state.mapConfig.cursor='crosshair';
+        }
+        //禁用更新指针
+        this.$store.state.mapConfig.cursorLock=true;
+        //更改其他按钮状态
+        if(this.isAddLine){
+          this.addRouteLineStart();
+        }
       }else {
         this.isAddPoint=false;//更改添加点状态为“可用”
         this.Url1Color='#ffffff';//更改背景色e72323
         //更改按钮状态
         this.theConfig.buttonA=false;
+        //修改svg鼠标悬浮样式
+        if(this.$store.state.mapConfig.cursorLock===false){
+          this.$store.state.mapConfig.cursor='default';
+        }
       }
-
-    },
-    //禁用添加关注点
-    addInterestPointDone(){
-      this.isAddPoint=true;//更改添加点状态为“可用”
-      this.Url0Color='#e72323';//更改背景色
     },
     //用于监听单个按键的
     KeyListen(){
@@ -212,13 +295,22 @@ export default {
         let KEY=e.key;
         switch (KEY){
           case 'F8':{
-            this.F4Event();
+            this.F8Event();
+            break;
+          }
+          case '1':{
+            this.addInterestPointStart();
+            break;
+          }
+          case '2':{
+            this.addRouteLineStart();
+            break;
           }
         }
       })
     },
-    //F4的事件
-    F4Event(){
+    //F8的事件
+    F8Event(){
       this.$root.sendInstruct('openF4DebugBord');
     }
   },
@@ -226,14 +318,29 @@ export default {
     buttonA(){
       return this.theConfig.buttonA;
     },
-    addNewPos(){
+    buttonB(){
+      return this.theConfig.buttonB;
+    },
+    addNewPoint(){
       return this.theConfig.addPointPos;
     },
-    operated(){
-      return this.$store.state.mapConfig.operated;
+    addNewLine(){
+      return this.theConfig.addLinePos;
+    },
+    svgDbClick(){
+      return this.$store.state.mapConfig.svgDbClick;
     }
   },
   watch:{
+    buttonB:{
+      handler(newValue){
+        if(newValue){
+          this.addLine();
+        }else {
+          this.addLineCancel();
+        }
+      }
+    },
     buttonA:{
       handler(newValue){
         if(newValue){
@@ -243,20 +350,38 @@ export default {
         }
       }
     },
-    addNewPos:{
+    addNewPoint:{
       handler(newValue){
         //1更新临时数据
-        this.updateTempData(newValue);
+        this.$store.state.mapConfig.tempPoint.width=this.$store.state.mapConfig.tempPoint.defaultWidth;
+        this.$store.state.mapConfig.tempPoint.point.x=newValue.x;
+        this.$store.state.mapConfig.tempPoint.point.y=newValue.y;
         //2调整属性面板位置
         this.theConfig.bordPosLeft=this.$store.state.mapConfig.mousePoint.x+10;
         this.theConfig.bordPosTop=this.$store.state.mapConfig.mousePoint.y+10;
-        //
       },
       deep:true
     },
-    operated:{
+    addNewLine:{
       handler(newValue){
-          //这里要应该显示操作条
+        //1更新临时线数据
+        this.$store.state.mapConfig.tempLine.point.x=newValue[0].x;
+        this.$store.state.mapConfig.tempLine.point.y=newValue[0].y;
+        this.$store.state.mapConfig.tempLine.points.push(newValue[newValue.length-1]);
+        //2.更新临时线显示位置
+        this.$store.state.mapConfig.tempLine.showPos.push({x:this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.x),y:-this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.y)});
+      },
+      deep:true
+    },
+    svgDbClick:{
+      handler(newValue){
+        //检测正则进行的操作
+        if(this.isAddPoint){
+
+        }
+        if(this.isAddLine){
+          this.addLineEnd();
+        }
       },
       deep:true
     }
@@ -269,12 +394,11 @@ export default {
   width: auto;
   height: auto;
 }
-.tempSvg{
-  position: fixed;
-  top:0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.ButtonOut{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 .controlButtonBox{
   width: 70px;

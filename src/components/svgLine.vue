@@ -1,6 +1,6 @@
 <template>
-  <g :elementId="this.polyLineConfig.id">
-    <polyline :points="dynamicPointsStr" :id="polyLineConfig.id" :data-source-points="dataSourcePoints" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
+  <g :elementId="polyLineConfig.id">
+    <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
     <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
@@ -110,34 +110,38 @@ export default {
     dynamicPointsStr() {
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let newArr = [];
-        let newStr = '';
+        let refArr = [];
+        let tempA = null;
+        let tempB = null;
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1Cache.y-this.A1.y;
         newArr = this.polyLineConfig.points;
         for (let i = 0; i < newArr.length; i++) {
-          let a = this.translateCoordinate(newArr[i].x) - A1mvX;
-          let b = -(this.translateCoordinate(newArr[i].y) + A1mvY);
-          if (i === newArr.length - 1) {
-            newStr += a + ',' + b;
-          } else {
-            newStr += a + ',' + b + ' ';
+          let x = this.translateCoordinate(newArr[i].x) - A1mvX;
+          let y = -(this.translateCoordinate(newArr[i].y) + A1mvY);
+          if(tempA!==null){
+            refArr.push({a:tempA,b:tempB,c:x,d:y})
           }
+          tempA=x;
+          tempB=y;
         }
-        return newStr
+        return refArr
       }else {
         let newArr = [];
-        let newStr = '';
+        let refArr = [];
+        let tempA = null;
+        let tempB = null;
         newArr = this.polyLineConfig.points;
         for (let i = 0; i < newArr.length; i++) {
-          let a = this.translateCoordinate(newArr[i].x);
-          let b = -this.translateCoordinate(newArr[i].y);
-          if (i === newArr.length - 1) {
-            newStr += a + ',' + b;
-          } else {
-            newStr += a + ',' + b + ' ';
+          let x = this.translateCoordinate(newArr[i].x);
+          let y = -this.translateCoordinate(newArr[i].y);
+          if(tempA!==null){
+            refArr.push({a:tempA,b:tempB,c:x,d:y})
           }
+          tempA=x;
+          tempB=y;
         }
-        return newStr;
+        return refArr;
       }
     }
   },

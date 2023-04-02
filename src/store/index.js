@@ -63,6 +63,13 @@ export default new Vuex.Store({
               return {type:'broadcast',class:'updateElement',data}
             }
           };
+          //检测间
+          this.QIR={
+            isObject (obj) {
+            return Object.prototype.toString.call(obj) === '[object Object]';
+            },
+
+        };
           this.startSetting();
         }
         //初始化配置
@@ -598,9 +605,27 @@ export default new Vuex.Store({
         width:0,
         defaultWidth:5
       },
-      startDefaultPoint:{
-        x:0,
-        y:0
+      tempLine:{
+        id:'tempLine',
+        type:'line',
+        points:[],
+        point:{x:0,y:0},
+        color: '00ffff',
+        length: null,
+        width: 2,
+        size: null,
+        child_relations: null,
+        father_relation: null,
+        child_nodes: null,
+        father_node: null,
+        details:[
+          {key: '名称', value: ''},
+          {key: '类型', value: ''},
+          {key: '备注', value: ''},
+          {key: '区域', value: ''}
+        ],
+        defaultWidth:2,
+        showPos:[]
       },
       mousePoint:{
         x:0,
@@ -614,13 +639,21 @@ export default new Vuex.Store({
         x:0,
         y:0
       },
+      svgDbClick:{
+        x:0,
+        y:0
+      },
       //元素被右键选择
       operated:{
         //被操作元素id
         id:null,
         //被操作元素的元素数据
         data:null
-      }
+      },
+      //SVG鼠标指针类型
+      cursor:'default',
+      //指针类型的锁止，允许某一个组件占用cursor使得其他组件无法更新cursor
+      cursorLock:false
     },
     //左侧元素信息面板显示的数据
     detailsPanelConfig:{

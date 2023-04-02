@@ -157,4 +157,8 @@ body, html {
 *{
   font-family: Roboto;
 }
+*{
+  touch-action: manipulation;
+}
+
 </style>
