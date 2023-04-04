@@ -448,7 +448,8 @@ $displacement: 3px;
   height: auto;
   margin: auto auto;
   background: #ffffff;
-  border-radius: 10px;
+  overflow: hidden;
+  border-radius: 5px;
   box-shadow: 0px 2px 6px 3px rgba(0, 0, 0, 0.12);
 }
 .left {
@@ -458,8 +459,6 @@ $displacement: 3px;
   position: relative;
   background-image: url("../../static/logBordBj.jpg");
   background-size: cover;
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
 svg {
   height: 40px;
   width: auto;

@@ -476,7 +476,6 @@ textarea{
   border: none;
   padding: 0px 0px 0px 4px;
   font-size: 14px;
-  vertical-align:middle;
   line-height: 35px;
 }
 .colorInput{
@@ -485,7 +484,6 @@ textarea{
   border: none;
   padding: 0px 0px 0px 4px;
   font-size: 14px;
-  vertical-align:middle;
   line-height: 35px;
 }
 </style>

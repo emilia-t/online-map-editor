@@ -13,10 +13,10 @@ export default new Vuex.Store({
           this.isLogin=false;
           this.numberOfLoginAttempts=0;
           this.socket=undefined;//会话
-          this.messages=[];//收到的指令
+          this.messages=[];
           this.publickey='';
           this.userData=null;
-          this.mapData=[];
+          this.mapData={points:[],lines:[],areas:[]};
           this.otherA1=[];
           //指令类型合集
           this.typeList=['broadcast','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData'];
@@ -61,14 +61,121 @@ export default new Vuex.Store({
             //以广播更新元素数据
             broadcast_updateElement(data){
               return {type:'broadcast',class:'updateElement',data}
+            },
+            //以广播的形式添加一条线段
+            broadcast_line(data){
+              return {type:'broadcast',class:'line',data}
             }
           };
           //检测间
           this.QIR={
+            /**检测是否为对象类型的数据,是则返回t
+             * @return boolean
+             * @param obj any
+             */
             isObject (obj) {
-            return Object.prototype.toString.call(obj) === '[object Object]';
+              return Object.prototype.toString.call(obj) === '[object Object]';
             },
-
+            /**检测一个对象是否存在某一个属性,有则返回t
+             * @return boolean
+             * @param obj any
+             * @param propName string
+             */
+            hasProperty(obj, propName) {
+              return obj.hasOwnProperty(propName);
+            },
+            /**检测一个字符串是否为六位的十六进制颜色,是则返回t
+             * @return boolean
+             * @param str
+             */
+            color16Check(str){
+              if(Object.prototype.toString.call(str)!=='[object String]'){return false;}
+              let Exp=/^[0-9A-F]{6}$/i;
+              if(Exp.test(str)===false){alert('请输入正确的16进制颜色格式例如#123456');return false;}
+              return true;
+            },
+            /**检测是否为数字,是则返回该数字的整数部分,否则返回false
+             * @return boolean number
+             * @param number
+             */
+            widthCheck(number){
+              function isNumber(value) {
+                // 先尝试将字符串类型的数字转换为数字类型
+                if (typeof value === 'string' && !isNaN(value)) {
+                  return true;
+                }
+                // 使用 isNaN 函数判断是否为数字
+                return typeof value === 'number' && !isNaN(value);
+              }
+              if(!isNumber(number)){
+                alert('宽度为数字，范围为2~64');
+                return false;
+              }else {
+                if(number>64 || number<2){
+                  alert('宽度范围为2~64');
+                  return false;
+                }else {
+                  return number=~~number;
+                }
+              }
+            },
+            /**检测自定义参数是否正常,正常则返回true
+             * @return boolean
+             * @param details
+             */
+            detailsCheck(details){
+              //key正则表达式
+              const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;
+              const ValueExp=/[\[\]{}#`'"]|(-){2}|(\/){2}|(%){2}|\/\*/m;
+              //1检查是否为数组
+              if(Object.prototype.toString.call(details)==='[object Array]'){
+                //2循环检查类型
+                for(let i=0;i<details.length;i++){
+                  //3检查是否为对象
+                  if(Object.prototype.toString.call(details[i])!=='[object object]'){
+                    //4检查是否包含key，value属性
+                    if(details[i].hasOwnProperty('key') && details[i].hasOwnProperty('value')){
+                      //5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
+                      if(KeyExp.test(details[i].key)){
+                        alert("列名错误，仅允许使用字母、数字、汉字、下划线");
+                        return false;
+                      }
+                      if(ValueExp.test(details[i].value)){
+                        alert("列值错误，不允许使用如下字符[]、{}、#、`、'、\"、--、//、%%、/*");
+                        return false;
+                      }
+                    }else {
+                      return false;
+                    }
+                  }else {
+                    return false;
+                  }
+                }
+              }
+              else {
+                return false;
+              }
+              return true;
+            },
+            /**检测参数是否为数字,是则返回true
+             * @return boolean
+             * @param value
+             */
+            isNumber(value) {
+              // 先尝试将字符串类型的数字转换为数字类型
+              if (typeof value === 'string' && !isNaN(value)) {
+                return true;
+              }
+              // 使用 isNaN 函数判断是否为数字
+              return typeof value === 'number' && !isNaN(value);
+            },
+            /**检测参数是否为数组,是则返回true
+             * @return boolean
+             * @param obj
+             */
+            isArray(obj) {
+              return Array.isArray(obj);
+            }
         };
           this.startSetting();
         }
@@ -84,65 +191,36 @@ export default new Vuex.Store({
           //2.清除他人的A1
           this.otherA1=[];
           //3.清除地图数据
-          this.mapData=[];
+          this.mapData.points=[];
+          this.mapData.lines=[];
+          this.mapData.areas=[];
         }
         //广播更新某一要素
         broadcastUpdateElement(data){
           try {
             //0.检查数据
             //0.1检查是否属于object
-            if(Object.prototype.toString.call(data)!=="[object Object]"){return false;}
+            if(!this.QIR.isObject(data)){return false;}
             //0.2检查是否存在changes
-            if(data.hasOwnProperty("changes")){
-              //0.3检查是否存在color
-              if(data.changes.hasOwnProperty("color")){
-                //0.3.1检查颜色是否为字符
-                if(Object.prototype.toString.call(data.changes.color)!=="[object String]"){return false;}
-                //0.3.2检查颜色是否为16进制的格式
-                let Exp=/^[0-9A-F]{6}$/i;
-                if(Exp.test(data.changes.color)===false){alert("请输入正确的16进制颜色格式例如#123456");return false;}
-              }
-              //0.4检查是否存在width
-              if(data.changes.hasOwnProperty("width")){
-                let $num1=parseInt(data.changes.width);
-                if(Object.prototype.toString.call($num1)!=="[object Number]"){
-                  alert("宽度为数字，范围为2~64");
+            if(this.QIR.hasProperty(data,'changes')){
+              //0.3检color
+              if(this.QIR.hasProperty(data.changes,'color')){
+                if(!this.QIR.color16Check(data.changes.color)){
                   return false;
-                }else {
-                  if($num1>64 || $num1<2){
-                    alert("宽度范围为2~64");
-                    return false;
-                  }else {
-                    data.changes.width=~~(data.changes.width);
-                  }
                 }
               }
-              //0.5检查是否存在details
-              if(data.changes.hasOwnProperty("details")){
-                //0.5.1检查是否为数组
-                if(Object.prototype.toString.call(data.changes.details)==="[object Array]"){
-                  //0.5.2循环检查类型
-                  for(let i=0;i<data.changes.details.length;i++){
-                    //0.5.3检查是否为对象
-                    if(Object.prototype.toString.call(data.changes.details[i])!=="[object object]"){
-                      //0.5.4检查是否包含key，value属性
-                      if(data.changes.details[i].hasOwnProperty("key") && data.changes.details[i].hasOwnProperty("value")){
-                        //0.5.5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
-                        //0.5.6key正则表达式
-                        const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;
-                        const ValueExp=/[\[\]{}#`'"]|(-){2}|(\/){2}|(%){2}|\/\*/m;
-                        //key
-                        if(KeyExp.test(data.changes.details[i].key)){
-                          alert("列名错误，仅允许使用字母、数字、汉字、下划线");
-                          return false;
-                        }
-                        //value
-                        if(ValueExp.test(data.changes.details[i].value)){
-                          alert("列值错误，不允许使用如下字符[]、{}、#、`、'、\"、--、//、%%、/*");
-                          return false;
-                        }
-                      }else{return false;}}else{return false;}}}else{return false;}}
-              //end广播
+              //0.4检查width
+              if(this.QIR.hasProperty(data.changes,'width')){
+                let refWidth=this.QIR.widthCheck(data.changes.width);
+                if(refWidth===false){return false;}else{data.changes.width=refWidth;}
+              }
+              //0.5检查details
+              if(this.QIR.hasProperty(data.changes,'details')){
+                if(!this.QIR.detailsCheck(data.changes.details)){
+                  return false;
+                }
+              }
+              //0.6广播
               this.send(this.Instruct.broadcast_updateElement(data));
             }
           }catch (e) {}
@@ -156,76 +234,121 @@ export default new Vuex.Store({
         broadcastSendText(data){
           this.send(this.Instruct.broadcast_textMessage(data));
         }
+        //发送路径线数据
+        broadcastSendLine(data){
+          try{
+            //0.检查数据
+            //0.1检查是否属于object
+            if(!this.QIR.isObject(data)){console.log("?");return false;}
+            //0.2检查是否包含class类型
+            if(!this.QIR.hasProperty(data,'class')){console.log("?");return false;}
+            //0.3检查class类型是否为line
+            if(data.class!=='line'){console.log("?");return false;}
+            //0.4检查是否包含point类型
+            if(!this.QIR.hasProperty(data,'point')){console.log("?");return false;}
+            //0.5检查point是否为object
+            if(!this.QIR.isObject(data.point)){console.log("?");return false;}
+            //0.6检查point是否由xy
+            if(!this.QIR.hasProperty(data.point,'x')){console.log("?");return false;}
+            if(!this.QIR.hasProperty(data.point,'y')){console.log("?");return false;}
+            //0.7检查xy是否是数字
+            if(!this.QIR.isNumber(data.point.x)){console.log("?");return false;}
+            if(!this.QIR.isNumber(data.point.y)){console.log("?");return false;}
+
+            //0.8检查points
+            if(!this.QIR.hasProperty(data,'points')){console.log("?");return false;}
+            //0.8.1检查points是否为数组
+            if(!this.QIR.isArray(data.points)){console.log("?");return false;}
+            //0.8.2循环检测内部的xy参数
+            for(let i=0;i<data.points.length;i++){
+              //0.8.3检测是否存在xy值
+              if(!this.QIR.hasProperty(data.points[i],'x')){return false;}
+              if(!this.QIR.hasProperty(data.points[i],'y')){return false;}
+              //0.8.4检测xy是否是数字
+              if(!this.QIR.isNumber(data.points[i].x)){return false;}
+              if(!this.QIR.isNumber(data.points[i].y)){return false;}
+            }
+            //0.9检查color
+            if(!this.QIR.hasProperty(data,'color')){console.log("?");return false;}
+            //0.10检查颜色
+            if(!this.QIR.color16Check(data.color)){console.log("?");return false;}
+            //0.11检查width
+            if(this.QIR.hasProperty(data,'width')){
+              let refWidth=this.QIR.widthCheck(data.width)
+              if(!refWidth){console.log("?");return false;}else {data.width=refWidth;}
+            }
+            //0.11检查details
+            if(this.QIR.hasProperty(data,'details')){
+              if(!this.QIR.detailsCheck(data.details)){
+                console.log("?");return false
+              }
+            }
+            //1.0构建点数据基本结构
+            let basicStructure={
+              id:0,
+              type:'point',
+              points:[],
+              point:null,//必要
+              color:'',//必要
+              length:null,//这里为空--不接收客户传参
+              width:2,//建议要--最大为64
+              size:null,//这里为空--不接收客户传参
+              childRelations:[],//这里为空--不接收客户传参--暂定
+              fatherRelation:'',//这里为空--不接收客户传参--暂定
+              childNodes:[],//这里为空--不接收客户传参--暂定
+              fatherNode:'',//这里为空--不接收客户传参--暂定
+              details:[]//建议要
+            };
+            //2.0归档
+            basicStructure.points=data.points;
+            basicStructure.point=data.point;
+            basicStructure.color=data.color;
+            basicStructure.width=data.width || basicStructure.width;
+            basicStructure.details=data.details || basicStructure.details;
+            //3.0广播
+            //console.log(basicStructure);
+            this.send(this.Instruct.broadcast_line(basicStructure));
+          }
+          catch (e) {}
+        }
         //发送关注点数据
         broadcastSendPoint(data){
           try {
             //0.检查数据
             //0.1检查是否属于object
-            if(Object.prototype.toString.call(data)!=="[object Object]"){return false;}
+            if(!this.QIR.isObject(data)){return false;}
             //0.2检查是否包含class类型
-            if(data.hasOwnProperty("class")===false){return false;}
+            if(!this.QIR.hasProperty(data,'class')){return false;}
             //0.3检查class类型是否为point
-            if(data.class!=="point"){return false;}
+            if(data.class!=='point'){return false;}
             //0.4检查是否包含point类型
-            if(data.hasOwnProperty("point")===false){return false;}
+            if(!this.QIR.hasProperty(data,'point')){return false;}
             //0.5检查point是否为object
-            if(Object.prototype.toString.call(data.point)!=="[object Object]"){return false;}
+            if(!this.QIR.isObject(data.point)){return false;}
             //0.6检查point是否由xy
-            if(data.point.hasOwnProperty("x")===false){return false;}
-            if(data.point.hasOwnProperty("y")===false){return false;}
-            //0.7检查xy是否是数字[object Number]
-            if(Object.prototype.toString.call(data.point.x)!=="[object Number]"){return false;}
-            if(Object.prototype.toString.call(data.point.y)!=="[object Number]"){return false;}
+            if(!this.QIR.hasProperty(data.point,'x')){return false;}
+            if(!this.QIR.hasProperty(data.point,'y')){return false;}
+            //0.7检查xy是否是数字
+            if(!this.QIR.isNumber(data.point.x)){return false;}
+            if(!this.QIR.isNumber(data.point.y)){return false;}
             //0.8检查color
-            if(data.hasOwnProperty("color")===false){return false;}
-            //0.9检查颜色是否为字符
-            if(Object.prototype.toString.call(data.color)!=="[object String]"){return false;}
-            //0.10检查颜色是否为16进制的格式
-            let Exp=/^[0-9A-F]{6}$/i;
-            if(Exp.test(data.color)===false){alert("请输入正确的16进制颜色格式例如#123456");return false;}
-            //0.11检查是否存在width并检查是否为数字并检查是否超过最大值
-            if(data.hasOwnProperty("width")){
-              let $num1=parseInt(data.width);
-              if(Object.prototype.toString.call($num1)!=="[object Number]"){
-                alert("宽度为数字，范围为2~64");
-                return false;
-              }else {
-                if(data.width>64 || data.width<2){
-                  alert("宽度范围为2~64");
-                  return false;
-                }else {
-                  data.width=~~(data.width);
-                }
+            if(!this.QIR.hasProperty(data,'color')){return false;}
+            //0.9检查颜色
+            if(!this.QIR.color16Check(data.color)){return false;}
+            //0.10检查width
+            if(this.QIR.hasProperty(data,'width')){
+              let refWidth=this.QIR.widthCheck(data.width)
+              if(!refWidth){return false;}else {data.width=refWidth;}
+            }
+            //0.11检查details
+            if(this.QIR.hasProperty(data,'details')){
+              if(!this.QIR.detailsCheck(data.details)){
+                return false
               }
             }
-            //0.12检查details,details必须是一个数组，且每个值都是一个由key=>value组成的对象
-            if(data.hasOwnProperty("details")){
-            //0.12.1检查是否为数组
-            if(Object.prototype.toString.call(data.details)==="[object Array]"){
-            //0.12.2循环检查类型
-            for(let i=0;i<data.details.length;i++){
-            //0.12.3检查是否为对象
-            if(Object.prototype.toString.call(data.details[i])!=="[object object]"){
-            //0.12.4检查是否包含key，value属性
-              if(data.details[i].hasOwnProperty("key") && data.details[i].hasOwnProperty("value")){
-            //0.12.5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
-            //0.12.6key正则表达式
-              const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;
-              const ValueExp=/[\[\]{}#`'"]|(-){2}|(\/){2}|(%){2}|\/\*/m;
-              //key
-              if(KeyExp.test(data.details[i].key)){
-                alert("列名错误，仅允许使用字母、数字、汉字、下划线");
-                return false;
-              }
-              //value
-              if(ValueExp.test(data.details[i].value)){
-                alert("列值错误，不允许使用如下字符[]、{}、#、`、'、\"、--、//、%%、/*");
-                return false;
-              }
-            }else{return false;}}else{return false;}}}else{return false;}}
             //1.0构建点数据基本结构
             let basicStructure={
-              id:0,//由服务端生成最终id，客户端用数字0代替
+              id:0,
               type:'point',
               points:[],
               point:null,//必要
@@ -392,7 +515,49 @@ export default new Vuex.Store({
             }
             //服务器发来的地图数据
             case 'send_mapData':{
-              this.mapData=jsonData.data;
+              for (let i=0;i<jsonData.data.length;i++){
+                try{
+                  //point相关
+                  let [Ps,Pt]=[null,null]
+                  Pt=JSON.parse(window.atob(jsonData.data[i].point));
+                  Ps=JSON.parse(window.atob(jsonData.data[i].points));
+                  jsonData.data[i].points=Ps;
+                  jsonData.data[i].point=Pt;
+                  //details
+                  let [loc,baseD,Pu]=[true,null,null];
+                  try{
+                    baseD=window.atob(jsonData.data[i].details);
+                  }
+                  catch(e){loc=false;}
+                  try {
+                    if(loc){
+                      Pu=JSON.parse(baseD);
+                    }
+                  }catch(e){loc=false;}
+                  if(loc){
+                    jsonData.data[i].details=Pu;
+                  }
+                  //分组
+                  let NowType=jsonData.data[i].type;
+                  switch (NowType) {
+                    case 'line':{
+                      this.mapData.lines.push(jsonData.data[i]);
+                      break;
+                    }
+                    case 'point':{
+                      this.mapData.points.push(jsonData.data[i]);
+                      break;
+                    }
+                    case 'areas':{
+                      break;
+                    }
+                  }
+                }
+                catch(e){}
+              }
+              //console.log(this.mapData);
+              //这里一旦与vue的watch关联则会导致line内的points的xy全部丢失,找原因
+              //setTimeout(()=>console.log(this.mapData),5000)
               break;
             }
             //服务器发来的广播
@@ -419,6 +584,53 @@ export default new Vuex.Store({
                   if(lock){
                     this.otherA1.push(jsonData.data);
                   }
+                  break;
+                }
+                //新增线段数据广播
+                case 'line':{
+                  //一、解析坐标
+                  try{
+                    //1.将base64转化为普通字符
+                    let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
+                    try{
+                      baseA=window.atob(jsonData.data.points);
+                      baseB=window.atob(jsonData.data.point);
+                    }
+                    catch(e){lock=false;}
+                    try{
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                        Pt=JSON.parse(baseB);
+                      }
+                    }
+                    catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.points=Ps;
+                      jsonData.data.point=Pt;
+                    }
+                  }catch(e){}
+                  //二、解析详细描述信息
+                  try{
+                    //1.将base64转化为普通字符
+                    let [lock,baseA,Ps]=[true,null,null];
+                    try{
+                      baseA=window.atob(jsonData.data.details);
+                    }
+                    catch(e){lock=false;}
+                    try {
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                      }
+                    }catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.details=Ps;
+                    }
+                  }catch(e){}
+                  //更新messages
+                  let NewMessageObj={'type':'broadcast','class':'line','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
+                  this.messages.push(NewMessageObj);
+                  //添加到mapData
+                  this.mapData.lines.push(jsonData.data);
                   break;
                 }
                 //新增点数据广播
@@ -465,7 +677,7 @@ export default new Vuex.Store({
                   let NewMessageObj={'type':'broadcast','class':'point','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);
                   //添加到mapData
-                  this.mapData.push(jsonData.data);
+                  this.mapData.points.push(jsonData.data);
                   break;
                 }
                 //删除某一元素的广播
@@ -473,9 +685,15 @@ export default new Vuex.Store({
                   try{
                     let ID=jsonData.data.id;
                     //查找并删除该id
-                    this.mapData.some((item, index)=>{
+                    this.mapData.points.some((item, index)=>{
                       if (item.id==ID){
-                        this.mapData.splice(index,1);
+                        this.mapData.points.splice(index,1);
+                        return true;
+                      }
+                    });
+                    this.mapData.lines.some((item, index)=>{
+                      if (item.id==ID){
+                        this.mapData.lines.splice(index,1);
                         return true;
                       }
                     });
@@ -502,9 +720,18 @@ export default new Vuex.Store({
                     //提取id
                     let eId=jsonData.data.id;
                     //查找相应的地图数据并修改地图数据
-                    for (let i=0;i<this.mapData.length;i++){
-                      if(eId==this.mapData[i].id){
-                        Object.assign(this.mapData[i],jsonData.data);
+                    for (let i=0;i<this.mapData.points.length;i++){
+                      if(eId==this.mapData.points[i].id){
+                        Object.assign(this.mapData.points[i],jsonData.data);
+                        //更新message
+                        this.messages.push(jsonData);
+                        break;
+                      }
+                    }
+                    //查找相应的地图数据并修改地图数据
+                    for (let i=0;i<this.mapData.lines.length;i++){
+                      if(eId==this.mapData.lines[i].id){
+                        Object.assign(this.mapData.lines[i],jsonData.data);
                         //更新message
                         this.messages.push(jsonData);
                         break;
@@ -610,7 +837,7 @@ export default new Vuex.Store({
         type:'line',
         points:[],
         point:{x:0,y:0},
-        color: '00ffff',
+        color: '000000',
         length: null,
         width: 2,
         size: null,
@@ -709,7 +936,31 @@ export default new Vuex.Store({
 
   },
   mutations: {
-
+    //清空临时线段的缓存
+    clearTempLineCache(state){
+      state.mapConfig.tempLine={
+        id:'tempLine',
+        type:'line',
+        points:[],
+        point:{x:0,y:0},
+        color: '000000',
+        length: null,
+        width: 2,
+        size: null,
+        child_relations: null,
+        father_relation: null,
+        child_nodes: null,
+        father_node: null,
+        details:[
+          {key: '名称', value: ''},
+          {key: '类型', value: ''},
+          {key: '备注', value: ''},
+          {key: '区域', value: ''}
+        ],
+        defaultWidth:2,
+        showPos:[]
+      }
+    }
   },
   actions: {
 

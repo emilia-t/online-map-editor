@@ -1,7 +1,7 @@
 <template>
   <g :elementId="polyLineConfig.id">
     <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
-    <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
+<!--    <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>-->
   </g>
 </template>
 <script>
@@ -31,8 +31,14 @@ export default {
   methods:{
     //初始化配置
     startSetting(){
-      this.dataSourcePoints=this.dynamicPointsStr;
+      //this.dataSourcePoints=this.dynamicPointsStr;
       this.mouseEvent();
+      //初始化时就移动到相应的位置上,这一步不要提前否则影响源点的拷贝
+      this.initializePosition();
+      //console.log(this.polyLineConfig);
+      //初始化A1cache
+      this.A1Cache.x=this.A1.x;
+      this.A1Cache.y=this.A1.y;
     },
     //转化坐标
     translateCoordinate(float){
@@ -41,6 +47,52 @@ export default {
     //逆向转化坐标
     reTranslateCoordinate(float){
       return float/10000000;
+    },
+    //初始化定位
+    initializePosition(){
+      try{
+        //1.获取必要值 layer\pointPos\p0Pos
+        let [layer,p0Pos]=[null,{x:null,y:null}];
+        //当前的点集合
+        let pointsPos=this.polyLineConfig.points;
+        layer=this.$store.state.mapConfig.layer;
+        p0Pos.x=-this.$store.state.mapConfig.p0.point.x;
+        p0Pos.y=-this.$store.state.mapConfig.p0.point.y;
+        for(let i=0;i<pointsPos.length;i++){
+          //无缩放
+          if(layer===0){
+            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+            continue;
+          }
+          //有缩小
+          if(layer>0){
+            //1.计算缩小后-p0（0,0）与新点之间的距离
+            for (let x=0;x<layer;x++){
+              pointsPos[i].x=pointsPos[i].x+(pointsPos[i].x*this.$store.state.mapConfig.zoomSub);
+              pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomSub);
+            }
+            //添加p0
+            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+            continue;
+          }
+          //放大
+          if(layer<0){
+            //1.计算缩小后-p0（0,0）与新点之间的距离
+            for(let y=0;y>layer;y--){
+              pointsPos[i].x=pointsPos[i].x+(pointsPos[i].x*this.$store.state.mapConfig.zoomAdd);
+              pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomAdd);
+            }
+            //添加p0
+            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+            continue;
+          }
+        }
+      }catch (e) {
+        return false;
+      }
     },
     //移动（移动结束后固定数据）
     move(){
@@ -88,8 +140,6 @@ export default {
   },
   mounted:function (){
     this.startSetting();
-    //this.scale();
-    //this.move();
   },
   computed:{
     doNeedMoveMap(){

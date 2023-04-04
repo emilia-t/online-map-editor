@@ -5,11 +5,27 @@
   -->
   <div class="elementPanelLayer">
     <div class="title">
-      地图元素面板
+      元素基本信息
     </div>
     <!--遍历-->
     <div class="content">
-      <div class="listBox" v-for="element in theMapData">
+      <div class="listBox" v-for="element in theMapData.areas">
+        <div class="listId">
+          {{element.id}}
+        </div>
+        <div class="listValue" v-text="searchNameKey(element)">
+
+        </div>
+      </div>
+      <div class="listBox" v-for="element in theMapData.lines">
+        <div class="listId">
+          {{element.id}}
+        </div>
+        <div class="listValue" v-text="searchNameKey(element)">
+
+        </div>
+      </div>
+      <div class="listBox" v-for="element in theMapData.points">
         <div class="listId">
           {{element.id}}
         </div>
@@ -26,7 +42,7 @@ export default {
   data(){
     return {
       MY_NAME:"LayerElementPanel",
-      theMapData:[],
+      theMapData:{points:[],lines:[],areas:[]},
       exampleMapData:[
         {
           "id": "11",
@@ -156,7 +172,9 @@ export default {
   watch:{
     mapData(newValue){
       if(newValue.length!==0){
-        this.theMapData=newValue;
+        this.theMapData.lines=newValue.lines;
+        this.theMapData.points=newValue.points;
+        this.theMapData.areas=newValue.areas;
       }
     }
   }

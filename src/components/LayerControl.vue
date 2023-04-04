@@ -55,6 +55,8 @@ export default {
       isAddPoint:false,
       isAddLine:false,
       addLineClock:false,//false表示未锁止
+      lineListener:false,
+      pointListener:false,
       theConfig:{
         buttonA:false,
         buttonB:false,
@@ -135,6 +137,7 @@ export default {
     //取消添加线
     addLineCancel(){
       //允许更新指针
+      this.$store.state.mapConfig.cursor='default';
       this.$store.state.mapConfig.cursorLock=false;
       //1.重置临时线位置
       this.$store.state.mapConfig.tempLine.point.x=0;
@@ -148,23 +151,30 @@ export default {
       this.theConfig.lineBoardTop=0;
       //4.停用锁止
       this.addLineClock=false;
+      //清除点击位置缓存
+      this.theConfig.addLinePos=[];
     },
     //添加点
     addLine(){
       //1监听下一次的鼠标点击位置
       if(this.theConfig.obServe===false){
+        //允许更新，启用观察者
         this.theConfig.obServe=true;
-        document.addEventListener("click",(ev)=>{
-          if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false){
-            //判断target
-            let tag=ev.target.nodeName;
-            if(tag=="svg" || tag=="polyline" || tag=="circle"){
-              //计算新增点位置
-              let Pos=this.computeMouseActualPos(ev)
-              this.theConfig.addLinePos.push(Pos);
+        //避免重复添加监听，在第一次监听后即不再重复添加
+        if(this.lineListener===false){
+          document.addEventListener("click",(ev)=>{
+            if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false){
+              //判断target
+              let tag=ev.target.nodeName;
+              if(tag=="svg" || tag=="polyline" || tag=="circle"){
+                //计算新增点位置
+                let Pos=this.computeMouseActualPos(ev)
+                this.theConfig.addLinePos.push(Pos);
+              }
             }
-          }
-        })
+          });
+          this.lineListener=true;
+        }
       }
     },
     //双击结束添加线段
@@ -196,25 +206,31 @@ export default {
       this.theConfig.bordPosLeft=-400;
       this.theConfig.bordPosTop=0;
       //允许更新指针
+      this.$store.state.mapConfig.cursor='default';
       this.$store.state.mapConfig.cursorLock=false;
     },
     //添加点
     addPoint(){
       //1监听下一次的鼠标点击位置
       if(this.theConfig.obServe===false){
+        //启用观察者，保持更新
         this.theConfig.obServe=true;
-        document.addEventListener("click",(ev)=>{
-          if(this.theConfig.obServe===true && this.isAddPoint===true){
-            //判断target
-            let tag=ev.target.nodeName;
-            if(tag=="svg" || tag=="polyline" || tag=="circle"){
-              //计算新增点位置
-              let Pos=this.computeMouseActualPos(ev)
-              this.theConfig.addPointPos.x=Pos.x;
-              this.theConfig.addPointPos.y=Pos.y;
+        //避免重复添加监听
+        if(this.pointListener===false){
+          document.addEventListener("click",(ev)=>{
+            if(this.theConfig.obServe===true && this.isAddPoint===true){
+              //判断target
+              let tag=ev.target.nodeName;
+              if(tag=="svg" || tag=="polyline" || tag=="circle"){
+                //计算新增点位置
+                let Pos=this.computeMouseActualPos(ev)
+                this.theConfig.addPointPos.x=Pos.x;
+                this.theConfig.addPointPos.y=Pos.y;
+              }
             }
-          }
-        })
+          });
+          this.pointListener=true;
+        }
       }
     },
     //计算用户鼠标点与p0的位置距离并返回用户鼠标点击位置的真实坐标
@@ -364,12 +380,19 @@ export default {
     },
     addNewLine:{
       handler(newValue){
-        //1更新临时线数据
-        this.$store.state.mapConfig.tempLine.point.x=newValue[0].x;
-        this.$store.state.mapConfig.tempLine.point.y=newValue[0].y;
-        this.$store.state.mapConfig.tempLine.points.push(newValue[newValue.length-1]);
-        //2.更新临时线显示位置
-        this.$store.state.mapConfig.tempLine.showPos.push({x:this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.x),y:-this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.y)});
+        if(newValue.length!==0){
+          //1更新临时线数据
+          this.$store.state.mapConfig.tempLine.point.x=newValue[0].x;
+          this.$store.state.mapConfig.tempLine.point.y=newValue[0].y;
+          this.$store.state.mapConfig.tempLine.points.push(newValue[newValue.length-1]);
+          //2.更新临时线显示位置
+          this.$store.state.mapConfig.tempLine.showPos.push({x:this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.x),y:-this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.y)});
+        }else {
+          this.$store.state.mapConfig.tempLine.point.x=0;
+          this.$store.state.mapConfig.tempLine.point.y=0;
+          this.$store.state.mapConfig.tempLine.points=[];
+          this.$store.state.mapConfig.tempLine.showPos=[];
+        }
       },
       deep:true
     },

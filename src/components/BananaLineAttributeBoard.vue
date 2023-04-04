@@ -20,10 +20,9 @@
 
         </div>
         <!--右侧属性值-->
-        <textarea class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7">
-
-        </textarea>
-        <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ff0000'"></orange-color-palette>
+        <textarea class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7"></textarea>
+        <!--色块-->
+        <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#'+color"></orange-color-palette>
       </div>
       <div class="centerListItem">
         <!--左侧属性名-->
@@ -41,12 +40,7 @@
         <!--右侧属性值-->
         <textarea class="widthInput" contenteditable="true" v-model="width" maxlength="7">
         </textarea>
-        <!--勾选按钮-->
-        <!--        <div class="doneTickButton">-->
-        <!--          <div class="doneSleBtn"></div>-->
-        <!--        </div>-->
-        <!--滑块-->
-        <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :max="64" :min="2" :default="5"></orange-slide-block>
+        <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :max="64" :min="2" :default="2"></orange-slide-block>
       </div>
       <div class="centerListItem" v-for="detail in details">
         <!--左侧属性名-->
@@ -90,7 +84,7 @@ export default {
     return {
       id:"-1",
       color:"000000",
-      width:5,
+      width:2,
       point:{x:0,y:0},
       details:[
         {"key":"名称","value":""},
@@ -151,18 +145,27 @@ export default {
       this.buttonAnimation(ev);
       //信息汇总
       let obj={
-        class:"line",
-        point:this.$store.state.mapConfig.tempLine.point,
-        points:this.$store.state.mapConfig.tempLine.points,
+        childNodes:[],
+        childRelations:[],
         color:this.color,
-        width:this.width,
+        class:'line',
         details:this.details,
+        fatherNode:'',
+        fatherRelation: '',
+        id:0,
+        length:null,
+        point:this.tempLine.point,
+        points:this.tempLine.points,
+        size:null,
+        type:'line',
+        width:this.width
       };
-      console.log(obj);
       //上传到服务器
-      //this.$store.state.serverData.socket.broadcastSendPoint(obj);
+      this.$store.state.serverData.socket.broadcastSendLine(obj);
+      //清空缓存
+      this.$store.commit('clearTempLineCache');
       //隐藏面板
-      //this.show=false;
+      this.show=false;
     },
     //取消-从缓存中恢复源数据
     cancelEdit(ev){
@@ -228,6 +231,9 @@ export default {
     }
   },
   computed:{
+    tempLine(){
+      return this.$store.state.mapConfig.tempLine;
+    },
     browserSize(){
       return this.$store.state.mapConfig.browser;
     },
@@ -241,19 +247,9 @@ export default {
         St=this.browserSize.height-435;
       }
       return "left:"+Sl+"px;top:"+St+"px"
-    },
-    TempPoint(){
-      return this.$store.state.mapConfig.tempPoint.point;
     }
   },
   watch:{
-    TempPoint:{
-      handler(newValue){
-        this.point.x=newValue.x;
-        this.point.y=newValue.y;
-      },
-      deep:true
-    },
     //被移动位置时触发
     BoardPos:{
       handler(newValue){

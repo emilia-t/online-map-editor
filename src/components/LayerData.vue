@@ -10,9 +10,9 @@
   <div class="dataLayer" id="dataLayer" ref="dataLayer">
     <svg class="elementData" id="elementData" ref="elementData" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
       <!--线段数据-->
-      <svg-line v-for="line in theData.MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line>
+      <svg-line v-for="line in MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line>
       <!--点位数据-->
-      <svg-point v-for="point in theData.MyPointData" :key="point.id" :point-config="point"></svg-point>
+      <svg-point v-for="point in MyPointData" :key="point.id" :point-config="point"></svg-point>
       <!--p0位置-->
       <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"></svg-point-p0>
       <!--临时点数据-->
@@ -64,60 +64,7 @@ export default {
          可以空 | details:''//自定义的一些数据，可以是任何数据类型
         }
         **/
-        MyPolyLineData:[
-          {
-            "id": "99999",
-            "type": "line",
-            "points": [
-              {
-                "x": 0.000055,
-                "y": -0.00005
-              },
-              {
-                "x": 0.00006,
-                "y": -0.00006
-              },
-              {
-                "x": 0.000065,
-                "y": -0.000065
-              }
-            ],
-            "point": {
-              "x": 0.00005,
-              "y": -0.00005
-            },
-            "color": "00ffff",
-            "length": null,
-            "width": "3",
-            "size": null,
-            "child_relations": null,
-            "father_relation": null,
-            "child_nodes": null,
-            "father_node": null,
-            "details": [
-              {
-                "key": "名称",
-                "value": "测试路线"
-              },
-              {
-                "key": "地址",
-                "value": ""
-              },
-              {
-                "key": "类型",
-                "value": ""
-              },
-              {
-                "key": "备注",
-                "value": ""
-              },
-              {
-                "key": "区域",
-                "value": ""
-              }
-            ]
-          }
-        ],
+
         /**数据结构
          {
           不能空 | id:mini-type+number  ;字符串数据
@@ -135,9 +82,7 @@ export default {
           可以空 | details:[{key:value},{key:value}...]//自定义的一些数据，可以是任何数据类型，key=>value
          }
          **/
-        MyPointData:[
 
-        ],
         moveStartPt:{
           x:null,
           y:null
@@ -182,6 +127,9 @@ export default {
       this.elementDataClick();
       //检测浏览器窗口大小变化
       this.listenBrowserSize();
+      // setInterval(
+      //   ()=>console.log(this.MyPolyLineData)
+      // ,1000)
     },
     //连接服务器
     startLinkServer(){
@@ -550,91 +498,43 @@ export default {
     A1() {
       return this.$store.state.mapConfig.A1;
     },
-    mapData(){
+    // mapData(){
+    //   if(this.$store.state.serverData.socket){
+    //     return this.$store.state.serverData.socket.mapData;
+    //   }else {
+    //     return [];
+    //   }
+    // },
+    MyPolyLineData(){
       if(this.$store.state.serverData.socket){
-        return this.$store.state.serverData.socket.mapData;
+        return this.$store.state.serverData.socket.mapData.lines;
+      }else {
+        return [];
+      }
+    },
+    MyPointData(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.mapData.points;
       }else {
         return [];
       }
     }
   },
   watch:{
-    mapData:{
-      handler(newValue,oldValue){
-        if(newValue.length!==0){
-          //拿取数据,此处是引用数据会修改原始数据
-          let TpArr=this.mapData;
-          //1.将其中的points转化一下,尝试处理源数据,如果已经处理好则不会处理
-          try{
-            for (let i=0;i<TpArr.length;i++){
-              //1.将base64转化为普通字符
-              let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
-              try{
-                baseA=window.atob(TpArr[i].points);
-                baseB=window.atob(TpArr[i].point);
-              }
-              catch(e){lock=false;}
-              try{
-                if(lock){
-                  Ps=JSON.parse(baseA);
-                  Pt=JSON.parse(baseB);
-                }
-              }
-              catch(e){lock=false;}
-              if(lock){
-                TpArr[i].points=Ps;
-                TpArr[i].point=Pt;
-              }
-            }
-          }catch(e){}
-          //2.解析details
-          try{
-            for (let i=0;i<TpArr.length;i++){
-              //1.将base64转化为普通字符
-              let [lock,baseA,Ps]=[true,null,null];
-              try{
-                baseA=window.atob(TpArr[i].details);
-              }
-              catch(e){lock=false;}
-              try {
-                if(lock){
-                  Ps=JSON.parse(baseA);
-                }
-              }catch(e){lock=false;}
-              if(lock){
-                TpArr[i].details=Ps;
-              }
-            }
-          }catch(e){}
-          //3.检测类型分组存放
-          let LineArr=[];
-          let PointArr=[];
-          for (let x=0;x<TpArr.length;x++){
-            if(TpArr[x].hasOwnProperty('type')){
-              let nowType=TpArr[x].type;
-              switch (nowType){
-                case 'line':{
-                  LineArr.push(TpArr[x]);
-                  break;
-                }
-                case 'point':{
-                  PointArr.push(TpArr[x]);
-                  break;
-                }
-              }
-            }
-          }
-          //this.theData.MyPolyLineData=LineArr;
-          this.theData.MyPointData=PointArr;
-          return true;
-        }else {
-          //this.theData.MyPolyLineData=[];
-          this.theData.MyPointData=[];
-          return true;
-        }
-      },
-      deep:true
-    },
+    // mapData:{
+    //   handler(newValue,oldValue){
+    //     if(newValue.length!==0){
+    //       this.theData.MyPolyLineData=newValue.lines;
+    //       this.theData.MyPointData=newValue.points;
+    //       return true;
+    //     }else {
+    //        this.theData.MyPolyLineData=[];
+    //        this.theData.MyPointData=[];
+    //       return true;
+    //     }
+    //   },
+    //   deep:true
+    // },
     commitsCreateTestLine:{
       handler(newValue,oldValue){
         this.createTestLine();

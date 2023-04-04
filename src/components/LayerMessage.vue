@@ -12,6 +12,15 @@
           </div>
           <div class="messageData">{{message.data.message}}</div>
         </div>
+        <!--新增线段消息-->
+        <div v-if="message.class==='line'" class="messageItemA">
+          <div class="messageTime">{{message.time}}</div>
+          <div class="messageConveyor">
+            <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
+            {{message.conveyor}}
+          </div>
+          <div class="messageData">我添加了一条线段，id为：{{message.data.elementId}}</div>
+        </div>
         <!--新增点消息-->
         <div v-if="message.class==='point'" class="messageItemA">
           <div class="messageTime">{{message.time}}</div>
