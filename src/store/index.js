@@ -913,7 +913,7 @@ export default new Vuex.Store({
       //2.底图背景数据
       underlay:undefined,
       //3.用户名//目前已经移交至socket会话的数据中，此处仅作实例
-      userName:'神秘用户',
+      userName:'点击头像登录',
       //4.用户邮箱//目前已经移交至socket会话的数据中，此处仅作实例
       userEmail:'Anyone@Any.com',
       //5.用户QQ,默认为1077365277//目前已经移交至socket会话的数据中，此处仅作实例

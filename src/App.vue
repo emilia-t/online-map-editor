@@ -1,94 +1,144 @@
 <!--仅次于根的父组件-->
 <template>
   <div id="app">
-    <!--用户层-->
-    <!--用于显示用户数据-->
-    <layer-user></layer-user>
-    <!--数据层-->
-    <!--用于显示(view)和添加(new)数据用-，其下的子组件例如svgLine组件拥有移动(move)，缩放(scale)、编辑(edit)、删除(del)的功能-->
-    <layer-data></layer-data>
-    <!--消息层-->
-    <!--显示编辑历史等信息-->
-    <layer-message></layer-message>
-    <!--标尺层-->
-    <!--用于显示上策和左侧经纬度标尺-->
-    <layer-ruler></layer-ruler>
-    <!--背景层-->
-    <!--用于显示背景，例如谷歌给地图-->
-    <layer-background></layer-background>
-    <!--新建层-->
-    <!--用于创建新的要素-->
-    <layer-create></layer-create>
-    <!--控制层-->
-    <!--用于控制一些操作用，例如编辑按钮、清空按钮-->
-    <layer-control></layer-control>
-    <!--元素面板层-->
-    <!--用于展示图层数据的-->
-    <layer-element-panel></layer-element-panel>
-    <!--属性面板层-->
-    <layer-details-panel></layer-details-panel>
-    <!--调试面板-->
-    <layer-console></layer-console>
+
+    <!--地图主体-->
+    <div id="mapSeparate" v-if="mapSeparateState">
+      <!--地图应用主体-->
+      <!--用户层-->
+      <!--用于显示用户数据-->
+      <layer-user></layer-user>
+      <!--数据层-->
+      <!--用于显示(view)和添加(new)数据用-，其下的子组件例如svgLine组件拥有移动(move)，缩放(scale)、编辑(edit)、删除(del)的功能-->
+      <layer-data></layer-data>
+      <!--消息层-->
+      <!--显示编辑历史等信息-->
+      <layer-message></layer-message>
+      <!--标尺层-->
+      <!--用于显示上策和左侧经纬度标尺-->
+      <layer-ruler></layer-ruler>
+      <!--背景层-->
+      <!--用于显示背景，例如谷歌给地图-->
+      <layer-background></layer-background>
+      <!--新建层-->
+      <!--用于创建新的要素-->
+      <layer-create></layer-create>
+      <!--控制层-->
+      <!--用于控制一些操作用，例如编辑按钮、清空按钮-->
+      <layer-control></layer-control>
+      <!--元素面板层-->
+      <!--用于展示图层数据的-->
+      <layer-element-panel></layer-element-panel>
+      <!--属性面板层-->
+      <layer-details-panel></layer-details-panel>
+      <!--调试面板-->
+      <layer-console></layer-console>
+      <!--地图应用主体-->
+    </div>
+
+    <!--初始界面-选择服务器+配置服务器-->
+    <!--这个页面主要用于提供本地地图创建和连接地图服务器，暂时不提供登录功能，配置数据，例如地图服务器地址均存放在本地存储-->
+    <div id="homePageSeparate" v-if="homeSeparateState">
+      <page-layer-home-page @pageLayerHomePageCallDefault="setDefaultLogin" @pageLayerHomePageCall="linkStar"></page-layer-home-page>
+      <page-layer-background></page-layer-background>
+    </div>
+
     <!--底部锚-->
     <layer-bottom-anchor></layer-bottom-anchor>
+
   </div>
 </template>
 
 <script>
-/*
-数据层
-用于显示和编辑数据用
-*/
+
 import LayerData from "./components/LayerData";
-/*
-标尺层
-用于显示上策和左侧经纬度标尺
-*/
 import LayerRuler from "./components/LayerRuler";
-/*
-背景层
-用于显示背景，例如谷歌给地图
-*/
 import LayerBackground from "./components/LayerBackground";
-/*
-<!--新建层-->
-<!--用于创建新的要素-->
-*/
 import LayerCreate from "./components/LayerCreate";
-/*
-<!--控制层-->
-<!--用于控制一些操作用，例如编辑按钮、清空按钮-->
-*/
 import LayerControl from "./components/LayerControl";
-/*
-<!--面板层-->
-<!--用于展示图层数据的-->
-*/
 import LayerElementPanel from "./components/LayerElementPanel";
-/*
-<!--调试面板-->
-*/
 import LayerConsole from "./components/LayerConsole";
 import LayerUser from "./components/LayerUser";
 import LayerDetailsPanel from "./components/LayerDetailsPanel";
 import LayerMessage from "./components/LayerMessage";
 import LayerBottomAnchor from "./components/LayerBottomAnchor";
+import PageLayerBackground from "./components/page/LayerBackground";
+import PageLayerHomePage from "./components/page/LayerHomePage"
 export default {
   name: 'App',
   components: {
-    LayerUser,
-    //普通图层
-    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerDetailsPanel,LayerMessage,LayerBottomAnchor,
+    //地图主体
+    LayerUser,LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerDetailsPanel,LayerMessage,LayerBottomAnchor,
     //特殊图层
-    LayerConsole
+    LayerConsole,
+    //起始页
+    PageLayerBackground,PageLayerHomePage
   },
   data(){
     return {
-
+      mapSeparateState:false,
+      homeSeparateState:true,
+      cancelState:false,
     }
   },
+  mounted() {
+    let status=this.handleLocalStorage('get','defaultLinkServerStatus');
+    if(status!==false){
+      this.cancelState=confirm('是否自动连接？')
+    }
+    this.defaultLogin();
+  },
   methods:{
-
+    defaultLogin(){
+      let status=this.handleLocalStorage('get','defaultLinkServerStatus');
+      let url=this.handleLocalStorage('get','defaultLinkServerAddress');
+      if(status=='on' && this.cancelState==true){
+        this.linkStar(url);
+      }
+    },
+    setDefaultLogin(data){
+      this.handleLocalStorage('set','defaultLinkServerStatus','on');
+      this.handleLocalStorage('set','defaultLinkServerAddress',''+data);
+    },
+    linkStar(data){
+      let lock=false;
+      //1.设置地址
+      this.$root.CONFIG.__SERVER_ADDRESS__=data;
+      //2.测试连接
+      this.socket=new WebSocket(data)
+      this.socket.onopen=(ev)=>{
+        this.mapSeparateState=true;
+        this.homeSeparateState=false;
+        //保存链接，下次自动连接
+      };
+      this.socket.onerror=(ev)=>{
+        this.$root.general_script.alert_tips('连接失败，请检查地址是否正确')
+      }
+    },
+    //本地存储接口
+    handleLocalStorage(method, key, value) {
+      switch (method) {
+        case 'get' : {
+          let temp = window.localStorage.getItem(key);
+          if (temp) {
+            return temp
+          } else {
+            return false
+          }
+        }
+        case 'set' : {
+          window.localStorage.setItem(key, value);
+          break
+        }
+        case 'remove': {
+          window.localStorage.removeItem(key);
+          break
+        }
+        default : {
+          return false
+        }
+      }
+    }
   }
 }
 </script>
@@ -98,6 +148,14 @@ export default {
   width: 100%;
   height: 100%;
   background: #fff;
+}
+#mapSeparate{
+  width: 100%;
+  height: 100%;
+}
+#homePageSeparate{
+  width: 100%;
+  height: 100%;
 }
 body, html {
   width: 100%;

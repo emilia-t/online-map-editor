@@ -1,7 +1,7 @@
 <template>
   <g :elementId="polyLineConfig.id">
-    <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
-<!--    <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>-->
+    <polyline @contextmenu="rightClickOperation($event)" @click="showDetails()" :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
+    <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
 <script>
@@ -9,7 +9,7 @@ export default {
   name: "svgLine",
   data(){
     return {
-      dataSourcePoints:null,//数据源保存
+      dataSourcePoint: {},//数据源保存
       occurredMoveMap:false,//移动状态
       A1Cache:{x:0,y:0}//a1的缓存，用于每次移动时扣除上一次移动产生的A1距离
     }
@@ -31,6 +31,10 @@ export default {
   methods:{
     //初始化配置
     startSetting(){
+      //拷贝id
+      this.myId=this.polyLineConfig.id;
+      //拷贝源点数据
+      Object.assign(this.dataSourcePoint,this.polyLineConfig.point);
       //this.dataSourcePoints=this.dynamicPointsStr;
       this.mouseEvent();
       //初始化时就移动到相应的位置上,这一步不要提前否则影响源点的拷贝
@@ -39,6 +43,25 @@ export default {
       //初始化A1cache
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
+    },
+    rightClickOperation(mouseEvent){
+      //阻止默认事件
+      mouseEvent.preventDefault();
+      //对右侧悬浮条的位置和显示状态操作
+      this.$store.state.elementOperationBoardConfig.display=true;
+      this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
+      this.$store.state.elementOperationBoardConfig.posY=mouseEvent.y;
+      //设置operated
+      this.$store.state.mapConfig.operated.id=this.myId;
+      //同步该元素的数据
+      this.$store.state.mapConfig.operated.data=this.polyLineConfig;
+      return mouseEvent;
+    },
+    showDetails(){
+      //1.广播被选中id（myId）
+      this.$store.state.detailsPanelConfig.target=this.myId;
+      this.$store.state.detailsPanelConfig.data=this.polyLineConfig;
+      this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
     },
     //转化坐标
     translateCoordinate(float){
