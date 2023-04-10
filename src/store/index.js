@@ -11,7 +11,8 @@ export default new Vuex.Store({
           this.url=url || 'ws://127.0.0.1:9998';
           this.isLink=false;
           this.isLogin=false;
-          this.numberOfLoginAttempts=0;
+          this.numberOfLoginAttempts=0;//登录成功次数
+          this.numberOfLoginFailed=0;//登录失败次数
           this.socket=undefined;//会话
           this.messages=[];
           this.publickey='';
@@ -504,7 +505,7 @@ export default new Vuex.Store({
                 this.numberOfLoginAttempts++;
               }else {
                 this.isLogin=false;
-                this.numberOfLoginAttempts++;
+                this.numberOfLoginFailed++;
               }
               break;
             }

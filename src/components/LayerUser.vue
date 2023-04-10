@@ -222,6 +222,47 @@ export default {
       }else {
         return this.$store.state.serverData.userHeadColor
       }
+    },
+    numberOfLoginAttempts(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.numberOfLoginAttempts;
+      }else {
+        return null;
+      }
+    },
+    numberOfLoginFailed(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.numberOfLoginFailed;
+      }else {
+        return null;
+      }
+    },
+    isLogin(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.isLogin;
+      }else {
+        return null;
+      }
+    }
+  },
+  watch:{
+    numberOfLoginAttempts:{
+      handler(newValue,oldValue){
+        if(oldValue!==null){
+          if(this.isLogin===true){//表示连接登录成功
+            this.isOpenBord=false;//隐藏登录面板
+          }
+        }
+      }
+    },
+    numberOfLoginFailed:{
+      handler(newValue,oldValue){
+        if(oldValue!==null){
+          if(this.isLogin===true){//表示连接登录成功
+            this.isOpenBord=false;//隐藏登录面板
+          }
+        }
+      }
     }
   }
 }

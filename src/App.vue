@@ -39,7 +39,11 @@
     <!--初始界面-选择服务器+配置服务器-->
     <!--这个页面主要用于提供本地地图创建和连接地图服务器，暂时不提供登录功能，配置数据，例如地图服务器地址均存放在本地存储-->
     <div id="homePageSeparate" v-if="homeSeparateState">
-      <page-layer-home-page @pageLayerHomePageCallDefault="setDefaultLogin" @pageLayerHomePageCall="linkStar"></page-layer-home-page>
+      <!--左侧的菜单面板-->
+      <page-layer-menu-panel></page-layer-menu-panel>
+      <!--连接管理界面-->
+      <page-layer-connection-interface></page-layer-connection-interface>
+<!--      <page-layer-home-page @pageLayerHomePageCallDefault="setDefaultLogin" @pageLayerHomePageCall="linkStar"></page-layer-home-page>-->
       <page-layer-background></page-layer-background>
     </div>
 
@@ -64,6 +68,8 @@ import LayerMessage from "./components/LayerMessage";
 import LayerBottomAnchor from "./components/LayerBottomAnchor";
 import PageLayerBackground from "./components/page/LayerBackground";
 import PageLayerHomePage from "./components/page/LayerHomePage"
+import PageLayerMenuPanel from "./components/page/LayerMenuPanel";
+import PageLayerConnectionInterface from "./components/page/LayerConnectionInterface"
 export default {
   name: 'App',
   components: {
@@ -72,7 +78,7 @@ export default {
     //特殊图层
     LayerConsole,
     //起始页
-    PageLayerBackground,PageLayerHomePage
+    PageLayerBackground,PageLayerHomePage,PageLayerMenuPanel,PageLayerConnectionInterface
   },
   data(){
     return {
@@ -82,10 +88,14 @@ export default {
     }
   },
   mounted() {
-    let status=this.handleLocalStorage('get','defaultLinkServerStatus');
-    if(status!==false){
-      this.cancelState=confirm('是否自动连接？')
-    }
+    // let status=this.handleLocalStorage('get','defaultLinkServerStatus');
+    // if(status!==false){
+    //   let type=undefined;
+    //   this.cancelState = type =confirm('是否自动连接？');
+    //   if(!type){
+    //     this.handleLocalStorage('remove','defaultLinkServerStatus')
+    //   }
+    // }
     this.defaultLogin();
   },
   methods:{
@@ -156,6 +166,7 @@ export default {
 #homePageSeparate{
   width: 100%;
   height: 100%;
+  background: rgb(251,251,251);
 }
 body, html {
   width: 100%;

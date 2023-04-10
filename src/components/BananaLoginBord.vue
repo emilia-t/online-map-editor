@@ -208,6 +208,13 @@ export default {
         return null;
       }
     },
+    numberOfLoginFailed(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.numberOfLoginFailed;
+      }else {
+        return null;
+      }
+    },
     isLogin(){
       if(this.$store.state.serverData.socket){
         return this.$store.state.serverData.socket.isLogin;
@@ -218,6 +225,17 @@ export default {
   },
   watch:{
     numberOfLoginAttempts:{
+      handler(newValue,oldValue){
+        if(oldValue!==null){
+          if(this.isLogin===true){//表示连接登录成功
+            this.loginEd();
+          }else {//表示登录失败，或切换账号失败，将会注销当前账号
+            this.loginFail();
+          }
+        }
+      }
+    },
+    numberOfLoginFailed:{
       handler(newValue,oldValue){
         if(oldValue!==null){
           if(this.isLogin===true){//表示连接登录成功
