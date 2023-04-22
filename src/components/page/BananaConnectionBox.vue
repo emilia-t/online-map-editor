@@ -6,7 +6,7 @@
     <img class="ConnectionImg" alt="服务器显示图" :src="serverImg"/>
   </div>
   <!--阴影-->
-  <div class="ImgBoxShadow" @click="openMe"></div>
+  <router-link :to="`/m/${serverKey}`"><div class="ImgBoxShadow" @click="manualConnection()"></div></router-link>
   <!--右上角更多属性按钮-->
   <div class="moreButtonBox" @click="openDetailBoard">
     <svg t="1681047402121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="33387" width="200" height="200"><path d="M288 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33388" data-spm-anchor-id="a313x.7781069.0.i32" class="selected"></path><path d="M512 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33389" data-spm-anchor-id="a313x.7781069.0.i33" class="selected"></path><path d="M736 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33390" data-spm-anchor-id="a313x.7781069.0.i34" class="selected"></path></svg>
@@ -26,11 +26,28 @@
     <div class="moreBoardClose" @click="closeDetailBoard">
       <svg t="1681049938063" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="34516" width="200" height="200"><path d="M235.403636 182.178909l270.475637 270.498909L776.401455 182.178909a58.181818 58.181818 0 1 1 82.292363 82.292364L588.171636 534.946909 858.693818 805.469091a58.181818 58.181818 0 1 1-82.292363 82.269091L505.879273 617.239273 235.403636 887.738182A58.181818 58.181818 0 0 1 153.134545 805.469091l270.475637-270.522182L153.134545 264.471273a58.181818 58.181818 0 0 1 82.269091-82.292364z" fill="#282C33" p-id="34517"></path></svg>
     </div>
+    <span>服务器Key：{{serverKey}}</span>
     <span>最大在线人数：{{serverMaxOnlineNumber}}</span>
     <span>最大宽度：{{serverMaxWidth}}</span>
     <span>最大高度：{{serverMaxHeight}}</span>
     <span>默认点X：{{serverDefaultPointX}}</span>
     <span>默认点Y：{{serverDefaultPointY}}</span>
+  </div>
+  <!--右下角的在线状态-->
+  <div class="serverStatus" :style="`color:${onlineShowColor}`">
+    <span class="serverStatusSpan">{{onlineStatusText}}</span>
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px">
+      <circle style="transition: 1s" r="5px" :fill="onlineShowColor" cx="10" cy="10" stroke-width="1" pointer-events="fill" fill-opacity="0.8"></circle>
+      <!--
+      初始化时(开始页面)需要立刻检测服务器在线情况，在线则亮绿灯，不在线则亮红灯，或者用其他的方式，总之需要简明
+      左侧的菜单面板在地图主体被打开后需要关闭，以及设置内容需要做
+      常规里面的设置：开启默认登录、默认保存本地服务器配置、默认保存账号
+
+      显示内的设置：显示标尺、右下角显示鼠标坐标、显示历史编辑id
+
+      账户内显示：已经存储的账户、
+      -->
+    </svg>
   </div>
 </div>
 </template>
@@ -40,10 +57,16 @@ export default {
   name: "BananaConnectionBox",
   data(){
     return {
-
+      onlineShowColor:'#ff1414',
+      onlineStatusText:'offline'
     }
   },
   props:{
+    serverKey:{
+      type:String,
+      default:'0',
+      required:true
+    },
     account:{
       type:String,
       default:'没有用户账户'
@@ -94,15 +117,51 @@ export default {
       default:'∞'
     }
   },
+  mounted() {
+    this.startSetting();
+  },
   methods:{
+    startSetting(){
+      //1.检测服务器在线状态
+      this.checkOnline(this.serverAddress);
+      //2.每隔一段时间检查
+      setInterval(
+        ()=>{
+          if(this.$store.state.userSettingConfig.autoUpdateServerStatus){
+            this.checkOnline(this.serverAddress);
+          }
+        }
+      ,this.$store.state.userSettingConfig.autoUpdateServerStatusTime)
+    },
+    checkOnline(address){
+      try {
+        let tempCon=new WebSocket(address);
+        tempCon.onopen=()=>{
+          this.onlineShowColor='#2ffd6a';
+          this.onlineStatusText='online';
+          tempCon.close();
+        }
+        tempCon.onerror=(event)=>{
+          event.preventDefault();
+          this.onlineShowColor='#ff1414';
+          this.onlineStatusText='offline';
+          tempCon.close();
+        }
+        tempCon.addEventListener('error', (event) => {
+
+        });
+      }catch (e) {
+      }
+    },
     openDetailBoard(){
       this.$refs.moreBoard.style.top='0px';
     },
     closeDetailBoard(){
       this.$refs.moreBoard.style.top='-170px';
     },
-    openMe(){
-      console.log(this.serverAddress)
+    //手动连接
+    manualConnection(){
+
     }
   }
 }
@@ -216,5 +275,27 @@ export default {
   right:10px;
   z-index: 555;
   cursor: pointer;
+}
+.serverStatus{
+  transition: 1s;
+  background: rgba(255,255,255,0.35);
+  position: absolute;
+  bottom: 65px;
+  right: 0px;
+  z-index: 560;
+  width: 70px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  align-content: center;
+  border-radius: 2px;
+}
+.serverStatusSpan{
+  width: auto;
+  height: inherit;
+  font-size: 10px;
+  line-height: 20px;
+  letter-spacing: 1px;
 }
 </style>

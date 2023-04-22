@@ -1,14 +1,14 @@
 <template>
   <!--用来登录、注册、切换账号的-->
-<div class="BananaLoginBord">
+<div class="BananaLoginBoard">
   <!--登录面板-->
   <div v-if="!isLogin" class="session">
     <div class="left">
       <svg @click="close()" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
     </div>
     <div class="log-in" id="LinkPage">
-      <h4>登录至 <span>Map.ATSW</span></h4>
-      <p>欢迎回来，请输入您的账号以登录至 Map.ATSW</p>
+      <h4>登录至此 <span>OMS</span></h4>
+      <p>欢迎回来，请输入您的账号以登录此 OMS</p>
       <div class="floating-label">
         <input placeholder="Email" type="email" name="email" id="email" autocomplete="off" v-model:value="email">
         <label for="email">Email:</label>
@@ -33,8 +33,8 @@
       <svg @click="close()" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
     </div>
     <div class="log-in" id="LinkPage">
-      <h4>您已登录至 <span>Map.ATSW</span></h4>
-      <p>不是我的账号？请输入您的账号以重新登录 Map.ATSW</p>
+      <h4>您已登录此 <span>OMS</span></h4>
+      <p>不是我的账号？请输入您的账号以重新登录此 OMS</p>
       <div class="floating-label">
         <input placeholder="Email" type="email" name="email" id="email" autocomplete="off" v-model:value="email">
         <label for="email">Email:</label>
@@ -63,7 +63,7 @@
 import {JSEncrypt} from "jsencrypt";
 
 export default {
-  name: "BananaLoginBord",
+  name: "BananaLoginBoard",
   data(){
     return {
       email:'',//仅用于登录，并不是用户的名称
@@ -154,12 +154,16 @@ export default {
       //0.清楚本地账号
       this.handleLocalStorage('remove','saveEmail');
       this.handleLocalStorage('remove','savePassword');
-      //1.清除会话内的本地数据
-      this.$store.state.serverData.socket.clearLocalData();
-      //2.断开服务器连接
-      this.$store.state.serverData.socket.closeLink();
-      //3.重新连接服务器
-      this.$store.state.serverData.socket.link();
+      try {
+        //1.清除会话内的本地数据
+        this.$store.state.serverData.socket.clearLocalData();
+        //2.断开服务器连接
+        this.$store.state.serverData.socket.closeLink();
+        //3.重新连接服务器
+        this.$store.state.serverData.socket.link();
+      }catch (e) {
+
+      }
     },
     //连接失败
     loginFail(){
@@ -265,7 +269,7 @@ export default {
   justify-content: right;
   align-items: center;
 }
-.BananaLoginBord{
+.BananaLoginBoard{
   position: fixed;
   width: 600px;height: auto;
   top:calc(50% - 220px);

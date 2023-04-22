@@ -20,9 +20,9 @@
       <!--临时线数据-->
       <svg-line-temp></svg-line-temp>
       <!--我的A1位置-->
-      <svg-a1-circle></svg-a1-circle>
+<!--      <svg-a1-circle></svg-a1-circle>-->
       <!--其他人的A1位置-->
-      <svg-a1-circle-other></svg-a1-circle-other>
+<!--      <svg-a1-circle-other></svg-a1-circle-other>-->
     </svg>
   </div>
 </template>
@@ -109,8 +109,6 @@ export default {
       this.getBrowserConfig();
       //获取屏幕中心点
       this.getScreenCenter();
-      //初始连接服务器
-      this.startLinkServer();
       //实时获取鼠标位置
       this.getMousePos();
       //添加移动侦听
@@ -130,16 +128,6 @@ export default {
       // setInterval(
       //   ()=>console.log(this.MyPolyLineData)
       // ,1000)
-    },
-    //连接服务器
-    startLinkServer(){
-      const serverAdr=this.$root.CONFIG.__SERVER_ADDRESS__;
-      //创建新综合指令对象
-      this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(serverAdr);
-      //设置服务器url
-      this.$store.state.serverData.socket.url=serverAdr;
-      //连接服务器
-      this.$store.state.serverData.socket.link();
     },
     //检测浏览器窗口大小变化
     listenBrowserSize(){
@@ -500,13 +488,6 @@ export default {
     A1() {
       return this.$store.state.mapConfig.A1;
     },
-    // mapData(){
-    //   if(this.$store.state.serverData.socket){
-    //     return this.$store.state.serverData.socket.mapData;
-    //   }else {
-    //     return [];
-    //   }
-    // },
     MyPolyLineData(){
       if(this.$store.state.serverData.socket){
         return this.$store.state.serverData.socket.mapData.lines;
@@ -523,20 +504,6 @@ export default {
     }
   },
   watch:{
-    // mapData:{
-    //   handler(newValue,oldValue){
-    //     if(newValue.length!==0){
-    //       this.theData.MyPolyLineData=newValue.lines;
-    //       this.theData.MyPointData=newValue.points;
-    //       return true;
-    //     }else {
-    //        this.theData.MyPolyLineData=[];
-    //        this.theData.MyPointData=[];
-    //       return true;
-    //     }
-    //   },
-    //   deep:true
-    // },
     commitsCreateTestLine:{
       handler(newValue,oldValue){
         this.createTestLine();
@@ -549,6 +516,11 @@ export default {
       },
       deep:true
     }
+  },
+  destroyed(){
+    //销毁连接及综合对象
+    //this.$store.commit('destroyComprehensive');
+    //console.log("layerData");
   }
 }
 </script>

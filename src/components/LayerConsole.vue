@@ -59,6 +59,10 @@ export default {
       },
       deep:true
     },
+  },
+  destroyed(){
+    //最后被销毁的地图组件，销毁地图主体
+    setTimeout(()=>this.$store.commit('destroyComprehensive'),10)
   }
 }
 </script>

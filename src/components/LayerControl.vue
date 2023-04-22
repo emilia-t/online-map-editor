@@ -408,6 +408,11 @@ export default {
       },
       deep:true
     }
+  },
+  destroyed(){
+    //销毁连接及综合对象
+    //this.$store.commit('destroyComprehensive');
+    //console.log("layer control");
   }
 }
 </script>

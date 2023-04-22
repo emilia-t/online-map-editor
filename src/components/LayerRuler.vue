@@ -15,6 +15,11 @@ export default {
     return {
       MY_NAME:"LayerRuler"
     }
+  },
+  destroyed(){
+    //销毁连接及综合对象
+    //this.$store.commit('destroyComprehensive');
+    //console.log("layer ruler");
   }
 }
 </script>

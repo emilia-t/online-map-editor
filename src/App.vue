@@ -1,155 +1,68 @@
 <!--仅次于根的父组件-->
 <template>
   <div id="app">
-
-    <!--地图主体-->
-    <div id="mapSeparate" v-if="mapSeparateState">
-      <!--地图应用主体-->
-      <!--用户层-->
-      <!--用于显示用户数据-->
-      <layer-user></layer-user>
-      <!--数据层-->
-      <!--用于显示(view)和添加(new)数据用-，其下的子组件例如svgLine组件拥有移动(move)，缩放(scale)、编辑(edit)、删除(del)的功能-->
-      <layer-data></layer-data>
-      <!--消息层-->
-      <!--显示编辑历史等信息-->
-      <layer-message></layer-message>
-      <!--标尺层-->
-      <!--用于显示上策和左侧经纬度标尺-->
-      <layer-ruler></layer-ruler>
-      <!--背景层-->
-      <!--用于显示背景，例如谷歌给地图-->
-      <layer-background></layer-background>
-      <!--新建层-->
-      <!--用于创建新的要素-->
-      <layer-create></layer-create>
-      <!--控制层-->
-      <!--用于控制一些操作用，例如编辑按钮、清空按钮-->
-      <layer-control></layer-control>
-      <!--元素面板层-->
-      <!--用于展示图层数据的-->
-      <layer-element-panel></layer-element-panel>
-      <!--属性面板层-->
-      <layer-details-panel></layer-details-panel>
-      <!--调试面板-->
-      <layer-console></layer-console>
-      <!--地图应用主体-->
-    </div>
-
+    <!--左侧的菜单面板-->
+    <page-layer-menu-panel></page-layer-menu-panel>
     <!--初始界面-选择服务器+配置服务器-->
-    <!--这个页面主要用于提供本地地图创建和连接地图服务器，暂时不提供登录功能，配置数据，例如地图服务器地址均存放在本地存储-->
-    <div id="homePageSeparate" v-if="homeSeparateState">
-      <!--左侧的菜单面板-->
-      <page-layer-menu-panel></page-layer-menu-panel>
+    <div id="SeparateHomePage" v-show="homeSeparateState">
+      <!--背景层-->
+<!--      <page-layer-background></page-layer-background>-->
       <!--连接管理界面-->
       <page-layer-connection-interface></page-layer-connection-interface>
-<!--      <page-layer-home-page @pageLayerHomePageCallDefault="setDefaultLogin" @pageLayerHomePageCall="linkStar"></page-layer-home-page>-->
-      <page-layer-background></page-layer-background>
     </div>
-
+    <!--地图主体-->
+    <router-view></router-view>
     <!--底部锚-->
     <layer-bottom-anchor></layer-bottom-anchor>
+    <!--
+    首先：用户直接访问例如：map.atsw.top访问的是主页，
+    用户可以选择某个服务器然后进去地图界面
+    用户也可以直接通过链接例如：map.atsw.top/m/k0 直接进入到地图界面，其中k0是地图的key
 
+    则内部逻辑是：在APP.vue下展示起始页面的相关组件，并且随时调用
+    在APP.vue下展示一个<route-view>，用以显示地图主体
+    当用户切换到其他地图服务器时，这个地图（separateMap.vue）应该被销毁，然后立即再创建一个新的
+    -->
   </div>
 </template>
 
 <script>
-
-import LayerData from "./components/LayerData";
-import LayerRuler from "./components/LayerRuler";
-import LayerBackground from "./components/LayerBackground";
-import LayerCreate from "./components/LayerCreate";
-import LayerControl from "./components/LayerControl";
-import LayerElementPanel from "./components/LayerElementPanel";
-import LayerConsole from "./components/LayerConsole";
-import LayerUser from "./components/LayerUser";
-import LayerDetailsPanel from "./components/LayerDetailsPanel";
-import LayerMessage from "./components/LayerMessage";
+//地图主体
+import SeparateMap from "./components/SeparateMap";
+//底部信息
 import LayerBottomAnchor from "./components/LayerBottomAnchor";
+//起始页相关组件
 import PageLayerBackground from "./components/page/LayerBackground";
 import PageLayerHomePage from "./components/page/LayerHomePage"
 import PageLayerMenuPanel from "./components/page/LayerMenuPanel";
-import PageLayerConnectionInterface from "./components/page/LayerConnectionInterface"
+import PageLayerConnectionInterface from "./components/page/LayerConnectionInterface";
 export default {
   name: 'App',
   components: {
     //地图主体
-    LayerUser,LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerDetailsPanel,LayerMessage,LayerBottomAnchor,
-    //特殊图层
-    LayerConsole,
-    //起始页
-    PageLayerBackground,PageLayerHomePage,PageLayerMenuPanel,PageLayerConnectionInterface
-  },
-  data(){
-    return {
-      mapSeparateState:false,
-      homeSeparateState:true,
-      cancelState:false,
-    }
+    SeparateMap,
+    //起始页相关组件
+    PageLayerBackground,PageLayerHomePage,PageLayerMenuPanel,PageLayerConnectionInterface,
+    //底部信息
+    LayerBottomAnchor
   },
   mounted() {
-    // let status=this.handleLocalStorage('get','defaultLinkServerStatus');
-    // if(status!==false){
-    //   let type=undefined;
-    //   this.cancelState = type =confirm('是否自动连接？');
-    //   if(!type){
-    //     this.handleLocalStorage('remove','defaultLinkServerStatus')
-    //   }
-    // }
-    this.defaultLogin();
+
+  },
+  computed:{
+    homeSeparateState(){
+      return this.$store.state.pageConfig.homeSeparateState;
+    }
   },
   methods:{
-    defaultLogin(){
-      let status=this.handleLocalStorage('get','defaultLinkServerStatus');
-      let url=this.handleLocalStorage('get','defaultLinkServerAddress');
-      if(status=='on' && this.cancelState==true){
-        this.linkStar(url);
-      }
-    },
-    setDefaultLogin(data){
-      this.handleLocalStorage('set','defaultLinkServerStatus','on');
-      this.handleLocalStorage('set','defaultLinkServerAddress',''+data);
-    },
-    linkStar(data){
-      let lock=false;
-      //1.设置地址
-      this.$root.CONFIG.__SERVER_ADDRESS__=data;
-      //2.测试连接
-      this.socket=new WebSocket(data)
-      this.socket.onopen=(ev)=>{
-        this.mapSeparateState=true;
-        this.homeSeparateState=false;
-        //保存链接，下次自动连接
-      };
-      this.socket.onerror=(ev)=>{
-        this.$root.general_script.alert_tips('连接失败，请检查地址是否正确')
-      }
-    },
-    //本地存储接口
-    handleLocalStorage(method, key, value) {
-      switch (method) {
-        case 'get' : {
-          let temp = window.localStorage.getItem(key);
-          if (temp) {
-            return temp
-          } else {
-            return false
-          }
-        }
-        case 'set' : {
-          window.localStorage.setItem(key, value);
-          break
-        }
-        case 'remove': {
-          window.localStorage.removeItem(key);
-          break
-        }
-        default : {
-          return false
-        }
-      }
-    }
-  }
+
+  },
+  // watch:{
+  //   '$route'(to,from){
+  //     console.log(to);
+  //     console.log(from);
+  //   }
+  // }
 }
 </script>
 
@@ -158,15 +71,6 @@ export default {
   width: 100%;
   height: 100%;
   background: #fff;
-}
-#mapSeparate{
-  width: 100%;
-  height: 100%;
-}
-#homePageSeparate{
-  width: 100%;
-  height: 100%;
-  background: rgb(251,251,251);
 }
 body, html {
   width: 100%;
@@ -225,9 +129,11 @@ body, html {
 }
 *{
   font-family: Roboto;
-}
-*{
   touch-action: manipulation;
 }
-
+#SeparateHomePage{
+  width: 100%;
+  height: 100%;
+  background: rgb(251,251,251);
+}
 </style>

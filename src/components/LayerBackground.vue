@@ -17,6 +17,11 @@ export default {
     return {
       MY_NAME:"LayerBackground"
     }
+  },
+  destroyed(){
+    //销毁连接及综合对象
+    //this.$store.commit('destroyComprehensive');
+    //console.log("layer background");
   }
 }
 </script>

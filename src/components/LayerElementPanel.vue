@@ -43,100 +43,6 @@ export default {
     return {
       MY_NAME:"LayerElementPanel",
       theMapData:{points:[],lines:[],areas:[]},
-      exampleMapData:[
-        {
-          "id": "11",
-          "type": "point",
-          "points": [
-            {
-              "x": -0.0001218,
-              "y": 0.0000285
-            }
-          ],
-          "point": {
-            "x": -0.0001218,
-            "y": 0.0000285
-          },
-          "color": "ccddcc",
-          "length": null,
-          "width": "10",
-          "size": null,
-          "child_relations": null,
-          "father_relation": null,
-          "child_nodes": null,
-          "father_node": null,
-          "details": [
-            {
-              "key": "自定义列",
-              "value": "自定义列值"
-            },
-            {
-              "key": "名称",
-              "value": "测试名称"
-            },
-            {
-              "key": "地址",
-              "value": "中华人民共和国广东省"
-            },
-            {
-              "key": "类型",
-              "value": "基础"
-            },
-            {
-              "key": "备注",
-              "value": "备注信息"
-            },
-            {
-              "key": "区域",
-              "value": "中国"
-            }
-          ]
-        },
-        {
-          "id": "12",
-          "type": "point",
-          "points": [
-            {
-              "x": -0.0000662,
-              "y": 0.0000392
-            }
-          ],
-          "point": {
-            "x": -0.0000662,
-            "y": 0.0000392
-          },
-          "color": "000000",
-          "length": null,
-          "width": "10",
-          "size": null,
-          "child_relations": null,
-          "father_relation": null,
-          "child_nodes": null,
-          "father_node": null,
-          "details": [
-            {
-              "key": "名称",
-              "value": "贝多芬音乐馆"
-            },
-            {
-              "key": "地址",
-              "value": "中华人民共和国广西省"
-            },
-            {
-              "key": "类型",
-              "value": "音乐馆"
-            },
-            {
-              "key": "备注",
-              "value": "没有备注"
-            },
-            {
-              "key": "区域",
-              "value": "中国"
-            }
-          ]
-        }
-      ]
     }
   },
   mounted() {
@@ -170,13 +76,21 @@ export default {
     }
   },
   watch:{
-    mapData(newValue){
-      if(newValue.length!==0){
-        this.theMapData.lines=newValue.lines;
-        this.theMapData.points=newValue.points;
-        this.theMapData.areas=newValue.areas;
-      }
+    mapData:{
+      handler(newValue){
+        if(newValue.length!==0){
+          this.theMapData.lines=newValue.lines;
+          this.theMapData.points=newValue.points;
+          this.theMapData.areas=newValue.areas;
+        }
+      },
+      deep:true
     }
+  },
+  destroyed(){
+    //销毁连接及综合对象
+    //this.$store.commit('destroyComprehensive');
+    //console.log("layer element panel");
   }
 }
 </script>

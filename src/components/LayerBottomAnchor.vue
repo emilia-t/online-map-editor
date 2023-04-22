@@ -3,21 +3,21 @@
   <div class="bottomAnchorLayer">
     <div class="bottomAnchorLayerBox">
       @2023 Online map for&nbsp;<a target="_blank" href="https://www.atsw.top">ATSW</a>&nbsp;&nbsp;
-      <img alt="图标" src="static/batb.d0289dc0.png" class="batb-d0289dc0"/>
+      <img alt="图标" :src="batb" class="batb-d0289dc0"/>
       <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=53062602000121">滇公网安备 53062602000121号</a>&nbsp;&nbsp;
       <a target="_blank" href="https://beian.miit.gov.cn/">滇ICP备20002587号-2</a>&nbsp;&nbsp;
-      版本 0.2&nbsp;&nbsp;
-      著作权归站长所有&nbsp;&nbsp;
-      测试版本仅供参考&nbsp;&nbsp;
-      仅为项目学习演示&nbsp;&nbsp;
-      所有内容均为虚拟内容&nbsp;&nbsp;
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "LayerBottomAnchor"
+  name: "LayerBottomAnchor",
+  data(){
+    return {
+      batb:require('../../static/batb.png')
+    }
+  }
 }
 </script>
 
@@ -27,7 +27,7 @@ export default {
   cursor: default;
   white-space: nowrap;
   text-align: right;
-  z-index: 560;
+  z-index: 580;
   bottom:0px;
   right: 0px;
 }

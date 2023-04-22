@@ -15,15 +15,15 @@
         <span>{{email}}</span>
       </div>
     </div>
-    <banana-login-bord v-show="isOpenBord"></banana-login-bord>
+    <banana-login-board v-show="isOpenBord"></banana-login-board>
   </div>
 </template>
 
 <script>
-import BananaLoginBord from "./BananaLoginBord";
+import BananaLoginBoard from "./BananaLoginBoard";
 export default {
   name: "LayerUser",
-  components: {BananaLoginBord},
+  components: {BananaLoginBoard},
   data(){
     return {
       isOpenBord:false,
@@ -264,6 +264,11 @@ export default {
         }
       }
     }
+  },
+  destroyed(){
+    //销毁连接及综合对象
+    //this.$store.commit('destroyComprehensive');
+    //console.log("layer user");
   }
 }
 </script>
