@@ -77,21 +77,34 @@ export default {
     },
     //初始连接服务器
     startSetting(){
-      //检测当前是否存在连接
-      // if(this.checkNowLink()){
-      //
-      //   return true;
-      // }
       //0.检测serverKey是否再服务器列表中由配置数据
-      let serverList=this.$store.state.serverData.serverListConfig;
-      let Key=this.serverKey;
-      let Address='';
+      //获取本地服务器配置
+      let serverLocalConfig=this.$root.general_script.handleLocalStorage('get','servers');
       let find=false;
-      for (let i=0;i<serverList.length;i++){
-        if(Key==serverList[i].serverKey){
-          find=true;
-          Address=serverList[i].serverAddress;
-          break;
+      let Address='';
+      if(serverLocalConfig===false){
+        this.$root.general_script.alert_tips('本地服务器配置为空');
+        return false;
+      }else {
+        //获取所有配置
+        let allServerList=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));//注意正常会获取到一个数组[{serverConfigObj}...]
+        //查找是否存在此配置
+        for(let key in allServerList){
+          //检测是否存在key
+          if(allServerList[key].hasOwnProperty('serverKey')){
+          //检测是否存在url
+          if(allServerList[key].hasOwnProperty('serverAddress')){
+            if(allServerList[key].serverKey===this.serverKey){
+              find=true;
+              Address=allServerList[key].serverAddress;
+              break;
+            }
+          }
+          }
+        }
+        if(!find){
+          this.$root.general_script.alert_tips('找不到此服务器配置信息');
+          return false;
         }
       }
       //找到了配置信息

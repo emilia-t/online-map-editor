@@ -8,7 +8,38 @@ export default {
         'addNewStyle':{'work_num':0,'error_num':0,'error_log':null,default_config:null},
         'copy_p':{'work_num':0,'error_num':0,'error_log':null,default_config:null},
         'setMenuRAnimation':{'work_num':0,'error_num':0,'error_log':null,default_config:null},
+        'handleLocalStorage':{'work_num':0,'error_num':0,'error_log':null,default_config:null}
     },
+  //本地存储接口
+  handleLocalStorage(method, key, value) {
+      try {
+        switch (method) {
+          case 'get' : {
+            let temp = window.localStorage.getItem(key);
+            if (temp) {
+              return temp
+            } else {
+              return false
+            }
+          }
+          case 'set' : {
+            window.localStorage.setItem(key, value);
+            break
+          }
+          case 'remove': {
+            window.localStorage.removeItem(key);
+            break
+          }
+          default : {
+            return false
+          }
+        }
+        this.GS_log.handleLocalStorage.work_num++;
+      }catch (e){
+        this.GS_log.handleLocalStorage.error_num++;
+        this.GS_log.handleLocalStorage.error_log=e;
+      }
+  },
 //常用函数：
 //消息弹窗，无需任何CSS,HTML
 //参数详解：text->要发送的文本信息，字符串；样式配置，对象数据类型，参数详解：{positionX:(int),positionY:(int),height:(int),border:(int),zh_font_width:(int),en_font_width:(int),font-size:(int)}

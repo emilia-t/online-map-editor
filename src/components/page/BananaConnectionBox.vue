@@ -6,14 +6,14 @@
     <img class="ConnectionImg" alt="服务器显示图" :src="serverImg"/>
   </div>
   <!--阴影-->
-  <router-link :to="`/m/${serverKey}`"><div class="ImgBoxShadow" @click="manualConnection()"></div></router-link>
+  <router-link :to="`/m/${serverKey}`" title="点击打开地图"><div class="ImgBoxShadow"></div></router-link>
   <!--右上角更多属性按钮-->
-  <div class="moreButtonBox" @click="openDetailBoard">
+  <div class="moreButtonBox" title="点击查看更多" @click="openDetailBoard()">
     <svg t="1681047402121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="33387" width="200" height="200"><path d="M288 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33388" data-spm-anchor-id="a313x.7781069.0.i32" class="selected"></path><path d="M512 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33389" data-spm-anchor-id="a313x.7781069.0.i33" class="selected"></path><path d="M736 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33390" data-spm-anchor-id="a313x.7781069.0.i34" class="selected"></path></svg>
   </div>
   <!--左上角在线人数-->
-  <div class="onlineNumber">
-    <span>{{onlineNumber}} / {{serverMaxOnlineNumber}}</span>
+  <div class="onlineNumber" title="在线人数">
+    <span>{{onlineNumber}} / {{maxOnlineUser}}</span>
   </div>
   <!--底部信息-->
   <div class="ConnectionDetails">
@@ -23,18 +23,22 @@
   </div>
   <!--点击更多显示信息-->
   <div class="moreBoard" ref="moreBoard">
-    <div class="moreBoardClose" @click="closeDetailBoard">
+    <div class="moreBoardClose" title="点击关闭" @click="closeDetailBoard">
       <svg t="1681049938063" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="34516" width="200" height="200"><path d="M235.403636 182.178909l270.475637 270.498909L776.401455 182.178909a58.181818 58.181818 0 1 1 82.292363 82.292364L588.171636 534.946909 858.693818 805.469091a58.181818 58.181818 0 1 1-82.292363 82.269091L505.879273 617.239273 235.403636 887.738182A58.181818 58.181818 0 0 1 153.134545 805.469091l270.475637-270.522182L153.134545 264.471273a58.181818 58.181818 0 0 1 82.269091-82.292364z" fill="#282C33" p-id="34517"></path></svg>
     </div>
     <span>服务器Key：{{serverKey}}</span>
-    <span>最大在线人数：{{serverMaxOnlineNumber}}</span>
-    <span>最大宽度：{{serverMaxWidth}}</span>
-    <span>最大高度：{{serverMaxHeight}}</span>
-    <span>默认点X：{{serverDefaultPointX}}</span>
-    <span>默认点Y：{{serverDefaultPointY}}</span>
+    <span>最大在线人数：{{maxOnlineUser}}</span>
+    <span>最大宽度：{{maxWidth}}</span>
+    <span>最大高度：{{maxHeight}}</span>
+    <span>默认点X：{{defaultX}}</span>
+    <span>默认点Y：{{defaultY}}</span>
+  </div>
+  <!--左下角的删除按钮-->
+  <div class="serverDelete" ref="serverDelete" title="点击删除服务器">
+    <svg t="1682340682455" ref="serverDeleteIcon" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10839" width="200" height="200"><path d="M585.27998 767.998465 585.27998 365.722472c0-46.879704 73.238025-46.879704 73.238025 0l0 402.275993C658.518005 814.883285 585.27998 814.883285 585.27998 767.998465L585.27998 767.998465 585.27998 767.998465zM365.500415 767.998465 365.500415 365.722472c0-46.879704 73.271794-46.879704 73.271794 0l0 402.275993C438.771185 814.883285 365.500415 814.883285 365.500415 767.998465L365.500415 767.998465 365.500415 767.998465zM988.190423 182.861748 805.060569 182.861748l0-73.16844c0-60.576657-49.247634-109.692285-108.754936-109.692285L328.879356 0.001023c-60.673871 0-109.887736 49.116651-109.887736 109.692285l0 73.16844L35.860742 182.861748c-46.949288 0-46.949288 73.104995 0 73.104995l952.32968 0C1035.104919 255.966743 1035.104919 182.861748 988.190423 182.861748L988.190423 182.861748 988.190423 182.861748zM292.26239 109.692285c0-19.428491 17.158798-36.58729 36.615942-36.58729l367.426277 0c19.459191 0 35.484166 14.863523 35.484166 36.58729l0 73.16844L292.26239 182.860724 292.26239 109.692285 292.26239 109.692285zM768.410857 1024 255.607562 1024c-60.640102 0-109.853967-49.111534-109.853967-109.687168L145.753595 365.722472c0-21.723767 17.158798-36.586267 36.615942-36.586267 19.462261 0 36.621059 14.862499 36.621059 36.586267l0 548.589336c0 19.389606 17.192567 36.547381 36.615942 36.547381l512.803295 0c19.457144 0 36.649711-17.157775 36.649711-36.547381L805.059546 366.855272c0-48.012504 73.238025-48.012504 73.238025 0l0 547.456536C878.298594 974.888466 829.084729 1024 768.410857 1024L768.410857 1024zM768.410857 1024" fill="#272636" p-id="10840"></path></svg>
   </div>
   <!--右下角的在线状态-->
-  <div class="serverStatus" :style="`color:${onlineShowColor}`">
+  <div class="serverStatus" title="服务器在线状态" :style="`color:${onlineShowColor}`">
     <span class="serverStatusSpan">{{onlineStatusText}}</span>
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px">
       <circle style="transition: 1s" r="5px" :fill="onlineShowColor" cx="10" cy="10" stroke-width="1" pointer-events="fill" fill-opacity="0.8"></circle>
@@ -57,64 +61,91 @@ export default {
   name: "BananaConnectionBox",
   data(){
     return {
+      MyConfig:{
+        account:this.account,
+        password:this.password,
+        defaultX:this.defaultX,
+        defaultY:this.defaultY,
+        imgTime:this.imgTime,
+        maxHeight:this.maxHeight,
+        onlineNumber:this.onlineNumber,
+        maxOnlineUser:this.maxOnlineUser,
+        maxWidth:this.maxWidth,
+        serverAddress:this.serverAddress,
+        serverImg:this.serverImg,
+        serverKey:this.serverKey,
+        serverName:this.serverName
+      },
       onlineShowColor:'#ff1414',
-      onlineStatusText:'offline'
+      onlineStatusText:'offline',
+      serverMenuShow:false
     }
   },
   props:{
-    serverKey:{
-      type:String,
-      default:'0',
-      required:true
-    },
     account:{
       type:String,
-      default:'没有用户账户'
+      default:'',
+      required:false
+    },
+    password:{
+      type:String,
+      default:'',
+      required:false
+    },
+    defaultX:{
+      type:String,
+      default:'',
+      required:false
+    },
+    defaultY:{
+      type:String,
+      default:'',
+      required:false
+    },
+    imgTime:{
+      type:String,
+      default:'',
+      required:false
+    },
+    maxHeight:{
+      type:String,
+      default:'',
+      required:false
+    },
+    onlineNumber:{
+      type:String,
+      default:'',
+      required:false
+    },
+    maxOnlineUser:{
+      type:String,
+      default:'',
+      required:false
+    },
+    maxWidth:{
+      type:String,
+      default:'',
+      required:false
     },
     serverAddress:{
       type:String,
-      default:'没有服务器地址',
-      required:true
-    },
-    serverName:{
-      type:String,
-      default:'在线地图服务器',
+      default:'',
       required:true
     },
     serverImg:{
       type:String,
-      default:'data:image/png;base64,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'
+      default:'',
+      required:false
     },
-    //在线人数
-    onlineNumber:{
+    serverKey:{
       type:String,
-      default:'0'
+      default:'',
+      required:false
     },
-    //这些时服务器的一些隐式信息，点击右上角的三个点可以查看
-    //服务器地图最大宽度(左右)
-    serverMaxWidth:{
+    serverName:{
       type:String,
-      default:'不明'
-    },
-    //服务器地图最大高度(上下)
-    serverMaxHeight:{
-      type:String,
-      default:'不明'
-    },
-    //服务器地图默认起始位置x
-    serverDefaultPointX:{
-      type:String,
-      default:'不明'
-    },
-    //服务器地图默认起始位置y
-    serverDefaultPointY:{
-      type:String,
-      default:'不明'
-    },
-    //服务器最大允许在线人数
-    serverMaxOnlineNumber:{
-      type:String,
-      default:'∞'
+      default:'',
+      required:false
     }
   },
   mounted() {
@@ -122,24 +153,128 @@ export default {
   },
   methods:{
     startSetting(){
-      //1.检测服务器在线状态
-      this.checkOnline(this.serverAddress);
-      //2.每隔一段时间检查
-      setInterval(
-        ()=>{
-          if(this.$store.state.userSettingConfig.autoUpdateServerStatus){
-            this.checkOnline(this.serverAddress);
-          }
-        }
-      ,this.$store.state.userSettingConfig.autoUpdateServerStatusTime)
+      //0.获取本地配置(设置)
+      let setObj=JSON.parse(this.$root.general_script.handleLocalStorage('get','settings'));
+      //1.检测服务器在线状态（在线的情况下会主动更新服务器配置）
+      if(setObj.set_GS_AutoCheckServerStatus==true){
+        this.checkOnline(this.serverAddress);
+      }
+      //删除按钮添加删除服务器的事件
+      this.appendDeleteServer();
     },
+    //删除服务器
+    deleteServer(){
+      //1.查询本地存储
+      let Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));
+      delete Config[this.MyConfig.serverAddress];
+      //2.重写localstorage
+      this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(Config));
+      //
+      this.$root.general_script.alert_tips('已删除服务器');
+      //传告Interface
+      this.$emit('ancBoxChange','reload')
+    },
+    //给删除按钮添加事件
+    appendDeleteServer(){
+      this.$refs.serverDelete.addEventListener('click',(ev)=>{
+        ev.stopPropagation();
+        this.deleteServer();
+      })
+    },
+    //检查服务器在线状态
     checkOnline(address){
       try {
         let tempCon=new WebSocket(address);
         tempCon.onopen=()=>{
+          //查询本地配置中此服务器的img更新时间，如果没有则申请时将time设置为1970年1月1日0时0分0秒
+          if(this.MyConfig.imgTime===''){
+            this.MyConfig.imgTime='1970-01-01 00:00:00';
+          }
           this.onlineShowColor='#2ffd6a';
           this.onlineStatusText='online';
-          tempCon.close();
+          //获取服务器配置 --发送获取服务器配置的指令，然后在获取完毕后关闭连接
+          let json=JSON.stringify({type:'get_serverConfig'});
+          tempCon.send(json);
+          //获取服务器图像
+          let json2=JSON.stringify({type:'get_serverImg',data:{time:this.imgTime}});
+          tempCon.send(json2);
+          //关闭测试连接
+          setTimeout(()=>tempCon.close(),500);
+        }
+        tempCon.onmessage=(event)=>{
+          //1.解析数据
+          //1.转化json
+          let jsonData=JSON.parse(event.data);
+          //2.检测是否存在必要值'type'
+          if(jsonData.type!==undefined){
+            //3.处理数据
+            let nowType=jsonData.type;
+            switch (nowType){
+              case 'send_serverConfig':{
+                this.MyConfig.defaultX=jsonData.data.default_x!==undefined ? jsonData.data.default_x : this.MyConfig.defaultX;
+                this.MyConfig.defaultY=jsonData.data.default_y!==undefined ? jsonData.data.default_y : this.MyConfig.defaultY;
+                this.MyConfig.maxHeight=jsonData.data.max_height!==undefined ? jsonData.data.max_height : this.MyConfig.maxHeight;
+                this.MyConfig.onlineNumber=jsonData.data.online_number!==undefined ? jsonData.data.online_number+'' : this.MyConfig.onlineNumber;
+                this.MyConfig.maxOnlineUser=jsonData.data.max_online!==undefined ? jsonData.data.max_online : this.MyConfig.maxOnlineUser;
+                this.MyConfig.maxWidth=jsonData.data.max_width!==undefined ? jsonData.data.max_width : this.MyConfig.maxWidth;
+                this.MyConfig.serverKey=jsonData.data.key!==undefined ? jsonData.data.key : this.MyConfig.serverKey;
+                this.MyConfig.serverName=jsonData.data.name!==undefined ? jsonData.data.name : this.MyConfig.serverName;
+                //更新本地配置
+                let configObj={
+                  account:'',
+                  password:'',
+                  defaultX:'',
+                  defaultY:'',
+                  imgTime:'',
+                  maxHeight:'',
+                  onlineNumber:'',
+                  maxOnlineUser:'',
+                  maxWidth:'',
+                  serverAddress:'',
+                  serverImg:'',
+                  serverKey:'',
+                  serverName:''
+                };
+                configObj.account=this.MyConfig.account;
+                configObj.password=this.MyConfig.password;
+                configObj.defaultX=this.MyConfig.defaultX;
+                configObj.defaultY=this.MyConfig.defaultY;
+                configObj.imgTime=this.MyConfig.imgTime;
+                configObj.maxHeight=this.MyConfig.maxHeight;
+                configObj.onlineNumber=this.MyConfig.onlineNumber;
+                configObj.maxOnlineUser=this.MyConfig.maxOnlineUser;
+                configObj.maxWidth=this.MyConfig.maxWidth;
+                configObj.serverAddress=this.MyConfig.serverAddress;
+                configObj.serverImg=this.MyConfig.serverImg;
+                configObj.serverKey=this.MyConfig.serverKey;
+                configObj.serverName=this.MyConfig.serverName;
+                //获取本地配置
+                let nowServersConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));
+                //找到与当前url匹配的项目
+                nowServersConfig[configObj.serverAddress]=configObj;
+                //更新localstorage
+                this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(nowServersConfig));
+                //更新组件
+                this.MyConfig=configObj;
+                break;
+              }
+              case 'send_serverImg':{
+                this.MyConfig.serverImg=jsonData.data.string!==undefined ? jsonData.data.string : this.MyConfig.serverImg;
+                this.MyConfig.imgTime=jsonData.data.time!==undefined ? jsonData.data.time : this.MyConfig.imgTime;
+                //获取本地配置
+                let nowServersConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));
+                //找到与当前url匹配的项目
+                nowServersConfig[this.MyConfig.serverAddress]['serverImg']=this.MyConfig.serverImg;
+                nowServersConfig[this.MyConfig.serverAddress]['imgTime']=this.MyConfig.imgTime;
+                //还原
+                this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(nowServersConfig));
+                //更新组件
+                this.MyConfig.serverImg=jsonData.data.string;
+                this.MyConfig.imgTime=jsonData.data.time;
+                break;
+              }
+            }
+          }
         }
         tempCon.onerror=(event)=>{
           event.preventDefault();
@@ -158,17 +293,33 @@ export default {
     },
     closeDetailBoard(){
       this.$refs.moreBoard.style.top='-170px';
-    },
-    //手动连接
-    manualConnection(){
-
     }
   }
 }
 </script>
 
 <style scoped>
+.serverDelete{
+  z-index: 550;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  bottom: 65px;
+  left:0px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  border-top-right-radius: 3px;
+}
+.serverDelete svg{
+  width: calc(100% - 5px);
+  height: calc(100% - 5px);
+  z-index: inherit;
+}
 .BananaConnectionBox{
+  z-index: 545;
   width: 220px;
   height: 230px;
   background: rgb(255,255,255);
@@ -229,6 +380,7 @@ export default {
   padding: 9px;
 }
 .ConnectionDetails div{
+  user-select: text;
   font-weight: 200;
   font-size: 13px;
 }
@@ -282,14 +434,14 @@ export default {
   position: absolute;
   bottom: 65px;
   right: 0px;
-  z-index: 560;
+  z-index: 550;
   width: 70px;
   height: 20px;
   display: flex;
   justify-content: center;
   flex-direction: row;
   align-content: center;
-  border-radius: 2px;
+  border-top-left-radius:3px;
 }
 .serverStatusSpan{
   width: auto;

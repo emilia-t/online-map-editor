@@ -34,7 +34,7 @@
     <svg t="1681028685627" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="24482" width="200" height="200"><path d="M469.333333 810.453333c0-11.648 9.450667-21.12 21.546667-21.12h42.24c11.904 0 21.546667 9.621333 21.546667 21.12v85.76c0 11.648-9.450667 21.12-21.546667 21.12h-42.24c-11.904 0-21.546667-9.621333-21.546667-21.12v-85.76z m133.909334-209.984c-8.469333 3.285333-16.896 6.762667-25.002667 10.837334-15.488 7.786667-23.765333 20.437333-24.341333 38.016-0.234667 7.317333 0.085333 14.848-1.514667 21.909333-4.672 20.629333-24.341333 34.688-44.309333 32.554667-22.549333-2.410667-38.272-19.328-39.125334-41.6-2.304-60.096 22.698667-103.829333 77.205334-130.005334a243.626667 243.626667 0 0 1 22.549333-9.728c73.92-26.666667 120.213333-99.818667 112-177.28-8.234667-77.802667-69.504-141.141333-146.410667-151.210666-100.672-13.226667-189.845333 62.805333-193.173333 164.330666-0.170667 5.546667-0.426667 11.285333-1.92 16.576-5.610667 20.16-25.898667 33.365333-45.909333 30.4-22.016-3.285333-37.546667-20.757333-37.290667-43.434666 0.768-62.72 20.394667-119.061333 62.293333-165.76 68.8-76.693333 155.306667-105.770667 255.061334-80.512 100.714667 25.493333 163.114667 92.757333 187.434666 194.197333 4.138667 17.322667 4.906667 35.477333 7.210667 53.226667-2.261333 106.496-65.984 198.954667-164.757333 237.482666z" fill="#3D3D3D" p-id="24483"></path></svg>
     <span class="iconSpan">帮助</span>
   </div>
-  <div class="SettingsBox" ref="SettingsBox" v-show="settingShow">
+  <div class="SettingsBox" ref="SettingsBox" v-show="settingShow" @contextmenu="stopDefaultEvent($event)">
     <div class="Settings" ref="Settings">
       <!--左侧的箭头-->
       <svg t="1681626565716" class="icon3" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="16113" width="200" height="200"><path d="M384 810.666667V213.333333l341.333333 298.666667z" fill="#f0f0f0" p-id="16114" data-spm-anchor-id="a313x.7781069.0.i4" class="selected"></path></svg>
@@ -48,7 +48,7 @@
             <span class="spansB">这将有助于您选择地图服务器</span>
           </div>
           <!--switch式开关-->
-          <div class="switchOut" ref="GS01" @click="GS01($event)"><div class="circle"></div></div>
+          <div class="switchOut" ref="GS01" @click="GS01($event)"><div ref="GS01_1" class="circle"></div></div>
         </div>
         <hr/>
         <div class="SettingList">
@@ -156,14 +156,14 @@
       <div class="Setting" v-show="AboutSettings">
         <!--图标-->
         <div class="AboutBox">
-          <img class="mapLog" src="../../../static/map-log.png">
-          <p class="Ap1">在线地图 源自 ATSW</p>
-          <p class="Ap1">版本0.2.7</p>
+          <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png">
+          <p class="Ap1">在线地图编辑器</p>
+          <p class="Ap1">版本0.3.5</p>
           <p class="Ap1">@2023 After The Stars Wither</p>
+          <p class="Ap1"><a href="https://github.com/emilia-t/map" target="_blank">开放源代码</a></p>
           <p class="Ap1">著作权归站长所有</p>
-          <p class="Ap1"><a href="https://github.com/emilia-t" target="_blank">开放源代码</a></p>
-          <p class="Ap1">测试版本仅供参考</p>
           <p class="Ap1">仅为项目学习演示</p>
+          <p class="Ap1">测试版本仅供参考</p>
           <p class="Ap1">所有内容均为虚拟内容</p>
         </div>
       </div>
@@ -240,7 +240,7 @@ export default {
       //开启storage监听
       this.watchStorage();
       //查找本地配置（设置方面），若查找不到则设置一个默认的设置
-      this.findLocalConfig();
+      this.findLocalSetConfig();
       //设置主页按钮的功能
       this.$refs.MenuButtonHomePage.addEventListener('click',this.MenuButtonHomePage);
       //设置SettingsBox的大小
@@ -262,33 +262,47 @@ export default {
         ev.stopPropagation();
       });
     },
-    //查找本地配置
-    findLocalConfig(){
+    //关闭默认事件
+    stopDefaultEvent(ev){
+      ev.preventDefault();
+    },
+    //查找本地设置配置
+    findLocalSetConfig(){
       let localConfig=null;
       let hasLocalConfig=this.handleLocalStorage('get','setting');
-      if(hasLocalConfig){
-        //根据设置配置
-        let nowLocalStorage=window.localStorage;
-        for(let keys in nowLocalStorage){
-          switch (keys) {
+      if(hasLocalConfig=='true'){
+        //格式化本地配置设置
+        let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));
+        for(let key in nowLocalStorage){
+          switch (key) {
             //设置启动时自动检查服务器状态
             case 'set_GS_AutoCheckServerStatus':{
-              if(nowLocalStorage[keys]=='true'){
+              if(nowLocalStorage[key]==true){
                 //更新样式
                 this.$refs.GS01.classList.add('switchOutOn');
-                this.$refs.GS01.firstChild.classList.add('circleOn')
-              }else if(nowLocalStorage[keys]=='false'){
+                this.$refs.GS01_1.classList.add('circleOn')
+              }else if(nowLocalStorage[key]==false){
                 this.$refs.GS01.classList.remove('switchOutOn');
-                this.$refs.GS01.firstChild.classList.remove('circleOn')
+                this.$refs.GS01_1.classList.remove('circleOn')
               }
               break;
             }
           }
         }
       }else {
+        //创建设置对象
+        let SetObj={
+          'set_GS_AutoCheckServerStatus':true
+        };
+        //格式化对象
+        let SetStr=JSON.stringify(SetObj);
         //添加默认配置
         this.handleLocalStorage('set','setting','true');
-        this.handleLocalStorage('set','set_GS_AutoCheckServerStatus','true');
+        this.handleLocalStorage('set','settings',SetStr);
+        this.handleLocalStorage('set','A_tips_cn','请勿在控制台修改本地配置');
+        this.handleLocalStorage('set','A_tips_uk','Do not modify local configuration on the console');
+        //按钮初始化
+        this.settingSwitch('set_GS_AutoCheckServerStatus',true);
       }
     },
     //主页按钮
@@ -354,40 +368,99 @@ export default {
     //01号开关
     GS01(ev){
       ev.stopPropagation();
-      let oldValue=this.handleLocalStorage('get','set_GS_AutoCheckServerStatus');
+      //获取设置对象
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));
+      let oldStatus=settingsObj.set_GS_AutoCheckServerStatus;
       //修改storage中的值
-      if(oldValue=='true'){
-        this.handleLocalStorage('set','set_GS_AutoCheckServerStatus','false');
+      if(oldStatus==true){
+        settingsObj.set_GS_AutoCheckServerStatus=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         //更改样式
         this.$refs.GS01.classList.remove('switchOutOn');
-        this.$refs.GS01.firstChild.classList.remove('circleOn')
+        this.$refs.GS01_1.classList.remove('circleOn')
       }else {
-        this.handleLocalStorage('set','set_GS_AutoCheckServerStatus','true');
+        settingsObj.set_GS_AutoCheckServerStatus=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         //更改样式
         this.$refs.GS01.classList.add('switchOutOn');
-        this.$refs.GS01.firstChild.classList.add('circleOn')
+        this.$refs.GS01_1.classList.add('circleOn')
       }
     },
     //实时监听storage变化,这是为了用户多页面多操作考虑
     watchStorage(){
       window.addEventListener('storage', (e)=>{
         switch (e.key) {
-          //设置启动时自动检查服务器状态
-          case 'set_GS_AutoCheckServerStatus':{
-            if(e.newValue=='true'){
-              //更新样式
-              this.$refs.GS01.classList.add('switchOutOn');
-              this.$refs.GS01.firstChild.classList.add('circleOn')
-            }else if(e.newValue=='false'){
-              this.$refs.GS01.classList.remove('switchOutOn');
-              this.$refs.GS01.firstChild.classList.remove('circleOn')
+          //设置变动
+          case 'settings':{
+            //格式化
+            let newObj=JSON.parse(e.newValue);
+            let oldObj=JSON.parse(e.oldValue);
+            //检查格式后的数据是否正常,如果不正常则删除settings以此重置配置（防篡改）
+            if(this.storageCheck(newObj)){
+              //检查被改动的项（新增项和旧值有改动项）
+              for(let key1 in newObj){
+                //当前key
+                //是否为新增
+                let isNewO=true;
+                //判断是否在old中存在
+                for(let key2 in oldObj){
+                  if(key1===key2){
+                    //找到同属性
+                    isNewO=false;
+                    //检测是否有变化
+                    if(newObj[key1]!==oldObj[key2]){
+                      this.settingSwitch(key1,newObj[key1])
+                    }
+                  }
+                }
+                //如果为新增属性
+                if(isNewO){
+                  this.settingSwitch(key1,newObj[key1]);
+                }
+              }
             }
-            break;
           }
         }
       });
     },
-
+    //处理设置项
+    settingSwitch(key,value){
+      switch (key){
+        case 'set_GS_AutoCheckServerStatus':{
+          if(value==true){
+            //更新样式
+            this.$refs.GS01.classList.add('switchOutOn');
+            this.$refs.GS01_1.classList.add('circleOn')
+          }else if(value==false){
+            this.$refs.GS01.classList.remove('switchOutOn');
+            this.$refs.GS01_1.classList.remove('circleOn')
+          }
+          break;
+        }
+      }
+    },
+    //用于检测本地存储是否正常的，如果不正常则返回false，否则返回true
+    storageCheck(Obj){
+      //1.检测Obj是否为对象
+      if(isObject(Obj)){
+        let sLock=true;
+        //2.检测各项属性的值是否为布尔
+        for(let key in Obj){
+          if(!isBoolean(Obj[key])){
+            sLock=false;
+          }
+        }
+        return sLock;
+      }else {
+        return false;
+      }
+      function isBoolean(val) {
+        return typeof val === 'boolean';
+      }
+      function isObject(obj) {
+        return obj != null && typeof obj === 'object' && Array.isArray(obj) === false;
+      }
+    },
     //监听窗口变化
     watchWindowSize(){
       window.addEventListener('resize',()=>{
@@ -691,6 +764,7 @@ a:hover, a:active {
 
 }
 .menuPanelLayer{
+  user-select: none;
   width: 100px;
   height: 100%;
   background: rgb(255,255,255);
