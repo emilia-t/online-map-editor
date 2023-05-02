@@ -119,38 +119,21 @@
         </ul>
         <hr/>
         <!--单个账号-->
-        <ol class="AccountSetOl">
+        <ol class="AccountSetOl" v-for="value in accounts">
           <li class="AccountSetLiC">
             <ol>
               <li class="">
-                sophietwilight@qq.com
+                {{value.A}}
               </li>
               <li class="">
-                12345678
+                {{value.P}}
               </li>
             </ol>
           </li>
-          <li class="AccountSetLiB">
+          <li class="AccountSetLiB" @click="deleteAccount(value.A)">
             删除
           </li>
         </ol>
-        <!--单个账号-->
-        <ol class="AccountSetOl">
-          <li class="AccountSetLiC">
-            <ol>
-              <li class="">
-                emilia-t@qq.com
-              </li>
-              <li class="">
-                12345678
-              </li>
-            </ol>
-          </li>
-          <li class="AccountSetLiB">
-            删除
-          </li>
-        </ol>
-
       </div>
       <!--关于界面-->
       <div class="Setting" v-show="AboutSettings">
@@ -180,7 +163,7 @@
         <div class="explain">
           1.点击右上角的 +
           <br/>
-          2.在弹出的窗口中填写服务器地址、用户名、密码、显示名称等信息
+          2.在弹出的窗口中填写服务器地址、用户名、密码
           <br/>
           3.点击窗口右下角的创建按钮
           <br>
@@ -225,7 +208,8 @@ export default {
       AccountSettings:false,
       AboutSettings:false,
       HelpSettings:false,
-      offsetY:-31
+      offsetY:-31,
+      accounts:{}
     }
   },
   mounted() {
@@ -261,10 +245,56 @@ export default {
       this.$refs.Settings.addEventListener('click',(ev)=>{
         ev.stopPropagation();
       });
+      //查找本地账号配置
+      this.findLocalAccounts();
+    },
+    //删除账号
+    deleteAccount(name){
+      //get
+      let accounts=this.handleLocalStorage('get','accounts');
+      if(accounts!==false){
+        accounts=JSON.parse(accounts);
+        delete accounts[name];
+        //更新account
+        this.handleLocalStorage('set','accounts',JSON.stringify(accounts));
+        //更新组件
+        this.findLocalAccounts();
+      }
+      //get
+      let servers=this.handleLocalStorage('get','servers');
+      if(servers!==false){
+        servers=JSON.parse(servers);
+        //逐一检查，如果与要删除的账号同样则修改为空字符串
+        for(let key in servers){
+          if(servers[key].account===name){
+            servers[key].account='';
+            servers[key].password='';
+          }
+        }
+        //更新servers
+        this.handleLocalStorage('set','servers',JSON.stringify(servers));
+        //更新组件
+        this.$root.sendInstruct('reloadServers');
+      }
     },
     //关闭默认事件
     stopDefaultEvent(ev){
       ev.preventDefault();
+    },
+    //查找本地账号配置
+    findLocalAccounts(){
+      //1get
+      let find=this.handleLocalStorage('get','accounts');
+      if(find!==false){
+        let accounts=JSON.parse(this.handleLocalStorage('get','accounts'));
+        //更新
+        if(isObject(accounts)){
+          this.accounts=accounts;
+        }
+        function isObject(obj) {
+          return obj != null && typeof obj === 'object' && Array.isArray(obj) === false;
+        }
+      }
     },
     //查找本地设置配置
     findLocalSetConfig(){
@@ -419,6 +449,10 @@ export default {
                 }
               }
             }
+            break;
+          }
+          case 'accounts':{
+            this.findLocalAccounts();
           }
         }
       });
@@ -544,12 +578,22 @@ export default {
       },2);
     }
   },
+  computed:{
+    reloadAccounts(){
+      return this.$store.state.commits.reloadAccounts;
+    }
+  },
   watch:{
     panelShow:{
       handler(newValue){
         this.$refs.menuPanelLayer.classList.toggle('HidePanel');
         this.$refs.closeButtonBox.classList.toggle('HideCloseBt');
         this.$refs.closeButton.classList.toggle('HideSvg');
+      }
+    },
+    reloadAccounts:{
+      handler(){
+        this.findLocalAccounts();
       }
     }
   }

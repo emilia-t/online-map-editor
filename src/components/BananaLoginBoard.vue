@@ -76,12 +76,48 @@ export default {
   mounted() {
     this.startSetting();
   },
+  props:{
+    serverKey:{
+      type:String,
+      required:true
+    }
+  },
   methods:{
     //初始化
     startSetting(){
-      //1.查询本地账号
-      let em=this.handleLocalStorage('get','saveEmail');
-      let pd=this.handleLocalStorage('get','savePassword');
+      //改为查询服务器配置信息中的账号密码配置-例如k0则查找k0的 acc pwd 查不到则不登录，查到则自动登录(前提条件是设置中开启了自动登录-默认开启的)
+      //流程如下：
+      let em=false;
+      let pd=false;
+      //获取服务器配置
+      let Ser=this.$root.general_script.handleLocalStorage('get','servers');
+      let Acc=this.$root.general_script.handleLocalStorage('get','accounts');
+      if(Ser!==false && Acc!==false){
+        Ser=JSON.parse(Ser);
+        Acc=JSON.parse(Acc);
+        //查找与该key相同的服务器
+        for(let key in Ser){
+          if(Ser[key].serverKey===this.serverKey){
+            if(Ser[key].hasOwnProperty('account')){
+              //获取账号名
+              em=Ser[key].account;
+              break;
+            }
+          }
+        }
+        if(em!==false){
+          if(Object.prototype.toString.call(Acc) === '[object Object]'){
+            if(Acc.hasOwnProperty(em)){
+              //获取密码
+              pd=Acc[em].P;
+            }
+          }
+        }
+        //登录
+      }else {
+        em=false;
+        pd=false;
+      }
       if(em!==false && pd!==false){
         //2.尝试进行登录
         setTimeout(()=>{

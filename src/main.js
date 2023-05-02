@@ -21,6 +21,8 @@ new Vue({
       createTestLine:{pass:0,intercept:0},
       openF4DebugBord:{pass:0,intercept:0},
       openDetailsPanel:{pass:0,intercept:0},
+      reloadAccounts:{pass:0,intercept:0},
+      reloadServers:{pass:0,intercept:0}
     }
   }},
   router,
@@ -72,6 +74,24 @@ new Vue({
     //发送一条立刻执行函数的命令
     sendInstruct(name){
       switch (name){
+        case 'reloadServers':{
+          if(this.filter(name)){
+            this.$store.state.commits.reloadServers=!this.$store.state.commits.reloadServers;
+            this.commitsConfig.reloadServers.pass++;
+          }else {
+            this.commitsConfig.reloadServers.intercept++;
+          }
+          break;
+        }
+        case 'reloadAccounts':{
+          if(this.filter(name)){
+            this.$store.state.commits.reloadAccounts=!this.$store.state.commits.reloadAccounts;
+            this.commitsConfig.reloadAccounts.pass++;
+          }else {
+            this.commitsConfig.reloadAccounts.intercept++;
+          }
+          break;
+        }
         case 'createTestLine':{
           if(this.filter(name)){
             this.$store.state.commits.createTestLine=!this.$store.state.commits.createTestLine;

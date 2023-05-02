@@ -15,7 +15,7 @@
         <span>{{email}}</span>
       </div>
     </div>
-    <banana-login-board v-show="isOpenBord"></banana-login-board>
+    <banana-login-board v-show="isOpenBord" :server-key="serverKey"></banana-login-board>
   </div>
 </template>
 
@@ -48,6 +48,12 @@ export default {
         //移动过程中每隔11毫秒则监听1次鼠标位置会保存在此处,最大两个
         moveObServerDt:[]
       }
+    }
+  },
+  props:{
+    serverKey:{
+      type:String,
+      required:true
     }
   },
   mounted() {

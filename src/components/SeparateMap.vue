@@ -3,7 +3,7 @@
   <!--地图应用主体-->
   <!--用户层-->
   <!--用于显示用户数据-->
-  <layer-user></layer-user>
+  <layer-user :server-key="serverKey"></layer-user>
   <!--数据层-->
   <!--用于显示(view)和添加(new)数据用-，其下的子组件例如svgLine组件拥有移动(move)，缩放(scale)、编辑(edit)、删除(del)的功能-->
   <layer-data></layer-data>

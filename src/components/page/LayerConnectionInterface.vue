@@ -222,6 +222,30 @@ export default {
     },
     //在本地存储一个服务器配置
     saveLocalServerConfig(obj){
+      //如果包含了账号名和密码的信息还需要另存在accounts中
+      console.log(obj);
+      if(obj.account!=='' && obj.password!=='' && obj.account!==null && obj.password!==null){
+        //1get
+        let find=this.$root.general_script.handleLocalStorage('get','accounts');
+        let accountsConfig=undefined;
+        if(!find){
+          //初始化
+          this.$root.general_script.handleLocalStorage('set','accounts','{}');
+          accountsConfig={};
+        }else {
+          accountsConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','accounts'));
+        }
+        if(Object.prototype.toString.call(accountsConfig) === '[object Object]'){
+          //检查有没有重复的账号,没有就加入，有则修改密码
+          if(accountsConfig.hasOwnProperty(obj.account)){
+            accountsConfig[obj.account].P=obj.password;
+          }else {
+            accountsConfig[obj.account]={A:obj.account,P:obj.password};
+          }
+          //写入storage
+          this.$root.general_script.handleLocalStorage('set','accounts',JSON.stringify(accountsConfig));
+        }
+      }
       //构造服务器配置对象
       let configObj={
         account:'',
@@ -357,10 +381,18 @@ export default {
     }
   },
   computed:{
-
+    reloadServers(){
+      return this.$store.state.commits.reloadServers;
+    }
   },
   watch:{
     isNewAddServer:{
+      handler(){
+        //查找本地配置
+        this.getLocalServerConfig()
+      }
+    },
+    reloadServers:{
       handler(){
         //查找本地配置
         this.getLocalServerConfig()

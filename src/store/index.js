@@ -785,7 +785,9 @@ export default new Vuex.Store({
     commits:{
       createTestLine:false,
       openF4DebugBord:false,
-      openDetailsPanel:false
+      openDetailsPanel:false,
+      reloadAccounts:false,
+      reloadServers:false
     },
     //相机配置
     cameraConfig:{
