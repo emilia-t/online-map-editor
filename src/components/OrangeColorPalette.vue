@@ -19,7 +19,6 @@ export default {
   props:{
     default:{
       type:String,
-      default: '#ff0000',
       required:true
     }
   },
@@ -30,13 +29,30 @@ export default {
     CallBack(){
       this.$emit('OrangeColorPaletteCall',this.color.substring(1))
     }
+  },
+  computed:{
+    newColor(){
+      if(this.$store.state.mapConfig.operated.data){
+        return this.$store.state.mapConfig.operated.data;
+      }else {
+        return {}
+      }
+    }
+  },
+  watch:{
+    newColor:{
+      handler(newValue){
+        if(newValue.color!==undefined){
+          this.color='#'+newValue.color;
+        }
+      }
+    }
   }
 }
 </script>
 
 <style scoped>
 .color-picker{
-  display: inline-block;
   position: relative;
   width: 45px;
   height: 35px;

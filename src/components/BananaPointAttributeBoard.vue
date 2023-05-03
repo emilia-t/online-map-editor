@@ -162,6 +162,8 @@ export default {
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
       //隐藏面板
       this.show=false;
+      //停用添加点
+      this.$root.sendInstruct('addNewPointEnd');
     },
     //取消-从缓存中恢复源数据
     cancelEdit(ev){
@@ -315,7 +317,7 @@ export default {
   position: fixed;
   width: 300px;
   height: 400px;
-  background: #fdfdfd;
+  background: rgba(255,255,255,0.85);
   box-shadow: #b1b1b1 2px 2px 10px;
   border-radius: 5px;
   padding: 5px;
@@ -361,7 +363,7 @@ export default {
   align-items: flex-start;
   flex-direction: row;
   /*overflow: hidden;*/
-  background: #fdfdfd;
+  background: white;
   border-radius: 3px;
   border:1px dashed #d8d8d8;
 }
@@ -407,7 +409,7 @@ button{
   width: 2px;
   height: 100%;
   overflow: hidden;
-  background: #fdfdfd;
+  background: white;
 }
 .rightValue{
   width: calc(100% - 70px - 2px - 8px - 20px - 4px);
@@ -466,7 +468,7 @@ textarea{
   border:none;
   outline: none;/*边线不显示*/
   resize: none;/*禁止拉伸*/
-  background:#fdfdfd;
+  background:white;
   appearance:none;
   cursor: text;
 }

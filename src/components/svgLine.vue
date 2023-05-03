@@ -1,7 +1,8 @@
 <template>
   <g :elementId="polyLineConfig.id">
-    <polyline @contextmenu="rightClickOperation($event)" @click="showDetails()" :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+polyLineConfig.color,strokeWidth:polyLineConfig.width}"/>
-    <circle v-show="!doNeedMoveMap" v-for="point in this.polyLineConfig.points"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
+    <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="highlightStyle" v-show="selectId===myId"/>
+    <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()"/>
+    <circle :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" v-for="point in this.polyLineConfig.points" :style="pathNodeStyle" v-show="!doNeedMoveMap"/>
   </g>
 </template>
 <script>
@@ -11,7 +12,10 @@ export default {
     return {
       dataSourcePoint: {},//数据源保存
       occurredMoveMap:false,//移动状态
-      A1Cache:{x:0,y:0}//a1的缓存，用于每次移动时扣除上一次移动产生的A1距离
+      A1Cache:{x:0,y:0},//a1的缓存，用于每次移动时扣除上一次移动产生的A1距离
+      highlightShow:false,
+      myId:null,
+      selectId:-1
     }
   },
   props:{
@@ -165,6 +169,32 @@ export default {
     this.startSetting();
   },
   computed:{
+    //path line 的动态样式
+    pathLineStyle(){
+      return {
+        stroke:'#'+this.polyLineConfig.color,
+        strokeWidth:parseInt(this.polyLineConfig.width),
+        strokeLinecap:'round'
+      }
+    },
+    //path node 的动态样式
+    pathNodeStyle(){
+      return {
+        r:parseInt(this.polyLineConfig.width)+3+'px',
+        strokeWidth:1,
+        pointerEvents:'fill',
+        fillOpacity:0.9,
+        fill:'#bbb'
+      }
+    },
+    //path highlight 的动态样式
+    highlightStyle(){
+      return {
+        strokeWidth:parseInt(this.polyLineConfig.width)+2,
+        stroke:'#44AAFF',
+        strokeLinecap:'round'
+      }
+    },
     doNeedMoveMap(){
       return this.$store.state.cameraConfig.doNeedMoveMap;
     },
@@ -216,6 +246,9 @@ export default {
         }
         return refArr;
       }
+    },
+    targetId(){
+      return this.$store.state.detailsPanelConfig.target;
     }
   },
   //移动过程中使用动态坐标，移动结束后修改源数据
@@ -228,6 +261,11 @@ export default {
     doNeedMoveMap:{
       handler(newValue,oldValue){
         this.move();
+      }
+    },
+    targetId:{
+      handler(newValue){
+        this.selectId=newValue;
       }
     }
   }

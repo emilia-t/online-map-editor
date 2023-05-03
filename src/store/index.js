@@ -787,7 +787,10 @@ export default new Vuex.Store({
       openF4DebugBord:false,
       openDetailsPanel:false,
       reloadAccounts:false,
-      reloadServers:false
+      reloadServers:false,
+      addNewPointEnd:false,
+      previewLine:false,
+      addNewLineEnd:false
     },
     //相机配置
     cameraConfig:{

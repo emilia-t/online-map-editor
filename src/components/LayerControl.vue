@@ -52,6 +52,7 @@ export default {
       Url2Color:'#ffffff',
       Url3:regionImg,
       Url3Color:'#ffffff',
+      nodeSuppressor:false,//节点抑制器，此项为true则会抑制节点更新，会对添加点、线段、面造成影响
       isAddPoint:false,
       isAddLine:false,
       addLineClock:false,//false表示未锁止
@@ -123,8 +124,10 @@ export default {
         }
         //禁用更新指针
         this.$store.state.mapConfig.cursorLock=true;
+        //通知预览启用
+        this.$root.sendSwitchInstruct('previewLine',true);
       }else {
-        this.isAddLine=false;//更改添加点状态为“可用”
+        this.isAddLine=false;//更改添加点状态为“不可用”
         this.Url2Color='#ffffff';//更改背景色e72323
         //更改按钮状态
         this.theConfig.buttonB=false;
@@ -132,6 +135,8 @@ export default {
         if(this.$store.state.mapConfig.cursorLock===false){
           this.$store.state.mapConfig.cursor='default';
         }
+        //通知预览停用
+        this.$root.sendSwitchInstruct('previewLine',false);
       }
     },
     //取消添加线
@@ -154,7 +159,7 @@ export default {
       //清除点击位置缓存
       this.theConfig.addLinePos=[];
     },
-    //添加点
+    //添加线
     addLine(){
       //1监听下一次的鼠标点击位置
       if(this.theConfig.obServe===false){
@@ -163,7 +168,7 @@ export default {
         //避免重复添加监听，在第一次监听后即不再重复添加
         if(this.lineListener===false){
           document.addEventListener("click",(ev)=>{
-            if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false){
+            if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false && this.nodeSuppressor!==true){
               //判断target
               let tag=ev.target.nodeName;
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
@@ -185,6 +190,8 @@ export default {
       //2调整属性面板位置
       this.theConfig.lineBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;
       this.theConfig.lineBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
+      //结束通知
+      this.$root.sendSwitchInstruct('previewLine',false);
     },
     //转化坐标
     translateCoordinate(float){
@@ -218,7 +225,7 @@ export default {
         //避免重复添加监听
         if(this.pointListener===false){
           document.addEventListener("click",(ev)=>{
-            if(this.theConfig.obServe===true && this.isAddPoint===true){
+            if(this.theConfig.obServe===true && this.isAddPoint===true && this.nodeSuppressor!==true){
               //判断target
               let tag=ev.target.nodeName;
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
@@ -295,7 +302,7 @@ export default {
           this.addRouteLineStart();
         }
       }else {
-        this.isAddPoint=false;//更改添加点状态为“可用”
+        this.isAddPoint=false;//更改添加点状态为“不可用”
         this.Url1Color='#ffffff';//更改背景色e72323
         //更改按钮状态
         this.theConfig.buttonA=false;
@@ -322,8 +329,35 @@ export default {
             this.addRouteLineStart();
             break;
           }
+          case '3':{
+            this.addAreaStart();
+            break;
+          }
+          case ' ':{
+            this.nodeSuppressor=false;
+            break;
+          }
+          case 'Escape':{
+            if(this.buttonA){
+              this.addInterestPointStart();
+            }
+            if(this.buttonB){
+              this.addRouteLineStart();
+            }
+            if(this.buttonC){
+              this.addAreaStart();
+            }
+          }
         }
-      })
+      });
+      document.body.addEventListener('keydown',(e)=>{
+        let KEY=e.key;
+        switch (KEY){
+          case ' ':{
+            this.nodeSuppressor=true;
+          }
+        }
+      });
     },
     //F8的事件
     F8Event(){
@@ -345,9 +379,25 @@ export default {
     },
     svgDbClick(){
       return this.$store.state.mapConfig.svgDbClick;
+    },
+    addNewPointEnd(){
+      return this.$store.state.commits.addNewPointEnd;
+    },
+    addNewLineEnd(){
+      return this.$store.state.commits.addNewLineEnd;
     }
   },
   watch:{
+    addNewPointEnd:{
+      handler(){
+        this.addInterestPointStart();
+      }
+    },
+    addNewLineEnd:{
+      handler(){
+        this.addRouteLineStart();
+      }
+    },
     buttonB:{
       handler(newValue){
         if(newValue){

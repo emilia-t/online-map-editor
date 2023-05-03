@@ -16,13 +16,16 @@ new Vue({
     CONFIG,
     general_script,
     commitsConfig:{
-      disabledList:['createTestLine'],//请使用类似于：/user/的正则表达式
+      disabledList:['createTestLine'],
       anonymousInstruct:{pass:0,intercept:0},
       createTestLine:{pass:0,intercept:0},
       openF4DebugBord:{pass:0,intercept:0},
       openDetailsPanel:{pass:0,intercept:0},
       reloadAccounts:{pass:0,intercept:0},
-      reloadServers:{pass:0,intercept:0}
+      reloadServers:{pass:0,intercept:0},
+      addNewPointEnd:{pass:0,intercept:0},
+      previewLine:{pass:0,intercept:0},
+      addNewLineEnd:{pass:0,intercept:0}
     }
   }},
   router,
@@ -63,17 +66,42 @@ new Vue({
         }
       }
     },
-    //发送一个带有切换true和false状态的命令
-    sendSwitchInstruct(name){
+    //发送一个带有单一状态的命令
+    sendSwitchInstruct(name,status){
       switch (name) {
-        case '':{
+        //用于显示或关闭预览线段
+        case 'previewLine':{
+          if(this.filter(name)){
+            this.$store.state.commits.previewLine=status;
+            this.commitsConfig.addNewPointEnd.pass++;
+          }else {
+            this.commitsConfig.addNewPointEnd.intercept++;
+          }
           break;
         }
       }
     },
-    //发送一条立刻执行函数的命令
+    //命令状态更新
     sendInstruct(name){
       switch (name){
+        case 'addNewLineEnd':{
+          if(this.filter(name)){
+            this.$store.state.commits.addNewLineEnd=!this.$store.state.commits.addNewLineEnd;
+            this.commitsConfig.addNewLineEnd.pass++;
+          }else {
+            this.commitsConfig.addNewLineEnd.intercept++;
+          }
+          break;
+        }
+        case 'addNewPointEnd':{
+          if(this.filter(name)){
+            this.$store.state.commits.addNewPointEnd=!this.$store.state.commits.addNewPointEnd;
+            this.commitsConfig.addNewPointEnd.pass++;
+          }else {
+            this.commitsConfig.addNewPointEnd.intercept++;
+          }
+          break;
+        }
         case 'reloadServers':{
           if(this.filter(name)){
             this.$store.state.commits.reloadServers=!this.$store.state.commits.reloadServers;

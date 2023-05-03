@@ -21,7 +21,7 @@
             <div class="leftAttribute"><div>颜色</div></div>
             <div class="centerLine"></div>
             <textarea class="colorInput" contenteditable="true" v-model="operatedCache.color" rows="1" maxlength="7"></textarea>
-            <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ff0000'"></orange-color-palette>
+            <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ffffff'"></orange-color-palette>
           </div>
           <div class="centerListItem">
             <div class="leftAttribute"><div>宽度</div></div>
@@ -323,7 +323,7 @@ export default {
   position: absolute;
   width: 300px;
   height: 400px;
-  background: #fdfdfd;
+  background: white;
   box-shadow: #b1b1b1 2px 2px 10px;
   border-radius: 5px;
   padding: 5px;
@@ -369,7 +369,7 @@ export default {
   align-items: flex-start;
   flex-direction: row;
   /*overflow: hidden;*/
-  background: #fdfdfd;
+  background: white;
   border-radius: 3px;
   border:1px dashed #d8d8d8;
 }
@@ -415,7 +415,7 @@ button{
   width: 2px;
   height: 100%;
   overflow: hidden;
-  background: #fdfdfd;
+  background: white;
 }
 .rightValue{
   width: calc(100% - 70px - 2px - 8px - 20px - 4px);
@@ -474,7 +474,7 @@ textarea{
   border:none;
   outline: none;/*边线不显示*/
   resize: none;/*禁止拉伸*/
-  background:#fdfdfd;
+  background:white;
   appearance:none;
   cursor: text;
 }

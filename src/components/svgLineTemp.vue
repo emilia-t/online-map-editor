@@ -1,6 +1,8 @@
 <template>
   <g :elementId="tempLine.id">
     <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+tempLine.color,strokeWidth:tempLine.width}"/>
+    <!--下一行用于显示预览轨迹，仅当第一个点建立之后，且当结束绘制后关闭，第一个点为最后一个点，第二个点依据鼠标移动，第一个点跟随视图移动-->
+    <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2)"/>
     <circle v-show="!doNeedMoveMap" v-for="point in tempLine.showPos"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
@@ -79,6 +81,12 @@ export default {
     this.startSetting();
   },
   computed:{
+    previewLineShow(){
+      return this.tempLine.points.length !== 0 && this.previewLine === true;
+    },
+    previewLine(){
+      return this.$store.state.commits.previewLine;
+    },
     tempLine(){
       return this.$store.state.mapConfig.tempLine;
     },
@@ -133,7 +141,27 @@ export default {
         }
         return refArr;
       }
-    }
+    },
+    //预览lane的坐标
+    previewLinePoints(){
+      if(this.tempLine.points.length!==0){
+        if(this.dynamicPointsStr.length!==0){
+          let str='';
+          str+=this.dynamicPointsStr[this.dynamicPointsStr.length-1].c+' '+this.dynamicPointsStr[this.dynamicPointsStr.length-1].d;
+          str+=' ';
+          str+=this.mouse.x+' '+this.mouse.y;
+          return str;
+        }else if(this.dynamicPointsStr.length===0){
+          let str='';
+          str+=this.translateCoordinate(this.tempLine.showPos[0].x)+' '+this.translateCoordinate(-this.tempLine.showPos[0].y);
+          str+=' ';
+          str+=this.mouse.x+' '+this.mouse.y;
+          return str;
+        }else {
+          return ''
+        }
+      }
+    },
   },
   //移动过程中使用动态坐标，移动结束后修改源数据
   watch:{
