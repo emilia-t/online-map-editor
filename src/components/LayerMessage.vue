@@ -3,7 +3,7 @@
     <!--右侧唤起消息面板的按钮-->
     <div class="messageButton" ref="messageButton" @click="openOrHideMessage()">
       <svg t="1683100454463" class="icon8" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2649" width="200" height="200"><path d="M532.48 0C238.592 0 0 204.8 0 457.216c0 150.016 54.784 272.896 163.84 361.984v150.016c0 40.96 13.824 54.784 34.304 54.784 12.8-0.512 24.576-5.12 34.304-13.824l163.84-95.744c45.056 8.192 90.624 12.288 136.704 13.824 293.376 0 491.52-218.624 491.52-471.04S778.752 0 532.48 0z m0 849.92c-27.136 0-95.744-6.656-122.88-6.656l-27.136-6.656-20.48 13.824-122.88 78.336v-148.48l-27.136-20.48c-88.576-75.264-126.464-179.2-126.464-302.08 0-218.624 194.56-378.88 454.144-378.88 175.104-3.584 395.776 153.6 413.184 378.88-7.168 231.936-181.248 392.192-420.352 392.192zM272.896 402.944c-33.792 0-61.44 27.648-61.44 61.44s27.648 61.44 61.44 61.44 61.44-27.648 61.44-61.44c0-16.384-6.656-31.744-17.92-43.52s-27.136-17.92-43.52-17.92z m239.104 0c-33.792 0-61.44 27.648-61.44 61.44s27.648 61.44 61.44 61.44 61.44-27.648 61.44-61.44c0-16.384-6.656-31.744-17.92-43.52s-27.136-17.92-43.52-17.92z m239.104 0c-33.792 0-61.44 27.648-61.44 61.44s27.648 61.44 61.44 61.44 61.44-27.648 61.44-61.44c0-16.384-6.656-31.744-17.92-43.52-11.776-11.776-27.136-17.92-43.52-17.92z" p-id="2650"></path></svg>
-      <div class="unreadNumber">{{unreadNumber}}</div>
+      <div class="unreadNumber" v-show="unreadNumber!==0">{{unreadNumber}}</div>
     </div>
     <!--消息面板主体-->
     <div class="messageLayer" ref="messageLayer">
@@ -89,25 +89,26 @@ export default {
   methods:{
     //打开消息面板
     openOrHideMessage(){
-      //打开消息面板
+      //关闭消息面板
       if(this.messageLayerShow){
         this.$refs.messageLayer.classList.add('messageLayerHide');
         this.$refs.messageLayer.classList.remove('messageLayerShow');
         this.$refs.messageButton.classList.add('messageButtonShow');
         this.$refs.messageButton.classList.remove('messageButtonHide');
         this.messageLayerShow=!this.messageLayerShow;
-        //禁用积累未读消息
-        this.unreadIs=false;
-        //清除未读消息数量
-        this.unreadNumber=0;
+        //启用积累未读消息
+        this.unreadIs=true;
       }else {
+        //打开
         this.$refs.messageLayer.classList.remove('messageLayerHide');
         this.$refs.messageLayer.classList.add('messageLayerShow');
         this.$refs.messageButton.classList.remove('messageButtonShow');
         this.$refs.messageButton.classList.add('messageButtonHide');
         this.messageLayerShow=!this.messageLayerShow;
-        //启用积累未读消息
-        this.unreadIs=true;
+        //禁用积累未读消息
+        this.unreadIs=false;
+        //清除未读消息数量
+        this.unreadNumber=0;
       }
     },
     //发送消息
