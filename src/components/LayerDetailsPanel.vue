@@ -142,7 +142,6 @@ export default {
   watch:{
     targetId:{
       handler(newValue){
-        console.log(newValue);
         if(newValue===-1){
           this.hidden();
         }else {
