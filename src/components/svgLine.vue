@@ -190,8 +190,8 @@ export default {
     //path highlight 的动态样式
     highlightStyle(){
       return {
-        strokeWidth:parseInt(this.polyLineConfig.width)+2,
-        stroke:'#44AAFF',
+        strokeWidth:parseInt(this.polyLineConfig.width)+4,
+        stroke:'#ff0f67',
         strokeLinecap:'round'
       }
     },

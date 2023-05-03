@@ -1,3 +1,4 @@
+<script src="../../../../../vue实例模板备份/vue/config/index.js"></script>
 <template>
   <!--起始页面左侧的菜单面板-->
 <div class="menuPanelLayer" ref="menuPanelLayer">
@@ -140,14 +141,16 @@
         <!--图标-->
         <div class="AboutBox">
           <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png">
-          <p class="Ap1">在线地图编辑器</p>
-          <p class="Ap1">版本0.3.5</p>
-          <p class="Ap1">@2023 After The Stars Wither</p>
+          <p class="Ap2">在线地图编辑器</p>
+          <p class="Ap1">OME版本0.3.5</p>
+          <p class="Ap1">Vue版本2.9.6</p>
           <p class="Ap1"><a href="https://github.com/emilia-t/map" target="_blank">开放源代码</a></p>
           <p class="Ap1">著作权归站长所有</p>
-          <p class="Ap1">仅为项目学习演示</p>
-          <p class="Ap1">测试版本仅供参考</p>
-          <p class="Ap1">所有内容均为虚拟内容</p>
+          <p class="Ap1">@2018~2023</p>
+          <p class="Ap1">After The Stars Wither</p>
+          <p class="Ap3">鸣谢</p>
+          <p class="Ap1">Emilia</p>
+          <p class="Ap1">ALIMU</p>
         </div>
       </div>
       <!--帮助界面-->
@@ -155,7 +158,7 @@
         <div class="SettingTitle">帮助</div>
         <hr/>
         <div class="explain">
-          欢迎使用在线地图编辑器，您可以使用此编辑器连接上您的组织（或个人）的在线地图服务器，并和您的同事伙伴进行在线实时编辑，您能连接上的在线地图服务器（以下简称OMS）取决于您的组织（或个人）的服务器配置，本编辑器不提供OMS的连接信息，请自行配置或向您的组织（或个人）索要OMS配置信息。
+          欢迎使用在线地图编辑器，您可以使用此编辑器连接上您的组织（或个人）的在线地图服务器，并和您的同事伙伴进行在线实时编辑，您能连接上的在线地图服务器（以下简称OMS）取决于您的组织（或个人）的服务器配置，<span class="dottedUnderline">本编辑器不提供OMS的连接信息，请自行配置或向您的组织（或个人）索要OMS配置信息。</span>
         </div>
         <div class="title2">
           添加一个在线地图服务器的方法：
@@ -188,7 +191,84 @@
           <div class="shortcut">
             <span class="cutA">3</span><span class="cutB">创建区域面</span>
           </div>
+          <br/>
+          <div class="shortcut">
+            <span class="cutA">空格</span><span class="cutB">移动视图</span>
+          </div>
         </div>
+        <div class="title1">
+          基本操作(Ctrl + F 可进行搜索)
+        </div>
+        <div class="title2">
+          移动和缩放视图：
+        </div>
+        <div class="explain">
+          1.鼠标左键按下必能拖动鼠标以移动视图，松开左键以停止移动视图（移动）
+          <br/>
+          2.鼠标滚轮向内或向下滚动以缩小视图，向外或向上滚动以放大视图（缩放）
+        </div>
+        <div class="title2">
+          选中和取消选中要素：
+        </div>
+        <div class="explain">
+          1.鼠标置于任意要素上方并按下左键（选中）
+          <br/>
+          2.鼠标置于任意要素上方并按下右键（右键选中）
+          <br/>
+          3.鼠标置于空白区域并按下左键（取消选中）
+        </div>
+        <div class="title2">
+          移动要素：
+        </div>
+        <div class="explain">
+          1.鼠标左键（选中）任意要素
+          <br/>
+          2.（拖动）该要素使其跟随鼠标移动
+          <br/>
+          3.（松开）鼠标左键完成移动
+        </div>
+        <div class="title2">
+          编辑要素：
+        </div>
+        <div class="explain">
+          <span class="explainChild">1.鼠标右键键（右键选中）任意要素</span>
+          <span class="explainChild">2.点击图标<img :src="editButton" alt="删除图标" title="删除图标" class="icon7"/>打开编辑面板</span>
+          <span class="explainChild">3.在右侧的编辑面板对要素进行编辑</span>
+          <span class="explainChild">4.点击右下角上传按钮将更改内容上传至OMS</span>
+        </div>
+        <div class="title2">
+          删除要素：
+        </div>
+        <div class="explain">
+          <span class="explainChild">1.鼠标右键键（右键选中）任意要素</span>
+          <span class="explainChild">2.点击图标<img :src="deleteButton" alt="删除图标" title="删除图标" class="icon7"/>以删除要素</span>
+          <span class="explainChild">3.在消息面板会主动发送一条删除要素的消息</span>
+        </div>
+        <div class="title1">
+          名词解释(Ctrl + F 可进行搜索)
+        </div>
+        <div class="explain">
+          <div class="shortcut">
+            <span class="cutA">视图</span><span class="cutB">用以承载和显现各种地图要素的基本结构</span>
+          </div>
+          <br/>
+          <div class="shortcut">
+            <span class="cutA">兴趣点</span><span class="cutB">用以承载实际或虚拟的地点、位置等信息并以点状显现于视图</span>
+          </div>
+          <br/>
+          <div class="shortcut">
+            <span class="cutA">路径线</span><span class="cutB">用以承载实际或虚拟的路线、轨迹等信息并以线条状显现于视图</span>
+          </div>
+          <br/>
+          <div class="shortcut">
+            <span class="cutA">区域面</span><span class="cutB">用以承载实际或虚拟的范围、区块等信息并以面状显现于视图</span>
+          </div>
+          <br/>
+          <div class="shortcut">
+            <span class="cutA">节点</span><span class="cutB">用以显现路径线、区域面的轨迹节点并以灰色点状显现于路径线或区域面之上</span>
+          </div>
+        </div>
+        <br/>
       </div>
     </div>
   </div>
@@ -197,6 +277,8 @@
 </template>
 
 <script>
+import deleteButton from '../../../static/delete.png';
+import editButton from '../../../static/edit.png';
 export default {
   name: "LayerMenuPanel",
   data(){
@@ -209,7 +291,9 @@ export default {
       AboutSettings:false,
       HelpSettings:false,
       offsetY:-31,
-      accounts:{}
+      accounts:{},
+      deleteButton,
+      editButton
     }
   },
   mounted() {
@@ -601,6 +685,22 @@ export default {
 </script>
 
 <style scoped>
+.explainChild{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  line-height: 20px;
+}
+.icon7{
+  width: 20px;
+  height: 20px;
+}
+.dottedUnderline {
+  text-decoration: underline;
+  text-decoration-style: wavy;
+}
 .shortcut{
   width: 100%;
   height: 30px;
@@ -617,6 +717,13 @@ export default {
   width: calc(100% - 50px);
 
 }
+.title1{
+  width: calc(100% - 20px);
+  padding: 10px;
+  height: auto;
+  font-size: 15px;
+  font-weight: 600;
+}
 .title2{
   width: calc(100% - 20px);
   padding: 10px;
@@ -630,9 +737,22 @@ export default {
   height: auto;
   font-size: 13px;
   font-weight: 200;
+  line-height: 20px;
+}
+.Ap3{
+  font-size: 13px;
+  color: rgba(5,5,5,0.75);
+  margin: 5px 0px;
+  font-weight: 600;
+}
+.Ap2{
+  font-size: 14px;
+  color: rgba(5,5,5,0.75);
+  margin: 5px 0px;
+  font-weight: 600;
 }
 .Ap1{
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(5,5,5,0.75);
   margin: 5px 0px;
 }
@@ -760,7 +880,7 @@ a:hover, a:active {
   color: rgba(5,5,5,0.9);
 }
 .spansB{
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 100;
   color: rgba(5,5,5,0.5);
 }

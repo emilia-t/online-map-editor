@@ -4,10 +4,7 @@
   <!--权限-允许访问store.state.mapconfig-->
   <div class="detailsPanelLayer" ref="LayerDetailsPanel">
     <!--顶部标题-->
-    <div class="top">
-      元素信息面板
-    </div>
-    <div>基本信息</div>
+    <div class="titleL">基本信息</div>
     <!--内容-->
     <div class="content">
       <!--id-->
@@ -71,7 +68,7 @@
         </div>
       </div>
     </div>
-    <div>详细信息</div>
+    <div class="titleL">详细信息</div>
     <div class="content">
       <!--details-->
       <div v-show="exampleConfig.details" v-for="detail in exampleConfig.details">
@@ -127,17 +124,25 @@ export default {
     },
     //显示面板
     show(){
-      this.$refs.LayerDetailsPanel.style.left='0px';
+      setTimeout(()=>{
+        this.$refs.LayerDetailsPanel.style.left=(this.mouseClick.x-310)+'px';
+        this.$refs.LayerDetailsPanel.style.top=(this.mouseClick.y+5)+'px';
+      },10)
     }
   },
   computed:{
     targetId(){
       return this.$store.state.detailsPanelConfig.target;
+    },
+    //鼠标点击位置
+    mouseClick(){
+      return this.$store.state.mapConfig.mouseClick;
     }
   },
   watch:{
     targetId:{
       handler(newValue){
+        console.log(newValue);
         if(newValue===-1){
           this.hidden();
         }else {
@@ -157,15 +162,20 @@ export default {
 </script>
 
 <style scoped>
+.titleL{
+  width: 100%;
+  display: flex;
+  justify-content: left;
+}
 .detailsPanelLayer{
-  width: 350px;
-  height: 100%;
-  background: #f8f8f8;
+  width: 300px;
+  height: 400px;
+  padding: 5px;
+  background: white;
   position: fixed;
   top:0;
   left: -350px;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
+  border-radius: 5px;
   box-shadow: #b8b8b8 3px 3px 10px;
   display: flex;
   justify-content: flex-start;
@@ -175,20 +185,6 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
 }
-.top{
-  width: 100%;
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  background: #ffffff;
-  font-size: 24px;
-  font-weight: 400;
-  align-items: center;
-  border-top-right-radius: 10px;
-  border-bottom: 2px dashed #e7e1e5;
-  color: rgba(50, 50, 50, 0.85);;
-  /*ff4949*/
-}
 .content{
   width: 100%;
 }
@@ -196,17 +192,18 @@ export default {
   width: calc(100% - 2px - 2px);
   margin:4px 0px;
   border: 1px dashed #c7c5c7;
+  border-radius: 3px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  background: #f7f7f7;
-  font-size: 17px;
+  background: white;
+  font-size: 14px;
 }
 .boxLeft{
   width: calc(24% - 1px);
   height: auto;
-  padding: 10px;
+  padding: 8px;
   border-right: 1px dashed #c7c5c7;
   font-weight: 400;
   /*background: red;*/
@@ -214,7 +211,7 @@ export default {
 .boxRight{
   width: 70%;
   height: auto;
-  padding: 10px;
+  padding: 8px;
   font-weight: 100;
   /*background: #48caec;*/
 }

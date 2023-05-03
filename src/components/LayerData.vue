@@ -8,7 +8,7 @@
   允许访问、修改、删除$store.state.mapConfig、$store.state.serverData内的数据
   -->
   <div class="dataLayer" id="dataLayer" ref="dataLayer">
-    <svg class="elementData" id="elementData" ref="elementData" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
+    <svg class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
       <!--线段数据-->
       <svg-line v-for="line in MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line>
       <!--点位数据-->
@@ -128,6 +128,10 @@ export default {
       // setInterval(
       //   ()=>console.log(this.MyPolyLineData)
       // ,1000)
+    },
+    //阻止右键选中
+    preventDefault(mouseEvent){
+      mouseEvent.preventDefault();
     },
     //检测浏览器窗口大小变化
     listenBrowserSize(){

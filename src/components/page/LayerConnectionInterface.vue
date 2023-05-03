@@ -411,7 +411,7 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 100;
 }
 .icon6{
