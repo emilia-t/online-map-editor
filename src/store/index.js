@@ -906,18 +906,26 @@ export default new Vuex.Store({
       },
       target:null
     },
-    //控制层的配置
-    layerControlConfig:{
-    },
-    //点添加属性面板的配置
-    pointAttributeBoardConfig:{
-
-    },
     //元素右键操作面板的配置
     elementOperationBoardConfig:{
       posX:null,
       posY:null,
       display:false
+    },
+    //页面配置
+    pageConfig:{
+      homeSeparateState:true,
+      mapSeparateState:false
+    },
+    //用户设置
+    userSettingConfig:{
+      //1.是否在服务器列表中开启每隔60秒自动更新服务器在线状态
+      UpdateServerStatus:false,
+      UpdateServerStatusTime:60000,
+      //2.是否启用启动时自动搜索服务器状态
+      startUpdateServerStatus:true,
+      //是否开启元素面板
+      elementPanelLayerShow:false
     },
     //服务器相关数据
     serverData:{
@@ -961,18 +969,6 @@ export default new Vuex.Store({
       //   }
       // ]
     },
-    //组件的配置，用于切换页面
-    pageConfig:{
-      homeSeparateState:true,
-      mapSeparateState:false
-    },
-    userSettingConfig:{
-      //1.是否在服务器列表中开启每隔60秒自动更新服务器在线状态
-      UpdateServerStatus:false,
-      UpdateServerStatusTime:60000,
-      //2.是否启用启动时自动搜索服务器状态
-      startUpdateServerStatus:true,
-    }
   },
   getters: {
 

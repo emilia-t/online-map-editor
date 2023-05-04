@@ -288,6 +288,7 @@ export default {
   max-width: 600px;
   min-width: 200px;
   max-height: calc(100% - 365px);
+  min-height: 50px;
   background: #f5f5f5;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;

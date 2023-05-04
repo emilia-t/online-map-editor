@@ -3,9 +3,9 @@
   职责：显示地图整体的简要属性、例如地图大小、以列表方式展示数据（类似于谷歌地图左侧的的面板）
   允许访问、修改、删除$store.state.serverData内的数据elementPanelLayer
   -->
-  <div class="elementPanelLayer">
+  <div class="elementPanelLayer" v-show="this.$store.state.userSettingConfig.elementPanelLayerShow">
     <div class="title">
-      元素基本信息
+      元素列表
     </div>
     <!--遍历-->
     <div class="content">
@@ -133,17 +133,17 @@ export default {
   /*background: #b5a4c9;*/
 }
 .elementPanelLayer{
-  width: var(--panelWidth);
-  height: var(--panelHight);
+  width: 350px;
+  height: calc(100% - 15px * 2 );
   display: flex;
   flex-direction: column;
   position: fixed;
-  background: var(--BottomBackgroundColor);
-  left: var(--panelLeft);
-  top:var(--panelTop);
-  border-radius: var(--borderType03);
+  background: #fdfdfd;
+  left: 25px;
+  top:15px;
+  border-radius: 5px;
   overflow: hidden;
-  box-shadow: var(--BottomShadowColor);
+  box-shadow: 2px 2px 10px #d8d8d8;
 }
 .title{
   width: 100%;

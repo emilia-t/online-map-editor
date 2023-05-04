@@ -80,18 +80,7 @@ body, html {
 }
 /*css变量，用于统一样式*/
 :root{
-  --panelWidth:350px;/*图层面板宽度*/
-  --panelHight:calc(100% - (var(--panelTop) * 2));/*图层面板高度*/
-  --panelLeft: 15px;/*图层面板左边距*/
-  --panelTop: 15px;/*图层面板上边距*/
-  --controlWidth:500px;/*控制面板宽度*/
-  --controlHeight:60px;/*控制面板宽度*/
-  --controlLeft:0.5;/*控制面板左边距的比例*/
-  --controlTop:15px;/*控制面板顶部边距*/
-  --borderType01:15px;/*圆角样式*/
-  --borderType02:10px;/*圆角样式*/
-  --borderType03:5px;/*圆角样式*/
-  /*颜色划分--仅用于具有统一性的文字和box，不适用于特殊化的文字和box
+  /*颜色
   0.突出背景颜色--ProminentBackgroundColor:;
   1.上层背景颜色--FirstBackgroundColor:;
   2.中层背景颜色--CenterBackgroundColor:;
@@ -110,11 +99,6 @@ body, html {
   13.底层阴影颜色--BottomShadowColor:;
   */
   /*0*/
-  --ProminentBackgroundColor:#edd976;
-  /*4*/
-  --BottomBackgroundColor:#fdfdfd;
-  /*13*/
-  --BottomShadowColor:2px 2px 10px #d8d8d8;
 }
 *::-webkit-scrollbar {
   width: 4px;

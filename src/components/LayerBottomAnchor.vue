@@ -2,7 +2,7 @@
 <!--底部锚-->
   <div class="bottomAnchorLayer">
     <div class="bottomAnchorLayerBox">
-      @2023 Online map for&nbsp;<a target="_blank" href="https://www.atsw.top">ATSW</a>&nbsp;&nbsp;
+      Online map editor&nbsp;<a target="_blank" href="https://www.atsw.top">ATSW</a>&nbsp;&nbsp;
       <img alt="图标" :src="batb" class="batb-d0289dc0"/>
       <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=53062602000121">滇公网安备 53062602000121号</a>&nbsp;&nbsp;
       <a target="_blank" href="https://beian.miit.gov.cn/">滇ICP备20002587号-2</a>&nbsp;&nbsp;

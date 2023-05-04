@@ -172,6 +172,7 @@ export default {
   padding: 5px;
   background: white;
   position: fixed;
+  z-index: 550;
   top:0;
   left: -350px;
   border-radius: 5px;

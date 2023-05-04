@@ -37,8 +37,6 @@
   </div>
   <div class="SettingsBox" ref="SettingsBox" v-show="settingShow" @contextmenu="stopDefaultEvent($event)">
     <div class="Settings" ref="Settings">
-      <!--左侧的箭头-->
-      <svg t="1681626565716" class="icon3" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="16113" width="200" height="200"><path d="M384 810.666667V213.333333l341.333333 298.666667z" fill="#f0f0f0" p-id="16114" data-spm-anchor-id="a313x.7781069.0.i4" class="selected"></path></svg>
       <!--具体的设置项目-->
       <!--常规设置-->
       <div class="Setting" v-show="GeneralSettings">
@@ -79,7 +77,7 @@
             <span class="spansB">开启后将会在左侧悬浮一个地图元素列表</span>
           </div>
           <!--switch式开关-->
-          <div class="switchOut"><div class="circle"></div></div>
+          <div class="switchOut" ref="DS01" @click="DS01($event)"><div ref="DS01_1" class="circle"></div></div>
         </div>
         <hr/>
         <div class="SettingList">
@@ -181,15 +179,15 @@
           </div>
           <br/>
           <div class="shortcut">
-            <span class="cutA">1</span><span class="cutB">创建兴趣点</span>
+            <span class="cutA">1</span><span class="cutB">创建点</span>
           </div>
           <br/>
           <div class="shortcut">
-            <span class="cutA">2</span><span class="cutB">创建路径线</span>
+            <span class="cutA">2</span><span class="cutB">创建路径</span>
           </div>
           <br/>
           <div class="shortcut">
-            <span class="cutA">3</span><span class="cutB">创建区域面</span>
+            <span class="cutA">3</span><span class="cutB">创建区域</span>
           </div>
           <br/>
           <div class="shortcut">
@@ -401,6 +399,21 @@ export default {
               }
               break;
             }
+            case 'set_DS_OpenElementPanel':{
+              if(nowLocalStorage[key]==true){
+                //更新样式
+                this.$refs.DS01.classList.add('switchOutOn');
+                this.$refs.DS01_1.classList.add('circleOn');
+                //更新状态
+                this.$store.state.userSettingConfig.elementPanelLayerShow=true;
+              }else if(nowLocalStorage[key]==false){
+                this.$refs.DS01.classList.remove('switchOutOn');
+                this.$refs.DS01_1.classList.remove('circleOn');
+                //更新状态
+                this.$store.state.userSettingConfig.elementPanelLayerShow=false;
+              }
+              break;
+            }
           }
         }
       }else {
@@ -478,6 +491,31 @@ export default {
         }
       }
     },
+    //显示设置（DS）下的功能开关
+    DS01(ev){
+      ev.stopPropagation();
+      //获取设置对象  "set_DS_OpenElementPanel":"false"
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));
+      let oldStatus=settingsObj.set_DS_OpenElementPanel;
+      //修改storage中的值
+      if(oldStatus==true){
+        settingsObj.set_DS_OpenElementPanel=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        //更改样式
+        this.$refs.DS01.classList.remove('switchOutOn');
+        this.$refs.DS01_1.classList.remove('circleOn');
+        //更新状态
+        this.$store.state.userSettingConfig.elementPanelLayerShow=false;
+      }else {
+        settingsObj.set_DS_OpenElementPanel=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        //更改样式
+        this.$refs.DS01.classList.add('switchOutOn');
+        this.$refs.DS01_1.classList.add('circleOn');
+        //更新状态
+        this.$store.state.userSettingConfig.elementPanelLayerShow=true;
+      }
+    },
     //常规设置（GS）下的功能开关
     //01号开关
     GS01(ev){
@@ -541,7 +579,7 @@ export default {
         }
       });
     },
-    //处理设置项
+    //处理设置项(来自其他页面的设置)
     settingSwitch(key,value){
       switch (key){
         case 'set_GS_AutoCheckServerStatus':{
@@ -552,6 +590,19 @@ export default {
           }else if(value==false){
             this.$refs.GS01.classList.remove('switchOutOn');
             this.$refs.GS01_1.classList.remove('circleOn')
+          }
+          break;
+        }
+        case 'set_DS_OpenElementPanel':{
+          if(value==true){
+            //更新样式
+            this.$refs.DS01.classList.add('switchOutOn');
+            this.$refs.DS01_1.classList.add('circleOn');
+            //打开元素面板
+
+          }else if(value==false){
+            this.$refs.DS01.classList.remove('switchOutOn');
+            this.$refs.DS01_1.classList.remove('circleOn');
           }
           break;
         }
@@ -912,7 +963,7 @@ a:hover, a:active {
   z-index: 550;
   position: absolute;
   top: 50px;
-  left: calc(1px);
+  left: -14px;
   transition: 0.4s;
   width: 300px;
   height: auto;
@@ -924,12 +975,9 @@ a:hover, a:active {
   border-radius: 4px;
   border: 1px solid #e2e2e2;
 }
-.Setting{
-
-}
 .menuPanelLayer{
   user-select: none;
-  width: 100px;
+  width: 85px;
   height: 100%;
   background: rgb(255,255,255);
   box-shadow: 2px 2px 5px rgb(220, 220, 220);
@@ -985,7 +1033,7 @@ a:hover, a:active {
   /*background: red;*/
   position: absolute;
   top:50%;
-  left:90px;
+  left:75px;
   display: flex;
   justify-content: center;
   z-index: 560;

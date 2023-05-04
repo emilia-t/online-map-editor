@@ -16,11 +16,15 @@
       </div>
       <div @click="addRouteLineStart()" class="ButtonOut">
         <banana-control-button :color="Url2Color" :button-img-prop="Url2"></banana-control-button>
-        <span class="controlButtonName">路径线</span>
+        <span class="controlButtonName">路径</span>
       </div>
       <div @click="addAreaStart()" class="ButtonOut">
         <banana-control-button :color="Url3Color" :button-img-prop="Url3"></banana-control-button>
-        <span class="controlButtonName">区域面</span>
+        <span class="controlButtonName">区域</span>
+      </div>
+      <div @click="addCurveStart()" class="ButtonOut">
+        <banana-control-button :color="Url4Color" :button-img-prop="Url4"></banana-control-button>
+        <span class="controlButtonName">曲线</span>
       </div>
     </div>
     <!--元素右键编辑面板-->
@@ -40,6 +44,7 @@ import BananaLineAttributeBoard from "./BananaLineAttributeBoard";
 import interestPoint from '../../static/point.png';//关注点
 import lineImg from '../../static/route.png';//线段类型
 import regionImg from '../../static/area.png';
+import curveImg from '../../static/curve.png';
 export default {
   name: "LayerControl",
   components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaLineAttributeBoard},
@@ -52,6 +57,8 @@ export default {
       Url2Color:'#ffffff',
       Url3:regionImg,
       Url3Color:'#ffffff',
+      Url4:curveImg,
+      Url4Color:'#ffffff',
       nodeSuppressor:false,//节点抑制器，此项为true则会抑制节点更新，会对添加点、线段、面造成影响
       isAddPoint:false,
       isAddLine:false,
@@ -96,6 +103,7 @@ export default {
       this.KeyListen();//开启键盘监听
     },
     addAreaStart(){},
+    addCurveStart(){},
     //添加线段的流程：
     //1.点击右侧控制面板中间的路径线按钮------
     //2.鼠标点击地图上的任意一个点(A)---这个点击一定是click
@@ -480,14 +488,14 @@ export default {
 }
 .controlButtonBox{
   width: 70px;
-  height: 260px;
+  height: 325px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   position: fixed;
   right: 0px;
-  top:100px;
+  top:85px;
   background: rgba(250,250,250,0.85);
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;

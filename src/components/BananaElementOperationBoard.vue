@@ -261,6 +261,7 @@ export default {
 }
 .BananaElementOperationBoard{
   position: fixed;
+  z-index: 560;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
