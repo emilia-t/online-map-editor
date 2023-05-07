@@ -125,9 +125,8 @@ export default {
       this.elementDataClick();
       //检测浏览器窗口大小变化
       this.listenBrowserSize();
-      // setInterval(
-      //   ()=>console.log(this.MyPolyLineData)
-      // ,1000)
+      //启用鼠标左键松开监听
+      this.getMouseUpSvg();
     },
     //阻止右键选中
     preventDefault(mouseEvent){
@@ -136,6 +135,10 @@ export default {
     //检测浏览器窗口大小变化
     listenBrowserSize(){
       window.addEventListener("resize",()=>{this.getBrowserConfig();})
+    },
+    //获取鼠标左键松开的位置(svg)
+    getMouseUpSvg(){
+      this.$refs.elementData.addEventListener("mouseup",(e)=>{this.$store.state.mapConfig.svgMouseUp.x=e.x;this.$store.state.mapConfig.svgMouseUp.y=e.y;})
     },
     //获取鼠标点击位置
     getMouseClick(){
@@ -205,12 +208,22 @@ export default {
             break;
           }
         }
-        if(tp>0){//滚轮前进，放大
-          this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer
-          this.$store.state.mapConfig.layer-=1;//层级下调
-        }else {//滚轮后退，缩放
-          this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer
-          this.$store.state.mapConfig.layer+=1;//层级下调
+        //在进行节点移动操作时禁用缩放
+        if(this.$store.state.commits.disableZoomAndMove===false){
+          //
+          if(tp>0){//滚轮前进，放大
+            if(this.$store.state.mapConfig.layer<=this.$store.state.cameraConfig.minZoom){
+              return false;
+            }
+            this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer
+            this.$store.state.mapConfig.layer-=1;//层级下调
+          }else {//滚轮后退，缩放
+            if(this.$store.state.mapConfig.layer>=this.$store.state.cameraConfig.maxZoom){
+              return false;
+            }
+            this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer
+            this.$store.state.mapConfig.layer+=1;//层级下调
+          }
         }
       };
     },
@@ -286,47 +299,51 @@ export default {
       if(this.theData.moveObServer===null){//必须是在已经移除了前一个侦测器的情况下
         this.theData.moveObServer=setInterval(
           ()=>{
-            try {
-              let pt=this.theData.moveMovePt;
-              let le=this.theData.moveObServerDt.length;
-              switch (le){
-                case 2:{//有两个
-                  this.theData.moveObServerDt.shift();
-                  this.theData.moveObServerDt.push(pt);
-                  let A1=this.theData.moveObServerDt[0];
-                  let A2=this.theData.moveObServerDt[1];
-                  let xc3=-(A2.x-A1.x);
-                  let yc4=A2.y-A1.y;
-                  this.$store.state.mapConfig.A1.x+=xc3;
-                  this.$store.state.mapConfig.A1.y+=yc4;
-                  break;
-                }
-                case 0:{//空
-                  this.theData.moveObServerDt.push(pt);
-                  let Apt=this.theData.moveStartPt;
-                  let xc,yc;
-                  xc=-(pt.x-Apt.x);
-                  yc=pt.y-Apt.y;
-                  this.$store.state.mapConfig.A1.x+=xc;
-                  this.$store.state.mapConfig.A1.y+=yc;
-                  break;
-                }
-                case 1:{
-                  this.theData.moveObServerDt.push(pt);
-                  let Bpt=this.theData.moveObServerDt[0];
-                  let xc2,yc2;
-                  xc2=-(pt.x-Bpt.x);
-                  yc2=pt.y-Bpt.y;
-                  this.$store.state.mapConfig.A1.x+=xc2;
-                  this.$store.state.mapConfig.A1.y+=yc2;
-                  break;
-                }
-                default:{
-                  break;
+            //如果有移动节点的操作会抑制更新
+            if(this.$store.state.commits.disableZoomAndMove===false){
+              try {
+                let pt=this.theData.moveMovePt;
+                let le=this.theData.moveObServerDt.length;
+                switch (le){
+                  case 2:{//有两个
+                    this.theData.moveObServerDt.shift();
+                    this.theData.moveObServerDt.push(pt);
+                    let A1=this.theData.moveObServerDt[0];
+                    let A2=this.theData.moveObServerDt[1];
+                    let xc3=-(A2.x-A1.x);
+                    let yc4=A2.y-A1.y;
+                    this.$store.state.mapConfig.A1.x+=xc3;
+                    this.$store.state.mapConfig.A1.y+=yc4;
+                    break;
+                  }
+                  case 0:{//空
+                    this.theData.moveObServerDt.push(pt);
+                    let Apt=this.theData.moveStartPt;
+                    let xc,yc;
+                    xc=-(pt.x-Apt.x);
+                    yc=pt.y-Apt.y;
+                    this.$store.state.mapConfig.A1.x+=xc;
+                    this.$store.state.mapConfig.A1.y+=yc;
+                    break;
+                  }
+                  case 1:{
+                    this.theData.moveObServerDt.push(pt);
+                    let Bpt=this.theData.moveObServerDt[0];
+                    let xc2,yc2;
+                    xc2=-(pt.x-Bpt.x);
+                    yc2=pt.y-Bpt.y;
+                    this.$store.state.mapConfig.A1.x+=xc2;
+                    this.$store.state.mapConfig.A1.y+=yc2;
+                    break;
+                  }
+                  default:{
+                    break;
+                  }
                 }
               }
-            }catch (e) {
+              catch (e) {
 
+              }
             }
           }
           ,this.frameTime)

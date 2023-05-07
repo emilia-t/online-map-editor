@@ -4,7 +4,12 @@
   <!--权限-允许访问store.state.mapconfig-->
   <div class="detailsPanelLayer" ref="LayerDetailsPanel">
     <!--顶部标题-->
-    <div class="titleL">基本信息</div>
+    <div class="titleL">
+      基本信息
+      <div class="icon9" title="点击隐藏">
+        <svg @click="hidden()" t="1683445656832" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5852" width="20" height="20"><path d="M516.5 96.3125c-230.25 0-417.65625001 187.3125-417.65625001 417.65625001 0 130.3125 59.15625001 250.78125001 162.37500002 330.56249998 73.6875 56.90625001 161.90625001 87 255.28124999 87.00000002 230.25 0 417.65625001-187.3125 417.65625001-417.65625001-0.09375001-230.15625001-187.40625001-417.5625-417.65625001-417.5625z m0 771c-78.9375 0-153.65625001-25.40625001-215.90625001-73.59375001-87.375-67.5-137.4375-169.5-137.43749998-279.74999998 0-194.8125 158.53125001-353.34375001 353.34374999-353.34375001 194.8125 0 353.34375001 158.53125001 353.34375001 353.34375001 0 194.8125-158.53125001 353.34375001-353.34375001 353.34374999z" fill="#666666" p-id="5853"></path><path d="M603.40625001 365.46874999c12.5625-12.5625 12.5625-32.90625001-2e-8-45.46874999-12.5625-12.5625-32.90625001-12.5625-45.46874999 0L413.84374999 464.28124999c-28.40625001 28.40625001-28.6875 74.4375-0.65624999 102.46875001l141.09375001 141.09375001c6.28125001 6.28125001 14.53125001 9.375 22.68749998 9.37499998s16.40625001-3.09375001 22.6875-9.375c12.5625-12.5625 12.5625-32.90625001 0-45.46874999L458.65624999 521.28125001c-3-3-2.8125-8.25 0.5625-11.62500002l144.18750002-144.18749998z" fill="#666666" p-id="5854"></path></svg>
+      </div>
+    </div>
     <!--内容-->
     <div class="content">
       <!--id-->
@@ -125,8 +130,13 @@ export default {
     //显示面板
     show(){
       setTimeout(()=>{
-        this.$refs.LayerDetailsPanel.style.left=(this.mouseClick.x-310)+'px';
-        this.$refs.LayerDetailsPanel.style.top=(this.mouseClick.y+5)+'px';
+        this.$refs.LayerDetailsPanel.style.left=(this.mouseClick.x-320)+'px';
+        //此处需要判断y是否已经大于页面高度如果大于则需要限制
+        if(this.mouseClick.y+415>=window.innerHeight){
+          this.$refs.LayerDetailsPanel.style.top=(window.innerHeight-415)+'px';
+        }else {
+          this.$refs.LayerDetailsPanel.style.top=(this.mouseClick.y+5)+'px';
+        }
       },10)
     }
   },
@@ -164,7 +174,12 @@ export default {
 .titleL{
   width: 100%;
   display: flex;
-  justify-content: left;
+  justify-content: space-between;
+  align-items: center;
+}
+.icon9{
+  width: 20px;
+  height: 20px;
 }
 .detailsPanelLayer{
   width: 300px;
@@ -176,7 +191,7 @@ export default {
   top:0;
   left: -350px;
   border-radius: 5px;
-  box-shadow: #b8b8b8 3px 3px 10px;
+  box-shadow: #b8b8b8 3px 3px 5px;
   display: flex;
   justify-content: flex-start;
   align-items: center;

@@ -22,6 +22,8 @@
       <br>
       双击位置：{{$store.state.mapConfig.svgDbClick.x}} , {{$store.state.mapConfig.svgDbClick.y}}
       <br>
+      左键松开：{{$store.state.mapConfig.svgMouseUp.x}} , {{$store.state.mapConfig.svgMouseUp.y}}
+      <br>
       新层级：{{$store.state.mapConfig.layer}}
       <br>
       旧层级：{{$store.state.mapConfig.oldLayer}}

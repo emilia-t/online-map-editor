@@ -25,7 +25,8 @@ new Vue({
       reloadServers:{pass:0,intercept:0},
       addNewPointEnd:{pass:0,intercept:0},
       previewLine:{pass:0,intercept:0},
-      addNewLineEnd:{pass:0,intercept:0}
+      addNewLineEnd:{pass:0,intercept:0},
+      disableZoomAndMove:{pass:0,intercept:0},
     }
   }},
   router,
@@ -76,6 +77,15 @@ new Vue({
             this.commitsConfig.addNewPointEnd.pass++;
           }else {
             this.commitsConfig.addNewPointEnd.intercept++;
+          }
+          break;
+        }
+        case 'disableZoomAndMove':{
+          if(this.filter(name)){
+            this.$store.state.commits.disableZoomAndMove=status;
+            this.commitsConfig.disableZoomAndMove.pass++;
+          }else {
+            this.commitsConfig.disableZoomAndMove.intercept++;
           }
           break;
         }

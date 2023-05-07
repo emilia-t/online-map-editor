@@ -267,6 +267,7 @@ export default {
   transform: translate(-50%, -50%);
 }
 .panel{
+  user-select: none;
   position: absolute;
   left: 0px;
   width: 30px;

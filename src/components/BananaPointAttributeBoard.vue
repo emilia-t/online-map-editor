@@ -318,7 +318,7 @@ export default {
   width: 300px;
   height: 400px;
   background: rgba(255,255,255,0.85);
-  box-shadow: #b1b1b1 2px 2px 10px;
+  box-shadow: #b1b1b1 2px 2px 5px;
   border-radius: 5px;
   padding: 5px;
 }

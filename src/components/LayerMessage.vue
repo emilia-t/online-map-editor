@@ -18,7 +18,9 @@
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">
               <div class="avatar" :style="{'backgroundColor': '#'+message.data.headColor}">{{message.conveyor.charAt(0)}}</div>
-              {{message.conveyor}}
+              <div class="avatarName">
+                <span v-if="message.data.name" v-text="message.data.name"></span>{{message.conveyor}}
+              </div>
             </div>
             <div class="messageData">{{message.data.message}}</div>
           </div>
@@ -57,6 +59,15 @@
               {{message.conveyor}}
             </div>
             <div class="messageData">我更新了一个元素，id为：{{message.data.id}}</div>
+          </div>
+          <!--更新元素节点消息-->
+          <div v-if="message.class==='updateElementNode'" class="messageItemA">
+            <div class="messageTime">{{message.time}}</div>
+            <div class="messageConveyor">
+              <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
+              {{message.conveyor}}
+            </div>
+            <div class="messageData">我更新了一个元素节点，id为：{{message.data.id}}</div>
           </div>
         </div>
       </div>
@@ -394,6 +405,9 @@ export default {
   margin-bottom: 5px;
   display: flex;
   align-items: center;
+}
+.avatarName{
+  width: calc(100% - 60px);
 }
 .avatar{
   width: 30px;
