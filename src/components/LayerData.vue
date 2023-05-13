@@ -481,9 +481,10 @@ export default {
         let nodeNames=['polyline','circle'];
         if(nodeNames.indexOf(ev.target.nodeName)===-1){
           this.$store.state.detailsPanelConfig.target=-1;
-          this.$store.state.detailsPanelConfig.data={
-            point:{x:null,y:null}
-          };
+          this.$store.state.detailsPanelConfig.data={point:{x:null,y:null}};
+          //更新点击空白处操作位置
+          this.$store.state.mapConfig.clearClick.x=ev.x;
+          this.$store.state.mapConfig.clearClick.y=ev.y;
         }
         //关闭element operation board
         this.$store.state.elementOperationBoardConfig.display=false;

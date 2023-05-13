@@ -201,7 +201,7 @@
           移动和缩放视图：
         </div>
         <div class="explain">
-          1.鼠标左键按下必能拖动鼠标以移动视图，松开左键以停止移动视图（移动）
+          1.鼠标左键按下并拖动鼠标以移动视图，松开左键以停止移动视图（移动）
           <br/>
           2.鼠标滚轮向内或向下滚动以缩小视图，向外或向上滚动以放大视图（缩放）
         </div>
@@ -230,7 +230,7 @@
         </div>
         <div class="explain">
           <span class="explainChild">1.鼠标右键键（右键选中）任意要素</span>
-          <span class="explainChild">2.点击图标<img :src="editButton" alt="删除图标" title="删除图标" class="icon7"/>打开编辑面板</span>
+          <span class="explainChild">2.点击图标<img :src="editButton" alt="编辑图标" title="编辑图标" class="icon7"/>打开编辑面板</span>
           <span class="explainChild">3.在右侧的编辑面板对要素进行编辑</span>
           <span class="explainChild">4.点击右下角上传按钮将更改内容上传至OMS</span>
         </div>

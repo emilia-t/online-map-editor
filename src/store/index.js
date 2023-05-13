@@ -15,6 +15,8 @@ export default new Vuex.Store({
           this.numberOfLoginFailed=0;//登录失败次数
           this.reinitializeElement=0;//重新初始化元素
           this.reinitializeId=-1;//重新初始化元素id
+          this.reinitializeSourcePoints=[];//初始化源
+          this.reinitializeSourcePoint=null;//初始化源
           this.socket=undefined;//会话
           this.messages=[];
           this.publickey='';
@@ -808,6 +810,8 @@ export default new Vuex.Store({
                       let length=this.mapData[type].length;
                       for(let k=0;k<length;k++){
                         if(this.mapData[type][k].id==CgID){
+                          //this.mapData[type]
+                          //console.log(this.mapData[type][k]);
                           //1.拷贝一份 Object.assign(
                           let copyObj={};
                           Object.assign(copyObj,this.mapData[type][k]);
@@ -817,6 +821,12 @@ export default new Vuex.Store({
                           }
                           //2.删除旧数据
                           this.mapData[type].splice(k,1,copyObj);
+                          //同步源
+                          this.reinitializeSourcePoints=copyObj.points;
+                          if(pointObj!==null){
+                            //同步源
+                            this.reinitializeSourcePoint=copyObj.point;
+                          }
                           //3.更改初始化
                           this.reinitializeElement++;
                           this.reinitializeId=copyObj.id;
@@ -1027,6 +1037,10 @@ export default new Vuex.Store({
         y:0
       },
       svgMouseUp:{
+        x:0,
+        y:0
+      },
+      clearClick:{
         x:0,
         y:0
       },

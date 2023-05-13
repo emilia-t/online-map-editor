@@ -162,8 +162,57 @@ new Vue({
         }
       }
     },
-  },
-  created(){
-
+    //返回移动后的元素坐标位置
+    computeMouseActualPos(mouseEvent){
+      try{
+        //1.获取必要值 layer\mousePos\p0Pos
+        let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
+        layer=this.$store.state.mapConfig.layer;
+        mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
+        p0Pos.x=this.$store.state.mapConfig.p0.point.x;
+        p0Pos.y=this.$store.state.mapConfig.p0.point.y;
+        //2.开始计算
+        //没有缩放
+        if(layer===0){
+          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
+          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
+          return refPos;
+        }
+        //缩小
+        if(layer>0){
+          //1.拿到鼠标与p0的屏幕显示距离px
+          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
+          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
+          //2.转化
+          for (let i=0;i<layer;i++){
+            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
+            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
+          }
+          return refPos;
+        }
+        //放大
+        if(layer<0){
+          //1.拿到鼠标与p0的屏幕显示距离px
+          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
+          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
+          //2.转化
+          for(let i=0;i>layer;i--){
+            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
+            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
+          }
+          return refPos;
+        }
+      }catch (e) {
+        return false;
+      }
+    },
+    //转化坐标
+    translateCoordinate(float){
+      return float*10000000;
+    },
+    //逆向转化坐标
+    reTranslateCoordinate(float){
+      return float/10000000;
+    },
   }
 })

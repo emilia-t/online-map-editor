@@ -416,7 +416,7 @@ button{
   overflow-y: auto;
   font-size: 14px;
   padding:0px 4px;
-  color: white;
+  color: rgba(50, 50, 50, 0.8);
   line-height: 18px;
 }
 .doneTickButton{

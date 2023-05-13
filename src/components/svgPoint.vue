@@ -58,11 +58,6 @@ export default {
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
     },
-
-    ///移动节点///
-    //1左键选中节点(当被选中的ID于本身ID一致时即被选中)
-
-    //2.在被选中、在元素上、左键按下
     //挪动节点
     shiftStart(ev){
       //保存当前元素坐标位置
@@ -77,61 +72,14 @@ export default {
       //使挪动状态变更为true
       this.shiftStatus=true;
     },
-    //4.鼠标在svg中、松开左键、固定节点位置
+    //鼠标在svg中、松开左键、固定节点位置
     shiftEnd(ev){
-      //此函数仅为了解决用户在原地松开左键，导致无法正常watch松开左键的问题
       //必须按下的是鼠标左键
       if(ev.button!==0){
         return false;
       }
       //使挪动状态变更为true
       this.shiftStatus=false;
-    },
-    ///移动节点///
-
-    //返回移动后的元素坐标位置
-    computeMouseActualPos(mouseEvent){
-      try{
-        //1.获取必要值 layer\mousePos\p0Pos
-        let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
-        layer=this.$store.state.mapConfig.layer;
-        mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
-        p0Pos.x=this.$store.state.mapConfig.p0.point.x;
-        p0Pos.y=this.$store.state.mapConfig.p0.point.y;
-        //2.开始计算
-        //没有缩放
-        if(layer===0){
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
-          return refPos;
-        }
-        //缩小
-        if(layer>0){
-          //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
-          //2.转化
-          for (let i=0;i<layer;i++){
-            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
-            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
-          }
-          return refPos;
-        }
-        //放大
-        if(layer<0){
-          //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
-          //2.转化
-          for(let i=0;i>layer;i--){
-            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
-            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
-          }
-          return refPos;
-        }
-      }catch (e) {
-        return false;
-      }
     },
     //展示自身details
     showDetails(){
@@ -316,7 +264,7 @@ export default {
     shiftStatus:{
       handler(newValue){
         if(newValue){
-          //发送指令-禁止缩放、移动视图
+          //发送指令-允许缩放、移动视图
           this.$root.sendSwitchInstruct('disableZoomAndMove',true);
         }else {
           //发送指令-禁止缩放、移动视图
@@ -361,7 +309,7 @@ export default {
             if(this.targetId===this.myId){
               //处理
               //1.计算新的位置
-              let newPos=this.computeMouseActualPos(newValue);
+              let newPos=this.$root.computeMouseActualPos(newValue);
               //2.上传服务器(一共修改两项>point和points)
               let uObj={
                 id:null,

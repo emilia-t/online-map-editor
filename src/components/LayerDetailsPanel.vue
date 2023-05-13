@@ -137,7 +137,7 @@ export default {
         }else {
           this.$refs.LayerDetailsPanel.style.top=(this.mouseClick.y+5)+'px';
         }
-      },10)
+      },15)
     }
   },
   computed:{
@@ -152,13 +152,16 @@ export default {
   watch:{
     targetId:{
       handler(newValue){
-        if(newValue===-1){
-          this.hidden();
-        }else {
-          this.show();
+        //如果有移动节点的操作会抑制更新
+        if(this.$store.state.commits.disableZoomAndMove===false){
+          if(newValue===-1){
+            this.hidden();
+          }else {
+            this.show();
+          }
+          this.exampleConfig=this.$store.state.detailsPanelConfig.data;
+          this.sourcePoint=this.$store.state.detailsPanelConfig.sourcePoint;
         }
-        this.exampleConfig=this.$store.state.detailsPanelConfig.data;
-        this.sourcePoint=this.$store.state.detailsPanelConfig.sourcePoint;
       }
     }
   },
@@ -196,7 +199,7 @@ export default {
   justify-content: flex-start;
   align-items: center;
   flex-direction: column;
-  transition: 0.4s;
+  transition: 0.35s;
   overflow-y: auto;
   overflow-x: hidden;
 }

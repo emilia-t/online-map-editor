@@ -24,6 +24,8 @@
       <br>
       左键松开：{{$store.state.mapConfig.svgMouseUp.x}} , {{$store.state.mapConfig.svgMouseUp.y}}
       <br>
+      清空点击：{{$store.state.mapConfig.clearClick.x}} , {{$store.state.mapConfig.clearClick.y}}
+      <br>
       新层级：{{$store.state.mapConfig.layer}}
       <br>
       旧层级：{{$store.state.mapConfig.oldLayer}}

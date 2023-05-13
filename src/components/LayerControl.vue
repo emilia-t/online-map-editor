@@ -496,7 +496,7 @@ export default {
   position: fixed;
   right: 0px;
   top:85px;
-  background: rgba(250,250,250,0.85);
+  background: rgb(252,252,252);
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
   box-shadow:  #c5c5c5 0px 0px 6px;
