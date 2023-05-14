@@ -4,7 +4,7 @@
       <!--路径选中边框-->
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" v-show="selectId===myId"/>
       <!--路径主体-->
-      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'main'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()"/>
+      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'main'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/>
       <!--路径选中效果-->
       <circle :cx="str.a" :cy="str.b" :key="index+'effect'" :style="nodeEffectStyle(index)"/>
       <circle v-if="index===dynamicPointsStr.length-1" :key="'endNodeEffect'" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"/>
@@ -31,6 +31,11 @@ export default {
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
       shiftStatus:false,
+      //shift all
+      shiftAllStatus:false,
+      shiftAllStartMouse:{x:null,y:null},
+      shiftAllStartPoint:{x:null,y:null},
+      shiftAllMoveCache:[]
     }
   },
   props:{
@@ -59,7 +64,6 @@ export default {
       this.dataSourcePoint=JSON.parse(JSON.stringify(this.polyLineConfig.point));
       //拷贝源点s数据
       this.dataSourcePoints=JSON.parse(JSON.stringify(this.polyLineConfig.points));
-      //this.dataSourcePoints=this.dynamicPointsStr;
       this.mouseEvent();
       //初始化时就移动到相应的位置上,这一步不要提前否则影响源点的拷贝
       this.initializePosition();
@@ -67,6 +71,39 @@ export default {
       //初始化A1cache
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
+    },
+    //整体移动的实现方案：
+    //当鼠标选中元素（某段线段）后允许移动
+    //鼠标按下：
+    //1.拷贝获取当前元素的源点(startPt)，并记录(注意深拷贝)
+    //1.拷贝获取当前元素的节点(allPt)，并记录(注意深拷贝)
+    //鼠标移动：
+    //1.元素的位置跟随鼠标移动而移动（points[i].x=e.x）
+    //鼠标松开
+    //1.计算松开的位置的实际坐标(endPt)
+    //2.计算startPt与endPt的偏移距离(xOffset=ept.x-spt.x)
+    //3.将此要素的所有节点，包括起点都添加上这个偏移距离
+    //4.上传至服务器
+    shiftAllStart(ev){
+      //1.拷贝源
+      //console.log(this.dataSourcePoints);
+      //2.查看是否处于选中状态
+      if(this.selectId===this.myId){
+        //3.将移动状态更新为true
+        this.shiftAllStatus=true;
+        //4.更新初始鼠标按下的位置
+        this.shiftAllStartMouse.x=ev.x;
+        this.shiftAllStartMouse.y=ev.y;
+        //5.更新初始鼠标按下的实际位置
+        let accPos=this.$root.computeMouseActualPos({x:ev.x,y:ev.y});
+        if(accPos!==false){
+          this.shiftAllStartPoint=accPos;
+        }
+      }
+    },
+    //整体移动结束
+    shiftAllEnd(ev){
+
     },
     //显示节点
     circleShow(order){
@@ -88,8 +125,6 @@ export default {
       this.shiftNodeOrder=order;
     },
     //挪动节点开始
-    //移动节点的逻辑错误——>必须要再节点被选中后才能移动节点，而不是可以直接移动，因为这会导致移动节点和点击线段展示details的操作重叠
-    //需要设置一个当节点被选中后的效果
     shiftStart(order,ev){
       //如果按下鼠标后鼠标在其他节点上则更改需要移动的节点
       this.shiftNodeOrder=order;
@@ -111,7 +146,6 @@ export default {
     },
     //鼠标在svg中、松开左键、固定节点位置
     shiftEnd(ev){
-      //此函数仅为了解决用户在原地松开左键，导致无法正常watch松开左键的问题
       //必须按下的是鼠标左键
       if(ev.button!==0){
         return false;
@@ -121,6 +155,7 @@ export default {
       //关闭抑制details
       this.$root.sendSwitchInstruct('disableZoomAndMove',false);
     },
+    //右键选中
     rightClickOperation(mouseEvent){
       //阻止默认事件
       mouseEvent.preventDefault();
@@ -134,6 +169,7 @@ export default {
       this.$store.state.mapConfig.operated.data=this.polyLineConfig;
       return mouseEvent;
     },
+    //显示详情
     showDetails(){
       //1.广播被选中id（myId）
       this.$store.state.detailsPanelConfig.target=this.myId;
@@ -150,8 +186,6 @@ export default {
     },
     //初始化定位
     initializePosition(){
-      //如果视图本身没有出现任何移动、缩放、会导致重复进行初始化
-      //
       try{
         //1.获取必要值 layer\pointPos\p0Pos
         let [layer,p0Pos]=[null,{x:null,y:null}];
@@ -406,9 +440,21 @@ export default {
         }
       }
     },
+    shiftAllStatus:{
+      handler(newValue){
+        if(newValue){
+          //发送指令-允许缩放、移动视图
+          this.$root.sendSwitchInstruct('disableZoomAndMove',true);
+        }else {
+          //发送指令-禁止缩放、移动视图
+          this.$root.sendSwitchInstruct('disableZoomAndMove',false);
+        }
+      }
+    },
     mouse:{
       handler(newValue){
-        if(this.shiftStatus===true){
+        //节点移动
+        if(this.shiftStatus){
           if(this.myId===this.selectId){
             let nowOrder=this.shiftNodeOrder;
             if(nowOrder===null){
@@ -417,53 +463,120 @@ export default {
             //移动自身的视图(跟随鼠标)
             this.polyLineConfig.points[nowOrder].x=this.reTranslateCoordinate(newValue.x);
             this.polyLineConfig.points[nowOrder].y=this.reTranslateCoordinate(-newValue.y);
+            return true;
+          }
+        }
+        //整体移动
+        if(this.shiftAllStatus){
+          if(this.shiftAllStartMouse.x!==null && this.shiftAllStartMouse.y!==null){
+            //移动整体
+            //计算偏移量
+            //如果没有上一次的移动缓存则使用起始位置
+            let xOffset=0;
+            let yOffset=0;
+            if(this.shiftAllMoveCache.length===0){
+              xOffset=this.reTranslateCoordinate(newValue.x-this.shiftAllStartMouse.x);
+              yOffset=this.reTranslateCoordinate(this.shiftAllStartMouse.y-newValue.y);
+              //更新缓存
+              this.shiftAllMoveCache.push(this.shiftAllStartMouse);
+              this.shiftAllMoveCache.push(newValue);
+            }else {
+              //移除最前面一个
+              this.shiftAllMoveCache.shift();
+              //新增一个在最后面
+              this.shiftAllMoveCache.push(newValue);
+              //重新计算偏移量
+              xOffset=this.reTranslateCoordinate(newValue.x-this.shiftAllMoveCache[0].x);
+              yOffset=this.reTranslateCoordinate(this.shiftAllMoveCache[0].y-newValue.y);
+            }
+            //更新每个节点的位置
+            for(let i=0;i<this.polyLineConfig.points.length;i++){
+              //
+              this.polyLineConfig.points[i].x=this.polyLineConfig.points[i].x+xOffset;
+              this.polyLineConfig.points[i].y=this.polyLineConfig.points[i].y+yOffset;
+            }
           }
         }
       }
     },
     svgMouseUp:{
       handler(newValue){
+        //节点移动
         this.shiftStatus=false;
         let nowOrder=this.shiftNodeOrder;
-        if(nowOrder===null){
-          return false;
-        }
-        if(this.shiftStartPoint.x!==null && this.shiftStartPoint.y!==null){
-          if(this.shiftStartPoint.x!==this.polyLineConfig.points[nowOrder].x || this.shiftStartPoint.y!==this.polyLineConfig.points[nowOrder].y){
-            if(this.targetId===this.myId){
-              //处理
-              //1.计算新的位置
-              let newPos=this.$root.computeMouseActualPos(newValue);
-              //2.上传服务器(一共修改两项>point和points)
-              let uObj={
-                id:null,
-                points:[]
-              };
-              uObj.id=this.myId;
-              if(nowOrder===0){
-                uObj['point']=newPos;
+        if(nowOrder!==null){
+          if(this.shiftStartPoint.x!==null && this.shiftStartPoint.y!==null){
+            if(this.shiftStartPoint.x!==this.polyLineConfig.points[nowOrder].x || this.shiftStartPoint.y!==this.polyLineConfig.points[nowOrder].y){
+              if(this.targetId===this.myId){
+                //处理
+                //1.计算新的位置
+                let newPos=this.$root.computeMouseActualPos(newValue);
+                //2.上传服务器(一共修改两项>point和points)
+                let uObj={
+                  id:null,
+                  points:[]
+                };
+                uObj.id=this.myId;
+                if(nowOrder===0){
+                  uObj['point']=newPos;
+                }
+                //拷贝一份源  理论上说这个子元素被更改后组件会被销毁，但实际没有，所以如果更改了节点，这里的源并不会被同步修改
+                let sourcePoints=JSON.parse(JSON.stringify(this.dataSourcePoints));
+                //更新源的某个节点
+                sourcePoints[nowOrder]=newPos;
+                uObj.points=sourcePoints;
+                uObj.type='line';
+                this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);
+                //处理完毕后清空
+                this.shiftStartPoint.x=null;
+                this.shiftStartPoint.y=null;
+                //更新源
+                this.dataSourcePoints=sourcePoints;
+                //如果更新了起始点
+                if(nowOrder===0){
+                  //更新起始点源
+                  this.dataSourcePoint=uObj['point'];
+                }
+                //清除选中点
+                this.shiftNodeOrder=null;
               }
-              //拷贝一份源  理论上说这个子元素被更改后组件会被销毁，但实际没有，所以如果更改了节点，这里的源并不会被同步修改
-              let sourcePoints=JSON.parse(JSON.stringify(this.dataSourcePoints));
-              //更新源的某个节点
-              sourcePoints[nowOrder]=newPos;
-              uObj.points=sourcePoints;
-              uObj.type='line';
-              this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);
-              //处理完毕后清空
-              this.shiftStartPoint.x=null;
-              this.shiftStartPoint.y=null;
-              //更新源
-              this.dataSourcePoints=sourcePoints;
-              //如果更新了起始点
-              if(nowOrder===0){
-                //更新起始点源
-                this.dataSourcePoint=uObj['point'];
-              }
-              //清除选中点
-              this.shiftNodeOrder=null;
             }
           }
+          return true;
+        }
+        //整体移动
+        if(this.shiftAllStatus===true){
+          //1.计算新的位置
+          let newAccPos=this.$root.computeMouseActualPos(newValue);
+          //
+          if(newAccPos!==false && this.shiftAllStartPoint!==false){
+            //计算实际偏移量
+            let axOffset=newAccPos.x-this.shiftAllStartPoint.x;
+            let ayOffset=newAccPos.y-this.shiftAllStartPoint.y;
+            //循环增加每隔节点（源）
+            for(let i=0;i<this.dataSourcePoints.length;i++){
+              this.dataSourcePoints[i].x+=axOffset;
+              this.dataSourcePoints[i].y+=ayOffset;
+            }
+            //2.上传服务器(一共修改两项>point和points)
+            let auObj={
+              id:null,
+              points:[],
+              point:{x:null,y:null}
+            };
+            auObj.id=this.myId;
+            auObj.point.x=this.dataSourcePoints[0].x;
+            auObj.point.y=this.dataSourcePoints[0].y;
+            auObj.points=this.dataSourcePoints;
+            auObj.type='line';
+            this.$store.state.serverData.socket.broadcastUpdateElementNode(auObj);
+          }
+          //结束移动
+          this.shiftAllStatus=false;
+          //清除缓存
+          this.shiftAllStartMouse={x:null,y:null};
+          this.shiftAllStartPoint={x:null,y:null};
+          this.shiftAllMoveCache=[];
         }
       },
       deep:true
