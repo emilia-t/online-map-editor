@@ -1,4 +1,4 @@
-<script src="../../../../../vue实例模板备份/vue/config/index.js"></script>
+
 <template>
   <!--起始页面左侧的菜单面板-->
 <div class="menuPanelLayer" ref="menuPanelLayer">

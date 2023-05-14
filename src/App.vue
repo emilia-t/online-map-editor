@@ -14,15 +14,6 @@
     <router-view></router-view>
     <!--底部锚-->
     <layer-bottom-anchor></layer-bottom-anchor>
-    <!--
-    首先：用户直接访问例如：map.atsw.top访问的是主页，
-    用户可以选择某个服务器然后进去地图界面
-    用户也可以直接通过链接例如：map.atsw.top/m/k0 直接进入到地图界面，其中k0是地图的key
-
-    则内部逻辑是：在APP.vue下展示起始页面的相关组件，并且随时调用
-    在APP.vue下展示一个<route-view>，用以显示地图主体
-    当用户切换到其他地图服务器时，这个地图（separateMap.vue）应该被销毁，然后立即再创建一个新的
-    -->
   </div>
 </template>
 
@@ -56,13 +47,7 @@ export default {
   },
   methods:{
 
-  },
-  // watch:{
-  //   '$route'(to,from){
-  //     console.log(to);
-  //     console.log(from);
-  //   }
-  // }
+  }
 }
 </script>
 

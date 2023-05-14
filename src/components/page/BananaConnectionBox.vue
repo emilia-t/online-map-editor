@@ -42,15 +42,6 @@
     <span class="serverStatusSpan">{{onlineStatusText}}</span>
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px">
       <circle style="transition: 1s" r="5px" :fill="onlineShowColor" cx="10" cy="10" stroke-width="1" pointer-events="fill" fill-opacity="0.8"></circle>
-      <!--
-      初始化时(开始页面)需要立刻检测服务器在线情况，在线则亮绿灯，不在线则亮红灯，或者用其他的方式，总之需要简明
-      左侧的菜单面板在地图主体被打开后需要关闭，以及设置内容需要做
-      常规里面的设置：开启默认登录、默认保存本地服务器配置、默认保存账号
-
-      显示内的设置：显示标尺、右下角显示鼠标坐标、显示历史编辑id
-
-      账户内显示：已经存储的账户、
-      -->
     </svg>
   </div>
 </div>
