@@ -1,14 +1,18 @@
 <template>
-  <g :elementId="polyLineConfig.id">
+  <g :elementId="areaConfig.id">
+    <!--区域主体-->
+    <polyline :points="dynamicPointsString" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/>
     <g v-for="(str,index) in dynamicPointsStr">
-      <!--路径选中边框-->
-      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" v-show="selectId===myId"/>
-      <!--路径主体-->
+      <!--区域外边框-->
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'main'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/>
-      <!--路径选中效果-->
+      <polyline v-if="index===dynamicPointsStr.length-1" :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endMain'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/>
+      <!--区域选中边框-->
+      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" v-show="selectId===myId"/>
+      <polyline v-if="index===dynamicPointsStr.length-1" :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endBorder'" :style="highlightStyle" v-show="selectId===myId"/>
+      <!--区域选中效果-->
       <circle :cx="str.a" :cy="str.b" :key="index+'effect'" :style="nodeEffectStyle(index)"/>
       <circle v-if="index===dynamicPointsStr.length-1" :key="'endNodeEffect'" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"/>
-      <!--路径节点-->
+      <!--区域节点-->
       <circle :cx="str.a" :cy="str.b" :key="index+'node'" v-bind:data-node-order="index" :style="pathNodeStyle" @click="selectNode(index)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)"/>
       <circle v-if="index===dynamicPointsStr.length-1" :key="'endNode'" :cx="str.c" :style="pathNodeStyle" :cy="str.d" v-bind:data-node-order="index+1" @click="selectNode(index+1)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)"/>
     </g>
@@ -16,7 +20,7 @@
 </template>
 <script>
 export default {
-  name: "svgLine",
+  name: "svgArea",
   data(){
     return {
       dataSourcePoint: {},//数据源保存
@@ -39,12 +43,12 @@ export default {
     }
   },
   props:{
-    "polyLineConfig":{
+    "areaConfig":{
       type:Object,//对象类型，可以修改属性
       default: function (){
         return {
           id:'l0000',
-          type:'line',
+          type:'area',
           points:[{x:0.0000001,y:-0.0000001}],
           point:{x:0.0000001,y:-0.0000001},
           color:'ec3232'
@@ -59,15 +63,15 @@ export default {
     //初始化配置
     startSetting(){
       //拷贝id
-      this.myId=this.polyLineConfig.id;
+      this.myId=this.areaConfig.id;
       //拷贝源点数据
-      this.dataSourcePoint=JSON.parse(JSON.stringify(this.polyLineConfig.point));
+      this.dataSourcePoint=JSON.parse(JSON.stringify(this.areaConfig.point));
       //拷贝源点s数据
-      this.dataSourcePoints=JSON.parse(JSON.stringify(this.polyLineConfig.points));
+      this.dataSourcePoints=JSON.parse(JSON.stringify(this.areaConfig.points));
       this.mouseEvent();
       //初始化时就移动到相应的位置上,这一步不要提前否则影响源点的拷贝
       this.initializePosition();
-      //console.log(this.polyLineConfig);
+      //console.log(this.areaConfig);
       //初始化A1cache
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
@@ -122,7 +126,7 @@ export default {
       //抑制details
       this.$root.sendSwitchInstruct('disableZoomAndMove',true);
       //保存当前节点坐标位置
-      Object.assign(this.shiftStartPoint,this.polyLineConfig.points[order]);
+      Object.assign(this.shiftStartPoint,this.areaConfig.points[order]);
       //保存当前鼠标点击位置
       this.shiftStartMouse.x=ev.x;
       this.shiftStartMouse.y=ev.y;
@@ -155,14 +159,14 @@ export default {
       //设置operated
       this.$store.state.mapConfig.operated.id=this.myId;
       //同步该元素的数据
-      this.$store.state.mapConfig.operated.data=this.polyLineConfig;
+      this.$store.state.mapConfig.operated.data=this.areaConfig;
       return mouseEvent;
     },
     //显示详情
     showDetails(){
       //1.广播被选中id（myId）
       this.$store.state.detailsPanelConfig.target=this.myId;
-      this.$store.state.detailsPanelConfig.data=this.polyLineConfig;
+      this.$store.state.detailsPanelConfig.data=this.areaConfig;
       this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
     },
     //转化坐标
@@ -179,15 +183,15 @@ export default {
         //1.获取必要值 layer\pointPos\p0Pos
         let [layer,p0Pos]=[null,{x:null,y:null}];
         //当前的点集合
-        let pointsPos=this.polyLineConfig.points;
+        let pointsPos=this.areaConfig.points;
         layer=this.$store.state.mapConfig.layer;
         p0Pos.x=-this.$store.state.mapConfig.p0.point.x;
         p0Pos.y=-this.$store.state.mapConfig.p0.point.y;
         for(let i=0;i<pointsPos.length;i++){
           //无缩放
           if(layer===0){
-            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
-            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+            this.areaConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+            this.areaConfig.points[i].y=pointsPos[i].y+p0Pos.y;
             continue;
           }
           //有缩小
@@ -198,8 +202,8 @@ export default {
               pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomSub);
             }
             //添加p0
-            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
-            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+            this.areaConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+            this.areaConfig.points[i].y=pointsPos[i].y+p0Pos.y;
             continue;
           }
           //放大
@@ -210,8 +214,8 @@ export default {
               pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomAdd);
             }
             //添加p0
-            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
-            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+            this.areaConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+            this.areaConfig.points[i].y=pointsPos[i].y+p0Pos.y;
             continue;
           }
         }
@@ -224,10 +228,10 @@ export default {
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1Cache.y-this.A1.y;
-        let newArr=this.polyLineConfig.points;
+        let newArr=this.areaConfig.points;
         for (let i=0;i<newArr.length;i++){
-          this.polyLineConfig.points[i].x=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].x)-A1mvX);
-          this.polyLineConfig.points[i].y=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].y)+A1mvY);
+          this.areaConfig.points[i].x=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].x)-A1mvX);
+          this.areaConfig.points[i].y=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].y)+A1mvY);
         }
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
@@ -241,10 +245,10 @@ export default {
       let oldLayer=this.oldLayer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
       let newPosArr=[];
-      for (let i=0;i<this.polyLineConfig.points.length;i++){
+      for (let i=0;i<this.areaConfig.points.length;i++){
         const MOX=this.mouse.x;
         const MOY=this.mouse.y;
-        const pointPos=this.polyLineConfig.points[i];
+        const pointPos=this.areaConfig.points[i];
         const TRX=this.translateCoordinate(pointPos.x);
         const TRY=-this.translateCoordinate(pointPos.y);
         const axSize=MOX-TRX;
@@ -254,7 +258,7 @@ export default {
         newPos.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
         newPosArr.push(newPos);
       }
-      this.polyLineConfig.points=newPosArr;
+      this.areaConfig.points=newPosArr;
     },
     //监听鼠标移动
     mouseEvent(){
@@ -265,7 +269,7 @@ export default {
     //path node 的动态样式
     nodeEffectStyle(order){
       return {
-        r:parseInt(this.polyLineConfig.width)+4+'px',
+        r:8+'px',
         strokeWidth:1,
         pointerEvents:'fill',
         fillOpacity:0.9,
@@ -281,7 +285,7 @@ export default {
     //path node的样式
     pathNodeStyle(){
       return {
-        r:parseInt(this.polyLineConfig.width)+1+'px',
+        r:6+'px',
         strokeWidth:1,
         pointerEvents:'fill',
         fillOpacity:1,
@@ -295,15 +299,17 @@ export default {
     //path line 的动态样式
     pathLineStyle(){
       return {
-        stroke:'#'+this.polyLineConfig.color,
-        strokeWidth:parseInt(this.polyLineConfig.width),
-        strokeLinecap:'round'
+        stroke:'#dedede',
+        strokeWidth:3,
+        opacity:0.5,
+        strokeLinecap:'round',
+        fill:'#'+this.areaConfig.color
       }
     },
     //path highlight 的动态样式
     highlightStyle(){
       return {
-        strokeWidth:parseInt(this.polyLineConfig.width)+5,
+        strokeWidth:5,
         stroke:'#9a9a9a',
         strokeLinecap:'round'
       }
@@ -331,7 +337,7 @@ export default {
         let tempB = null;
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1Cache.y-this.A1.y;
-        newArr = this.polyLineConfig.points;
+        newArr = this.areaConfig.points;
         for (let i = 0; i < newArr.length; i++) {
           let x = this.translateCoordinate(newArr[i].x) - A1mvX;
           let y = -(this.translateCoordinate(newArr[i].y) + A1mvY);
@@ -347,7 +353,7 @@ export default {
         let refArr = [];
         let tempA = null;
         let tempB = null;
-        newArr = this.polyLineConfig.points;
+        newArr = this.areaConfig.points;
         for (let i = 0; i < newArr.length; i++) {
           let x = this.translateCoordinate(newArr[i].x);
           let y = -this.translateCoordinate(newArr[i].y);
@@ -356,6 +362,31 @@ export default {
           }
           tempA=x;
           tempB=y;
+        }
+        return refArr;
+      }
+    },
+    dynamicPointsString() {
+      if(this.doNeedMoveMap && this.occurredMoveMap===true){
+        let newArr = [];
+        let refArr = '';
+        let A1mvX=this.A1.x-this.A1Cache.x;
+        let A1mvY=this.A1Cache.y-this.A1.y;
+        newArr = this.areaConfig.points;
+        for (let i = 0; i < newArr.length; i++) {
+          let x = this.translateCoordinate(newArr[i].x) - A1mvX;
+          let y = -(this.translateCoordinate(newArr[i].y) + A1mvY);
+          refArr+=x+','+y+' ';
+        }
+        return refArr
+      }else {
+        let newArr = [];
+        let refArr = '';
+        newArr = this.areaConfig.points;
+        for (let i = 0; i < newArr.length; i++) {
+          let x = this.translateCoordinate(newArr[i].x);
+          let y = -this.translateCoordinate(newArr[i].y);
+          refArr+=x+','+y+' ';
         }
         return refArr;
       }
@@ -450,8 +481,8 @@ export default {
               return false;
             }
             //移动自身的视图(跟随鼠标)
-            this.polyLineConfig.points[nowOrder].x=this.reTranslateCoordinate(newValue.x);
-            this.polyLineConfig.points[nowOrder].y=this.reTranslateCoordinate(-newValue.y);
+            this.areaConfig.points[nowOrder].x=this.reTranslateCoordinate(newValue.x);
+            this.areaConfig.points[nowOrder].y=this.reTranslateCoordinate(-newValue.y);
             return true;
           }
         }
@@ -479,10 +510,10 @@ export default {
               yOffset=this.reTranslateCoordinate(this.shiftAllMoveCache[0].y-newValue.y);
             }
             //更新每个节点的位置
-            for(let i=0;i<this.polyLineConfig.points.length;i++){
+            for(let i=0;i<this.areaConfig.points.length;i++){
               //
-              this.polyLineConfig.points[i].x=this.polyLineConfig.points[i].x+xOffset;
-              this.polyLineConfig.points[i].y=this.polyLineConfig.points[i].y+yOffset;
+              this.areaConfig.points[i].x=this.areaConfig.points[i].x+xOffset;
+              this.areaConfig.points[i].y=this.areaConfig.points[i].y+yOffset;
             }
           }
         }
@@ -495,7 +526,7 @@ export default {
         let nowOrder=this.shiftNodeOrder;
         if(nowOrder!==null){
           if(this.shiftStartPoint.x!==null && this.shiftStartPoint.y!==null){
-            if(this.shiftStartPoint.x!==this.polyLineConfig.points[nowOrder].x || this.shiftStartPoint.y!==this.polyLineConfig.points[nowOrder].y){
+            if(this.shiftStartPoint.x!==this.areaConfig.points[nowOrder].x || this.shiftStartPoint.y!==this.areaConfig.points[nowOrder].y){
               if(this.targetId===this.myId){
                 //处理
                 //1.计算新的位置
@@ -514,7 +545,7 @@ export default {
                 //更新源的某个节点
                 sourcePoints[nowOrder]=newPos;
                 uObj.points=sourcePoints;
-                uObj.type='line';
+                uObj.type='area';
                 this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);
                 //处理完毕后清空
                 this.shiftStartPoint.x=null;
@@ -557,7 +588,7 @@ export default {
             auObj.point.x=this.dataSourcePoints[0].x;
             auObj.point.y=this.dataSourcePoints[0].y;
             auObj.points=this.dataSourcePoints;
-            auObj.type='line';
+            auObj.type='area';
             this.$store.state.serverData.socket.broadcastUpdateElementNode(auObj);
           }
           //结束移动

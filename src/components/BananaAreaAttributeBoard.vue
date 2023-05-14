@@ -1,9 +1,9 @@
 <template>
   <!--点数据属性面板-->
-  <div class="BananaLineAttributeBoard" v-bind:style="BoardPos" v-show="show">
+  <div class="BananaAreaAttributeBoard" v-bind:style="BoardPos" v-show="show">
     <!--头部名称-->
     <div class="headName mouseType1" contenteditable="false">
-      编辑新增线
+      编辑新增区域
     </div>
     <!--属性列表-->
     <div class="centerList mouseDefault">
@@ -20,7 +20,7 @@
 
         </div>
         <!--右侧属性值-->
-        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7"></textarea>
+        <textarea @focus="onFocusMode()" @blur="noFocusMode()" class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7"></textarea>
         <!--色块-->
         <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#'+color"></orange-color-palette>
       </div>
@@ -78,7 +78,7 @@
 import OrangeColorPalette from "./OrangeColorPalette";
 import OrangeSlideBlock from "./OrangeSlideBlock";
 export default {
-  name: "BananaLineAttributeBoard",
+  name: "BananaAreaAttributeBoard",
   components:{OrangeSlideBlock,OrangeColorPalette},
   data(){
     return {
@@ -124,6 +124,8 @@ export default {
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
+      //为所有textarea开启聚焦
+
     },
     //聚焦模式
     onFocusMode(){
@@ -156,26 +158,26 @@ export default {
         childNodes:[],
         childRelations:[],
         color:this.color,
-        class:'line',
+        class:'area',
         details:this.details,
         fatherNode:'',
         fatherRelation: '',
         id:0,
         length:null,
-        point:this.tempLine.point,
-        points:this.tempLine.points,
+        point:this.tempArea.point,
+        points:this.tempArea.points,
         size:null,
-        type:'line',
+        type:'area',
         width:this.width
       };
       //上传到服务器
-      this.$store.state.serverData.socket.broadcastSendLine(obj);
+      this.$store.state.serverData.socket.broadcastSendLine(obj,'area');
       //清空缓存
-      this.$store.commit('clearTempLineCache');
+      this.$store.commit('clearTempAreaCache');
       //隐藏面板
       this.show=false;
-      //结束添加线段
-      this.$root.sendInstruct('addNewLineEnd');
+      //结束添加区域
+      this.$root.sendInstruct('addNewAreaEnd');
     },
     //取消-从缓存中恢复源数据
     cancelEdit(ev){
@@ -241,8 +243,8 @@ export default {
     }
   },
   computed:{
-    tempLine(){
-      return this.$store.state.mapConfig.tempLine;
+    tempArea(){
+      return this.$store.state.mapConfig.tempArea;
     },
     browserSize(){
       return this.$store.state.mapConfig.browser;
@@ -273,7 +275,7 @@ export default {
         if(Exp.test(newValue)===false){
           this.color=oldValue;
         }else {
-          this.$store.state.mapConfig.tempLine.color=newValue;
+          this.$store.state.mapConfig.tempArea.color=newValue;
         }
       }
     },
@@ -287,7 +289,7 @@ export default {
             this.width=oldValue;
           }
         }else {
-          this.$store.state.mapConfig.tempLine.width=newValue;
+          this.$store.state.mapConfig.tempArea.width=newValue;
         }
       }
     }
@@ -318,7 +320,7 @@ export default {
 .animationB{
   animation: buttonAnimationB .5s forwards;
 }
-.BananaLineAttributeBoard{
+.BananaAreaAttributeBoard{
   position: fixed;
   width: 300px;
   height: 400px;

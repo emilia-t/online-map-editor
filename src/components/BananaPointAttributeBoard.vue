@@ -20,7 +20,7 @@
 
         </div>
         <!--右侧属性值-->
-        <textarea class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7">
+        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7">
 
         </textarea>
         <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ff0000'"></orange-color-palette>
@@ -39,7 +39,7 @@
         </div>
         <!--右侧属性值-->
         <!--右侧属性值-->
-        <textarea class="widthInput" contenteditable="true" v-model="width" maxlength="7">
+        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="widthInput" contenteditable="true" v-model="width" maxlength="7">
         </textarea>
         <!--勾选按钮-->
 <!--        <div class="doneTickButton">-->
@@ -52,7 +52,7 @@
         <!--左侧属性名-->
         <div class="leftAttribute">
           <!--名称-->
-          <textarea contenteditable="true" v-model="detail.key" rows="2" maxlength="8">
+          <textarea @focus="onFocusMode()" @blur="noFocusMode()"  contenteditable="true" v-model="detail.key" rows="2" maxlength="8">
 
           </textarea>
         </div>
@@ -61,7 +61,7 @@
 
         </div>
         <!--右侧属性值-->
-        <textarea class="rightValue" contenteditable="true" v-model="detail.value" rows="3" maxlength="128">
+        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="rightValue" contenteditable="true" v-model="detail.value" rows="3" maxlength="128">
 
         </textarea>
         <!--勾选按钮-->
@@ -131,6 +131,14 @@ export default {
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
+    },
+    //聚焦模式
+    onFocusMode(){
+      this.$store.state.mapConfig.inputFocusStatus=true;
+    },
+    //非聚焦模式
+    noFocusMode(){
+      this.$store.state.mapConfig.inputFocusStatus=false;
     },
     //调色板的监听，接收来自调色板的值
     paletteHandle(data){

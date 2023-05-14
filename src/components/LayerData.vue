@@ -9,6 +9,8 @@
   -->
   <div class="dataLayer" id="dataLayer" ref="dataLayer">
     <svg class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
+      <!--区域数据-->
+      <svg-area v-for="area in MyAreaData" :key="area.id" :area-config="area"></svg-area>
       <!--线段数据-->
       <svg-line v-for="line in MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line>
       <!--点位数据-->
@@ -19,6 +21,8 @@
       <svg-point-temp></svg-point-temp>
       <!--临时线数据-->
       <svg-line-temp></svg-line-temp>
+      <!--临时区域数据-->
+      <svg-area-temp></svg-area-temp>
       <!--我的A1位置-->
 <!--      <svg-a1-circle></svg-a1-circle>-->
       <!--其他人的A1位置-->
@@ -29,15 +33,17 @@
 
 <script>
 import SvgLine from "./svgLine";
+import SvgArea from "./svgArea";
 import SvgA1Circle from "./svgA1Circle";
 import SvgA1CircleOther from "./svgA1CircleOther";
 import SvgPoint from "./svgPoint";
 import SvgPointP0 from "./svgPointP0";
 import SvgLineTemp from "./svgLineTemp";
+import SvgAreaTemp from "./svgAreaTemp";
 import SvgPointTemp from "./svgPointTemp";
 export default {
   name: "LayerData",
-  components: {SvgPoint,SvgLine,SvgPointP0,SvgA1Circle,SvgA1CircleOther,SvgLineTemp,SvgPointTemp},
+  components: {SvgPoint,SvgLine,SvgPointP0,SvgA1Circle,SvgA1CircleOther,SvgLineTemp,SvgPointTemp,SvgArea,SvgAreaTemp},
   data(){
     return {
       MY_NAME:"LayerData",
@@ -509,6 +515,13 @@ export default {
     },
     A1() {
       return this.$store.state.mapConfig.A1;
+    },
+    MyAreaData(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.mapData.areas;
+      }else {
+        return [];
+      }
     },
     MyPolyLineData(){
       if(this.$store.state.serverData.socket){

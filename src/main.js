@@ -27,6 +27,7 @@ new Vue({
       previewLine:{pass:0,intercept:0},
       addNewLineEnd:{pass:0,intercept:0},
       disableZoomAndMove:{pass:0,intercept:0},
+      addNewAreaEnd:{pass:0,intercept:0},
     }
   }},
   router,
@@ -94,6 +95,15 @@ new Vue({
     //命令状态更新
     sendInstruct(name){
       switch (name){
+        case 'addNewAreaEnd':{
+          if(this.filter(name)){
+            this.$store.state.commits.addNewAreaEnd=!this.$store.state.commits.addNewAreaEnd;
+            this.commitsConfig.addNewAreaEnd.pass++;
+          }else {
+            this.commitsConfig.addNewAreaEnd.intercept++;
+          }
+          break;
+        }
         case 'addNewLineEnd':{
           if(this.filter(name)){
             this.$store.state.commits.addNewLineEnd=!this.$store.state.commits.addNewLineEnd;

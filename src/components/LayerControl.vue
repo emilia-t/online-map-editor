@@ -33,12 +33,15 @@
     <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"></banana-point-attribute-board>
     <!--线编辑属性面板-->
     <banana-line-attribute-board :style-top="theConfig.lineBoardTop" :style-left="theConfig.lineBoardLeft"></banana-line-attribute-board>
+    <!--区域编辑属性面板-->
+    <banana-area-attribute-board :style-top="theConfig.areaBoardTop" :style-left="theConfig.areaBoardLeft"></banana-area-attribute-board>
   </div>
 </template>
 
 <script>
 import BananaElementOperationBoard from "./BananaElementOperationBoard";
 import BananaControlButton from "./BananaControlButton";
+import BananaAreaAttributeBoard from "./BananaAreaAttributeBoard";
 import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
 import BananaLineAttributeBoard from "./BananaLineAttributeBoard";
 import interestPoint from '../../static/point.png';//关注点
@@ -47,7 +50,7 @@ import regionImg from '../../static/area.png';
 import curveImg from '../../static/curve.png';
 export default {
   name: "LayerControl",
-  components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaLineAttributeBoard},
+  components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaLineAttributeBoard,BananaAreaAttributeBoard},
   data(){
     return {
       MY_NAME:"LayerControl",
@@ -62,7 +65,10 @@ export default {
       nodeSuppressor:false,//节点抑制器，此项为true则会抑制节点更新，会对添加点、线段、面造成影响
       isAddPoint:false,
       isAddLine:false,
+      isAddArea:false,
+      addAreaClock:false,
       addLineClock:false,//false表示未锁止
+      areaListener:false,
       lineListener:false,
       pointListener:false,
       theConfig:{
@@ -70,6 +76,7 @@ export default {
         buttonB:false,
         buttonC:false,
         buttonD:false,
+        addAreaPos:[],
         addLinePos:[],
         addPointPos:{
           x:null,
@@ -90,6 +97,9 @@ export default {
         //线属性面板的位置
         lineBoardTop:0,
         lineBoardLeft:-400,
+        //区域属性面板的位置
+        areaBoardTop:0,
+        areaBoardLeft:-400,
         //观察者
         obServe:false
       }
@@ -102,8 +112,86 @@ export default {
     startSetting(){
       this.KeyListen();//开启键盘监听
     },
-    addAreaStart(){},
-    addCurveStart(){},
+    addAreaStart(){
+      if(!this.isAddArea){
+        this.isAddArea=true;//更改添加状态为“可用”
+        this.Url3Color='#d2d2d2';//更改背景色
+        //更改按钮状态
+        this.theConfig.buttonC=true;
+        //修改svg鼠标悬浮样式
+        if(this.$store.state.mapConfig.cursorLock===false){
+          this.$store.state.mapConfig.cursor='crosshair';
+        }
+        //更改其他按钮状态
+        if(this.isAddPoint){
+          this.addInterestPointStart();
+        }
+        //更改其他按钮状态
+        if(this.isAddLine){
+          this.addRouteLineStart();
+        }
+        //禁用更新指针
+        this.$store.state.mapConfig.cursorLock=true;
+        //通知预览启用
+        this.$root.sendSwitchInstruct('previewLine',true);
+      }else {
+        this.isAddArea=false;//更改添加状态为“不可用”
+        this.Url3Color='#ffffff';//更改背景色e72323
+        //更改按钮状态
+        this.theConfig.buttonC=false;
+        //修改svg鼠标悬浮样式
+        if(this.$store.state.mapConfig.cursorLock===false){
+          this.$store.state.mapConfig.cursor='default';
+        }
+        //通知预览停用
+        this.$root.sendSwitchInstruct('previewLine',false);
+      }
+    },
+    addArea(){
+      //1监听下一次的鼠标点击位置
+      if(this.theConfig.obServe===false){
+        //允许更新，启用观察者
+        this.theConfig.obServe=true;
+        //避免重复添加监听，在第一次监听后即不再重复添加
+        if(this.areaListener===false){
+          document.addEventListener("click",(ev)=>{
+            if(this.theConfig.obServe===true && this.isAddArea===true && this.addAreaClock===false && this.nodeSuppressor!==true){
+              //判断target
+              let tag=ev.target.nodeName;
+              if(tag=="svg" || tag=="polyline" || tag=="circle"){
+                console.log("IO.")
+                //计算新增点位置
+                let Pos=this.computeMouseActualPos(ev)
+                this.theConfig.addAreaPos.push(Pos);
+              }
+            }
+          });
+          this.areaListener=true;
+        }
+      }
+    },
+    addAreaCancel(){
+      //允许更新指针
+      this.$store.state.mapConfig.cursor='default';
+      this.$store.state.mapConfig.cursorLock=false;
+      //1.重置临时线位置
+      this.$store.state.mapConfig.tempArea.point.x=0;
+      this.$store.state.mapConfig.tempArea.point.y=0;
+      this.$store.state.mapConfig.tempArea.points=[];
+      this.$store.state.mapConfig.tempArea.showPos=[];
+      //2.观察者模式关闭
+      this.theConfig.obServe=false;
+      //3.重置属性面板位置
+      this.theConfig.areaBoardLeft=-400;
+      this.theConfig.areaBoardTop=0;
+      //4.停用锁止
+      this.addAreaClock=false;
+      //清除点击位置缓存
+      this.theConfig.addAreaPos=[];
+    },
+    addCurveStart(){
+
+    },
     //添加路径线
     addRouteLineStart(){
       if(!this.isAddLine){
@@ -118,6 +206,10 @@ export default {
         //更改其他按钮状态
         if(this.isAddPoint){
           this.addInterestPointStart();
+        }
+        //更改其他按钮状态
+        if(this.isAddArea){
+          this.addAreaStart();
         }
         //禁用更新指针
         this.$store.state.mapConfig.cursorLock=true;
@@ -178,6 +270,17 @@ export default {
           this.lineListener=true;
         }
       }
+    },
+    //双击结束添加线段
+    addAreaEnd(){
+      //禁用点更新
+      this.addAreaClock=true;
+      //再双击的位置打开一个线段编辑面板
+      //2调整属性面板位置
+      this.theConfig.areaBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;
+      this.theConfig.areaBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
+      //结束通知
+      this.$root.sendSwitchInstruct('previewLine',false);
     },
     //双击结束添加线段
     addLineEnd(){
@@ -312,6 +415,10 @@ export default {
     //用于监听单个按键的
     KeyListen(){
       document.body.addEventListener('keyup',(e)=>{
+        //在聚焦于输入框时拒绝操作
+        if(this.$store.state.mapConfig.inputFocusStatus){
+          return false;
+        }
         let KEY=e.key;
         switch (KEY){
           case 'F8':{
@@ -368,6 +475,12 @@ export default {
     buttonB(){
       return this.theConfig.buttonB;
     },
+    buttonC(){
+      return this.theConfig.buttonC;
+    },
+    addNewArea(){
+      return this.theConfig.addAreaPos;
+    },
     addNewPoint(){
       return this.theConfig.addPointPos;
     },
@@ -382,9 +495,17 @@ export default {
     },
     addNewLineEnd(){
       return this.$store.state.commits.addNewLineEnd;
+    },
+    addNewAreaEnd(){
+      return this.$store.state.commits.addNewAreaEnd;
     }
   },
   watch:{
+    addNewAreaEnd:{
+      handler(){
+        this.addAreaStart();
+      }
+    },
     addNewPointEnd:{
       handler(){
         this.addInterestPointStart();
@@ -393,6 +514,15 @@ export default {
     addNewLineEnd:{
       handler(){
         this.addRouteLineStart();
+      }
+    },
+    buttonC:{
+      handler(newValue){
+        if(newValue){
+          this.addArea();
+        }else {
+          this.addAreaCancel();
+        }
       }
     },
     buttonB:{
@@ -443,11 +573,29 @@ export default {
       },
       deep:true
     },
+    addNewArea:{
+      handler(newValue){
+        if(newValue.length!==0){
+          //1更新临时线数据
+          this.$store.state.mapConfig.tempArea.point.x=newValue[0].x;
+          this.$store.state.mapConfig.tempArea.point.y=newValue[0].y;
+          this.$store.state.mapConfig.tempArea.points.push(newValue[newValue.length-1]);
+          //2.更新临时线显示位置
+          this.$store.state.mapConfig.tempArea.showPos.push({x:this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.x),y:-this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.y)});
+        }else {
+          this.$store.state.mapConfig.tempArea.point.x=0;
+          this.$store.state.mapConfig.tempArea.point.y=0;
+          this.$store.state.mapConfig.tempArea.points=[];
+          this.$store.state.mapConfig.tempArea.showPos=[];
+        }
+      },
+      deep:true
+    },
     svgDbClick:{
       handler(newValue){
         //检测正则进行的操作
-        if(this.isAddPoint){
-
+        if(this.isAddArea){
+          this.addAreaEnd();
         }
         if(this.isAddLine){
           this.addLineEnd();

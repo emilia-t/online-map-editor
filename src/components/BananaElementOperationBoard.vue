@@ -20,21 +20,21 @@
           <div class="centerListItem">
             <div class="leftAttribute"><div>颜色</div></div>
             <div class="centerLine"></div>
-            <textarea class="colorInput" contenteditable="true" v-model="operatedCache.color" rows="1" maxlength="7"></textarea>
+            <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="colorInput" contenteditable="true" v-model="operatedCache.color" rows="1" maxlength="7"></textarea>
             <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ffffff'"></orange-color-palette>
           </div>
           <div class="centerListItem">
             <div class="leftAttribute"><div>宽度</div></div>
             <div class="centerLine"></div>
-            <textarea class="widthInput" contenteditable="true" v-model="operatedCache.width" maxlength="7"></textarea>
+            <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="widthInput" contenteditable="true" v-model="operatedCache.width" maxlength="7"></textarea>
             <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :max="64" :min="2" :default="5"></orange-slide-block>
           </div>
           <div class="centerListItem" v-for="detail in operated.details">
             <div class="leftAttribute">
-              <textarea contenteditable="true" v-model="detail.key" rows="2" maxlength="8"></textarea>
+              <textarea @focus="onFocusMode()" @blur="noFocusMode()"  contenteditable="true" v-model="detail.key" rows="2" maxlength="8"></textarea>
             </div>
             <div class="centerLine"></div>
-            <textarea class="rightValue" contenteditable="true" v-model="detail.value" rows="3" maxlength="128"></textarea>
+            <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="rightValue" contenteditable="true" v-model="detail.value" rows="3" maxlength="128"></textarea>
             <div class="tickButton">
               <div class="sleBtn" ref="sleBtn" @click="selectList($event)" data-select-state="no"></div>
             </div>
@@ -81,6 +81,14 @@ export default {
   methods:{
     startSetting(){
 
+    },
+    //聚焦模式
+    onFocusMode(){
+      this.$store.state.mapConfig.inputFocusStatus=true;
+    },
+    //非聚焦模式
+    noFocusMode(){
+      this.$store.state.mapConfig.inputFocusStatus=false;
     },
     //按钮动画
     buttonAnimation(ev){

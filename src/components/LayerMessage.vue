@@ -24,6 +24,15 @@
             </div>
             <div class="messageData">{{message.data.message}}</div>
           </div>
+          <!--新增区域消息-->
+          <div v-if="message.class==='area'" class="messageItemA">
+            <div class="messageTime">{{message.time}}</div>
+            <div class="messageConveyor">
+              <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
+              {{message.conveyor}}
+            </div>
+            <div class="messageData">我添加了一个区域，id为：{{message.data.elementId}}</div>
+          </div>
           <!--新增线段消息-->
           <div v-if="message.class==='line'" class="messageItemA">
             <div class="messageTime">{{message.time}}</div>
@@ -72,7 +81,7 @@
         </div>
       </div>
       <div class="inputBox">
-        <textarea class="inputTextBox" ref="inputTextBox" type="text" placeholder="请输入消息" rows="2" @keydown.enter="sendMessage"></textarea>
+        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="inputTextBox" ref="inputTextBox" type="text" placeholder="请输入消息" rows="2" @keydown.enter="sendMessage"></textarea>
         <button class="sendButton" @click="sendMessage">发送</button>
       </div>
     </div>
@@ -121,6 +130,14 @@ export default {
         //清除未读消息数量
         this.unreadNumber=0;
       }
+    },
+    //聚焦模式
+    onFocusMode(){
+      this.$store.state.mapConfig.inputFocusStatus=true;
+    },
+    //非聚焦模式
+    noFocusMode(){
+      this.$store.state.mapConfig.inputFocusStatus=false;
     },
     //发送消息
     sendMessage() {

@@ -75,6 +75,10 @@ export default new Vuex.Store({
             broadcast_line(data){
               return {type:'broadcast',class:'line',data}
             },
+            //以广播的形式添加一条线段
+            broadcast_area(data){
+              return {type:'broadcast',class:'area',data}
+            },
             //以广播形式更新元素节点
             broadcast_updateElementNode(data){
               return {type:'broadcast',class:'updateElementNode',data}
@@ -279,8 +283,8 @@ export default new Vuex.Store({
         broadcastSendText(data){
           this.send(this.Instruct.broadcast_textMessage(data));
         }
-        //发送路径线数据
-        broadcastSendLine(data){
+        //发送路径线数据(兼容区域类型，只需要在第二个参数area值为area即可)
+        broadcastSendLine(data,area){
           try{
             //0.检查数据
             //0.1检查是否属于object
@@ -288,7 +292,11 @@ export default new Vuex.Store({
             //0.2检查是否包含class类型
             if(!this.QIR.hasProperty(data,'class')){return false;}
             //0.3检查class类型是否为line
-            if(data.class!=='line'){return false;}
+            if(area==='area'){
+              if(data.class!=='area'){return false;}
+            }else {
+              if(data.class!=='line'){return false;}
+            }
             //0.4检查是否包含point类型
             if(!this.QIR.hasProperty(data,'point')){return false;}
             //0.5检查point是否为object
@@ -331,7 +339,7 @@ export default new Vuex.Store({
             //1.0构建点数据基本结构
             let basicStructure={
               id:0,
-              type:'point',
+              type:'line',
               points:[],
               point:null,//必要
               color:'',//必要
@@ -350,9 +358,13 @@ export default new Vuex.Store({
             basicStructure.color=data.color;
             basicStructure.width=data.width || basicStructure.width;
             basicStructure.details=data.details || basicStructure.details;
+            if(area==='area'){
+              basicStructure.type='area';
+              this.send(this.Instruct.broadcast_area(basicStructure));
+            }else {
+              this.send(this.Instruct.broadcast_line(basicStructure));
+            }
             //3.0广播
-            //console.log(basicStructure);
-            this.send(this.Instruct.broadcast_line(basicStructure));
           }
           catch (e) {}
         }
@@ -596,7 +608,8 @@ export default new Vuex.Store({
                       this.mapData.points.push(jsonData.data[i]);
                       break;
                     }
-                    case 'areas':{
+                    case 'area':{
+                      this.mapData.areas.push(jsonData.data[i]);
                       break;
                     }
                   }
@@ -681,6 +694,53 @@ export default new Vuex.Store({
                   this.mapData.lines.push(jsonData.data);
                   break;
                 }
+                //新增线段数据广播
+                case 'area':{
+                  //一、解析坐标
+                  try{
+                    //1.将base64转化为普通字符
+                    let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
+                    try{
+                      baseA=window.atob(jsonData.data.points);
+                      baseB=window.atob(jsonData.data.point);
+                    }
+                    catch(e){lock=false;}
+                    try{
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                        Pt=JSON.parse(baseB);
+                      }
+                    }
+                    catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.points=Ps;
+                      jsonData.data.point=Pt;
+                    }
+                  }catch(e){}
+                  //二、解析详细描述信息
+                  try{
+                    //1.将base64转化为普通字符
+                    let [lock,baseA,Ps]=[true,null,null];
+                    try{
+                      baseA=window.atob(jsonData.data.details);
+                    }
+                    catch(e){lock=false;}
+                    try {
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                      }
+                    }catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.details=Ps;
+                    }
+                  }catch(e){}
+                  //更新messages
+                  let NewMessageObj={'type':'broadcast','class':'area','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
+                  this.messages.push(NewMessageObj);
+                  //添加到mapData
+                  this.mapData.areas.push(jsonData.data);
+                  break;
+                }
                 //新增点数据广播
                 case 'point':{
                   //一、解析坐标
@@ -745,6 +805,12 @@ export default new Vuex.Store({
                         return true;
                       }
                     });
+                    this.mapData.areas.some((item, index)=>{
+                      if (item.id==ID){
+                        this.mapData.areas.splice(index,1);
+                        return true;
+                      }
+                    });
                     //更新消息
                     this.messages.push(jsonData);
                   }
@@ -780,6 +846,15 @@ export default new Vuex.Store({
                     for (let i=0;i<this.mapData.lines.length;i++){
                       if(eId==this.mapData.lines[i].id){
                         Object.assign(this.mapData.lines[i],jsonData.data);
+                        //更新message
+                        this.messages.push(jsonData);
+                        break;
+                      }
+                    }
+                    //查找相应的地图数据并修改地图数据
+                    for (let i=0;i<this.mapData.areas.length;i++){
+                      if(eId==this.mapData.areas[i].id){
+                        Object.assign(this.mapData.areas[i],jsonData.data);
                         //更新message
                         this.messages.push(jsonData);
                         break;
@@ -939,7 +1014,8 @@ export default new Vuex.Store({
       reloadServers:false,
       addNewPointEnd:false,
       previewLine:false,
-      addNewLineEnd:false
+      addNewLineEnd:false,
+      addNewAreaEnd:false
     },
     //相机配置
     cameraConfig:{
@@ -1020,6 +1096,28 @@ export default new Vuex.Store({
         defaultWidth:2,
         showPos:[]
       },
+      tempArea:{
+        id:'tempArea',
+        type:'area',
+        points:[],
+        point:{x:0,y:0},
+        color: '000000',
+        length: null,
+        width: 2,
+        size: null,
+        child_relations: null,
+        father_relation: null,
+        child_nodes: null,
+        father_node: null,
+        details:[
+          {key: '名称', value: ''},
+          {key: '类型', value: ''},
+          {key: '备注', value: ''},
+          {key: '区域', value: ''}
+        ],
+        defaultWidth:2,
+        showPos:[]
+      },
       mousePoint:{
         x:0,
         y:0
@@ -1057,6 +1155,8 @@ export default new Vuex.Store({
       cursorLock:false,
       //重新初始化的id
       reinitializeId:-1,
+      //input聚焦状态
+      inputFocusStatus:false
     },
     //左侧元素信息面板显示的数据
     detailsPanelConfig:{
@@ -1120,6 +1220,31 @@ export default new Vuex.Store({
 
   },
   mutations: {
+    //清空临时区域的缓存
+    clearTempAreaCache(state){
+      state.mapConfig.tempArea={
+        id:'tempArea',
+        type:'area',
+        points:[],
+        point:{x:0,y:0},
+        color: '000000',
+        length: null,
+        width: 2,
+        size: null,
+        child_relations: null,
+        father_relation: null,
+        child_nodes: null,
+        father_node: null,
+        details:[
+          {key: '名称', value: ''},
+          {key: '类型', value: ''},
+          {key: '备注', value: ''},
+          {key: '区域', value: ''}
+        ],
+        defaultWidth:2,
+        showPos:[]
+      }
+    },
     //清空临时线段的缓存
     clearTempLineCache(state){
       state.mapConfig.tempLine={
