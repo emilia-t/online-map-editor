@@ -1,5 +1,5 @@
 <template>
-  <g :elementId="polyLineConfig.id">
+  <g :elementId="polyLineConfig.id" style="pointer-events: all">
     <g v-for="(str,index) in dynamicPointsStr">
       <!--路径选中边框-->
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" v-show="selectId===myId"/>
@@ -67,13 +67,16 @@ export default {
       this.mouseEvent();
       //初始化时就移动到相应的位置上,这一步不要提前否则影响源点的拷贝
       this.initializePosition();
-      //console.log(this.polyLineConfig);
       //初始化A1cache
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
     },
     //4.上传至服务器
     shiftAllStart(ev){
+      //保证在左键按下才能移动
+      if(ev.button!==0){
+        return false;
+      }
       //1.拷贝源
       //console.log(this.dataSourcePoints);
       //2.查看是否处于选中状态
@@ -92,7 +95,7 @@ export default {
     },
     //整体移动结束
     shiftAllEnd(ev){
-
+      //this.shiftAllStatus=false;
     },
     //显示节点
     circleShow(order){
@@ -165,14 +168,6 @@ export default {
       this.$store.state.detailsPanelConfig.data=this.polyLineConfig;
       this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
     },
-    //转化坐标
-    translateCoordinate(float){
-      return float*10000000;
-    },
-    //逆向转化坐标
-    reTranslateCoordinate(float){
-      return float/10000000;
-    },
     //初始化定位
     initializePosition(){
       try{
@@ -226,8 +221,8 @@ export default {
         let A1mvY=this.A1Cache.y-this.A1.y;
         let newArr=this.polyLineConfig.points;
         for (let i=0;i<newArr.length;i++){
-          this.polyLineConfig.points[i].x=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].x)-A1mvX);
-          this.polyLineConfig.points[i].y=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].y)+A1mvY);
+          this.polyLineConfig.points[i].x=(newArr[i].x/this.unit1X-A1mvX)*this.unit1X;
+          this.polyLineConfig.points[i].y=(newArr[i].y/this.unit1Y+A1mvY)*this.unit1Y;
         }
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
@@ -245,13 +240,13 @@ export default {
         const MOX=this.mouse.x;
         const MOY=this.mouse.y;
         const pointPos=this.polyLineConfig.points[i];
-        const TRX=this.translateCoordinate(pointPos.x);
-        const TRY=-this.translateCoordinate(pointPos.y);
+        const TRX=pointPos.x/this.unit1X;
+        const TRY=-pointPos.y/this.unit1Y;
         const axSize=MOX-TRX;
         const aySize=MOY-TRY;
         let newPos={x:null,y:null};
-        newPos.x=this.reTranslateCoordinate(TRX-((zoom*axSize)));
-        newPos.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
+        newPos.x=(TRX-((zoom*axSize)))*this.unit1X;
+        newPos.y=-(TRY-((zoom*aySize)))*this.unit1Y;
         newPosArr.push(newPos);
       }
       this.polyLineConfig.points=newPosArr;
@@ -275,6 +270,24 @@ export default {
     },
   },
   computed:{
+    browserX(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    browserY(){
+      return this.$store.state.mapConfig.browser.height;
+    },
+    unit1X(){
+      return this.$store.state.cameraConfig.unit1X;
+    },
+    unit1Y(){
+      return this.$store.state.cameraConfig.unit1Y;
+    },
+    offsetX(){
+      return this.$store.state.cameraConfig.offsetX;
+    },
+    offsetY(){
+      return this.$store.state.cameraConfig.offsetY;
+    },
     clearClick(){
       return this.$store.state.mapConfig.clearClick;
     },
@@ -333,8 +346,8 @@ export default {
         let A1mvY=this.A1Cache.y-this.A1.y;
         newArr = this.polyLineConfig.points;
         for (let i = 0; i < newArr.length; i++) {
-          let x = this.translateCoordinate(newArr[i].x) - A1mvX;
-          let y = -(this.translateCoordinate(newArr[i].y) + A1mvY);
+          let x = newArr[i].x/this.unit1X - A1mvX;
+          let y = -(newArr[i].y/this.unit1Y + A1mvY);
           if(tempA!==null){
             refArr.push({a:tempA,b:tempB,c:x,d:y})
           }
@@ -349,8 +362,8 @@ export default {
         let tempB = null;
         newArr = this.polyLineConfig.points;
         for (let i = 0; i < newArr.length; i++) {
-          let x = this.translateCoordinate(newArr[i].x);
-          let y = -this.translateCoordinate(newArr[i].y);
+          let x = newArr[i].x/this.unit1X;
+          let y = -newArr[i].y/this.unit1Y;
           if(tempA!==null){
             refArr.push({a:tempA,b:tempB,c:x,d:y})
           }
@@ -378,6 +391,24 @@ export default {
   },
   //移动过程中使用动态坐标，移动结束后修改源数据
   watch:{
+    browserX:{
+      handler(newValue,oldValue){
+        let offset=(newValue-oldValue)/2;
+        for(let i=0;i<this.polyLineConfig.points.length;i++){
+          this.polyLineConfig.points[i].x+=offset*this.unit1X;
+        }
+      },
+      deep:true
+    },
+    browserY:{
+      handler(newValue,oldValue){
+        let offset=(oldValue-newValue)/2;
+        for(let i=0;i<this.polyLineConfig.points.length;i++){
+          this.polyLineConfig.points[i].y+=offset*this.unit1Y;
+        }
+      },
+      deep:true
+    },
     clearClick:{
       handler(){
         this.shiftNodeOrder=null;
@@ -450,22 +481,23 @@ export default {
               return false;
             }
             //移动自身的视图(跟随鼠标)
-            this.polyLineConfig.points[nowOrder].x=this.reTranslateCoordinate(newValue.x);
-            this.polyLineConfig.points[nowOrder].y=this.reTranslateCoordinate(-newValue.y);
+            this.polyLineConfig.points[nowOrder].x=newValue.x*this.unit1X;
+            this.polyLineConfig.points[nowOrder].y=-newValue.y*this.unit1Y;
             return true;
           }
         }
         //整体移动
         if(this.shiftAllStatus){
           if(this.shiftAllStartMouse.x!==null && this.shiftAllStartMouse.y!==null){
+            this.$store.state.detailsPanelConfig.target=-1;
             //移动整体
             //计算偏移量
             //如果没有上一次的移动缓存则使用起始位置
             let xOffset=0;
             let yOffset=0;
             if(this.shiftAllMoveCache.length===0){
-              xOffset=this.reTranslateCoordinate(newValue.x-this.shiftAllStartMouse.x);
-              yOffset=this.reTranslateCoordinate(this.shiftAllStartMouse.y-newValue.y);
+              xOffset=(newValue.x-this.shiftAllStartMouse.x)*this.unit1X;
+              yOffset=(this.shiftAllStartMouse.y-newValue.y)*this.unit1Y;
               //更新缓存
               this.shiftAllMoveCache.push(this.shiftAllStartMouse);
               this.shiftAllMoveCache.push(newValue);
@@ -475,12 +507,11 @@ export default {
               //新增一个在最后面
               this.shiftAllMoveCache.push(newValue);
               //重新计算偏移量
-              xOffset=this.reTranslateCoordinate(newValue.x-this.shiftAllMoveCache[0].x);
-              yOffset=this.reTranslateCoordinate(this.shiftAllMoveCache[0].y-newValue.y);
+              xOffset=(newValue.x-this.shiftAllMoveCache[0].x)*this.unit1X;
+              yOffset=(this.shiftAllMoveCache[0].y-newValue.y)*this.unit1Y;
             }
             //更新每个节点的位置
             for(let i=0;i<this.polyLineConfig.points.length;i++){
-              //
               this.polyLineConfig.points[i].x=this.polyLineConfig.points[i].x+xOffset;
               this.polyLineConfig.points[i].y=this.polyLineConfig.points[i].y+yOffset;
             }
@@ -531,7 +562,6 @@ export default {
               }
             }
           }
-          return true;
         }
         //整体移动
         if(this.shiftAllStatus===true){

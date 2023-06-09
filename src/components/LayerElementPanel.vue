@@ -138,6 +138,7 @@ export default {
   display: flex;
   flex-direction: column;
   position: fixed;
+  z-index: 549;
   background: #fdfdfd;
   left: 25px;
   top:15px;

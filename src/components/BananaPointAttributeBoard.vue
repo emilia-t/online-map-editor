@@ -323,6 +323,7 @@ export default {
 }
 .BananaPointAttributeBoard{
   position: fixed;
+  z-index: 550;
   width: 300px;
   height: 400px;
   background: rgba(255,255,255,0.85);

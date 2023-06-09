@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import * as Leaflet from "leaflet";
 Vue.use(Vuex)
 export default new Vuex.Store({
   //提供唯一的公共数据源，所有共享的数据统一放到store的state进行储存数据，相当于data
@@ -22,9 +23,10 @@ export default new Vuex.Store({
           this.publickey='';
           this.userData=null;
           this.mapData={points:[],lines:[],areas:[]};
+          this.config={};
           this.otherA1=[];
           //指令类型合集
-          this.typeList=['broadcast','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData'];
+          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData'];
           //指令合集
           this.Instruct={
             //类似于computed
@@ -198,7 +200,7 @@ export default new Vuex.Store({
         }
         //初始化配置
         startSetting(){
-          this.getServerPublickey();
+          this.link();
           this.heartbeat();
         }
         //清除本地数据
@@ -480,6 +482,10 @@ export default new Vuex.Store({
         getMapData(){
           this.send(this.Instruct.get_mapData());
         }
+        //获取服务器配置信息
+        getServerConfig(){
+          this.send(this.Instruct.get_serverConfig());
+        }
         //获取服务器公钥
         getServerPublickey(){
           this.send(this.Instruct.get_publickey());
@@ -530,8 +536,6 @@ export default new Vuex.Store({
           //3.检测是否存在不允许的数据类型
           if(this.typeList.indexOf(instructObj.type)===-1){
             return false;
-          }else {
-            return true;
           }
           //4.检测是否属于广播类
           if(instructObj.type==='broadcast'){
@@ -540,6 +544,7 @@ export default new Vuex.Store({
               return false;
             }
           }
+          return true;
         }
         //收到消息事件
         onMessage(ev){
@@ -549,7 +554,14 @@ export default new Vuex.Store({
           if(jsonData.type!==undefined){
           //3.处理数据
           let nowType=jsonData.type;
+
           switch (nowType){
+            //服务器发来配置信息
+            case 'send_serverConfig':{
+              //console.log(jsonData);
+              this.config=jsonData.data;
+              break;
+            }
             //服务器发来公钥
             case 'publickey':{
               //保存公钥
@@ -994,6 +1006,10 @@ export default new Vuex.Store({
         //连接成功事件
         onOpen(ev){
           this.isLink=true;
+          //获取公钥
+          this.getServerPublickey();
+          //获取服务器配置
+          this.getServerConfig();
           return true;
         }
       },
@@ -1019,34 +1035,66 @@ export default new Vuex.Store({
     },
     //相机配置
     cameraConfig:{
+      //窗口变化
+      windowChange:false,
       //是否需要移动地图
       doNeedMoveMap:false,
       //帧时间
-      frameTime:11,
+      frameTime:1,
       //最大缩放
-      maxZoom:8,
+      maxZoom:5,
       //最小缩放
-      minZoom:-8
+      minZoom:-10,
+      //横轴单位1
+      unit1X:1,
+      //纵轴单位1
+      unit1Y:1,
+      //x偏移补偿
+      offsetX:0,
+      //y偏移补偿
+      offsetY:0
+    },
+    //底图配置
+    leafletConfig:{
+      enableBaseMap:false,
+      resolution:{
+        width:null,
+        height:null
+      },
+      options:{
+        minZoom:3,
+        maxZoom:18,
+        //第一个参数为维度，第二个参数为经度
+        center:[0,0],
+        zoom:13,
+        zoomControl:false,
+        scrollWheelZoom:false,
+        attributionControl:false,
+        crs:L.CRS.EPSG3857,
+        inertia:false
+      },
+      baseLayer:'',
     },
     //地图配置
     mapConfig:{
       A1Layer:0,
       layer:0,
       oldLayer:null,
-      zoomAdd:0.2,
-      zoomSub:-0.1666666666666,
+      zoomAdd:1,//k
+      zoomSub:(Math.pow(1+1,-1))-1,
+      //zoomSub:(5/6)-1,//(1+k)^(-1)-1；例子：0.2+1=1.2  1.2=12/10=6/5  k^(-1)=6/5 则k=5/6，
       browser:{
         width:null,
         height:null
       },
       mapSize:{
         width: {
-          x1:-1799999999,
-          x2:1800000000
+          max:null,
+          min:null
         },
         height:{
-          y1:900000000,
-          y2:-900000000
+          max:null,
+          min:null
         }
       },
       A1:{
@@ -1063,7 +1111,7 @@ export default new Vuex.Store({
         points:[{x:0,y:0}],
         point:{x:0,y:0},
         color:'#000000',
-        width:0
+        width:5
       },
       tempPoint:{
         id:'tempPoint',
@@ -1135,6 +1183,10 @@ export default new Vuex.Store({
         y:0
       },
       svgMouseUp:{
+        x:0,
+        y:0
+      },
+      svgMouseDown:{
         x:0,
         y:0
       },
@@ -1273,6 +1325,59 @@ export default new Vuex.Store({
     //销毁综合对象
     destroyComprehensive(state){
       state.serverData.socket=undefined;
+    },
+    //恢复默认地图配置
+    restoreMapConfig(state){
+      state.mapConfig={
+        A1Layer:0,layer:0,oldLayer:null,zoomAdd:1,zoomSub:(Math.pow(1+1,-1))-1,
+        browser:{width:null,height:null},
+        mapSize:{width:{x1:0,x2:0},height:{y1:0,y2:0}},
+        A1:{x:0,y:0},
+        centerPoint:{x:0,y:0},
+        p0:{id:'p0',type:'point',points:[{x:0,y:0}],point:{x:0,y:0},color:'#000000',width:0},
+        tempPoint:{id:'tempPoint',type:'point',points:[{x:0,y:0}],point:{x:0,y:0},color:'000000',width:0,defaultWidth:5},
+        tempLine:{id:'tempLine',type:'line',points:[],point:{x:0,y:0},color:'000000',length:null,width:2,size:null,child_relations:null,father_relation:null,child_nodes:null,father_node:null,
+          details:[{key:'名称',value:''},{key:'类型',value:''},{key:'备注',value:''},{key:'区域',value:''}],defaultWidth:2,showPos:[]},
+        tempArea:{id:'tempArea',type:'area',points:[],point:{x:0,y:0},color:'000000',length:null,width:2,size:null,child_relations:null,father_relation:null,child_nodes:null,father_node:null,
+          details:[{key:'名称',value:''},{key:'类型',value:''},{key:'备注',value:''},{key:'区域',value:''}],defaultWidth:2,showPos:[]},
+        mousePoint:{x:0,y:0},
+        mouseClick:{x:0,y:0},
+        svgClick:{x:0,y:0},
+        svgDbClick:{x:0,y:0},
+        svgMouseUp:{x:0,y:0},
+        svgMouseDown:{x:0,y:0},
+        clearClick:{x:0,y:0},
+        operated:{id:null,data:null},
+        cursor:'default',cursorLock:false,reinitializeId:-1,inputFocusStatus:false
+      }
+    },
+    //恢复默认底图配置
+    restoreLeafletConfig(state){
+      state.leafletConfig={
+        enableBaseMap:false,
+        options:{
+          minZoom:3,
+          maxZoom:18,
+          center:[0,0],
+          zoom:13,
+          zoomControl:false,
+          attributionControl:false,
+          crs:L.CRS.EPSG3857,
+          inertia:false
+        },
+        baseLayer:'',
+      }
+    },
+    //恢复默认相机配置
+    restoreCameraConfig(state){
+      state.cameraConfig={
+        doNeedMoveMap:false,
+          frameTime:11,
+          maxZoom:5,
+          minZoom:-10,
+          unit1X:1,
+          unit1Y:1,
+      }
     }
   },
   actions: {

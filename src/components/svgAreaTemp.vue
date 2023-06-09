@@ -3,7 +3,7 @@
     <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+tempArea.color,strokeWidth:tempArea.width}"/>
     <!--下一行用于显示预览轨迹，仅当第一个点建立之后，且当结束绘制后关闭，第一个点为最后一个点，第二个点依据鼠标移动，第一个点跟随视图移动-->
     <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2)"/>
-    <circle v-show="!doNeedMoveMap" v-for="point in tempArea.showPos"  :cx="translateCoordinate(point.x)" :cy="-translateCoordinate(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
+    <circle v-show="!doNeedMoveMap" v-for="point in tempArea.showPos"  :cx="circleCX(point.x)" :cy="circleCY(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
 <script>
@@ -40,8 +40,9 @@ export default {
         let A1mvY=this.A1Cache.y-this.A1.y;
         let newArr=this.tempArea.showPos;
         for (let i=0;i<newArr.length;i++){
-          this.tempArea.showPos[i].x=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].x)-A1mvX);
-          this.tempArea.showPos[i].y=this.reTranslateCoordinate(this.translateCoordinate(newArr[i].y)+A1mvY);
+          this.tempArea.showPos[i].x=(newArr[i].x/this.unit1X-A1mvX)*this.unit1Y;
+          this.tempArea.showPos[i].y=(newArr[i].y/this.unit1Y+A1mvY)*this.unit1Y;
+          //继续单位转换
         }
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
@@ -59,13 +60,13 @@ export default {
         const MOX=this.mouse.x;
         const MOY=this.mouse.y;
         const pointPos=this.tempArea.showPos[i];
-        const TRX=this.translateCoordinate(pointPos.x);
-        const TRY=-this.translateCoordinate(pointPos.y);
+        const TRX=pointPos.x/this.unit1X;
+        const TRY=-pointPos.y/this.unit1Y;
         const axSize=MOX-TRX;
         const aySize=MOY-TRY;
         let newPos={x:null,y:null};
-        newPos.x=this.reTranslateCoordinate(TRX-((zoom*axSize)));
-        newPos.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
+        newPos.x=(TRX-((zoom*axSize)))*this.unit1X;
+        newPos.y=-(TRY-((zoom*aySize)))*this.unit1Y;
         newPosArr.push(newPos);
       }
       this.tempArea.showPos=newPosArr;
@@ -75,12 +76,36 @@ export default {
       document.body.addEventListener('mousemove',(e)=>{
         this.occurredMoveMap=true;//告知相机发生过移动行为
       })
-    }
+    },
+    circleCX(x){
+      return x/this.unit1X;
+    },
+    circleCY(y){
+      return -y/this.unit1Y;
+    },
   },
   mounted:function (){
     this.startSetting();
   },
   computed:{
+    browserX(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    browserY(){
+      return this.$store.state.mapConfig.browser.height;
+    },
+    unit1X(){
+      return this.$store.state.cameraConfig.unit1X;
+    },
+    unit1Y(){
+      return this.$store.state.cameraConfig.unit1Y;
+    },
+    offsetX(){
+      return this.$store.state.cameraConfig.offsetX;
+    },
+    offsetY(){
+      return this.$store.state.cameraConfig.offsetY;
+    },
     previewLineShow(){
       return this.tempArea.points.length !== 0 && this.previewLine === true;
     },
@@ -115,8 +140,8 @@ export default {
         let A1mvY=this.A1Cache.y-this.A1.y;
         newArr = this.tempArea.showPos;
         for (let i = 0; i < newArr.length; i++) {
-          let x = this.translateCoordinate(newArr[i].x) - A1mvX;
-          let y = -(this.translateCoordinate(newArr[i].y) + A1mvY);
+          let x = newArr[i].x/this.unit1X - A1mvX;
+          let y = -(newArr[i].y/this.unit1Y + A1mvY);
           if(tempA!==null){
             refArr.push({a:tempA,b:tempB,c:x,d:y})
           }
@@ -131,8 +156,8 @@ export default {
         let tempB = null;
         newArr = this.tempArea.showPos;
         for (let i = 0; i < newArr.length; i++) {
-          let x = this.translateCoordinate(newArr[i].x);
-          let y = -this.translateCoordinate(newArr[i].y);
+          let x = newArr[i].x/this.unit1X;
+          let y = -newArr[i].y/this.unit1Y;
           if(tempA!==null){
             refArr.push({a:tempA,b:tempB,c:x,d:y})
           }
@@ -153,7 +178,7 @@ export default {
           return str;
         }else if(this.dynamicPointsStr.length===0){
           let str='';
-          str+=this.translateCoordinate(this.tempArea.showPos[0].x)+' '+this.translateCoordinate(-this.tempArea.showPos[0].y);
+          str+=(this.tempArea.showPos[0].x/this.unit1Y)+' '+(-this.tempArea.showPos[0].y/this.unit1Y);
           str+=' ';
           str+=this.mouse.x+' '+this.mouse.y;
           return str;
@@ -165,6 +190,30 @@ export default {
   },
   //移动过程中使用动态坐标，移动结束后修改源数据
   watch:{
+    browserX:{
+      handler(newValue,oldValue){
+        let offset=(newValue-oldValue)/2;
+        for(let i=0;i<this.tempArea.points.length;i++){
+          this.tempArea.points[i].x+=offset*this.unit1X;
+        }
+        for(let i=0;i<this.tempArea.showPos.length;i++){
+          this.tempArea.showPos[i].x+=offset*this.unit1X;
+        }
+      },
+      deep:true
+    },
+    browserY:{
+      handler(newValue,oldValue){
+        let offset=(oldValue-newValue)/2;
+        for(let i=0;i<this.tempArea.points.length;i++){
+          this.tempArea.points[i].y+=offset*this.unit1Y;
+        }
+        for(let i=0;i<this.tempArea.showPos.length;i++){
+          this.tempArea.showPos[i].y+=offset*this.unit1Y;
+        }
+      },
+      deep:true
+    },
     layer:{
       handler(newValue,oldValue){
         this.scale();

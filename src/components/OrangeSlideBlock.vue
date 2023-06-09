@@ -3,7 +3,7 @@
   <!--接收：max,min,default，返回number-->
   <!--不要使用vuex-->
   <div>
-    <div class="slider">
+    <div class="slider" :style="style">
       <input @input="CallBack" type="range" :min="min" :max="max" v-model:value="number" class="slider-range">
     </div>
   </div>
@@ -20,25 +20,32 @@ export default {
   },
   props:{
     max:{
-      type:Number,
       default:10,
       required:true
     },
     min:{
-      type:Number,
       default:0,
       required:true
     },
     default:{
-      type:Number,
       default:0,
       required:true
+    },
+    widths:{
+      default:100
     }
   },
   methods:{
     CallBack(){
       this.$emit('OrangeSlideBlockCall',this.number)
     },
+  },
+  computed:{
+    style(){
+      return {
+        width: this.widths+'px'
+      }
+    }
   },
   mounted() {
     this.number=this.default;
@@ -48,7 +55,6 @@ export default {
 
 <style scoped>
 .slider {
-  width: 100px;
   height: 35px;
   position: relative;
 }

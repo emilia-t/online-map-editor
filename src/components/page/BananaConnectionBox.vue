@@ -27,11 +27,25 @@
       <svg t="1681049938063" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="34516" width="200" height="200"><path d="M235.403636 182.178909l270.475637 270.498909L776.401455 182.178909a58.181818 58.181818 0 1 1 82.292363 82.292364L588.171636 534.946909 858.693818 805.469091a58.181818 58.181818 0 1 1-82.292363 82.269091L505.879273 617.239273 235.403636 887.738182A58.181818 58.181818 0 0 1 153.134545 805.469091l270.475637-270.522182L153.134545 264.471273a58.181818 58.181818 0 0 1 82.269091-82.292364z" fill="#282C33" p-id="34517"></path></svg>
     </div>
     <span>服务器Key：{{serverKey}}</span>
-    <span>最大在线人数：{{maxOnlineUser}}</span>
-    <span>最大宽度：{{maxWidth}}</span>
-    <span>最大高度：{{maxHeight}}</span>
-    <span>默认点X：{{defaultX}}</span>
-    <span>默认点Y：{{defaultY}}</span>
+    <span>最大在线人数：{{MyConfig.maxOnlineUser}}</span>
+    <span>最大宽度：{{MyConfig.maxWidth}}</span>
+    <span>最小宽度：{{MyConfig.minWidth}}</span>
+    <span>最大高度：{{MyConfig.maxHeight}}</span>
+    <span>最小高度：{{MyConfig.minHeight}}</span>
+    <span>默认点X：{{MyConfig.p0X}}</span>
+    <span>默认点Y：{{MyConfig.p0Y}}</span>
+    <span>横轴单位1：{{MyConfig.unit1X}}</span>
+    <span>纵轴单位1：{{MyConfig.unit1Y}}</span>
+    <span>最大层级：{{MyConfig.maxLayer}}</span>
+    <span>最小层级：{{MyConfig.minLayer}}</span>
+    <span>默认层级：{{MyConfig.defaultLayer}}</span>
+    <span>是否启用底图：{{MyConfig.enableBaseMap}}</span>
+    <span>最大底图缩放数：{{MyConfig.maxZoom}}</span>
+    <span>最小底图缩放数：{{MyConfig.minZoom}}</span>
+    <span>默认底图缩放数：{{MyConfig.defaultZoom}}</span>
+    <span>中心点X：{{MyConfig.defaultX}}</span>
+    <span>中心点Y：{{MyConfig.defaultY}}</span>
+    <span>分辨率：{{MyConfig.resolutionX}}×{{MyConfig.resolutionY}}</span>
   </div>
   <!--左下角的删除按钮-->
   <div class="serverDelete" ref="serverDelete" title="点击删除服务器">
@@ -55,8 +69,8 @@ export default {
       MyConfig:{
         account:this.account,
         password:this.password,
-        defaultX:this.defaultX,
-        defaultY:this.defaultY,
+        p0X:null,
+        p0Y:null,
         imgTime:this.imgTime,
         maxHeight:this.maxHeight,
         onlineNumber:this.onlineNumber,
@@ -65,7 +79,24 @@ export default {
         serverAddress:this.serverAddress,
         serverImg:this.serverImg,
         serverKey:this.serverKey,
-        serverName:this.serverName
+        serverName:this.serverName,
+        //0.4新增属性
+        baseMapUrl:null,
+        defaultLayer:null,
+        defaultZoom:null,
+        enableBaseMap:null,
+        maxLayer:null,
+        maxZoom:null,
+        minHeight:null,
+        minLayer:null,
+        minWidth:null,
+        minZoom:null,
+        unit1X:null,
+        unit1Y:null,
+        defaultX:null,
+        defaultY:null,
+        resolutionX:null,
+        resolutionY:null,
       },
       onlineShowColor:'#ff1414',
       onlineStatusText:'offline',
@@ -202,34 +233,46 @@ export default {
             let nowType=jsonData.type;
             switch (nowType){
               case 'send_serverConfig':{
-                this.MyConfig.defaultX=jsonData.data.default_x!==undefined ? jsonData.data.default_x : this.MyConfig.defaultX;
-                this.MyConfig.defaultY=jsonData.data.default_y!==undefined ? jsonData.data.default_y : this.MyConfig.defaultY;
+                //console.log(jsonData);
+                this.MyConfig.p0X=jsonData.data.p0_x!==undefined ? jsonData.data.p0_x : this.MyConfig.p0X;
+                this.MyConfig.p0Y=jsonData.data.p0_y!==undefined ? jsonData.data.p0_y : this.MyConfig.p0Y;
                 this.MyConfig.maxHeight=jsonData.data.max_height!==undefined ? jsonData.data.max_height : this.MyConfig.maxHeight;
                 this.MyConfig.onlineNumber=jsonData.data.online_number!==undefined ? jsonData.data.online_number+'' : this.MyConfig.onlineNumber;
                 this.MyConfig.maxOnlineUser=jsonData.data.max_online!==undefined ? jsonData.data.max_online : this.MyConfig.maxOnlineUser;
                 this.MyConfig.maxWidth=jsonData.data.max_width!==undefined ? jsonData.data.max_width : this.MyConfig.maxWidth;
                 this.MyConfig.serverKey=jsonData.data.key!==undefined ? jsonData.data.key : this.MyConfig.serverKey;
                 this.MyConfig.serverName=jsonData.data.name!==undefined ? jsonData.data.name : this.MyConfig.serverName;
+                //0.4更新配置
+                this.MyConfig.baseMapUrl=jsonData.data.base_map_url!==undefined ? jsonData.data.base_map_url : this.MyConfig.baseMapUrl;
+                this.MyConfig.defaultLayer=jsonData.data.default_layer!==undefined ? jsonData.data.default_layer : this.MyConfig.defaultLayer;
+                this.MyConfig.defaultZoom=jsonData.data.default_zoom!==undefined ? jsonData.data.default_zoom : this.MyConfig.defaultZoom;
+                this.MyConfig.enableBaseMap=jsonData.data.enable_base_map!==undefined ? jsonData.data.enable_base_map : this.MyConfig.enableBaseMap;
+                this.MyConfig.maxLayer=jsonData.data.max_layer!==undefined ? jsonData.data.max_layer : this.MyConfig.maxLayer;
+                this.MyConfig.maxZoom=jsonData.data.max_zoom!==undefined ? jsonData.data.max_zoom : this.MyConfig.maxZoom;
+                this.MyConfig.minHeight=jsonData.data.min_height!==undefined ? jsonData.data.min_height : this.MyConfig.minHeight;
+                this.MyConfig.minLayer=jsonData.data.min_layer!==undefined ? jsonData.data.min_layer : this.MyConfig.minLayer;
+                this.MyConfig.minWidth=jsonData.data.min_width!==undefined ? jsonData.data.min_width : this.MyConfig.minWidth;
+                this.MyConfig.minZoom=jsonData.data.min_zoom!==undefined ? jsonData.data.min_zoom : this.MyConfig.minZoom;
+                this.MyConfig.unit1X=jsonData.data.unit1_x!==undefined ? jsonData.data.unit1_x : this.MyConfig.unit1X;
+                this.MyConfig.unit1Y=jsonData.data.unit1_y!==undefined ? jsonData.data.unit1_y : this.MyConfig.unit1Y;
+                this.MyConfig.defaultX=jsonData.data.default_x!==undefined ? jsonData.data.default_x : this.MyConfig.defaultX;
+                this.MyConfig.defaultY=jsonData.data.default_y!==undefined ? jsonData.data.default_y : this.MyConfig.defaultY;
+                this.MyConfig.resolutionX=jsonData.data.resolution_x!==undefined ? jsonData.data.resolution_x : this.MyConfig.resolutionX;
+                this.MyConfig.resolutionY=jsonData.data.resolution_y!==undefined ? jsonData.data.resolution_y : this.MyConfig.resolutionY;
                 //更新本地配置
                 let configObj={
-                  account:'',
-                  password:'',
-                  defaultX:'',
-                  defaultY:'',
-                  imgTime:'',
-                  maxHeight:'',
-                  onlineNumber:'',
-                  maxOnlineUser:'',
-                  maxWidth:'',
-                  serverAddress:'',
-                  serverImg:'',
-                  serverKey:'',
-                  serverName:''
+                  account:'',password:'',p0X:'',p0Y:'',imgTime:'',maxHeight:'',
+                  onlineNumber:'',maxOnlineUser:'',maxWidth:'',serverAddress:'',serverImg:'',serverKey:'',
+                  serverName:'',
+                  //0.4更新属性
+                  baseMapUrl:'',defaultLayer:'',defaultZoom:'',enableBaseMap:'',maxLayer:'',
+                  maxZoom:'',minHeight:'',minLayer:'',minWidth:'',minZoom:'',unit1X:'',
+                  unit1Y:'',defaultX:'',defaultY:'',resolutionX:'',resolutionY:''
                 };
                 configObj.account=this.MyConfig.account;
                 configObj.password=this.MyConfig.password;
-                configObj.defaultX=this.MyConfig.defaultX;
-                configObj.defaultY=this.MyConfig.defaultY;
+                configObj.p0X=this.MyConfig.p0X;
+                configObj.p0Y=this.MyConfig.p0Y;
                 configObj.imgTime=this.MyConfig.imgTime;
                 configObj.maxHeight=this.MyConfig.maxHeight;
                 configObj.onlineNumber=this.MyConfig.onlineNumber;
@@ -239,6 +282,23 @@ export default {
                 configObj.serverImg=this.MyConfig.serverImg;
                 configObj.serverKey=this.MyConfig.serverKey;
                 configObj.serverName=this.MyConfig.serverName;
+                //0.4更新属性
+                configObj.baseMapUrl=this.MyConfig.baseMapUrl;
+                configObj.defaultLayer=this.MyConfig.defaultLayer;
+                configObj.defaultZoom=this.MyConfig.defaultZoom;
+                configObj.enableBaseMap=this.MyConfig.enableBaseMap;
+                configObj.maxLayer=this.MyConfig.maxLayer;
+                configObj.maxZoom=this.MyConfig.maxZoom;
+                configObj.minHeight=this.MyConfig.minHeight;
+                configObj.minLayer=this.MyConfig.minLayer;
+                configObj.minWidth=this.MyConfig.minWidth;
+                configObj.minZoom=this.MyConfig.minZoom;
+                configObj.unit1X=this.MyConfig.unit1X;
+                configObj.unit1Y=this.MyConfig.unit1Y;
+                configObj.defaultX=this.MyConfig.defaultX;
+                configObj.defaultY=this.MyConfig.defaultY;
+                configObj.resolutionX=this.MyConfig.resolutionX;
+                configObj.resolutionY=this.MyConfig.resolutionY;
                 //获取本地配置
                 let nowServersConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));
                 //找到与当前url匹配的项目
@@ -391,18 +451,24 @@ export default {
   flex-wrap: wrap;
   color: white;
 }
+.moreBoard span{
+  width: calc(100% - 4px);
+  min-height: 26px;
+}
 .moreBoard{
   display: flex;
   width: calc(220px -  20px);
   height: calc(165px - 10px);
+  overflow-y: auto;
+  overflow-x: hidden;
   background: rgba(255,255,255,0.95);
   position: absolute;
   top: -170px;
   right: 0px;
   z-index: 555;
-  justify-content: center;
+  justify-content: flex-start;
   flex-direction: column;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding: 5px 10px;
   font-weight: 200;
   font-size: 14px;

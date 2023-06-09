@@ -7,7 +7,7 @@
   权限：
   允许访问、修改、删除$store.state.mapConfig、$store.state.serverData内的数据
   -->
-  <div class="dataLayer" id="dataLayer" ref="dataLayer">
+  <div class="dataLayer" id="dataLayer" ref="dataLayer" style="pointer-events: auto">
     <svg class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
       <!--区域数据-->
       <svg-area v-for="area in MyAreaData" :key="area.id" :area-config="area"></svg-area>
@@ -131,8 +131,9 @@ export default {
       this.elementDataClick();
       //检测浏览器窗口大小变化
       this.listenBrowserSize();
-      //启用鼠标左键松开监听
+      //启用鼠标左键松开按下监听
       this.getMouseUpSvg();
+      this.getMouseDownSvg();
     },
     //阻止右键选中
     preventDefault(mouseEvent){
@@ -140,11 +141,32 @@ export default {
     },
     //检测浏览器窗口大小变化
     listenBrowserSize(){
-      window.addEventListener("resize",()=>{this.getBrowserConfig();})
+      let resizeTimer;
+      window.addEventListener('resize',()=>{
+        clearTimeout(resizeTimer);
+        resizeTimer=setTimeout(()=>
+        {this.$store.state.cameraConfig.windowChange=false;},200);
+        this.getBrowserConfig();
+        this.$store.state.cameraConfig.windowChange=true;
+      })
     },
     //获取鼠标左键松开的位置(svg)
     getMouseUpSvg(){
-      this.$refs.elementData.addEventListener("mouseup",(e)=>{this.$store.state.mapConfig.svgMouseUp.x=e.x;this.$store.state.mapConfig.svgMouseUp.y=e.y;})
+      this.$refs.elementData.addEventListener('mouseup',(e)=>{
+        if(e.button===0){
+          this.$store.state.mapConfig.svgMouseUp.x=e.x;this.$store.state.mapConfig.svgMouseUp.y=e.y;
+        }
+      }
+      )
+    },
+    //获取鼠标左键按下的位置(svg)
+    getMouseDownSvg(){
+      this.$refs.elementData.addEventListener('mousedown',(e)=>{
+          if(e.button===0){
+            this.$store.state.mapConfig.svgMouseDown.x=e.x;this.$store.state.mapConfig.svgMouseDown.y=e.y;
+          }
+        }
+      )
     },
     //获取鼠标点击位置
     getMouseClick(){
@@ -221,13 +243,18 @@ export default {
             if(this.$store.state.mapConfig.layer<=this.$store.state.cameraConfig.minZoom){
               return false;
             }
-            this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer
+            this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer;
+            //this.$store.state.cameraConfig.unit1X=Math.abs(this.$store.state.cameraConfig.unit1X*this.$store.state.mapConfig.zoomSub);//单位缩小
+            //this.$store.state.cameraConfig.unit1Y=Math.abs(this.$store.state.cameraConfig.unit1Y*this.$store.state.mapConfig.zoomSub);//单位缩小
+            //设置pointer-events
             this.$store.state.mapConfig.layer-=1;//层级下调
           }else {//滚轮后退，缩放
             if(this.$store.state.mapConfig.layer>=this.$store.state.cameraConfig.maxZoom){
               return false;
             }
-            this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer
+            this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer;
+            //this.$store.state.cameraConfig.unit1X=Math.abs(this.$store.state.cameraConfig.unit1X/this.$store.state.mapConfig.zoomSub);//单位放大
+            //this.$store.state.cameraConfig.unit1Y=Math.abs(this.$store.state.cameraConfig.unit1Y/this.$store.state.mapConfig.zoomSub);//单位放大
             this.$store.state.mapConfig.layer+=1;//层级下调
           }
         }
@@ -560,6 +587,22 @@ export default {
 }
 </script>
 <style scoped>
-#dataLayer{width: 100%;height: 100%;overflow: hidden}
-.elementData{width: 100%;height: 100%;cursor: default}
+#dataLayer{
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  z-index: 545;left: 0px;
+  top:0px;
+  pointer-events: none
+}
+.elementData{
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  position: absolute;
+  z-index: 545;
+  left: 0px;
+  top:0px;
+}
 </style>

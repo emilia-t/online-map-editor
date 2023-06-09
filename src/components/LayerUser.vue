@@ -290,7 +290,8 @@ export default {
 }
 /*.userLayer{width: 100%;height: 100%}*/
 .userLayerBox{
-  box-shadow: #c1c1c1 0px 0px 4px;background: #fefefe;width: 240px;height: 60px;display: flex;justify-content: center;align-items: center;position: fixed;top: 10px;right: 10px;border-radius: 6px;overflow: hidden;}
+  box-shadow: #c1c1c1 0px 0px 4px;background: #fefefe;width: 240px;height: 60px;display: flex;justify-content: center;align-items: center;position: fixed;top: 10px;right: 10px;z-index: 550;border-radius: 6px;overflow: hidden;
+}
 .headImage{display: flex;justify-content: center;align-items: center;width: 60px;height: 60px}
 .headImage img:hover{box-shadow: #d7d7d7 0px 0px 4px;width: 60px;height: 60px}
 .headImage img{border-radius: 6px;box-shadow: #cdcdcd 0px 0px 4px;transition: .4s;width: 45px;height: 45px}

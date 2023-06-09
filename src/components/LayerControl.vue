@@ -112,6 +112,11 @@ export default {
     startSetting(){
       this.KeyListen();//开启键盘监听
     },
+    //p0点位置移动1个单位
+    moveP0(obj){
+      this.$store.state.mapConfig.A1.x+=this.$store.state.cameraConfig.unit1X*obj.x;
+      this.$store.state.mapConfig.A1.y+=this.$store.state.cameraConfig.unit1Y*obj.y;
+    },
     addAreaStart(){
       if(!this.isAddArea){
         this.isAddArea=true;//更改添加状态为“可用”
@@ -159,7 +164,6 @@ export default {
               //判断target
               let tag=ev.target.nodeName;
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
-                console.log("IO.")
                 //计算新增点位置
                 let Pos=this.computeMouseActualPos(ev)
                 this.theConfig.addAreaPos.push(Pos);
@@ -262,7 +266,7 @@ export default {
               let tag=ev.target.nodeName;
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
                 //计算新增点位置
-                let Pos=this.computeMouseActualPos(ev)
+                let Pos=this.computeMouseActualPos(ev);
                 this.theConfig.addLinePos.push(Pos);
               }
             }
@@ -292,14 +296,6 @@ export default {
       this.theConfig.lineBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
       //结束通知
       this.$root.sendSwitchInstruct('previewLine',false);
-    },
-    //转化坐标
-    translateCoordinate(float){
-      return float*10000000;
-    },
-    //逆向转化坐标
-    reTranslateCoordinate(float){
-      return float/10000000;
     },
     //取消添加点
     addPointCancel(){
@@ -352,27 +348,30 @@ export default {
         //2.开始计算
         //没有缩放
         if(layer===0){
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
+          refPos.x=mousePos.x*this.unit1X+p0Pos.x+this.offsetX;//p0点加上鼠标的点击位置+精度补偿值
+          refPos.y=p0Pos.y-mousePos.y*this.unit1Y+this.offsetY;
+          //检测点击的位置是否符合单位1
+          //console.log(refPos);
           return refPos;
         }
         //缩小
         if(layer>0){
           //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
+          refPos.x=(mousePos.x*this.unit1X)+p0Pos.x;//鼠标位置乘以单位1
+          refPos.y=p0Pos.y-(mousePos.y*this.unit1Y);
           //2.转化
           for (let i=0;i<layer;i++){
             refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
             refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
           }
+          //console.log(refPos);
           return refPos;
         }
         //放大
         if(layer<0){
           //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
+          refPos.x=mousePos.x*this.unit1X+p0Pos.x;
+          refPos.y=p0Pos.y-mousePos.y*this.unit1X;
           //2.转化
           for(let i=0;i>layer;i--){
             refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
@@ -469,6 +468,18 @@ export default {
     }
   },
   computed:{
+    unit1X(){
+      return this.$store.state.cameraConfig.unit1X;
+    },
+    unit1Y(){
+      return this.$store.state.cameraConfig.unit1Y;
+    },
+    offsetX(){
+      return this.$store.state.cameraConfig.offsetX;
+    },
+    offsetY(){
+      return this.$store.state.cameraConfig.offsetY;
+    },
     buttonA(){
       return this.theConfig.buttonA;
     },
@@ -557,13 +568,17 @@ export default {
     },
     addNewLine:{
       handler(newValue){
+        //在窗口大小更新时禁止更新
+        if(this.$store.state.cameraConfig.windowChange===true){
+          return false;
+        }
         if(newValue.length!==0){
           //1更新临时线数据
           this.$store.state.mapConfig.tempLine.point.x=newValue[0].x;
           this.$store.state.mapConfig.tempLine.point.y=newValue[0].y;
           this.$store.state.mapConfig.tempLine.points.push(newValue[newValue.length-1]);
           //2.更新临时线显示位置
-          this.$store.state.mapConfig.tempLine.showPos.push({x:this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.x),y:-this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.y)});
+          this.$store.state.mapConfig.tempLine.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X,y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});
         }else {
           this.$store.state.mapConfig.tempLine.point.x=0;
           this.$store.state.mapConfig.tempLine.point.y=0;
@@ -575,13 +590,18 @@ export default {
     },
     addNewArea:{
       handler(newValue){
+        //在窗口大小更新时禁止更新
+        if(this.$store.state.cameraConfig.windowChange===true){
+          return false;
+        }
+        //解决缩放问题，防抖
         if(newValue.length!==0){
           //1更新临时线数据
           this.$store.state.mapConfig.tempArea.point.x=newValue[0].x;
           this.$store.state.mapConfig.tempArea.point.y=newValue[0].y;
           this.$store.state.mapConfig.tempArea.points.push(newValue[newValue.length-1]);
           //2.更新临时线显示位置
-          this.$store.state.mapConfig.tempArea.showPos.push({x:this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.x),y:-this.reTranslateCoordinate(this.$store.state.mapConfig.svgClick.y)});
+          this.$store.state.mapConfig.tempArea.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X,y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});
         }else {
           this.$store.state.mapConfig.tempArea.point.x=0;
           this.$store.state.mapConfig.tempArea.point.y=0;
@@ -613,6 +633,7 @@ export default {
 </script>
 
 <style scoped>
+
 .controlLayer{
   width: auto;
   height: auto;
@@ -631,6 +652,7 @@ export default {
   align-items: center;
   flex-direction: column;
   position: fixed;
+  z-index: 550;
   right: 0px;
   top:85px;
   background: rgb(252,252,252);

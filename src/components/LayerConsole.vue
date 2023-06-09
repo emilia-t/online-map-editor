@@ -8,9 +8,13 @@
     <div ref="consoleMap" class="consoleMap">
       浏览器尺寸：{{$store.state.mapConfig.browser.width}} x {{$store.state.mapConfig.browser.height}}
       <br>
-      地图X轴大小：{{$store.state.mapConfig.mapSize.width.x1}} ~ {{$store.state.mapConfig.mapSize.width.x2}}
+      地图X轴大小：{{$store.state.mapConfig.mapSize.width.max}} ~ {{$store.state.mapConfig.mapSize.width.min}}
       <br>
-      地图Y轴大小：{{$store.state.mapConfig.mapSize.height.y1}} ~ {{$store.state.mapConfig.mapSize.height.y2}}
+      地图Y轴大小：{{$store.state.mapConfig.mapSize.height.max}} ~ {{$store.state.mapConfig.mapSize.height.min}}
+      <br>
+      X轴单位1：{{$store.state.cameraConfig.unit1X}}
+      <br>
+      Y轴单位1：{{$store.state.cameraConfig.unit1Y}}
       <br>
       A1相对坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
       <br>
@@ -22,14 +26,25 @@
       <br>
       双击位置：{{$store.state.mapConfig.svgDbClick.x}} , {{$store.state.mapConfig.svgDbClick.y}}
       <br>
+      左键按下：{{$store.state.mapConfig.svgMouseDown.x}} , {{$store.state.mapConfig.svgMouseDown.y}}
+      <br>
       左键松开：{{$store.state.mapConfig.svgMouseUp.x}} , {{$store.state.mapConfig.svgMouseUp.y}}
       <br>
       清空点击：{{$store.state.mapConfig.clearClick.x}} , {{$store.state.mapConfig.clearClick.y}}
       <br>
-      新层级：{{$store.state.mapConfig.layer}}
+      R-Target：{{$store.state.mapConfig.operated.id}}
       <br>
-      旧层级：{{$store.state.mapConfig.oldLayer}}
+      L-Target：{{$store.state.detailsPanelConfig.target}}
       <br>
+      新旧层级：{{$store.state.mapConfig.oldLayer}}->{{$store.state.mapConfig.layer}}
+      <br>
+      窗口更新：{{$store.state.cameraConfig.windowChange}}
+      <br>
+      Add&Sub：{{$store.state.mapConfig.zoomAdd}} : {{$store.state.mapConfig.zoomSub}}
+      <br>
+      unit1X&Y：{{$store.state.cameraConfig.unit1X}} : {{$store.state.cameraConfig.unit1Y}}
+      <br>
+      启用额外的底图：{{$store.state.leafletConfig.enableBaseMap}}
     </div>
   </div>
 </template>

@@ -97,6 +97,22 @@
           <!--switch式开关-->
           <div class="switchOut"><div class="circle"></div></div>
         </div>
+<!--        <hr/>-->
+<!--        <div class="SettingListT1">-->
+<!--          <div class="spans">-->
+<!--            <span class="spansA">缩放层级限制调整</span>-->
+<!--            <span class="spansB">默认为-10~5</span>-->
+<!--          </div>-->
+<!--          &lt;!&ndash;滑块&ndash;&gt;-->
+<!--          <div class="slideBlock">-->
+<!--            <span class="blockName">&nbsp;&nbsp;最大值&nbsp;{{maxZoom}}</span>-->
+<!--            <orange-slide-block :max="maxZoom" :min="minZoom" :default="maxZoom" :widths="150" @OrangeSlideBlockCall="maxZoomSet"></orange-slide-block>-->
+<!--          </div>-->
+<!--          <div class="slideBlock">-->
+<!--            <span class="blockName">&nbsp;&nbsp;最小值&nbsp;{{minZoom}}</span>-->
+<!--            <orange-slide-block :max="maxZoom" :min="minZoom" :default="minZoom" :widths="150" @OrangeSlideBlockCall="minZoomSet"></orange-slide-block>-->
+<!--          </div>-->
+<!--        </div>-->
       </div>
       <!--账号设置-->
       <div class="Setting" v-show="AccountSettings">
@@ -140,15 +156,17 @@
         <div class="AboutBox">
           <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png">
           <p class="Ap2">在线地图编辑器</p>
-          <p class="Ap1">OME版本0.3.5</p>
-          <p class="Ap1">Vue版本2.9.6</p>
-          <p class="Ap1"><a href="https://github.com/emilia-t/map" target="_blank">开放源代码</a></p>
-          <p class="Ap1">著作权归站长所有</p>
-          <p class="Ap1">@2018~2023</p>
-          <p class="Ap1">After The Stars Wither</p>
+          <p class="Ap1">OME版本0.3.9</p>
+          <p class="Ap1"><a href="https://vuejs.org" target="_blank" style="color:blue">Vue</a>版本2.9.6</p>
+          <p class="Ap1"><a href="https://leafletjs.com" target="_blank" style="color:blue">Leaflet</a>版本1.9.4</p>
+          <p class="Ap1"><a href="https://github.com/emilia-t/onlinemapeditor" target="_blank" style="color:blue">开放源代码</a></p>
           <p class="Ap3">鸣谢</p>
-          <p class="Ap1">Emilia</p>
-          <p class="Ap1">ALIMU</p>
+          <p class="Ap1">Emilia（测试）</p>
+          <p class="Ap1">ALIMU（测试）</p>
+          <p class="Ap1">空梦（测试）</p>
+          <p class="Ap1">水着yamiUwU（测试）</p>
+          <p class="Ap3">Power By</p>
+          <p class="Ap1"><span style="letter-spacing:2px;font-size:12px;font-weight:100;padding:2px;color:rgba(255,255,255,0.2);background-image:linear-gradient(to right, rgba(3,94,252,0.5), rgba(234,110,255,0.5));-webkit-text-fill-color:transparent;-webkit-text-stroke:1px;-webkit-text-stroke-color: #fff;">After The Stars Wither</span></p>
         </div>
       </div>
       <!--帮助界面-->
@@ -277,8 +295,10 @@
 <script>
 import deleteButton from '../../../static/delete.png';
 import editButton from '../../../static/edit.png';
+import orangeSlideBlock from '../OrangeSlideBlock';
 export default {
   name: "LayerMenuPanel",
+  components:{orangeSlideBlock},
   data(){
     return {
       panelShow:true,
@@ -329,6 +349,14 @@ export default {
       });
       //查找本地账号配置
       this.findLocalAccounts();
+    },
+    //修改最大缩放
+    maxZoomSet(number) {
+      this.$store.state.cameraConfig.maxZoom=number;
+    },
+    //修改最小缩放
+    minZoomSet(number) {
+      this.$store.state.cameraConfig.minZoom=number;
     },
     //删除账号
     deleteAccount(name){
@@ -716,6 +744,12 @@ export default {
   computed:{
     reloadAccounts(){
       return this.$store.state.commits.reloadAccounts;
+    },
+    maxZoom(){
+      return this.$store.state.cameraConfig.maxZoom;
+    },
+    minZoom(){
+      return this.$store.state.cameraConfig.minZoom;
     }
   },
   watch:{
@@ -736,6 +770,36 @@ export default {
 </script>
 
 <style scoped>
+.radioPab{
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+}
+.pabList{
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.pabName{
+  font-weight: 100;
+  font-size: 13px;
+}
+.slideBlock{
+  width: 100%;
+  height: 28px;
+  /*background: red;*/
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.blockName{
+  font-size: 13px;
+}
 .explainChild{
   display: flex;
   flex-direction: row;
@@ -894,7 +958,7 @@ a:hover, a:active {
 .SettingsBox{
   position: absolute;
   top: 0px;
-  left: 100px;
+  left: 85px;
   z-index: 545;
 }
 .whiteBack{
@@ -917,6 +981,17 @@ a:hover, a:active {
   align-items: center;
   flex-direction: row;
   flex-wrap: nowrap;
+}
+.SettingListT1{
+  width: calc(100% - 10px);
+  margin: 10px 0px;
+  height: auto;
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 .spans{
   display: flex;
@@ -958,12 +1033,15 @@ a:hover, a:active {
 .circleOff {
   transform: translateX(22px) translateY(1px) !important;
 }
+.Setting{
+  padding:0px 2px;
+}
 .Settings{
   box-shadow:2px 2px 5px rgb(220, 220, 220);
   z-index: 550;
   position: absolute;
   top: 50px;
-  left: -14px;
+  left: 0px;
   transition: 0.4s;
   width: 300px;
   height: auto;
@@ -999,10 +1077,10 @@ a:hover, a:active {
   top: 10px;
 }
 .HidePanel{
-  left:-105px!important;
+  left:-85px!important;
 }
 .HideCloseBt{
-  left:100px!important;
+  left:85px!important;
 }
 .HideSvg{
   transform: rotate(0deg)!important;

@@ -123,6 +123,14 @@ export default {
     startSetting(){
 
     },
+    //文字选择
+    setSelectionOn(){
+      this.$refs.LayerDetailsPanel.classList.remove('selectionNone');
+    },
+    //禁止文字选择
+    setSelectionOff(){
+      this.$refs.LayerDetailsPanel.classList.add('selectionNone');
+    },
     //隐藏面板
     hidden(){
       this.$refs.LayerDetailsPanel.style.left='-350px';
@@ -152,12 +160,22 @@ export default {
   watch:{
     targetId:{
       handler(newValue){
+        //设置-1等同于隐藏
+        if(newValue===-1){
+          //隐藏
+          this.hidden();
+          //禁止文字选择
+          this.setSelectionOff();
+        }
         //如果有移动节点的操作会抑制更新
         if(this.$store.state.commits.disableZoomAndMove===false){
           if(newValue===-1){
             this.hidden();
           }else {
+            //显示
             this.show();
+            //文字选择
+            this.setSelectionOn();
           }
           this.exampleConfig=this.$store.state.detailsPanelConfig.data;
           this.sourcePoint=this.$store.state.detailsPanelConfig.sourcePoint;
@@ -232,5 +250,8 @@ export default {
   padding: 8px;
   font-weight: 100;
   /*background: #48caec;*/
+}
+.selectionNone{
+  user-select: none;
 }
 </style>

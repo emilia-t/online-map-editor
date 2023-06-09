@@ -276,7 +276,7 @@ export default {
   height: 55px;
   bottom: 20px;
   position: fixed;
-  z-index: 540;
+  z-index: 550;
   right: 0px;
 }
 .unreadNumber{

@@ -175,37 +175,28 @@ new Vue({
     //返回移动后的元素坐标位置
     computeMouseActualPos(mouseEvent){
       try{
-        //1.获取必要值 layer\mousePos\p0Pos
         let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
         layer=this.$store.state.mapConfig.layer;
         mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
         p0Pos.x=this.$store.state.mapConfig.p0.point.x;
         p0Pos.y=this.$store.state.mapConfig.p0.point.y;
-        //2.开始计算
-        //没有缩放
         if(layer===0){
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
+          refPos.x=mousePos.x*this.unit1X+p0Pos.x+this.offsetX;
+          refPos.y=p0Pos.y-mousePos.y*this.unit1Y+this.offsetY;
           return refPos;
         }
-        //缩小
         if(layer>0){
-          //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
-          //2.转化
+          refPos.x=(mousePos.x*this.unit1X)+p0Pos.x;
+          refPos.y=p0Pos.y-(mousePos.y*this.unit1Y);
           for (let i=0;i<layer;i++){
             refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
             refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
           }
           return refPos;
         }
-        //放大
         if(layer<0){
-          //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=this.reTranslateCoordinate(mousePos.x)+p0Pos.x;
-          refPos.y=p0Pos.y-this.reTranslateCoordinate(mousePos.y);
-          //2.转化
+          refPos.x=mousePos.x*this.unit1X+p0Pos.x;
+          refPos.y=p0Pos.y-mousePos.y*this.unit1X;
           for(let i=0;i>layer;i--){
             refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
             refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
@@ -223,6 +214,20 @@ new Vue({
     //逆向转化坐标
     reTranslateCoordinate(float){
       return float/10000000;
+    },
+  },
+  computed:{
+    unit1X(){
+      return this.$store.state.cameraConfig.unit1X;
+    },
+    unit1Y(){
+      return this.$store.state.cameraConfig.unit1Y;
+    },
+    offsetX(){
+      return this.$store.state.cameraConfig.offsetX;
+    },
+    offsetY(){
+      return this.$store.state.cameraConfig.offsetY;
     },
   }
 })

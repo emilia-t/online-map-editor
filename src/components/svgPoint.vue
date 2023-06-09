@@ -94,14 +94,6 @@ export default {
         this.occurredMoveMap=true;//告知相机发生过移动行为
       })
     },
-    //转化坐标
-    translateCoordinate(float){
-      return float*10000000;
-    },
-    //逆向转化坐标
-    reTranslateCoordinate(float){
-      return float/10000000;
-    },
     //初始化定位
     initializePosition(){
       try{
@@ -114,7 +106,8 @@ export default {
         //2.开始计算
         //无缩放
         if(layer===0){
-          refPos.x=pointPos.x+p0Pos.x;
+          //console.log(p0Pos.x)
+          refPos.x=pointPos.x+p0Pos.x;//等于p0点加自生
           refPos.y=pointPos.y+p0Pos.y;
           this.pointConfig.point.x=refPos.x;
           this.pointConfig.point.y=refPos.y;
@@ -157,11 +150,13 @@ export default {
     //移动（移动结束后固定数据）
     move(){
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
+        //console.log(Date.now());
+        //console.log(this.A1Cache);
         let A1mvX=this.A1Cache.x-this.A1.x;
         let A1mvY=this.A1Cache.y-this.A1.y;
         let newArr=this.pointConfig.point;
-        this.pointConfig.point.x=this.reTranslateCoordinate(this.translateCoordinate(newArr.x)+A1mvX);
-        this.pointConfig.point.y=this.reTranslateCoordinate(this.translateCoordinate(newArr.y)+A1mvY);
+        this.pointConfig.point.x=newArr.x+(A1mvX*this.unit1X);
+        this.pointConfig.point.y=newArr.y+(A1mvY*this.unit1Y);
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
         this.occurredMoveMap=false;//告知已经处理本次移动过程
@@ -170,19 +165,21 @@ export default {
     },
     //缩放（直接修改数据）
     scale(){
+      //当前的缩放是基于zoomSub和Add进行缩放的，
       let layer=this.layer;
       let oldLayer=this.oldLayer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
       let pointPos={};
-      Object.assign(pointPos,this.pointConfig.point)
-      const MOX=this.mouse.x;
+      pointPos=JSON.parse(JSON.stringify(this.pointConfig.point));
+      const MOX=this.mouse.x;//px
       const MOY=this.mouse.y;
-      const TRX=this.translateCoordinate(pointPos.x);
-      const TRY=-this.translateCoordinate(pointPos.y);
+      //这里的单位1需要改为缩放前的单位1
+      const TRX=pointPos.x/this.unit1X;//缩放后出现问题500点从500x变为了1250x,此处单位1以及变小了
+      const TRY=-pointPos.y/this.unit1Y;
       const axSize=MOX-TRX;
       const aySize=MOY-TRY;
-      this.pointConfig.point.x=this.reTranslateCoordinate(TRX-((zoom*axSize)));
-      this.pointConfig.point.y=-this.reTranslateCoordinate(TRY-((zoom*aySize)));
+      this.pointConfig.point.x=(TRX-((zoom*axSize)))*this.unit1X;
+      this.pointConfig.point.y=-(TRY-((zoom*aySize)))*this.unit1Y;
     },
     rightClickOperation(mouseEvent){
       //阻止默认事件
@@ -199,6 +196,24 @@ export default {
     }
   },
   computed:{
+    browserX(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    browserY(){
+      return this.$store.state.mapConfig.browser.height;
+    },
+    unit1X(){
+      return this.$store.state.cameraConfig.unit1X;
+    },
+    unit1Y(){
+      return this.$store.state.cameraConfig.unit1Y;
+    },
+    offsetX(){
+      return this.$store.state.cameraConfig.offsetX;
+    },
+    offsetY(){
+      return this.$store.state.cameraConfig.offsetY;
+    },
     //松开左键位置
     svgMouseUp(){
       return this.$store.state.mapConfig.svgMouseUp;
@@ -210,17 +225,17 @@ export default {
     dynamicPointsX(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let A1mvX=this.A1Cache.x-this.A1.x;
-        return -this.translateCoordinate(this.pointConfig.point.x) - A1mvX;
+        return -(this.pointConfig.point.x/this.unit1X) - A1mvX;//先转化为单位量，再相减
       }else {
-        return -this.translateCoordinate(this.pointConfig.point.x);
+        return -this.pointConfig.point.x/this.unit1X;//等于自生的坐标除以单位1
       }
     },
     dynamicPointsY(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let A1mvY=this.A1Cache.y-this.A1.y;
-        return -(this.translateCoordinate(this.pointConfig.point.y) + A1mvY);
+        return -((this.pointConfig.point.y/this.unit1Y) + A1mvY);
       }else {
-        return -(this.translateCoordinate(this.pointConfig.point.y));
+        return -this.pointConfig.point.y/this.unit1Y;
       }
     },
     doNeedMoveMap(){
@@ -252,6 +267,20 @@ export default {
     }
   },
   watch:{
+    browserX:{
+      handler(newValue,oldValue){
+        let offset=(newValue-oldValue)/2;
+        this.pointConfig.point.x+=offset*this.unit1X;
+      },
+      deep:true
+    },
+    browserY:{
+      handler(newValue,oldValue){
+        let offset=(oldValue-newValue)/2;
+        this.pointConfig.point.y+=offset*this.unit1Y;
+      },
+      deep:true
+    },
     reinitializeElement:{
       handler(newValue){
         if(newValue!==0){
@@ -277,8 +306,8 @@ export default {
         if(this.shiftStatus===true){
         if(this.myId===this.selectId){
           //移动自身的视图(跟随鼠标)
-          this.pointConfig.point.x=this.reTranslateCoordinate(newValue.x);
-          this.pointConfig.point.y=this.reTranslateCoordinate(-newValue.y);
+          this.pointConfig.point.x=newValue.x;
+          this.pointConfig.point.y=-newValue.y;
         }
         }
       }
@@ -310,6 +339,7 @@ export default {
               //处理
               //1.计算新的位置
               let newPos=this.$root.computeMouseActualPos(newValue);
+              console.log(newPos);
               //2.上传服务器(一共修改两项>point和points)
               let uObj={
                 id:null,

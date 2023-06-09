@@ -29,22 +29,14 @@ export default {
         this.occurredMoveMap=true;//告知相机发生过移动行为
       })
     },
-    //转化坐标
-    translateCoordinate(float){
-      return float*10000000;
-    },
-    //逆向转化坐标
-    reTranslateCoordinate(float){
-      return float/10000000;
-    },
     //移动（移动结束后固定数据）
     move(){
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1.y-this.A1Cache.y;
         let newArr=this.tempPoint.point;
-        this.tempPoint.point.x=this.reTranslateCoordinate(this.translateCoordinate(newArr.x)+A1mvX);
-        this.tempPoint.point.y=this.reTranslateCoordinate(this.translateCoordinate(newArr.y)+A1mvY);
+        this.tempPoint.point.x=(newArr.x/this.unit1X+A1mvX)*this.unit1X;
+        this.tempPoint.point.y=(newArr.y/this.unit1Y+A1mvY)*this.unit1Y;
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
         this.occurredMoveMap=false;//告知已经处理本次移动过程
@@ -59,38 +51,56 @@ export default {
       const MOX=this.mousePoint.x;
       const MOY=this.mousePoint.y;
       const pointPos=this.tempPoint.point;
-      const TRX=-this.translateCoordinate(pointPos.x);
-      const TRY=this.translateCoordinate(pointPos.y);
+      const TRX=-(pointPos.x/this.unit1X);
+      const TRY=(pointPos.y/this.unit1Y);
       const axSize=MOX-TRX;
       const aySize=MOY-TRY;
-      this.tempPoint.point.x=-this.reTranslateCoordinate(TRX-((zoom*axSize)));
-      this.tempPoint.point.y=this.reTranslateCoordinate(TRY-((zoom*aySize)));
+      this.tempPoint.point.x=-(TRX-((zoom*axSize)))*this.unit1X;
+      this.tempPoint.point.y=(TRY-((zoom*aySize)))*this.unit1Y;
     }
   },
   computed:{
+    browserX(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    browserY(){
+      return this.$store.state.mapConfig.browser.height;
+    },
+    unit1X(){
+      return this.$store.state.cameraConfig.unit1X;
+    },
+    unit1Y(){
+      return this.$store.state.cameraConfig.unit1Y;
+    },
+    offsetX(){
+      return this.$store.state.cameraConfig.offsetX;
+    },
+    offsetY(){
+      return this.$store.state.cameraConfig.offsetY;
+    },
     //这里考虑是否需要用到
     dynamicPointsX(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
-        return -this.translateCoordinate(this.tempPoint.point.x) - A1mvX;
+        return -(this.tempPoint.point.x/this.unit1X) - A1mvX;
       }else {
-        return -this.translateCoordinate(this.tempPoint.point.x);
+        return -(this.tempPoint.point.x/this.unit1X);
       }
     },
     dynamicPointsY(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let A1mvY=this.A1.y-this.A1Cache.y;
-        return this.translateCoordinate(this.tempPoint.point.y) + A1mvY;
+        return this.tempPoint.point.y/this.unit1Y + A1mvY;
       }else {
-        return this.translateCoordinate(this.tempPoint.point.y);
+        return this.tempPoint.point.y/this.unit1Y;
       }
     },
     doNeedMoveMap(){
       return this.$store.state.cameraConfig.doNeedMoveMap;
     },
     sourcePointStr(){
-      let st1=this.translateCoordinate(this.tempPoint.point.x);
-      let st2=this.translateCoordinate(this.tempPoint.point.y);
+      let st1=this.tempPoint.point.x/this.unit1X;
+      let st2=this.tempPoint.point.y/this.unit1Y;
       return st1+','+st2;
     },
     A1(){
