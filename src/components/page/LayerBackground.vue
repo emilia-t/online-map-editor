@@ -1,26 +1,22 @@
 <template>
-  <div class="LayerBackground" style="">
+  <div class="LayerBackground">
 
   </div>
 </template>
 
 <script>
-//import bj from '../../../static/homepagebackground.png';
 export default {
   name: "LayerBackground",
   data(){
     return {
       imgUrl:null,
-      //bj
     }
   },
   mounted() {
 
   },
   methods:{
-    getPicture(){
 
-    }
   }
 }
 </script>

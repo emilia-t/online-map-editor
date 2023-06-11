@@ -18,19 +18,16 @@ export default {
     this.startSetting();
   },
   methods:{
-    //初始化配置
-    startSetting(){
+    startSetting(){//初始化配置
       this.dataSourcePoints=this.sourcePointStr;
       this.mouseEvent();
     },
-    //监听鼠标移动
-    mouseEvent(){
+    mouseEvent(){//监听鼠标移动
       document.body.addEventListener('mousemove',(e)=>{
         this.occurredMoveMap=true;//告知相机发生过移动行为
       })
     },
-    //移动（移动结束后固定数据）
-    move(){
+    move(){//移动（移动结束后固定数据）
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1.y-this.A1Cache.y;
@@ -43,8 +40,7 @@ export default {
       }
       return true;
     },
-    //缩放（直接修改数据）
-    scale(){
+    scale(){//缩放（直接修改数据）
       let layer=this.layer;
       let oldLayer=this.oldLayer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
@@ -78,7 +74,6 @@ export default {
     offsetY(){
       return this.$store.state.cameraConfig.offsetY;
     },
-    //这里考虑是否需要用到
     dynamicPointsX(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;

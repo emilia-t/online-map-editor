@@ -1,4 +1,3 @@
-// 根实例
 import Vue from 'vue';
 import router from './router';
 import App from "./App";
@@ -7,9 +6,7 @@ import CONFIG from './js/config';
 import store from './store';
 import '@/icons';
 import {JSEncrypt} from "jsencrypt";
-//允许生产环境输入错误信息
-Vue.config.productionTip = false
-/* eslint-disable no-new */
+Vue.config.productionTip = false;//允许生产环境输入错误信息
 new Vue({
   el:'#app',
   data(){return{
@@ -53,8 +50,7 @@ new Vue({
         //或者应该修改某一state的状态
      }
     **/
-    //发送一条带有数据的命令
-    sendDataInstruct(name,price){
+    sendDataInstruct(name,price){//发送一条带有数据的命令
       switch (name) {
         case 'anonymousInstruct':{
           if(this.filter(name)){
@@ -68,11 +64,9 @@ new Vue({
         }
       }
     },
-    //发送一个带有单一状态的命令
-    sendSwitchInstruct(name,status){
+    sendSwitchInstruct(name,status){//发送一个带有单一状态的命令
       switch (name) {
-        //用于显示或关闭预览线段
-        case 'previewLine':{
+        case 'previewLine':{//用于显示或关闭预览线段
           if(this.filter(name)){
             this.$store.state.commits.previewLine=status;
             this.commitsConfig.addNewPointEnd.pass++;
@@ -92,8 +86,7 @@ new Vue({
         }
       }
     },
-    //命令状态更新
-    sendInstruct(name){
+    sendInstruct(name){//命令状态更新
       switch (name){
         case 'addNewAreaEnd':{
           if(this.filter(name)){
@@ -172,8 +165,7 @@ new Vue({
         }
       }
     },
-    //返回移动后的元素坐标位置
-    computeMouseActualPos(mouseEvent){
+    computeMouseActualPos(mouseEvent){//返回移动后的元素坐标位置
       try{
         let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
         layer=this.$store.state.mapConfig.layer;
@@ -206,14 +198,6 @@ new Vue({
       }catch (e) {
         return false;
       }
-    },
-    //转化坐标
-    translateCoordinate(float){
-      return float*10000000;
-    },
-    //逆向转化坐标
-    reTranslateCoordinate(float){
-      return float/10000000;
     },
   },
   computed:{

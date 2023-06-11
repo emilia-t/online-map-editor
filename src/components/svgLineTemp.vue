@@ -1,10 +1,8 @@
 <template>
   <g :elementId="tempLine.id">
     <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+tempLine.color,strokeWidth:tempLine.width}"/>
-    <!--下一行用于显示预览轨迹，仅当第一个点建立之后，且当结束绘制后关闭，第一个点为最后一个点，第二个点依据鼠标移动，第一个点跟随视图移动-->
-    <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2)"/>
+    <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2)"/><!--预览轨迹-->
     <circle v-show="!doNeedMoveMap" v-for="point in tempLine.showPos"  :cx="circleCX(point.x)" :cy="circleCY(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
-    <!---->
   </g>
 </template>
 <script>
@@ -14,20 +12,17 @@ export default {
     return {
       dataSourcePoints:null,//数据源保存
       occurredMoveMap:false,//移动状态
-      A1Cache:{x:0,y:0}//a1的缓存，用于每次移动时扣除上一次移动产生的A1距离
+      A1Cache:{x:0,y:0}//a1的缓存
     }
   },
   methods:{
-    //初始化配置
     startSetting(){
       this.dataSourcePoints=this.dynamicPointsStr;
       this.mouseEvent();
-      //初始化A1cache
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
     },
-    //移动（移动结束后固定数据）
-    move(){
+    move(){//移动
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1Cache.y-this.A1.y;
@@ -38,12 +33,11 @@ export default {
         }
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
-        this.occurredMoveMap=false;//告知已经处理本次移动过程
+        this.occurredMoveMap=false;
       }
       return true;
     },
-    //缩放（直接修改数据）
-    scale(){
+    scale(){//缩放
       let layer=this.layer;
       let oldLayer=this.oldLayer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
@@ -63,8 +57,7 @@ export default {
       }
       this.tempLine.showPos=newPosArr;
     },
-    //监听鼠标移动
-    mouseEvent(){
+    mouseEvent(){//监听鼠标移动
       document.body.addEventListener('mousemove',(e)=>{
         this.occurredMoveMap=true;//告知相机发生过移动行为
       })
@@ -159,10 +152,8 @@ export default {
         return refArr;
       }
     },
-    //预览lane的坐标
-    previewLinePoints(){
-      //preview line需要在窗口缩放时变化
-      if(this.tempLine.points.length!==0){
+    previewLinePoints(){//预览lane的坐标
+      if(this.tempLine.points.length!==0){//preview line需要在窗口缩放时变化
         if(this.dynamicPointsStr.length!==0){
           let str='';
           str+=this.dynamicPointsStr[this.dynamicPointsStr.length-1].c+' '+this.dynamicPointsStr[this.dynamicPointsStr.length-1].d;
@@ -181,7 +172,6 @@ export default {
       }
     },
   },
-  //移动过程中使用动态坐标，移动结束后修改源数据
   watch:{
     browserX:{
       handler(newValue,oldValue){

@@ -1,8 +1,7 @@
 <template>
   <g :elementId="tempArea.id">
     <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+tempArea.color,strokeWidth:tempArea.width}"/>
-    <!--下一行用于显示预览轨迹，仅当第一个点建立之后，且当结束绘制后关闭，第一个点为最后一个点，第二个点依据鼠标移动，第一个点跟随视图移动-->
-    <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2)"/>
+    <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2)"/><!--预览轨迹-->
     <circle v-show="!doNeedMoveMap" v-for="point in tempArea.showPos"  :cx="circleCX(point.x)" :cy="circleCY(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
@@ -13,28 +12,17 @@ export default {
     return {
       dataSourcePoints:null,//数据源保存
       occurredMoveMap:false,//移动状态
-      A1Cache:{x:0,y:0}//a1的缓存，用于每次移动时扣除上一次移动产生的A1距离
+      A1Cache:{x:0,y:0}//a1的缓存
     }
   },
   methods:{
-    //初始化配置
-    startSetting(){
+    startSetting(){//初始化配置
       this.dataSourcePoints=this.dynamicPointsStr;
       this.mouseEvent();
-      //初始化A1cache
-      this.A1Cache.x=this.A1.x;
+      this.A1Cache.x=this.A1.x;//初始化A1cache
       this.A1Cache.y=this.A1.y;
     },
-    //转化坐标
-    translateCoordinate(float){
-      return float*10000000;
-    },
-    //逆向转化坐标
-    reTranslateCoordinate(float){
-      return float/10000000;
-    },
-    //移动（移动结束后固定数据）
-    move(){
+    move(){//移动
       if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
         let A1mvX=this.A1.x-this.A1Cache.x;
         let A1mvY=this.A1Cache.y-this.A1.y;
@@ -42,7 +30,6 @@ export default {
         for (let i=0;i<newArr.length;i++){
           this.tempArea.showPos[i].x=(newArr[i].x/this.unit1X-A1mvX)*this.unit1Y;
           this.tempArea.showPos[i].y=(newArr[i].y/this.unit1Y+A1mvY)*this.unit1Y;
-          //继续单位转换
         }
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
@@ -50,8 +37,7 @@ export default {
       }
       return true;
     },
-    //缩放（直接修改数据）
-    scale(){
+    scale(){//缩放
       let layer=this.layer;
       let oldLayer=this.oldLayer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
@@ -71,10 +57,9 @@ export default {
       }
       this.tempArea.showPos=newPosArr;
     },
-    //监听鼠标移动
-    mouseEvent(){
+    mouseEvent(){//监听鼠标移动
       document.body.addEventListener('mousemove',(e)=>{
-        this.occurredMoveMap=true;//告知相机发生过移动行为
+        this.occurredMoveMap=true;
       })
     },
     circleCX(x){
@@ -167,8 +152,7 @@ export default {
         return refArr;
       }
     },
-    //预览lane的坐标
-    previewLinePoints(){
+    previewLinePoints(){//预览lane的坐标
       if(this.tempArea.points.length!==0){
         if(this.dynamicPointsStr.length!==0){
           let str='';
@@ -188,7 +172,6 @@ export default {
       }
     },
   },
-  //移动过程中使用动态坐标，移动结束后修改源数据
   watch:{
     browserX:{
       handler(newValue,oldValue){

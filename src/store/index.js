@@ -3,11 +3,9 @@ import Vuex from 'vuex'
 import * as Leaflet from "leaflet";
 Vue.use(Vuex)
 export default new Vuex.Store({
-  //提供唯一的公共数据源，所有共享的数据统一放到store的state进行储存数据，相当于data
   state: {
     classList:{
-      //综合的一个连接服务端的通讯类
-      comprehensive:class comprehensive {
+      comprehensive:class comprehensive {//综合的一个连接服务端的通讯类
         constructor(url){
           this.url=url;
           this.isLink=false;
@@ -25,69 +23,51 @@ export default new Vuex.Store({
           this.mapData={points:[],lines:[],areas:[]};
           this.config={};
           this.otherA1=[];
-          //指令类型合集
-          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData'];
-          //指令合集
-          this.Instruct={
-            //类似于computed
-            //登录指令
-            login(email,password) {
+          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData'];//指令类型合集
+          this.Instruct={//指令合集
+            login(email,password) {//登录指令
               this.email=email || '';
               this.password=password || '';
               return {type:'login',data:{email:this.email,password:this.password}}
             },
-            //获取公钥指令
-            get_publickey() {
+            get_publickey() {//获取公钥指令
               return {type:'get_publickey'}
             },
-            //获取用户数据指令
-            get_userData(){
+            get_userData(){//获取用户数据指令
               return {type:'get_userData'}
             },
-            //获取地图数据指令
-            get_mapData(){
+            get_mapData(){//获取地图数据指令
               return {type:'get_mapData'}
             },
-            //获取服务器配置
-            get_serverConfig(){
+            get_serverConfig(){//获取服务器配置
               return {type:'get_serverConfig'}
             },
-            //广播我的A1位置
-            broadcast_A1(x,y,color,name){
-              //广播类型数据必须要规定class
+            broadcast_A1(x,y,color,name){//广播我的A1位置
               return {type:'broadcast',class:'A1',data: {x,y,color,name}}
             },
-            //以广播的形式发送新增点数据
-            broadcast_point(data){
+            broadcast_point(data){//以广播的形式发送新增点数据
               return {type:'broadcast',class:'point',data}
             },
-            //以广播的形式删除某一要素
-            broadcast_deleteElement(elementId){
+            broadcast_deleteElement(elementId){//以广播的形式删除某一要素
               return {type:'broadcast',class:'deleteElement',data:{id:elementId}}
             },
-            //以广播普通文字消息
-            broadcast_textMessage(data){
+            broadcast_textMessage(data){//以广播普通文字消息
               return {type:'broadcast',class:'textMessage',data}
             },
-            //以广播更新元素数据
-            broadcast_updateElement(data){
+            broadcast_updateElement(data){//以广播更新元素数据
               return {type:'broadcast',class:'updateElement',data}
             },
-            //以广播的形式添加一条线段
-            broadcast_line(data){
+            broadcast_line(data){//以广播的形式添加一条线段
               return {type:'broadcast',class:'line',data}
             },
-            //以广播的形式添加一条线段
-            broadcast_area(data){
+            broadcast_area(data){//以广播的形式添加一条线段
               return {type:'broadcast',class:'area',data}
             },
-            //以广播形式更新元素节点
-            broadcast_updateElementNode(data){
+            broadcast_updateElementNode(data){//以广播形式更新元素节点
               return {type:'broadcast',class:'updateElementNode',data}
             }
           };
-          //检测间
-          this.QIR={
+          this.QIR={//检测间
             /**检测是否为对象类型的数据,是则返回t
              * @return boolean
              * @param obj any
@@ -119,11 +99,9 @@ export default new Vuex.Store({
              */
             widthCheck(number){
               function isNumber(value) {
-                // 先尝试将字符串类型的数字转换为数字类型
                 if (typeof value === 'string' && !isNaN(value)) {
                   return true;
                 }
-                // 使用 isNaN 函数判断是否为数字
                 return typeof value === 'number' && !isNaN(value);
               }
               if(!isNumber(number)){
@@ -143,19 +121,13 @@ export default new Vuex.Store({
              * @param details
              */
             detailsCheck(details){
-              //key正则表达式
-              const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;
+              const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;//key正则表达式
               const ValueExp=/[\[\]{}#`'"]|(-){2}|(\/){2}|(%){2}|\/\*/m;
-              //1检查是否为数组
-              if(Object.prototype.toString.call(details)==='[object Array]'){
-                //2循环检查类型
-                for(let i=0;i<details.length;i++){
-                  //3检查是否为对象
-                  if(Object.prototype.toString.call(details[i])!=='[object object]'){
-                    //4检查是否包含key，value属性
-                    if(details[i].hasOwnProperty('key') && details[i].hasOwnProperty('value')){
-                      //5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
-                      if(KeyExp.test(details[i].key)){
+              if(Object.prototype.toString.call(details)==='[object Array]'){//1检查是否为数组
+                for(let i=0;i<details.length;i++){//2循环检查类型
+                  if(Object.prototype.toString.call(details[i])!=='[object object]'){//3检查是否为对象
+                    if(details[i].hasOwnProperty('key') && details[i].hasOwnProperty('value')){//4检查是否包含key，value属性
+                      if(KeyExp.test(details[i].key)){//5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
                         alert('列名错误，仅允许使用字母、数字、汉字、下划线');
                         return false;
                       }
@@ -176,51 +148,34 @@ export default new Vuex.Store({
               }
               return true;
             },
-            /**检测参数是否为数字,是则返回true
-             * @return boolean
-             * @param value
-             */
             isNumber(value) {
-              // 先尝试将字符串类型的数字转换为数字类型
               if (typeof value === 'string' && !isNaN(value)) {
                 return true;
               }
-              // 使用 isNaN 函数判断是否为数字
               return typeof value === 'number' && !isNaN(value);
             },
-            /**检测参数是否为数组,是则返回true
-             * @return boolean
-             * @param obj
-             */
             isArray(obj) {
               return Array.isArray(obj);
             }
         };
           this.startSetting();
         }
-        //初始化配置
-        startSetting(){
+        startSetting(){//初始化配置
           this.link();
           this.heartbeat();
         }
-        //清除本地数据
-        clearLocalData(){
-          //1.清除会话内的用户数据
-          this.userData=null;
-          //2.清除他人的A1
-          this.otherA1=[];
-          //3.清除地图数据
-          this.mapData.points=[];
+        clearLocalData(){//清除本地数据
+          this.userData=null;//1.清除会话内的用户数据
+          this.otherA1=[];//2.清除他人的A1
+          this.mapData.points=[];//3.清除地图数据
           this.mapData.lines=[];
           this.mapData.areas=[];
         }
-        //广播更新元素节点
-        broadcastUpdateElementNode(data){
+        broadcastUpdateElementNode(data){//广播更新元素节点
           try{
             let sObj={};
-            //1.检查参数是否为数字
             if(!this.QIR.isObject(data)){return false;}
-            if(!this.QIR.hasProperty(data,'id')){return false;}
+            if(!this.QIR.hasProperty(data,'id')){return false;}//1.检查参数是否为数字
             if(!this.QIR.hasProperty(data,'points')){return false;}
             if(!this.QIR.isArray(data.points)){return false;}
             for(let i=0;i<data.points.length;i++){
@@ -246,212 +201,158 @@ export default new Vuex.Store({
 
           }
         }
-        //广播更新某一要素
-        broadcastUpdateElement(data){
+        broadcastUpdateElement(data){//广播更新某一要素
           try {
-            //0.检查数据
-            //0.1检查是否属于object
-            if(!this.QIR.isObject(data)){return false;}
-            //0.2检查是否存在changes
-            if(this.QIR.hasProperty(data,'changes')){
-              //0.3检color
-              if(this.QIR.hasProperty(data.changes,'color')){
+            if(!this.QIR.isObject(data)){return false;}//0.1检查是否属于object
+            if(this.QIR.hasProperty(data,'changes')){//0.2检查是否存在changes
+              if(this.QIR.hasProperty(data.changes,'color')){//0.3检color
                 if(!this.QIR.color16Check(data.changes.color)){
                   return false;
                 }
               }
-              //0.4检查width
-              if(this.QIR.hasProperty(data.changes,'width')){
+              if(this.QIR.hasProperty(data.changes,'width')){//0.4检查width
                 let refWidth=this.QIR.widthCheck(data.changes.width);
                 if(refWidth===false){return false;}else{data.changes.width=refWidth;}
               }
-              //0.5检查details
-              if(this.QIR.hasProperty(data.changes,'details')){
+              if(this.QIR.hasProperty(data.changes,'details')){//0.5检查details
                 if(!this.QIR.detailsCheck(data.changes.details)){
                   return false;
                 }
               }
-              //0.6广播
-              this.send(this.Instruct.broadcast_updateElement(data));
+              this.send(this.Instruct.broadcast_updateElement(data));//0.6广播
             }
           }catch (e) {}
 
         }
-        //广播删除某一要素
-        broadcastDeleteElement(id){
+        broadcastDeleteElement(id){//广播删除某一要素
           this.send(this.Instruct.broadcast_deleteElement(id));
         }
-        //广播普通文本信息
-        broadcastSendText(data){
+        broadcastSendText(data){//广播普通文本信息
           this.send(this.Instruct.broadcast_textMessage(data));
         }
-        //发送路径线数据(兼容区域类型，只需要在第二个参数area值为area即可)
-        broadcastSendLine(data,area){
+        broadcastSendLine(data,area){//发送路径线数据(兼容区域类型，只需要在第二个参数area值为area即可)
           try{
-            //0.检查数据
-            //0.1检查是否属于object
-            if(!this.QIR.isObject(data)){return false;}
-            //0.2检查是否包含class类型
-            if(!this.QIR.hasProperty(data,'class')){return false;}
-            //0.3检查class类型是否为line
-            if(area==='area'){
+            if(!this.QIR.isObject(data)){return false;}//0.1检查是否属于object
+            if(!this.QIR.hasProperty(data,'class')){return false;}//0.2检查是否包含class类型
+            if(area==='area'){//0.3检查class类型是否为line
               if(data.class!=='area'){return false;}
             }else {
               if(data.class!=='line'){return false;}
             }
-            //0.4检查是否包含point类型
-            if(!this.QIR.hasProperty(data,'point')){return false;}
-            //0.5检查point是否为object
-            if(!this.QIR.isObject(data.point)){return false;}
-            //0.6检查point是否由xy
-            if(!this.QIR.hasProperty(data.point,'x')){return false;}
+            if(!this.QIR.hasProperty(data,'point')){return false;}//0.4检查是否包含point类型
+            if(!this.QIR.isObject(data.point)){return false;}//0.5检查point是否为object
+            if(!this.QIR.hasProperty(data.point,'x')){return false;}//0.6检查point是否由xy
             if(!this.QIR.hasProperty(data.point,'y')){return false;}
-            //0.7检查xy是否是数字
-            if(!this.QIR.isNumber(data.point.x)){return false;}
+            if(!this.QIR.isNumber(data.point.x)){return false;}//0.7检查xy是否是数字
             if(!this.QIR.isNumber(data.point.y)){return false;}
-
-            //0.8检查points
-            if(!this.QIR.hasProperty(data,'points')){return false;}
-            //0.8.1检查points是否为数组
-            if(!this.QIR.isArray(data.points)){return false;}
-            //0.8.2循环检测内部的xy参数
-            for(let i=0;i<data.points.length;i++){
-              //0.8.3检测是否存在xy值
-              if(!this.QIR.hasProperty(data.points[i],'x')){return false;}
+            if(!this.QIR.hasProperty(data,'points')){return false;}//0.8检查points
+            if(!this.QIR.isArray(data.points)){return false;}//0.8.1检查points是否为数组
+            for(let i=0;i<data.points.length;i++){//0.8.2循环检测内部的xy参数
+              if(!this.QIR.hasProperty(data.points[i],'x')){return false;}//0.8.3检测是否存在xy值
               if(!this.QIR.hasProperty(data.points[i],'y')){return false;}
-              //0.8.4检测xy是否是数字
-              if(!this.QIR.isNumber(data.points[i].x)){return false;}
+              if(!this.QIR.isNumber(data.points[i].x)){return false;}//0.8.4检测xy是否是数字
               if(!this.QIR.isNumber(data.points[i].y)){return false;}
             }
-            //0.9检查color
-            if(!this.QIR.hasProperty(data,'color')){return false;}
-            //0.10检查颜色
-            if(!this.QIR.color16Check(data.color)){return false;}
-            //0.11检查width
-            if(this.QIR.hasProperty(data,'width')){
+            if(!this.QIR.hasProperty(data,'color')){return false;}//0.9检查color
+            if(!this.QIR.color16Check(data.color)){return false;}//0.10检查颜色
+            if(this.QIR.hasProperty(data,'width')){//0.11检查width
               let refWidth=this.QIR.widthCheck(data.width)
               if(!refWidth){return false;}else {data.width=refWidth;}
             }
-            //0.11检查details
-            if(this.QIR.hasProperty(data,'details')){
+            if(this.QIR.hasProperty(data,'details')){//0.11检查details
               if(!this.QIR.detailsCheck(data.details)){
                 return false
               }
             }
-            //1.0构建点数据基本结构
-            let basicStructure={
+            let basicStructure={//1.0构建点数据基本结构
               id:0,
               type:'line',
               points:[],
               point:null,//必要
               color:'',//必要
-              length:null,//这里为空--不接收客户传参
-              width:2,//建议要--最大为64
-              size:null,//这里为空--不接收客户传参
-              childRelations:[],//这里为空--不接收客户传参--暂定
-              fatherRelation:'',//这里为空--不接收客户传参--暂定
-              childNodes:[],//这里为空--不接收客户传参--暂定
-              fatherNode:'',//这里为空--不接收客户传参--暂定
-              details:[]//建议要
+              length:null,//这里为空
+              width:2,//宽度
+              size:null,//这里为空
+              childRelations:[],//这里为空
+              fatherRelation:'',//这里为空
+              childNodes:[],//这里为空
+              fatherNode:'',//这里为空
+              details:[]
             };
-            //2.0归档
-            basicStructure.points=data.points;
+            basicStructure.points=data.points;//2.0归档
             basicStructure.point=data.point;
             basicStructure.color=data.color;
             basicStructure.width=data.width || basicStructure.width;
             basicStructure.details=data.details || basicStructure.details;
-            if(area==='area'){
+            if(area==='area'){//3.0广播
               basicStructure.type='area';
               this.send(this.Instruct.broadcast_area(basicStructure));
             }else {
               this.send(this.Instruct.broadcast_line(basicStructure));
             }
-            //3.0广播
           }
           catch (e) {}
         }
-        //发送关注点数据
-        broadcastSendPoint(data){
+        broadcastSendPoint(data){//发送关注点数据
           try {
-            //0.检查数据
-            //0.1检查是否属于object
-            if(!this.QIR.isObject(data)){return false;}
-            //0.2检查是否包含class类型
-            if(!this.QIR.hasProperty(data,'class')){return false;}
-            //0.3检查class类型是否为point
-            if(data.class!=='point'){return false;}
-            //0.4检查是否包含point类型
-            if(!this.QIR.hasProperty(data,'point')){return false;}
-            //0.5检查point是否为object
-            if(!this.QIR.isObject(data.point)){return false;}
-            //0.6检查point是否由xy
-            if(!this.QIR.hasProperty(data.point,'x')){return false;}
+            if(!this.QIR.isObject(data)){return false;}//0.1检查是否属于object
+            if(!this.QIR.hasProperty(data,'class')){return false;}//0.2检查是否包含class类型
+            if(data.class!=='point'){return false;}//0.3检查class类型是否为point
+            if(!this.QIR.hasProperty(data,'point')){return false;}//0.4检查是否包含point类型
+            if(!this.QIR.isObject(data.point)){return false;}//0.5检查point是否为object
+            if(!this.QIR.hasProperty(data.point,'x')){return false;}//0.6检查point是否由xy
             if(!this.QIR.hasProperty(data.point,'y')){return false;}
-            //0.7检查xy是否是数字
-            if(!this.QIR.isNumber(data.point.x)){return false;}
+            if(!this.QIR.isNumber(data.point.x)){return false;}//0.7检查xy是否是数字
             if(!this.QIR.isNumber(data.point.y)){return false;}
-            //0.8检查color
-            if(!this.QIR.hasProperty(data,'color')){return false;}
-            //0.9检查颜色
-            if(!this.QIR.color16Check(data.color)){return false;}
-            //0.10检查width
-            if(this.QIR.hasProperty(data,'width')){
+            if(!this.QIR.hasProperty(data,'color')){return false;}//0.8检查color
+            if(!this.QIR.color16Check(data.color)){return false;}//0.9检查颜色
+            if(this.QIR.hasProperty(data,'width')){//0.10检查width
               let refWidth=this.QIR.widthCheck(data.width)
               if(!refWidth){return false;}else {data.width=refWidth;}
             }
-            //0.11检查details
-            if(this.QIR.hasProperty(data,'details')){
+            if(this.QIR.hasProperty(data,'details')){//0.11检查details
               if(!this.QIR.detailsCheck(data.details)){
                 return false
               }
             }
-            //1.0构建点数据基本结构
             let basicStructure={
               id:0,
               type:'point',
               points:[],
-              point:null,//必要
-              color:'',//必要
-              length:null,//这里为空--不接收客户传参
-              width:2,//建议要--最大为64
-              size:null,//这里为空--不接收客户传参
-              childRelations:[],//这里为空--不接收客户传参--暂定
-              fatherRelation:'',//这里为空--不接收客户传参--暂定
-              childNodes:[],//这里为空--不接收客户传参--暂定
-              fatherNode:'',//这里为空--不接收客户传参--暂定
-              details:[]//建议要
+              point:null,
+              color:'',
+              length:null,
+              width:2,
+              size:null,
+              childRelations:[],
+              fatherRelation:'',
+              childNodes:[],
+              fatherNode:'',
+              details:[]
             };
-            //2.0归档
             basicStructure.points[0]=data.point;
             basicStructure.point=data.point;
             basicStructure.color=data.color;
             basicStructure.width=data.width || basicStructure.width;
             basicStructure.details=data.details || basicStructure.details;
-            //3.0广播
-            //console.log(basicStructure);
             this.send(this.Instruct.broadcast_point(basicStructure));
           }catch (e) {}
         }
-        //广播A1
-        broadcastMyA1(x,y,color,name){
+        broadcastMyA1(x,y,color,name){//广播A1
           this.send(this.Instruct.broadcast_A1(x,y,color,name));
         }
-        //心跳回应，防止断开连接
-        heartbeat(){
+        heartbeat(){//心跳
           setInterval(()=>{
             if(this.socket!==undefined){
               this.socket.send('');
             }
           },55000)
         }
-        //断开服务器连接(注意是断开会话，不会删除账号数据)
-        closeLink(){
+        closeLink(){//断开服务器连接
           this.socket.close();
-          //更新登录状态未登录
           this.isLogin=false;
         }
-        //本地存储接口
-        handleLocalStorage(method, key, value) {
+        handleLocalStorage(method, key, value) {//本地存储接口
           switch (method) {
             case 'get' : {
               let temp = window.localStorage.getItem(key);
@@ -474,26 +375,20 @@ export default new Vuex.Store({
             }
           }
         }
-        //获取用户数据
-        getUserData(){
+        getUserData(){//获取用户数据
           this.send(this.Instruct.get_userData());
         }
-        //获取地图数据
-        getMapData(){
+        getMapData(){//获取地图数据
           this.send(this.Instruct.get_mapData());
         }
-        //获取服务器配置信息
-        getServerConfig(){
+        getServerConfig(){//获取服务器配置信息
           this.send(this.Instruct.get_serverConfig());
         }
-        //获取服务器公钥
-        getServerPublickey(){
+        getServerPublickey(){//获取服务器公钥
           this.send(this.Instruct.get_publickey());
         }
-        //登录方法
-        login(email,password){
-          //1.检查用户输入
-          if (check(''+email+password)){
+        login(email,password){//登录方法
+          if (check(''+email+password)){//1.检查用户输入
             this.send(this.Instruct.login(email,password));
           }
           function check(text){
@@ -504,8 +399,7 @@ export default new Vuex.Store({
             }else {return true}
           }
         }
-        //连接服务器方法
-        link(){
+        link(){//连接服务器方法
           this.socket=new WebSocket(this.url)
           this.socket.onopen=(ev)=>this.onOpen(ev)
           this.socket.onmessage=(ev)=>this.onMessage(ev);
@@ -513,65 +407,46 @@ export default new Vuex.Store({
           this.socket.onerror=(ev)=>this.onError(ev);
           return true;
         }
-        //发送数据
-        send(instructObj){//该方法将指令类编译为json数据格式
+        send(instructObj){////发送数据
           if(this.isLink){
-            //1.数据检查
-            if(this.instructObjCheck(instructObj)){
+            if(this.instructObjCheck(instructObj)){//1.数据检查
               let json=JSON.stringify(instructObj);
               this.socket.send(json);
             }
           }
         }
-        //指令检查
-        instructObjCheck(instructObj){
-          //1.检测是否为一个对象
+        instructObjCheck(instructObj){//指令检查
           if(Object.prototype.toString.call(instructObj)!=='[object Object]'){
             return false;
           }
-          //2.检测是否存在type属性
           if(instructObj.type===undefined){
             return false;
           }
-          //3.检测是否存在不允许的数据类型
           if(this.typeList.indexOf(instructObj.type)===-1){
             return false;
           }
-          //4.检测是否属于广播类
           if(instructObj.type==='broadcast'){
-            //5.检查是否包含class
             if(instructObj.class===undefined){
               return false;
             }
           }
           return true;
         }
-        //收到消息事件
-        onMessage(ev){
-          //1.转化json
+        onMessage(ev){//收到消息事件
           let jsonData=JSON.parse(ev.data);
-          //2.检测是否存在必要值'type'
           if(jsonData.type!==undefined){
-          //3.处理数据
-          let nowType=jsonData.type;
-
+          let nowType=jsonData.type;//处理数据
           switch (nowType){
-            //服务器发来配置信息
-            case 'send_serverConfig':{
-              //console.log(jsonData);
+            case 'send_serverConfig':{//服务器发来配置信息
               this.config=jsonData.data;
               break;
             }
-            //服务器发来公钥
-            case 'publickey':{
-              //保存公钥
+            case 'publickey':{//服务器发来公钥
               this.publickey=jsonData.data;
               break;
             }
-            //服务器发来登录状态
-            case 'loginStatus':{
+            case 'loginStatus':{//服务器发来登录状态
               if(jsonData.data){
-                //1更新登录状态
                 this.isLogin=true;
                 this.numberOfLoginAttempts++;
               }else {
@@ -580,23 +455,19 @@ export default new Vuex.Store({
               }
               break;
             }
-            //服务器发来的用户数据
-            case 'send_userData':{
+            case 'send_userData':{//服务器发来的用户数据
               this.userData=jsonData.data;
               break;
             }
-            //服务器发来的地图数据
-            case 'send_mapData':{
+            case 'send_mapData':{//服务器发来的地图数据
               for (let i=0;i<jsonData.data.length;i++){
                 try{
-                  //point相关
-                  let [Ps,Pt]=[null,null]
+                  let [Ps,Pt]=[null,null]//point相关
                   Pt=JSON.parse(window.atob(jsonData.data[i].point));
                   Ps=JSON.parse(window.atob(jsonData.data[i].points));
                   jsonData.data[i].points=Ps;
                   jsonData.data[i].point=Pt;
-                  //details
-                  let [loc,baseD,Pu]=[true,null,null];
+                  let [loc,baseD,Pu]=[true,null,null];//details
                   try{
                     baseD=window.atob(jsonData.data[i].details);
                   }
@@ -609,8 +480,7 @@ export default new Vuex.Store({
                   if(loc){
                     jsonData.data[i].details=Pu;
                   }
-                  //分组
-                  let NowType=jsonData.data[i].type;
+                  let NowType=jsonData.data[i].type;//分组
                   switch (NowType) {
                     case 'line':{
                       this.mapData.lines.push(jsonData.data[i]);
@@ -628,21 +498,15 @@ export default new Vuex.Store({
                 }
                 catch(e){}
               }
-              //console.log(this.mapData);
-              //这里一旦与vue的watch关联则会导致line内的points的xy全部丢失,找原因
-              //setTimeout(()=>console.log(this.mapData),5000)
               break;
             }
-            //服务器发来的广播
-            case 'broadcast':{
-              //获取广播类型
-              let classIs=jsonData.class;
+            case 'broadcast':{//服务器发来的广播
+              let classIs=jsonData.class;//获取广播类型
               switch (classIs){
-                //A1位置广播
-                case 'A1':{
+                case 'A1':{//A1位置广播
                   let oldLength=this.otherA1.length;//曾经的长度
                   let newEm=jsonData.data.email;//新收到的
-                  let lock=true;//是新增吗，锁止
+                  let lock=true;//是否新增
                   for (let i=0;i<oldLength;i++){
                     let nowEm=this.otherA1[i].email;
                     if(nowEm==newEm){//更新旧数据
@@ -653,20 +517,16 @@ export default new Vuex.Store({
                       this.otherA1[i].y=jsonData.data.y;
                     }
                   }
-                  //再新增
-                  if(lock){
+                  if(lock){//再新增
                     this.otherA1.push(jsonData.data);
                   }
                   break;
                 }
-                //新增线段数据广播
-                case 'line':{
-                  //一、解析坐标
+                case 'line':{//新增线段数据广播
                   try{
-                    //1.将base64转化为普通字符
                     let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
                     try{
-                      baseA=window.atob(jsonData.data.points);
+                      baseA=window.atob(jsonData.data.points);//将base64转化为普通字符
                       baseB=window.atob(jsonData.data.point);
                     }
                     catch(e){lock=false;}
@@ -682,12 +542,10 @@ export default new Vuex.Store({
                       jsonData.data.point=Pt;
                     }
                   }catch(e){}
-                  //二、解析详细描述信息
                   try{
-                    //1.将base64转化为普通字符
                     let [lock,baseA,Ps]=[true,null,null];
                     try{
-                      baseA=window.atob(jsonData.data.details);
+                      baseA=window.atob(jsonData.data.details);//将base64转化为普通字符
                     }
                     catch(e){lock=false;}
                     try {
@@ -699,18 +557,13 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
-                  //更新messages
                   let NewMessageObj={'type':'broadcast','class':'line','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
-                  this.messages.push(NewMessageObj);
-                  //添加到mapData
-                  this.mapData.lines.push(jsonData.data);
+                  this.messages.push(NewMessageObj);//更新messages
+                  this.mapData.lines.push(jsonData.data);//添加到mapData
                   break;
                 }
-                //新增线段数据广播
-                case 'area':{
-                  //一、解析坐标
-                  try{
-                    //1.将base64转化为普通字符
+                case 'area':{//新增线段数据广播
+                  try{//解析坐标
                     let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
                     try{
                       baseA=window.atob(jsonData.data.points);
@@ -729,9 +582,7 @@ export default new Vuex.Store({
                       jsonData.data.point=Pt;
                     }
                   }catch(e){}
-                  //二、解析详细描述信息
-                  try{
-                    //1.将base64转化为普通字符
+                  try{//解析详细描述信息
                     let [lock,baseA,Ps]=[true,null,null];
                     try{
                       baseA=window.atob(jsonData.data.details);
@@ -746,18 +597,13 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
-                  //更新messages
                   let NewMessageObj={'type':'broadcast','class':'area','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
-                  this.messages.push(NewMessageObj);
-                  //添加到mapData
-                  this.mapData.areas.push(jsonData.data);
+                  this.messages.push(NewMessageObj);//更新messages
+                  this.mapData.areas.push(jsonData.data);//添加到mapData
                   break;
                 }
-                //新增点数据广播
-                case 'point':{
-                  //一、解析坐标
-                  try{
-                    //1.将base64转化为普通字符
+                case 'point':{//新增点数据广播
+                  try{//解析坐标
                     let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
                     try{
                       baseA=window.atob(jsonData.data.points);
@@ -776,9 +622,7 @@ export default new Vuex.Store({
                       jsonData.data.point=Pt;
                     }
                   }catch(e){}
-                  //二、解析详细描述信息
                   try{
-                    //1.将base64转化为普通字符
                     let [lock,baseA,Ps]=[true,null,null];
                     try{
                       baseA=window.atob(jsonData.data.details);
@@ -793,19 +637,15 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
-                  //更新messages
                   let NewMessageObj={'type':'broadcast','class':'point','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);
-                  //添加到mapData
                   this.mapData.points.push(jsonData.data);
                   break;
                 }
-                //删除某一元素的广播
-                case 'deleteElement':{
+                case 'deleteElement':{//删除某一元素的广播
                   try{
                     let ID=jsonData.data.id;
-                    //查找并删除该id
-                    this.mapData.points.some((item, index)=>{
+                    this.mapData.points.some((item, index)=>{//查找并删除该id
                       if (item.id==ID){
                         this.mapData.points.splice(index,1);
                         return true;
@@ -823,52 +663,40 @@ export default new Vuex.Store({
                         return true;
                       }
                     });
-                    //更新消息
-                    this.messages.push(jsonData);
+                    this.messages.push(jsonData);//更新消息
                   }
                   catch (e) {}
                   break;
                 }
-                //普通文本消息
-                case 'textMessage':{
-                  //更新messages
+                case 'textMessage':{//普通文本消息
                   let NewMessageObj={'type':'broadcast','class':'textMessage','conveyor':jsonData.conveyor,'time':jsonData.time,'data':jsonData.data};
                   this.messages.push(NewMessageObj);
                   break;
                 }
-                //更新某一元素的广播
-                case 'updateElement':{
+                case 'updateElement':{//更新某一元素的广播
                   try{
-                    //解码details如果有的话
-                    if(jsonData.data.hasOwnProperty('details')){
+                    if(jsonData.data.hasOwnProperty('details')){//解码details如果有的话
                       jsonData.data.details=JSON.parse(window.atob(jsonData.data.details));
                     }
-                    //提取id
-                    let eId=jsonData.data.id;
-                    //查找相应的地图数据并修改地图数据
-                    for (let i=0;i<this.mapData.points.length;i++){
+                    let eId=jsonData.data.id;//提取id
+                    for (let i=0;i<this.mapData.points.length;i++){//查找相应的地图数据并修改地图数据
                       if(eId==this.mapData.points[i].id){
                         Object.assign(this.mapData.points[i],jsonData.data);
-                        //更新message
-                        this.messages.push(jsonData);
+                        this.messages.push(jsonData);//更新message
                         break;
                       }
                     }
-                    //查找相应的地图数据并修改地图数据
-                    for (let i=0;i<this.mapData.lines.length;i++){
+                    for (let i=0;i<this.mapData.lines.length;i++){//查找相应的地图数据并修改地图数据
                       if(eId==this.mapData.lines[i].id){
                         Object.assign(this.mapData.lines[i],jsonData.data);
-                        //更新message
-                        this.messages.push(jsonData);
+                        this.messages.push(jsonData);//更新message
                         break;
                       }
                     }
-                    //查找相应的地图数据并修改地图数据
-                    for (let i=0;i<this.mapData.areas.length;i++){
+                    for (let i=0;i<this.mapData.areas.length;i++){//查找相应的地图数据并修改地图数据
                       if(eId==this.mapData.areas[i].id){
                         Object.assign(this.mapData.areas[i],jsonData.data);
-                        //更新message
-                        this.messages.push(jsonData);
+                        this.messages.push(jsonData);//更新message
                         break;
                       }
                     }
@@ -877,19 +705,15 @@ export default new Vuex.Store({
                   }
                   break;
                 }
-                //更新某一元素的节点的广播
-                case 'updateElementNode':{
-                  try{
-                    //解析
+                case 'updateElementNode':{//更新某一元素的节点的广播
+                  try{//解析
                     let pointsObj=JSON.parse(window.atob(jsonData.data.points));
                     let pointObj=null;
                     if(this.QIR.hasProperty(jsonData.data,'point')){
                       pointObj=JSON.parse(window.atob(jsonData.data.point));
                     }
-                    //1.get id
                     let CgID=jsonData.data.id;
-                    //2.查找type类型（如果有的话）
-                    let type=null;
+                    let type=null;//查找type类型（如果有的话）
                     if(this.QIR.hasProperty(jsonData.data,'type')){
                       type=jsonData.data.type+'s';
                     }
@@ -897,25 +721,18 @@ export default new Vuex.Store({
                       let length=this.mapData[type].length;
                       for(let k=0;k<length;k++){
                         if(this.mapData[type][k].id==CgID){
-                          //this.mapData[type]
-                          //console.log(this.mapData[type][k]);
-                          //1.拷贝一份 Object.assign(
                           let copyObj={};
                           Object.assign(copyObj,this.mapData[type][k]);
                           copyObj.points=pointsObj;
                           if(pointObj!==null){
                             copyObj.point=pointObj;
                           }
-                          //2.删除旧数据
-                          this.mapData[type].splice(k,1,copyObj);
-                          //同步源
-                          this.reinitializeSourcePoints=copyObj.points;
+                          this.mapData[type].splice(k,1,copyObj);//删除旧数据
+                          this.reinitializeSourcePoints=copyObj.points;//同步源
                           if(pointObj!==null){
-                            //同步源
-                            this.reinitializeSourcePoint=copyObj.point;
+                            this.reinitializeSourcePoint=copyObj.point;//同步源
                           }
-                          //3.更改初始化
-                          this.reinitializeElement++;
+                          this.reinitializeElement++;//更改初始化
                           this.reinitializeId=copyObj.id;
                           break;
                         }
@@ -961,14 +778,11 @@ export default new Vuex.Store({
                         if(pointObj!==null){
                           copyObj.point=pointObj;
                         }
-                        //2.删除旧数据
-                        this.mapData[FindType].splice(FindUnder,1,copyObj);
-                        //3.更改初始化
-                        this.reinitializeElement++;
+                        this.mapData[FindType].splice(FindUnder,1,copyObj);//2.删除旧数据
+                        this.reinitializeElement++;//3.更改初始化
                         this.reinitializeId=copyObj.id;
                       }
                     }
-                    //3.消息通知
                     let MesObj={
                       type: 'broadcast',
                       class: 'updateElementNode',
@@ -979,7 +793,7 @@ export default new Vuex.Store({
                         type: jsonData.data.type
                       }
                     };
-                    this.messages.push(MesObj);
+                    this.messages.push(MesObj);//3.消息通知
                     break;
                   }catch (e) {
 
@@ -993,34 +807,30 @@ export default new Vuex.Store({
           }
           }
         }
-        //断开连接事件
-        onClose(ev){
+        onClose(ev){//断开连接事件
           this.isLink=false;
           return true;
         }
-        //连接失败事件
-        onError(ev){
+        onError(ev){//连接失败事件
           this.isLink=false;
           return true;
         }
-        //连接成功事件
-        onOpen(ev){
+        onOpen(ev){//连接成功事件
           this.isLink=true;
-          //获取公钥
-          this.getServerPublickey();
-          //获取服务器配置
-          this.getServerConfig();
+          this.getServerPublickey();//获取公钥
+          this.getServerConfig();//获取服务器配置
           return true;
         }
       },
     },
-    //匿名命令的临时缓存
-    anonymousInstruct:{
+    anonymousInstruct:{//匿名命令的临时缓存
       name:null,
       data:null
     },
-    //命令的缓存,各组件根据需求监听这里的数据变化，也可以监听整个commits
-    //命令是用于个体组件与外界进行通讯的手段之一，请在main.js的sendInstruct进行注册
+    /**
+     * 命令的缓存,各组件根据需求监听这里的数据变化，也可以监听整个commits
+     * 命令是用于个体组件与外界进行通讯的手段之一，请在main.js的sendInstruct进行注册
+    **/
     commits:{
       disableZoomAndMove:false,
       createTestLine:false,
@@ -1033,29 +843,18 @@ export default new Vuex.Store({
       addNewLineEnd:false,
       addNewAreaEnd:false
     },
-    //相机配置
-    cameraConfig:{
-      //窗口变化
-      windowChange:false,
-      //是否需要移动地图
-      doNeedMoveMap:false,
-      //帧时间
-      frameTime:1,
-      //最大缩放
-      maxZoom:5,
-      //最小缩放
-      minZoom:-10,
-      //横轴单位1
-      unit1X:1,
-      //纵轴单位1
-      unit1Y:1,
-      //x偏移补偿
-      offsetX:0,
-      //y偏移补偿
-      offsetY:0
+    cameraConfig:{//相机配置
+      windowChange:false,//窗口变化
+      doNeedMoveMap:false,//是否需要移动地图
+      frameTime:1,//帧时间
+      maxZoom:5,//最大缩放
+      minZoom:-10,//最小缩放
+      unit1X:1,//横轴单位1
+      unit1Y:1,//纵轴单位1
+      offsetX:0,//x偏移补偿
+      offsetY:0,//y偏移补偿
     },
-    //底图配置
-    leafletConfig:{
+    leafletConfig:{//底图配置
       enableBaseMap:false,
       resolution:{
         width:null,
@@ -1064,7 +863,6 @@ export default new Vuex.Store({
       options:{
         minZoom:3,
         maxZoom:18,
-        //第一个参数为维度，第二个参数为经度
         center:[0,0],
         zoom:13,
         zoomControl:false,
@@ -1075,14 +873,12 @@ export default new Vuex.Store({
       },
       baseLayer:'',
     },
-    //地图配置
-    mapConfig:{
+    mapConfig:{//地图配置
       A1Layer:0,
       layer:0,
       oldLayer:null,
       zoomAdd:1,//k
       zoomSub:(Math.pow(1+1,-1))-1,
-      //zoomSub:(5/6)-1,//(1+k)^(-1)-1；例子：0.2+1=1.2  1.2=12/10=6/5  k^(-1)=6/5 则k=5/6，
       browser:{
         width:null,
         height:null
@@ -1194,24 +990,16 @@ export default new Vuex.Store({
         x:0,
         y:0
       },
-      //元素被右键选择
-      operated:{
-        //被操作元素id
-        id:null,
-        //被操作元素的元素数据
-        data:null
+      operated:{//元素被右键选择
+        id:null,//被操作元素id
+        data:null//被操作元素的元素数据
       },
-      //SVG鼠标指针类型
-      cursor:'default',
-      //指针类型的锁止，允许某一个组件占用cursor使得其他组件无法更新cursor
-      cursorLock:false,
-      //重新初始化的id
-      reinitializeId:-1,
-      //input聚焦状态
-      inputFocusStatus:false
+      cursor:'default',//SVG鼠标指针类型
+      cursorLock:false,//指针类型的锁止
+      reinitializeId:-1,//重新初始化的id
+      inputFocusStatus:false//input聚焦状态
     },
-    //左侧元素信息面板显示的数据
-    detailsPanelConfig:{
+    detailsPanelConfig:{//左侧元素信息面板显示的数据
       data:{
 
       },
@@ -1221,42 +1009,28 @@ export default new Vuex.Store({
       },
       target:null
     },
-    //元素右键操作面板的配置
-    elementOperationBoardConfig:{
+    elementOperationBoardConfig:{//元素右键操作面板的配置
       posX:null,
       posY:null,
       display:false
     },
-    //页面配置
-    pageConfig:{
+    pageConfig:{//页面配置
       homeSeparateState:true,
       mapSeparateState:false
     },
-    //用户设置
-    userSettingConfig:{
-      //1.是否在服务器列表中开启每隔60秒自动更新服务器在线状态
-      UpdateServerStatus:false,
+    userSettingConfig:{//用户设置
+      UpdateServerStatus:false,//1.是否在服务器列表中开启每隔60秒自动更新服务器在线状态
       UpdateServerStatusTime:60000,
-      //2.是否启用启动时自动搜索服务器状态
-      startUpdateServerStatus:true,
-      //是否开启元素面板
-      elementPanelLayerShow:false
+      startUpdateServerStatus:true,//2.是否启用启动时自动搜索服务器状态
+      elementPanelLayerShow:false,//是否开启元素面板
     },
-    //服务器相关数据
-    serverData:{
-      //1.服务器连接会话
-      socket:undefined,
-      //2.底图背景数据
-      underlay:undefined,
-      //3.用户名//目前已经移交至socket会话的数据中，此处仅作实例
+    serverData:{//服务器相关数据
+      socket:undefined,//1.服务器连接会话
+      underlay:undefined,//2.底图背景数据
       userName:'点击头像登录',
-      //4.用户邮箱//目前已经移交至socket会话的数据中，此处仅作实例
       userEmail:'Anyone@Any.com',
-      //5.用户QQ,默认为1077365277//目前已经移交至socket会话的数据中，此处仅作实例
       userQq:1077365277,
-      //6.用户头像背景色(在消息面板处用)
       userHeadColor:'ffffff',
-      //7.默认值
       default:{
         'user_email': '神秘用户',
         'user_name': '神秘用户',
@@ -1272,8 +1046,7 @@ export default new Vuex.Store({
 
   },
   mutations: {
-    //清空临时区域的缓存
-    clearTempAreaCache(state){
+    clearTempAreaCache(state){//清空临时区域的缓存
       state.mapConfig.tempArea={
         id:'tempArea',
         type:'area',
@@ -1297,8 +1070,7 @@ export default new Vuex.Store({
         showPos:[]
       }
     },
-    //清空临时线段的缓存
-    clearTempLineCache(state){
+    clearTempLineCache(state){//清空临时线段的缓存
       state.mapConfig.tempLine={
         id:'tempLine',
         type:'line',
@@ -1322,12 +1094,10 @@ export default new Vuex.Store({
         showPos:[]
       }
     },
-    //销毁综合对象
-    destroyComprehensive(state){
+    destroyComprehensive(state){//销毁综合对象
       state.serverData.socket=undefined;
     },
-    //恢复默认地图配置
-    restoreMapConfig(state){
+    restoreMapConfig(state){//恢复默认地图配置
       state.mapConfig={
         A1Layer:0,layer:0,oldLayer:null,zoomAdd:1,zoomSub:(Math.pow(1+1,-1))-1,
         browser:{width:null,height:null},
@@ -1351,8 +1121,7 @@ export default new Vuex.Store({
         cursor:'default',cursorLock:false,reinitializeId:-1,inputFocusStatus:false
       }
     },
-    //恢复默认底图配置
-    restoreLeafletConfig(state){
+    restoreLeafletConfig(state){//恢复默认底图配置
       state.leafletConfig={
         enableBaseMap:false,
         options:{
@@ -1368,8 +1137,7 @@ export default new Vuex.Store({
         baseLayer:'',
       }
     },
-    //恢复默认相机配置
-    restoreCameraConfig(state){
+    restoreCameraConfig(state){//恢复默认相机配置
       state.cameraConfig={
         doNeedMoveMap:false,
           frameTime:11,

@@ -1,19 +1,13 @@
 <template>
-  <!--左侧的详细信息编辑面板-->
-  <!--职责-监听需要编辑的要素id并展示被选中的要素id的各种属性，并提供编辑属性值功能-->
-  <!--权限-允许访问store.state.mapconfig-->
   <div class="detailsPanelLayer" ref="LayerDetailsPanel">
-    <!--顶部标题-->
-    <div class="titleL">
+    <div class="titleL"><!--顶部标题-->
       基本信息
       <div class="icon9" title="点击隐藏">
         <svg @click="hidden()" t="1683445656832" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5852" width="20" height="20"><path d="M516.5 96.3125c-230.25 0-417.65625001 187.3125-417.65625001 417.65625001 0 130.3125 59.15625001 250.78125001 162.37500002 330.56249998 73.6875 56.90625001 161.90625001 87 255.28124999 87.00000002 230.25 0 417.65625001-187.3125 417.65625001-417.65625001-0.09375001-230.15625001-187.40625001-417.5625-417.65625001-417.5625z m0 771c-78.9375 0-153.65625001-25.40625001-215.90625001-73.59375001-87.375-67.5-137.4375-169.5-137.43749998-279.74999998 0-194.8125 158.53125001-353.34375001 353.34374999-353.34375001 194.8125 0 353.34375001 158.53125001 353.34375001 353.34375001 0 194.8125-158.53125001 353.34375001-353.34375001 353.34374999z" fill="#666666" p-id="5853"></path><path d="M603.40625001 365.46874999c12.5625-12.5625 12.5625-32.90625001-2e-8-45.46874999-12.5625-12.5625-32.90625001-12.5625-45.46874999 0L413.84374999 464.28124999c-28.40625001 28.40625001-28.6875 74.4375-0.65624999 102.46875001l141.09375001 141.09375001c6.28125001 6.28125001 14.53125001 9.375 22.68749998 9.37499998s16.40625001-3.09375001 22.6875-9.375c12.5625-12.5625 12.5625-32.90625001 0-45.46874999L458.65624999 521.28125001c-3-3-2.8125-8.25 0.5625-11.62500002l144.18750002-144.18749998z" fill="#666666" p-id="5854"></path></svg>
       </div>
     </div>
-    <!--内容-->
-    <div class="content">
-      <!--id-->
-      <div class="listBox">
+    <div class="content"><!--内容-->
+      <div class="listBox"><!--id-->
         <div class="boxLeft">
           序列号
         </div>
@@ -21,8 +15,7 @@
           {{exampleConfig.id}}
         </div>
       </div>
-      <!--type-->
-      <div class="listBox"  v-show="exampleConfig.type">
+      <div class="listBox"  v-show="exampleConfig.type"><!--type-->
         <div class="boxLeft">
           元素类型
         </div>
@@ -75,8 +68,7 @@
     </div>
     <div class="titleL">详细信息</div>
     <div class="content">
-      <!--details-->
-      <div v-show="exampleConfig.details" v-for="detail in exampleConfig.details">
+      <div v-show="exampleConfig.details" v-for="detail in exampleConfig.details"><!--details-->
         <div class="listBox">
           <div class="boxLeft">
             {{detail.key}}
@@ -123,24 +115,19 @@ export default {
     startSetting(){
 
     },
-    //文字选择
-    setSelectionOn(){
+    setSelectionOn(){//文字选择
       this.$refs.LayerDetailsPanel.classList.remove('selectionNone');
     },
-    //禁止文字选择
-    setSelectionOff(){
+    setSelectionOff(){//禁止文字选择
       this.$refs.LayerDetailsPanel.classList.add('selectionNone');
     },
-    //隐藏面板
-    hidden(){
+    hidden(){//隐藏面板
       this.$refs.LayerDetailsPanel.style.left='-350px';
     },
-    //显示面板
-    show(){
+    show(){//显示面板
       setTimeout(()=>{
         this.$refs.LayerDetailsPanel.style.left=(this.mouseClick.x-320)+'px';
-        //此处需要判断y是否已经大于页面高度如果大于则需要限制
-        if(this.mouseClick.y+415>=window.innerHeight){
+        if(this.mouseClick.y+415>=window.innerHeight){//此处需要判断y是否已经大于页面高度如果大于则需要限制
           this.$refs.LayerDetailsPanel.style.top=(window.innerHeight-415)+'px';
         }else {
           this.$refs.LayerDetailsPanel.style.top=(this.mouseClick.y+5)+'px';
@@ -152,7 +139,6 @@ export default {
     targetId(){
       return this.$store.state.detailsPanelConfig.target;
     },
-    //鼠标点击位置
     mouseClick(){
       return this.$store.state.mapConfig.mouseClick;
     }
@@ -160,21 +146,15 @@ export default {
   watch:{
     targetId:{
       handler(newValue){
-        //设置-1等同于隐藏
-        if(newValue===-1){
-          //隐藏
+        if(newValue===-1){//设置-1等同于隐藏
           this.hidden();
-          //禁止文字选择
           this.setSelectionOff();
         }
-        //如果有移动节点的操作会抑制更新
-        if(this.$store.state.commits.disableZoomAndMove===false){
+        if(this.$store.state.commits.disableZoomAndMove===false){//如果有移动节点的操作会抑制更新
           if(newValue===-1){
             this.hidden();
           }else {
-            //显示
-            this.show();
-            //文字选择
+            this.show();//显示
             this.setSelectionOn();
           }
           this.exampleConfig=this.$store.state.detailsPanelConfig.data;
@@ -184,9 +164,7 @@ export default {
     }
   },
   destroyed(){
-    //销毁连接及综合对象
-    //this.$store.commit('destroyComprehensive');
-    //console.log("layer details panel");
+
   }
 }
 </script>
@@ -242,14 +220,12 @@ export default {
   padding: 8px;
   border-right: 1px dashed #c7c5c7;
   font-weight: 400;
-  /*background: red;*/
 }
 .boxRight{
   width: 70%;
   height: auto;
   padding: 8px;
   font-weight: 100;
-  /*background: #48caec;*/
 }
 .selectionNone{
   user-select: none;

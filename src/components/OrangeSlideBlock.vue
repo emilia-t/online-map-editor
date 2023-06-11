@@ -1,7 +1,4 @@
 <template>
-<!--滑动块-->
-  <!--接收：max,min,default，返回number-->
-  <!--不要使用vuex-->
   <div>
     <div class="slider" :style="style">
       <input @input="CallBack" type="range" :min="min" :max="max" v-model:value="number" class="slider-range">
@@ -14,8 +11,7 @@ export default {
   name: "OrangeSlideBlock",
   data(){
     return {
-      //这是滑动块的数值
-      number:0
+      number:0//这是滑动块的数值
     }
   },
   props:{
@@ -58,7 +54,6 @@ export default {
   height: 35px;
   position: relative;
 }
-
 .slider input[type="range"] {
   position: absolute;
   top: 50%;
@@ -72,7 +67,6 @@ export default {
   padding: 0;
   transform: translateY(-50%);
 }
-
 .slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 16px;
@@ -82,5 +76,4 @@ export default {
   cursor: pointer;
   margin-top: 0px;
 }
-
 </style>

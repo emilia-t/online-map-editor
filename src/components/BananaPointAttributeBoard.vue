@@ -1,77 +1,44 @@
 <template>
-<!--点数据属性面板-->
-  <div class="BananaPointAttributeBoard" v-bind:style="BoardPos" v-show="show">
-    <!--头部名称-->
-    <div class="headName mouseType1" contenteditable="false">
+  <div class="BananaPointAttributeBoard" v-bind:style="BoardPos" v-show="show"><!--点数据属性面板-->
+    <div class="headName mouseType1" contenteditable="false"><!--头部名称-->
       编辑新增点
     </div>
-    <!--属性列表-->
-    <div class="centerList mouseDefault">
+    <div class="centerList mouseDefault"><!--属性列表-->
       <div class="centerListItem">
-        <!--左侧属性名-->
-        <div class="leftAttribute">
-          <!--名称-->
-          <div>
+        <div class="leftAttribute"><!--左侧属性名-->
+          <div><!--名称-->
             颜色
           </div>
         </div>
-        <!--中间的分割线-->
-        <div class="centerLine">
-
+        <div class="centerLine"><!--中间的分割线-->
         </div>
-        <!--右侧属性值-->
-        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7">
-
-        </textarea>
+        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7"></textarea><!--右侧属性值-->
         <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ff0000'"></orange-color-palette>
       </div>
       <div class="centerListItem">
-        <!--左侧属性名-->
         <div class="leftAttribute">
-          <!--名称-->
           <div>
             宽度
           </div>
         </div>
-        <!--中间的分割线-->
         <div class="centerLine">
-
         </div>
-        <!--右侧属性值-->
-        <!--右侧属性值-->
-        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="widthInput" contenteditable="true" v-model="width" maxlength="7">
-        </textarea>
-        <!--勾选按钮-->
-<!--        <div class="doneTickButton">-->
-<!--          <div class="doneSleBtn"></div>-->
-<!--        </div>-->
-        <!--滑块-->
+        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="widthInput" contenteditable="true" v-model="width" maxlength="7"></textarea>
         <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :max="64" :min="2" :default="5"></orange-slide-block>
       </div>
       <div class="centerListItem" v-for="detail in details">
-        <!--左侧属性名-->
         <div class="leftAttribute">
-          <!--名称-->
-          <textarea @focus="onFocusMode()" @blur="noFocusMode()"  contenteditable="true" v-model="detail.key" rows="2" maxlength="8">
-
-          </textarea>
+          <textarea @focus="onFocusMode()" @blur="noFocusMode()"  contenteditable="true" v-model="detail.key" rows="2" maxlength="8"></textarea>
         </div>
-        <!--中间的分割线-->
         <div class="centerLine">
-
         </div>
-        <!--右侧属性值-->
-        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="rightValue" contenteditable="true" v-model="detail.value" rows="3" maxlength="128">
-
-        </textarea>
-        <!--勾选按钮-->
+        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="rightValue" contenteditable="true" v-model="detail.value" rows="3" maxlength="128"></textarea>
         <div class="tickButton">
           <div class="sleBtn" ref="sleBtn" @click="selectList($event)" data-select-state="no"></div>
         </div>
       </div>
     </div>
-    <!--底部按钮-->
-    <div class="bottomButton mouseType1">
+    <div class="bottomButton mouseType1"><!--底部按钮-->
       <button @click="insertRow($event)">插入列</button>
       <button @click="removeRow($event)">删除列</button>
       <button @click="cancelEdit($event)">重置</button>
@@ -125,40 +92,31 @@ export default {
     this.startSetting();
   },
   methods:{
-    //初始设置
-    startSetting(){
-      //1.拷贝一份
-      this.cache.name=this.name;
+    startSetting(){//初始设置
+      this.cache.name=this.name;//拷贝
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
     },
-    //聚焦模式
-    onFocusMode(){
+    onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
     },
-    //非聚焦模式
-    noFocusMode(){
+    noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
-    //调色板的监听，接收来自调色板的值
     paletteHandle(data){
       this.color=data;
     },
-    //滑块的监听，接收来自滑块的值
     sliderHandle(data){
       this.width=data;
     },
-    //按钮动画
-    buttonAnimation(ev){
+    buttonAnimation(ev){//按钮动画
       ev.target.classList.contains('animation')?ev.target.classList.toggle('animationB'):ev.target.classList.toggle('animation');
     },
-    //提交-更新缓存-同时上传数据
-    submitEdit(ev){
+    submitEdit(ev){//提交-更新缓存-同时上传数据
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
       this.buttonAnimation(ev);
-      //信息汇总
       let obj={
         class:"point",
         point:this.point,
@@ -166,25 +124,18 @@ export default {
         width:this.width,
         details:this.details,
       };
-      //上传到服务器
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
-      //隐藏面板
       this.show=false;
-      //停用添加点
       this.$root.sendInstruct('addNewPointEnd');
     },
-    //取消-从缓存中恢复源数据
-    cancelEdit(ev){
+    cancelEdit(ev){//取消
       this.name=this.cache.name;
       this.color=this.cache.color;
       this.details=JSON.parse(JSON.stringify(this.cache.details));
       this.buttonAnimation(ev);
     },
-    //选择列
-    selectList(ev){
-      //0.获取当前选中点
+    selectList(ev){//选择列
       let nowSle=ev.target;
-      //1.查询该class属于第几个
       let sleBtn=this.$refs.sleBtn;
       let leng=sleBtn.length;
       for(let i=0;i<leng;i++){
@@ -198,42 +149,34 @@ export default {
         }
       }
     },
-    //插入列
-    insertRow(ev){
-      //选中列：
-      let nowSelList=this.theConfig.selectNum===-1?0:this.theConfig.selectNum;
+    insertRow(ev){//插入列
+      let nowSelList=this.theConfig.selectNum===-1?0:this.theConfig.selectNum;//选中列
       let temp={"key":"空值","value":"空值"};
       this.details.splice(nowSelList,0,temp);
-      //重置样式
-      let sleBtn=this.$refs.sleBtn;
+      let sleBtn=this.$refs.sleBtn;//重置样式
       let leng=sleBtn.length;
       for(let i=0;i<leng;i++){
         sleBtn[i].setAttribute('data-select-state','no');
         sleBtn[i].classList.remove('sleBtnSelected');
       }
-      //重置选择
-      this.theConfig.selectNum=-1;
-      this.buttonAnimation(ev)
+      this.theConfig.selectNum=-1;//重置选择
+      this.buttonAnimation(ev);
     },
-    //删除列
-    removeRow(ev){
-      //选中列：
-      let nowSelList=this.theConfig.selectNum;
+    removeRow(ev){//删除列
+      let nowSelList=this.theConfig.selectNum;//选中列
       if(nowSelList==-1){
         alert('请选择需要删除的列');
         return false;
       }
       this.details.splice(nowSelList,1);
-      //重置样式
-      let sleBtn=this.$refs.sleBtn;
+      let sleBtn=this.$refs.sleBtn;//重置样式
       let leng=sleBtn.length;
       for(let i=0;i<leng;i++){
         sleBtn[i].setAttribute('data-select-state','no');
         sleBtn[i].classList.remove('sleBtnSelected');
       }
-      //重置选择
-      this.theConfig.selectNum=-1;
-      this.buttonAnimation(ev)
+      this.theConfig.selectNum=-1;//重置选择
+      this.buttonAnimation(ev);
     }
   },
   computed:{
@@ -242,7 +185,6 @@ export default {
     },
     BoardPos(){
       let [Sl,St]=[this.StyleLeft,this.StyleTop];
-      //判断y轴是否大于浏览器页面高度
       if(Sl>this.browserSize.width-325){
         Sl=this.browserSize.width-335;
       }
@@ -263,15 +205,13 @@ export default {
       },
       deep:true
     },
-    //被移动位置时触发
-    BoardPos:{
+    BoardPos:{//被移动位置时触发
       handler(newValue){
         this.show=true;
       }
     },
     color:{
-      handler(newValue,oldValue){
-        //检测颜色格式是否正确
+      handler(newValue,oldValue){//检测颜色格式是否正确
         let Exp=/^[0-9A-F]{6}$/i;
         if(Exp.test(newValue)===false){
           this.color=oldValue;
@@ -281,8 +221,7 @@ export default {
       }
     },
     width:{
-      handler(newValue,oldValue){
-        //检测宽度格式是否正确
+      handler(newValue,oldValue){//检测宽度格式是否正确
         function isNumber(input) {return /^\d+$/.test(input);}
         let Exp=/^(6[0-4]|[1-5]\d|\d)$/;
         if(Exp.test(newValue)===false){
@@ -371,7 +310,6 @@ export default {
   justify-content: center;
   align-items: flex-start;
   flex-direction: row;
-  /*overflow: hidden;*/
   background: white;
   border-radius: 3px;
   border:1px dashed #d8d8d8;
@@ -398,7 +336,6 @@ button{
 .leftAttribute{
   width: 70px;
   min-height: 100%;
-  /*background: #ffd35d;*/
   display: flex;
   flex-direction: column;
   justify-content: left;
@@ -423,7 +360,6 @@ button{
 .rightValue{
   width: calc(100% - 70px - 2px - 8px - 20px - 4px);
   min-height: 100%;
-  /*background: #8dffdf;*/
   overflow-x: hidden;
   overflow-y: auto;
   font-size: 14px;
@@ -431,35 +367,15 @@ button{
   color: rgb(45, 45, 45);
   line-height: 18px;
 }
-.doneTickButton{
-  width: 20px;
-  height: 100%;
-  margin-right: 4px;
-  padding: 4px 0px;
-  /*background: white;*/
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-}
 .tickButton{
   width: 20px;
   height: 100%;
   margin-right: 4px;
   padding: 4px 0px;
-  /*background: white;*/
   display: flex;
   justify-content: flex-start;
   align-items: center;
   flex-direction: column;
-}
-.doneSleBtn{
-  width: 14px;
-  height: 14px;
-  border: 1px solid #a9a9a9;
-  border-radius: 15px;
-  background: #aaaaaa;
-  overflow: hidden;
 }
 .sleBtn{
   width: 14px;
@@ -475,8 +391,8 @@ button{
 }
 textarea{
   border:none;
-  outline: none;/*边线不显示*/
-  resize: none;/*禁止拉伸*/
+  outline: none;
+  resize: none;
   background:white;
   appearance:none;
   cursor: text;

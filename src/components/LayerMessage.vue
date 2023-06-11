@@ -1,20 +1,17 @@
 <template>
   <div class="messageLayerBox">
-    <!--右侧唤起消息面板的按钮-->
-    <div class="messageButton" ref="messageButton" @click="openOrHideMessage()">
+    <div class="messageButton" ref="messageButton" @click="openOrHideMessage()"><!--右侧唤起消息面板的按钮-->
       <svg t="1683100454463" class="icon8" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2649" width="200" height="200"><path d="M532.48 0C238.592 0 0 204.8 0 457.216c0 150.016 54.784 272.896 163.84 361.984v150.016c0 40.96 13.824 54.784 34.304 54.784 12.8-0.512 24.576-5.12 34.304-13.824l163.84-95.744c45.056 8.192 90.624 12.288 136.704 13.824 293.376 0 491.52-218.624 491.52-471.04S778.752 0 532.48 0z m0 849.92c-27.136 0-95.744-6.656-122.88-6.656l-27.136-6.656-20.48 13.824-122.88 78.336v-148.48l-27.136-20.48c-88.576-75.264-126.464-179.2-126.464-302.08 0-218.624 194.56-378.88 454.144-378.88 175.104-3.584 395.776 153.6 413.184 378.88-7.168 231.936-181.248 392.192-420.352 392.192zM272.896 402.944c-33.792 0-61.44 27.648-61.44 61.44s27.648 61.44 61.44 61.44 61.44-27.648 61.44-61.44c0-16.384-6.656-31.744-17.92-43.52s-27.136-17.92-43.52-17.92z m239.104 0c-33.792 0-61.44 27.648-61.44 61.44s27.648 61.44 61.44 61.44 61.44-27.648 61.44-61.44c0-16.384-6.656-31.744-17.92-43.52s-27.136-17.92-43.52-17.92z m239.104 0c-33.792 0-61.44 27.648-61.44 61.44s27.648 61.44 61.44 61.44 61.44-27.648 61.44-61.44c0-16.384-6.656-31.744-17.92-43.52-11.776-11.776-27.136-17.92-43.52-17.92z" p-id="2650"></path></svg>
       <div class="unreadNumber" v-show="unreadNumber!==0">{{unreadNumber}}</div>
     </div>
-    <!--消息面板主体-->
-    <div class="messageLayer" ref="messageLayer">
+    <div class="messageLayer" ref="messageLayer"><!--消息面板主体-->
       <div class="topHandle" ref="topHandle" @click="openOrHideMessage()">
         <img alt="下拉按钮" :src="dropPng" title="点击隐藏" draggable="false"/>
       </div>
       <div class="handle" ref="handle"></div>
       <div class="messageBox" ref="messageBox">
         <div v-for="message in this.messageData" class="messageItem">
-          <!--普通文本消息-->
-          <div v-if="message.class==='textMessage'" :key="message.time+'M'+generateKey()" class="messageItemA">
+          <div v-if="message.class==='textMessage'" :key="message.time+'M'+generateKey()" class="messageItemA"><!--普通文本消息-->
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">
               <div class="avatar" :style="{'backgroundColor': '#'+message.data.headColor}">{{message.conveyor.charAt(0)}}</div>
@@ -24,8 +21,7 @@
             </div>
             <div class="messageData">{{message.data.message}}</div>
           </div>
-          <!--新增区域消息-->
-          <div v-if="message.class==='area'" class="messageItemA">
+          <div v-if="message.class==='area'" class="messageItemA"><!--新增区域消息-->
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">
               <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
@@ -33,8 +29,7 @@
             </div>
             <div class="messageData">我添加了一个区域，id为：{{message.data.elementId}}</div>
           </div>
-          <!--新增线段消息-->
-          <div v-if="message.class==='line'" class="messageItemA">
+          <div v-if="message.class==='line'" class="messageItemA"><!--新增线段消息-->
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">
               <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
@@ -42,8 +37,7 @@
             </div>
             <div class="messageData">我添加了一条线段，id为：{{message.data.elementId}}</div>
           </div>
-          <!--新增点消息-->
-          <div v-if="message.class==='point'" class="messageItemA">
+          <div v-if="message.class==='point'" class="messageItemA"><!--新增点消息-->
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">
               <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
@@ -51,8 +45,7 @@
             </div>
             <div class="messageData">我添加了一个点，id为：{{message.data.elementId}}</div>
           </div>
-          <!--删除元素消息-->
-          <div v-if="message.class==='deleteElement'" class="messageItemA">
+          <div v-if="message.class==='deleteElement'" class="messageItemA"><!--删除元素消息-->
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">
               <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
@@ -60,8 +53,7 @@
             </div>
             <div class="messageData">我删除了一个元素，id为：{{message.data.id}}</div>
           </div>
-          <!--更新元素消息-->
-          <div v-if="message.class==='updateElement'" class="messageItemA">
+          <div v-if="message.class==='updateElement'" class="messageItemA"><!--更新元素消息-->
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">
               <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
@@ -69,8 +61,7 @@
             </div>
             <div class="messageData">我更新了一个元素，id为：{{message.data.id}}</div>
           </div>
-          <!--更新元素节点消息-->
-          <div v-if="message.class==='updateElementNode'" class="messageItemA">
+          <div v-if="message.class==='updateElementNode'" class="messageItemA"><!--更新元素节点消息-->
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">
               <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
@@ -107,52 +98,40 @@ export default {
     this.resizeMessageBord();
   },
   methods:{
-    //打开消息面板
-    openOrHideMessage(){
-      //关闭消息面板
-      if(this.messageLayerShow){
+    openOrHideMessage(){//打开消息面板
+      if(this.messageLayerShow){//关闭消息面板
         this.$refs.messageLayer.classList.add('messageLayerHide');
         this.$refs.messageLayer.classList.remove('messageLayerShow');
         this.$refs.messageButton.classList.add('messageButtonShow');
         this.$refs.messageButton.classList.remove('messageButtonHide');
         this.messageLayerShow=!this.messageLayerShow;
-        //启用积累未读消息
-        this.unreadIs=true;
-      }else {
-        //打开
+        this.unreadIs=true;//启用积累未读消息
+      }else {//打开
         this.$refs.messageLayer.classList.remove('messageLayerHide');
         this.$refs.messageLayer.classList.add('messageLayerShow');
         this.$refs.messageButton.classList.remove('messageButtonShow');
         this.$refs.messageButton.classList.add('messageButtonHide');
         this.messageLayerShow=!this.messageLayerShow;
-        //禁用积累未读消息
-        this.unreadIs=false;
-        //清除未读消息数量
-        this.unreadNumber=0;
+        this.unreadIs=false;//禁用积累未读消息
+        this.unreadNumber=0;//清除未读消息数量
       }
     },
-    //聚焦模式
-    onFocusMode(){
+    onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
     },
-    //非聚焦模式
-    noFocusMode(){
+    noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
-    //发送消息
-    sendMessage() {
+    sendMessage(){//发送消息
       let messages = this.$refs.inputTextBox.value;
-      //去除首尾的多余字符
-      let message = messages.trim();
+      let message = messages.trim();//去除首尾的多余字符
       let headColor=this.userData.head_color;
       let name=this.userData.user_name;
       let data={message,headColor,name};
-      if(this.checkMessage(message)){// 检测非法字符
+      if(this.checkMessage(message)){//检测非法字符
         this.$store.state.serverData.socket.broadcastSendText(data);
-        // 清空输入框内容和换行符
-        setTimeout(
+        setTimeout(//清空输入框内容和换行符
           ()=>{
-            // 清空输入框内容和换行符
             this.$refs.inputTextBox.value='';
             this.$refs.inputTextBox.innerText='';
             this.$refs.inputTextBox.textContent='';
@@ -160,8 +139,7 @@ export default {
       }
     },
     checkMessage(message) {
-      // 如果仅包含空格或者换行符，则视为非法字符
-      if (message.length === 0 || /^[\n\r]+$/.test(message)) {
+      if (message.length === 0 || /^[\n\r]+$/.test(message)) {// 如果仅包含空格或者换行符，则视为非法字符
         this.$root.general_script.alert_tips('消息内容不能为空或仅包含空格或换行符');
         return false;
       }
@@ -186,20 +164,17 @@ export default {
         this.isResizing = true;
         this.lastX = e.clientX;
       });
-      // 鼠标移动时计算位移并更新元素宽度
-      document.addEventListener('mousemove', (e) => {
+      document.addEventListener('mousemove', (e) => {//鼠标移动时计算位移并更新元素宽度
         if (!this.isResizing) return;
-
         const diffX = e.clientX - this.lastX;
         const newWidth = Math.max(
-          this.$refs.messageLayer.offsetWidth - diffX, // 新宽度不能小于最小宽度
+          this.$refs.messageLayer.offsetWidth - diffX, //新宽度不能小于最小宽度
           parseInt(window.getComputedStyle(this.$refs.messageLayer).minWidth)
         );
         this.$refs.messageLayer.style.width = `${newWidth}px`;
         this.lastX = e.clientX;
       });
-      // 鼠标抬起时取消监听器
-      document.addEventListener('mouseup', () => {
+      document.addEventListener('mouseup', () => {//鼠标抬起时取消监听器
         this.isResizing = false;
       });
     },
@@ -211,20 +186,18 @@ export default {
       }
       return color;
     },
-    //自动翻阅
-    autoScrollDown(){
+    autoScrollDown(){//自动翻页
       setTimeout(()=>{
         if(this.isScrolledNearBottom){
-          this.$refs.messageBox.scrollTop=this.$refs.messageBox.scrollHeight
+          this.$refs.messageBox.scrollTop=this.$refs.messageBox.scrollHeight;
         }
       },100);
     },
-    //自动翻阅
-    isScrolledNearBottom() {
+    isScrolledNearBottom(){//自动翻页
       const scrollHeight = this.$refs.messageBox.scrollHeight;
       const scrollTop = this.$refs.messageBox.scrollTop;
       const clientHeight = this.$refs.messageBox.clientHeight;
-      return scrollHeight - scrollTop - clientHeight < 50; // 可以适当调整阈值，单位为像素
+      return scrollHeight - scrollTop - clientHeight < 50; //可以适当调整阈值，单位为像素
     }
   },
   computed:{
@@ -240,14 +213,13 @@ export default {
         if(this.$store.state.serverData.socket.userData!==null){
           return this.$store.state.serverData.socket.userData;
         }else {
-          return this.$store.state.serverData.default
+          return this.$store.state.serverData.default;
         }
       }else {
-        return this.$store.state.serverData.default
+        return this.$store.state.serverData.default;
       }
     },
-    // 生成随机数作为 key 值
-    generateKey() {
+    generateKey() {//生成随机数作为 key 值
       return () => Math.floor(Math.random() * 10000);
     }
   },
@@ -263,9 +235,7 @@ export default {
     }
   },
   destroyed(){
-    //销毁连接及综合对象
-    //this.$store.commit('destroyComprehensive');
-    //console.log("layerMessage");
+
   }
 }
 </script>

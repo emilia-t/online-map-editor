@@ -1,6 +1,5 @@
 <template>
-  <!--显示我的A1，同时广播我的A1给其他人-->
-  <g :elementId="elementId">
+  <g :elementId="elementId"><!--显示A1-->
     <circle :cx="CX" :cy="CY" r="3"  stroke-width="1" :style="'fill:'+color"/>
     <text class="selectNone" :x="CX" :y="CY2" text-anchor="middle" :style="'fill:'+color">MyA1</text>
   </g>
@@ -16,15 +15,14 @@ export default {
       A1Temp:null,
       obSever:null,
       occurredMoveMap:false,//移动状态
-      A1Cache:{x:0,y:0}//a1的缓存，用于每次移动时扣除上一次移动产生的A1距离
+      A1Cache:{x:0,y:0}
     }
   },
   mounted() {
     this.randomColor();
   },
   methods:{
-    //随机颜色
-    randomColor(){
+    randomColor(){//随机颜色
       this.color=color16();
       function color16(){//十六进制颜色随机
         const r = Math.floor(Math.random()*256);
@@ -34,20 +32,18 @@ export default {
         return color;
       }
     },
-    //移除广播
-    removeBroadcast(){
+    removeBroadcast(){//移除广播
       if(this.obSever!=null){
         clearInterval(this.obSever);
         this.obSever=null;
         this.A1Temp=null;
       }
     },
-    //隔一段时间广播一次，避免占用网络资源
     addBroadcastTickA1(){
       if (this.obSever==null){
         this.obSever=setInterval(()=>{
           if(this.A1!==this.A1Temp){
-            this.A1Temp=this.A1;//更新A1
+            this.A1Temp=this.A1;
             this.sendMyA1();
           }else {
             this.removeBroadcast();
@@ -55,8 +51,7 @@ export default {
         },25)
       }
     },
-    //发送我的A1
-    sendMyA1(){
+    sendMyA1(){//发送我的A1
       if(this.$store.state.serverData.socket!==undefined){
         if(this.$store.state.serverData.socket.isLogin){
           try{
@@ -112,16 +107,14 @@ export default {
   },
   watch:{
     A1:{
-      handler(newValue){
-        //1.发送新的位置
-        this.addBroadcastTickA1();
+      handler(){
+        //this.addBroadcastTickA1();//已禁用
       },
       deep:true
     },
     layer:{
-      handler(newValue,oldValue){
-        //this.scale();
-        //由于a1缩放存在bug:缩放后导致要素移动不合理，所以暂时禁用
+      handler(newValue){
+        //this.scale();//已经禁用
       }
     }
   }

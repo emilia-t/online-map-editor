@@ -1,8 +1,6 @@
 <template>
-  <!--用来登录、注册、切换账号的-->
 <div class="BananaLoginBoard">
-  <!--登录面板-->
-  <div v-if="!isLogin" class="session">
+  <div v-if="!isLogin" class="session"><!--登录面板-->
     <div class="left">
       <svg @click="close()" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
     </div>
@@ -27,8 +25,7 @@
       <span class="loginBordLevelTips" v-text="bordTipsText"></span>
     </div>
   </div>
-  <!--已登录面板-->
-  <div v-if="isLogin" class="session">
+  <div v-if="isLogin" class="session"><!--已登录面板-->
     <div class="left">
       <svg @click="close()" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
     </div>
@@ -83,24 +80,18 @@ export default {
     }
   },
   methods:{
-    //初始化
-    startSetting(){
-      //改为查询服务器配置信息中的账号密码配置-例如k0则查找k0的 acc pwd 查不到则不登录，查到则自动登录(前提条件是设置中开启了自动登录-默认开启的)
-      //流程如下：
-      let em=false;
-      let pd=false;
-      //获取服务器配置
-      let Ser=this.$root.general_script.handleLocalStorage('get','servers');
+    startSetting(){//初始化
+      let em=false;//邮箱
+      let pd=false;//密码
+      let Ser=this.$root.general_script.handleLocalStorage('get','servers');//获取服务器配置
       let Acc=this.$root.general_script.handleLocalStorage('get','accounts');
       if(Ser!==false && Acc!==false){
         Ser=JSON.parse(Ser);
         Acc=JSON.parse(Acc);
-        //查找与该key相同的服务器
-        for(let key in Ser){
+        for(let key in Ser){//查找与该key相同的服务器
           if(Ser[key].serverKey===this.serverKey){
             if(Ser[key].hasOwnProperty('account')){
-              //获取账号名
-              em=Ser[key].account;
+              em=Ser[key].account;//获取账号名
               break;
             }
           }
@@ -108,34 +99,26 @@ export default {
         if(em!==false){
           if(Object.prototype.toString.call(Acc) === '[object Object]'){
             if(Acc.hasOwnProperty(em)){
-              //获取密码
-              pd=Acc[em].P;
+              pd=Acc[em].P;//获取密码
             }
           }
         }
-        //登录
       }else {
         em=false;
         pd=false;
       }
       if(em!==false && pd!==false){
-        //2.尝试进行登录
-        setTimeout(()=>{
+        setTimeout(()=>{//尝试进行登录
           try {
             if(this.$store.state.serverData.socket.isLink){
-              //3.稍等一会
               setTimeout(()=>{
-                //4.加密一下两个参数
-                let encrypt=new JSEncrypt();
-                //5.设置公钥
+                let encrypt=new JSEncrypt();//加密
                 encrypt.setPublicKey(this.$store.state.serverData.socket.publickey);
                 if(this.$store.state.serverData.socket.publickey===''){
                   this.$root.general_script.alert_tips('获取公钥失败，请尝试刷新浏览器')
                   return false;
                 }
-                //6.加密密码
                 let newPwd=encrypt.encrypt(pd);
-                //7.尝试进行登录
                 this.$store.state.serverData.socket.login(em,newPwd);
               },100)
             }else {
@@ -144,70 +127,51 @@ export default {
           }catch (e){
 
           }
-        },100)
+        },100);
       }
     },
-    //登录中
-    login(){
-      //0.检查是否存在连接
-      if(this.$store.state.serverData.socket===undefined){
+    login(){//登录中
+      if(this.$store.state.serverData.socket===undefined){//检查是否存在连接
         return false;
       }
-      //1.检查是否已连接服务器
-      if(this.$store.state.serverData.socket.isLink){
-        //3.稍等一会
+      if(this.$store.state.serverData.socket.isLink){//检查是否已连接服务器
         setTimeout(()=>{
-          //4.加密一下两个参数
-          let encrypt=new JSEncrypt();
-          //5.设置公钥
-          encrypt.setPublicKey(this.$store.state.serverData.socket.publickey);
-          //6.加密密码
-          let newPwd=encrypt.encrypt(this.password);
-          //7.保存在本地
-          this.savePassword=this.password;
-          //8.保存账号名
-          this.saveEmail=this.email;
-          //9.尝试进行登录
-          this.$store.state.serverData.socket.login(this.email,newPwd);
-        },60)
+          let encrypt=new JSEncrypt();//加密
+          encrypt.setPublicKey(this.$store.state.serverData.socket.publickey);//设置公钥
+          let newPwd=encrypt.encrypt(this.password);//加密后的密码
+          this.savePassword=this.password;//保存在本地
+          this.saveEmail=this.email;//保存账号名
+          this.$store.state.serverData.socket.login(this.email,newPwd);//尝试进行登录
+        },60);
       }else {
         this.$root.general_script.alert_tips('无法连接服务器，请检查网络连接');
       }
     },
-    //登录成功后
-    loginEd(){
+    loginEd(){//登录成功后
       this.$store.state.serverData.socket.getUserData();
       this.$store.state.serverData.socket.getMapData();
       this.$root.general_script.alert_tips('登录成功');
     },
-    //注销账号
-    logout(){
+    logout(){//注销账号
       try {
-        //1.清除会话内的本地数据
-        this.$store.state.serverData.socket.clearLocalData();
-        //2.断开服务器连接
-        this.$store.state.serverData.socket.closeLink();
-        //3.重新连接服务器
-        this.$store.state.serverData.socket.link();
+        this.$store.state.serverData.socket.clearLocalData();//清除会话内的本地数据
+        this.$store.state.serverData.socket.closeLink();//断开服务器连接
+        this.$store.state.serverData.socket.link();//重新连接服务器
       }catch (e) {
 
       }
     },
-    //连接失败
-    loginFail(){
+    loginFail(){//连接失败
       this.$root.general_script.alert_tips('登录失效，或账号密码错误')
       this.logout();
     },
-    //关闭连接-注意并非注销账号
-    closeLink(){
+    closeLink(){//关闭连接
       this.$store.state.serverData.socket.closeLink();
     },
-    //关闭面板
-    close(){
+    close(){//关闭面板
       this.$parent.isOpenBord=false;
       this.password='';
     },
-    //本地存储接口
     handleLocalStorage(method, key, value) {
       switch (method) {
         case 'get' : {
@@ -259,9 +223,9 @@ export default {
     numberOfLoginAttempts:{
       handler(newValue,oldValue){
         if(oldValue!==null){
-          if(this.isLogin===true){//表示连接登录成功
+          if(this.isLogin===true){//连接登录成功
             this.loginEd();
-          }else {//表示登录失败，或切换账号失败，将会注销当前账号
+          }else {
             this.loginFail();
           }
         }
@@ -270,9 +234,9 @@ export default {
     numberOfLoginFailed:{
       handler(newValue,oldValue){
         if(oldValue!==null){
-          if(this.isLogin===true){//表示连接登录成功
+          if(this.isLogin===true){//连接登录成功
             this.loginEd();
-          }else {//表示登录失败，或切换账号失败，将会注销当前账号
+          }else {//登录失败
             this.loginFail();
           }
         }

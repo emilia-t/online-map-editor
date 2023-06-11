@@ -12,8 +12,6 @@
         <span class="checkbox-icon"></span>
       </label>
     </div>
-
-
   </div>
 </template>
 
@@ -22,15 +20,15 @@ export default {
   name: "LayerHomePage",
   data(){
     return {
-      serverAddress:'wss://map.atsw.top:9998'
+      serverAddress:''
     }
   },
   methods:{
     CallBack(){
-      this.$emit('pageLayerHomePageCall',this.serverAddress)
+      this.$emit('pageLayerHomePageCall',this.serverAddress);
     },
     defaultLogin(){
-      this.$emit('pageLayerHomePageCallDefault',this.serverAddress)
+      this.$emit('pageLayerHomePageCallDefault',this.serverAddress);
     }
   }
 }
@@ -49,7 +47,6 @@ input{
   padding: 2px 8px;
   width: 160px;
 }
-/* 勾选按钮样式 */
 .checkbox-label {
   position: relative;
   padding-left: 30px;
@@ -72,7 +69,6 @@ input{
   border: 1px solid #ccc;
   border-radius: 3px;
 }
-
 .checkbox-icon:after {
   content: "";
   position: absolute;
@@ -85,14 +81,11 @@ input{
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
-
 .checkbox-input:checked ~ .checkbox-icon {
   background-color: #2196F3;
   border-color: #2196F3;
 }
-
 .checkbox-input:checked ~ .checkbox-icon:after {
   display: block;
 }
-
 </style>

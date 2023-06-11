@@ -57,11 +57,11 @@ export default {
   box-shadow:#e1e0e0 2px 2px 4px 1px;
 }
 .selectNone{
-  -webkit-touch-callout:none; /*系统默认菜单被禁用*/
-  -webkit-user-select:none; /*webkit浏览器*/
-  -khtml-user-select:none; /*早期浏览器*/
-  -moz-user-select:none;/*火狐*/
-  -ms-user-select:none; /*IE10*/
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  -khtml-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
   user-select:none;
 }
 </style>

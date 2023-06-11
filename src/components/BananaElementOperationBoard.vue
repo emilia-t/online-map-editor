@@ -1,7 +1,6 @@
 <template>
   <div class="BananaElementOperationBoard" v-show="this.$store.state.elementOperationBoardConfig.display" :style="style">
-    <!--右键菜单-->
-    <div class="panel">
+    <div class="panel"><!--右键菜单-->
       <div class="ButtonBox" ref="deleteButtonBox">
         <img @click="deleteElement()" class="ButtonImg" draggable="false" alt="按钮" :src="deleteButton"/>
       </div>
@@ -12,8 +11,7 @@
         <img class="ButtonImg" draggable="false" alt="按钮" :src="moreButton"/>
       </div>
     </div>
-    <!--编辑面板-->
-    <div v-show="editPanelShow" class="EditPanel">
+    <div v-show="editPanelShow" class="EditPanel"><!--编辑面板-->
       <div class="BananaPointAttributeBoard">
         <div class="headName mouseType1" contenteditable="false">编辑元素</div>
         <div class="centerList mouseDefault">
@@ -82,22 +80,17 @@ export default {
     startSetting(){
 
     },
-    //聚焦模式
-    onFocusMode(){
+    onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
     },
-    //非聚焦模式
-    noFocusMode(){
+    noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
-    //按钮动画
-    buttonAnimation(ev){
+    buttonAnimation(ev){//按钮动画
       ev.target.classList.contains('animation')?ev.target.classList.toggle('animationB'):ev.target.classList.toggle('animation');
     },
-    //提交-更新缓存-同时上传数据
-    submitEdit(ev){
+    submitEdit(ev){//提交-更新缓存-同时上传数据
       this.buttonAnimation(ev);
-      //检测两个对象的区别{isChange:true,changes:[['width','33'],['details',[{k:v}]]]}
       let changes=this.compareObjects(this.operatedBack,this.operatedCache)
       if(changes.isChange){
         changes.id=this.operatedCache.id;
@@ -110,21 +103,18 @@ export default {
       const keys2=Object.keys(obj2);
       const allKeys=Array.from(new Set(keys1.concat(keys2)));
       let changes={};
-      // 遍历对象的每个属性
-      for (let i=0;i<allKeys.length;i++) {
+      for (let i=0;i<allKeys.length;i++) {//遍历对象的每个属性
         const key=allKeys[i];
-        // 如果属性值不相等，则将该属性添加到变更对象中
-        if (!this.isEqual(obj1[key],obj2[key])){
+        if (!this.isEqual(obj1[key],obj2[key])){//如果属性值不相等，则将该属性添加到变更对象中
           changes[key]=obj2[key];
         }
       }
       return {
         isChange: Object.keys(changes).length > 0,
         changes,
-      }
-    },
-    // 判断两个值是否相等的工具函数
-     isEqual(value,other){
+       }
+     },
+     isEqual(value,other){//判断两个值是否相等
       if (value===other){
         return true
       }
@@ -133,49 +123,38 @@ export default {
       }
       return false
     },
-    //删除列
-    removeRow(ev){
-      //选中列：
-      let nowSelList=this.theConfig.selectNum;
+    removeRow(ev){//删除列
+      let nowSelList=this.theConfig.selectNum;//选中列
       if(nowSelList==-1){
         alert('请选择需要删除的列');
         return false;
       }
       this.operatedCache.details.splice(nowSelList,1);
-      //重置样式
-      let sleBtn=this.$refs.sleBtn;
+      let sleBtn=this.$refs.sleBtn;//重置样式
       let leng=sleBtn.length;
       for(let i=0;i<leng;i++){
         sleBtn[i].setAttribute('data-select-state','no');
         sleBtn[i].classList.remove('sleBtnSelected');
       }
-      //重置选择
-      this.theConfig.selectNum=-1;
+      this.theConfig.selectNum=-1;//重置选择
       this.buttonAnimation(ev)
     },
-    //插入列
-    insertRow(ev){
-      //选中列：
-      let nowSelList=this.theConfig.selectNum===-1?0:this.theConfig.selectNum;
+    insertRow(ev){//插入列
+      let nowSelList=this.theConfig.selectNum===-1?0:this.theConfig.selectNum;//选中列
       let temp={"key":"空值","value":"空值"};
       this.operatedCache.details.splice(nowSelList,0,temp);
-      //重置样式
-      let sleBtn=this.$refs.sleBtn;
+      let sleBtn=this.$refs.sleBtn;//重置样式
       let leng=sleBtn.length;
       for(let i=0;i<leng;i++){
         sleBtn[i].setAttribute('data-select-state','no');
         sleBtn[i].classList.remove('sleBtnSelected');
       }
-      //重置选择
-      this.theConfig.selectNum=-1;
+      this.theConfig.selectNum=-1;//重置选择
       this.buttonAnimation(ev)
     },
-    //选中
-    selectList(ev){
-      //0.获取当前选中点
-      let nowSle=ev.target;
-      //1.查询该class属于第几个
-      let sleBtn=this.$refs.sleBtn;
+    selectList(ev){//选中
+      let nowSle=ev.target;//0.获取当前选中点
+      let sleBtn=this.$refs.sleBtn;//1.查询该class属于第几个
       let leng=sleBtn.length;
       for(let i=0;i<leng;i++){
         if(sleBtn[i]==nowSle){
@@ -188,29 +167,23 @@ export default {
         }
       }
     },
-    //滑块
-    sliderHandle(data){
+    sliderHandle(data){//滑块
       try{
         this.operatedCache.width=data;
       }catch (e) {
 
       }
     },
-    //色块
-    paletteHandle(data){
+    paletteHandle(data){//色块
       this.operatedCache.color=data;
     },
-    //编辑操作
-    editElement(){
-      //展开编辑面板
+    editElement(){//编辑操作
       this.editPanelShow=!this.editPanelShow;
     },
     //删除操作
     deleteElement(){
-      //select id
-      let id=this.$store.state.mapConfig.operated.id;
+      let id=this.$store.state.mapConfig.operated.id;//select id
       this.$store.state.serverData.socket.broadcastDeleteElement(id);
-      //关闭 element operation board
       this.$store.state.elementOperationBoardConfig.display=false;
     }
   },
@@ -246,10 +219,8 @@ export default {
     operated:{
       handler(newValue,oldValue){
         this.operatedCache=newValue;
-        //备份
-        if(this.operatedBack!==null){
-          //出现选择了不同的id则更新备份
-          if(this.operatedBack.id!==newValue.id){
+        if(this.operatedBack!==null){//备份
+          if(this.operatedBack.id!==newValue.id){//出现选择了不同的id则更新备份
             this.operatedBack=Lodash.cloneDeep(newValue);
           }
         }else {
@@ -378,7 +349,6 @@ export default {
   justify-content: center;
   align-items: flex-start;
   flex-direction: row;
-  /*overflow: hidden;*/
   background: white;
   border-radius: 3px;
   border:1px dashed #d8d8d8;
@@ -405,7 +375,6 @@ button{
 .leftAttribute{
   width: 70px;
   min-height: 100%;
-  /*background: #ffd35d;*/
   display: flex;
   flex-direction: column;
   justify-content: left;
@@ -430,7 +399,6 @@ button{
 .rightValue{
   width: calc(100% - 70px - 2px - 8px - 20px - 4px);
   min-height: 100%;
-  /*background: #8dffdf;*/
   overflow-x: hidden;
   overflow-y: auto;
   font-size: 14px;
@@ -438,35 +406,15 @@ button{
   color: rgb(45, 45, 45);
   line-height: 18px;
 }
-.doneTickButton{
-  width: 20px;
-  height: 100%;
-  margin-right: 4px;
-  padding: 4px 0px;
-  /*background: white;*/
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-}
 .tickButton{
   width: 20px;
   height: 100%;
   margin-right: 4px;
   padding: 4px 0px;
-  /*background: white;*/
   display: flex;
   justify-content: flex-start;
   align-items: center;
   flex-direction: column;
-}
-.doneSleBtn{
-  width: 14px;
-  height: 14px;
-  border: 1px solid #a9a9a9;
-  border-radius: 15px;
-  background: #aaaaaa;
-  overflow: hidden;
 }
 .sleBtn{
   width: 14px;
@@ -482,8 +430,8 @@ button{
 }
 textarea{
   border:none;
-  outline: none;/*边线不显示*/
-  resize: none;/*禁止拉伸*/
+  outline: none;
+  resize: none;
   background:white;
   appearance:none;
   cursor: text;

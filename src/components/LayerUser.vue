@@ -1,13 +1,7 @@
 <template>
-  <!--
-  职责：显示用户的属性、用户登录、用户注册、登出等功能
-  权限：允许访问$store.state.serverData内的数据
-  -->
-<!--右上角用来登录和显示用户数据的-->
-  <div class="userLayer selectNone">
+  <div class="userLayer selectNone"><!--登录\显示用户数据-->
     <div class="userLayerBox" ref="userLayer" v-bind:style="UserLayerTranslate">
-      <!--头像-->
-      <div class="headImage">
+      <div class="headImage"><!--头像-->
         <img id="headImage" draggable="false" @click="openLoginBord()" :src="'http://q.qlogo.cn/g?b=qq&amp;nk='+qq+'&amp;s=640&amp;mType=friendlist'" alt="头像"/>
       </div>
       <div class="right">
@@ -43,9 +37,7 @@ export default {
           x:null,
           y:null
         },
-        //移动侦测器
-        moveObServer:null,
-        //移动过程中每隔11毫秒则监听1次鼠标位置会保存在此处,最大两个
+        moveObServer:null,//移动侦测器
         moveObServerDt:[]
       }
     }
@@ -74,7 +66,6 @@ export default {
         }
       })
     },
-    //dataLayer的鼠标移动监听-移动
     mapMoveIng(){
       let dataLayer=this.$refs.userLayer;
       dataLayer.addEventListener('mousemove',(e)=>{
@@ -86,7 +77,6 @@ export default {
         }
       })
     },
-    //移动结束
     mapMoveEnd(){
       let dataLayer=this.$refs.userLayer;
       dataLayer.addEventListener('mouseup',(e)=>{
@@ -96,25 +86,22 @@ export default {
           point.x=e.x;
           point.y=e.y;
           this.theData.moveEndPt=point;
-          //停用移动侦测器
-          if(this.theData.moveObServer!==null){
+          if(this.theData.moveObServer!==null){//停用移动侦测器
             this.removeMoveObServer();
           }
-          //清空移动缓存
-          this.clearMoveCache();
+          this.clearMoveCache();//清空移动缓存
         }
       })
     },
-    //设置移动侦测器
-    setMoveObServer(){
-      if(this.theData.moveObServer===null){//必须是在已经移除了前一个侦测器的情况下
+    setMoveObServer(){//设置移动侦测器
+      if(this.theData.moveObServer===null){
         this.theData.moveObServer=setInterval(
           ()=>{
             try {
               let pt=this.theData.moveMovePt;
               let le=this.theData.moveObServerDt.length;
               switch (le){
-                case 2:{//有两个
+                case 2:{
                   this.theData.moveObServerDt.shift();
                   this.theData.moveObServerDt.push(pt);
                   let A1=this.theData.moveObServerDt[0];
@@ -125,7 +112,7 @@ export default {
                   this.A1.y+=yc4;
                   break;
                 }
-                case 0:{//空
+                case 0:{
                   this.theData.moveObServerDt.push(pt);
                   let Apt=this.theData.moveStartPt;
                   let xc,yc;
@@ -156,8 +143,7 @@ export default {
           ,this.frameTime)
       }
     },
-    //清空移动缓存
-    clearMoveCache(){
+    clearMoveCache(){//清空移动缓存
       this.theData.moveStartPt.x=null;
       this.theData.moveStartPt.y=null;
       this.theData.moveMovePt.x=null;
@@ -166,15 +152,13 @@ export default {
       this.theData.moveEndPt.y=null;
       this.theData.moveObServerDt.length=0;
     },
-    //移除移动侦测器
-    removeMoveObServer(){
-      if(this.theData.moveObServer!==null) {//必须是存在的情况下
+    removeMoveObServer(){//移除移动侦测器
+      if(this.theData.moveObServer!==null) {
         clearInterval(this.theData.moveObServer);
         this.theData.moveObServer=null;
       }
     },
-    //打开登录面板
-    openLoginBord(){
+    openLoginBord(){//打开登录面板
       this.isOpenBord=true
     },
     getUserData(){
@@ -272,9 +256,7 @@ export default {
     }
   },
   destroyed(){
-    //销毁连接及综合对象
-    //this.$store.commit('destroyComprehensive');
-    //console.log("layer user");
+
   }
 }
 </script>
@@ -288,7 +270,6 @@ export default {
   -ms-user-select:none; /*IE10*/
   user-select:none;
 }
-/*.userLayer{width: 100%;height: 100%}*/
 .userLayerBox{
   box-shadow: #c1c1c1 0px 0px 4px;background: #fefefe;width: 240px;height: 60px;display: flex;justify-content: center;align-items: center;position: fixed;top: 10px;right: 10px;z-index: 550;border-radius: 6px;overflow: hidden;
 }

@@ -1,25 +1,17 @@
 <template>
-  <!--
-  职责：显示地图的标尺、层级
-  权限：允许访问$store.state.mapConfig内的数据
-  -->
   <div class="rulerLayer">
-    <!--layer-->
-    <div class="layer">
+    <div class="layer"><!--layer-->
       层级：{{layer}}
     </div>
-    <!--上侧的标尺-->
-    <div class="topRuler">
+    <div class="topRuler"><!--上侧的标尺-->
 
     </div>
-    <!--中间的空隙-->
-    <div class="topLeftGap">
+    <div class="topLeftGap"><!--中间的空隙-->
 
     </div>
-    <!--左侧的标尺-->
-<!--    <div class="leftRuler">-->
+    <div class="leftRuler"><!--左侧的标尺-->
 
-<!--    </div>-->
+    </div>
   </div>
 </template>
 

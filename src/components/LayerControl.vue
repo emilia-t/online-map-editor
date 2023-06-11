@@ -1,15 +1,6 @@
 <template>
-  <!--
-  职责：
-  1.提供删除、添加地图数据的功能、提供打开控制台的功能
-  权限：
-  允许访问、修改、删除$store.state.mapConfig、$store.state.serverData内的数据
-  -->
-  <!---->
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
-    <!--按钮-->
-    <!--添加-->
-    <div class="controlButtonBox">
+    <div class="controlButtonBox"><!--添加按钮-->
       <div @click="addInterestPointStart()" class="ButtonOut">
         <banana-control-button :color="Url1Color" :button-img-prop="Url1"></banana-control-button>
         <span class="controlButtonName">兴趣点</span>
@@ -27,14 +18,10 @@
         <span class="controlButtonName">曲线</span>
       </div>
     </div>
-    <!--元素右键编辑面板-->
-    <banana-element-operation-board></banana-element-operation-board>
-    <!--点编辑属性面板-->
-    <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"></banana-point-attribute-board>
-    <!--线编辑属性面板-->
-    <banana-line-attribute-board :style-top="theConfig.lineBoardTop" :style-left="theConfig.lineBoardLeft"></banana-line-attribute-board>
-    <!--区域编辑属性面板-->
-    <banana-area-attribute-board :style-top="theConfig.areaBoardTop" :style-left="theConfig.areaBoardLeft"></banana-area-attribute-board>
+    <banana-element-operation-board></banana-element-operation-board><!--元素右键编辑面板-->
+    <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"></banana-point-attribute-board><!--点编辑属性面板-->
+    <banana-line-attribute-board :style-top="theConfig.lineBoardTop" :style-left="theConfig.lineBoardLeft"></banana-line-attribute-board><!--线编辑属性面板-->
+    <banana-area-attribute-board :style-top="theConfig.areaBoardTop" :style-left="theConfig.areaBoardLeft"></banana-area-attribute-board><!--区域编辑属性面板-->
   </div>
 </template>
 
@@ -44,8 +31,8 @@ import BananaControlButton from "./BananaControlButton";
 import BananaAreaAttributeBoard from "./BananaAreaAttributeBoard";
 import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
 import BananaLineAttributeBoard from "./BananaLineAttributeBoard";
-import interestPoint from '../../static/point.png';//关注点
-import lineImg from '../../static/route.png';//线段类型
+import interestPoint from '../../static/point.png';
+import lineImg from '../../static/route.png';
 import regionImg from '../../static/area.png';
 import curveImg from '../../static/curve.png';
 export default {
@@ -82,8 +69,7 @@ export default {
           x:null,
           y:null
         },
-        //临时点数据
-        tempPoint:{
+        tempPoint:{//临时点数据
           id:'tempPoint',
           type:'point',
           points:[{x:0,y:0}],
@@ -91,17 +77,13 @@ export default {
           color:'#000000',
           width:0
         },
-        //点属性面板的位置
-        bordPosTop:0,
+        bordPosTop:0,//点属性面板的位置
         bordPosLeft:-400,
-        //线属性面板的位置
-        lineBoardTop:0,
+        lineBoardTop:0,//线属性面板的位置
         lineBoardLeft:-400,
-        //区域属性面板的位置
-        areaBoardTop:0,
+        areaBoardTop:0,//区域属性面板的位置
         areaBoardLeft:-400,
-        //观察者
-        obServe:false
+        obServe:false,//观察者
       }
     }
   },
@@ -112,60 +94,41 @@ export default {
     startSetting(){
       this.KeyListen();//开启键盘监听
     },
-    //p0点位置移动1个单位
-    moveP0(obj){
-      this.$store.state.mapConfig.A1.x+=this.$store.state.cameraConfig.unit1X*obj.x;
-      this.$store.state.mapConfig.A1.y+=this.$store.state.cameraConfig.unit1Y*obj.y;
-    },
     addAreaStart(){
       if(!this.isAddArea){
         this.isAddArea=true;//更改添加状态为“可用”
         this.Url3Color='#d2d2d2';//更改背景色
-        //更改按钮状态
-        this.theConfig.buttonC=true;
-        //修改svg鼠标悬浮样式
-        if(this.$store.state.mapConfig.cursorLock===false){
+        this.theConfig.buttonC=true;//更改按钮状态
+        if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='crosshair';
         }
-        //更改其他按钮状态
-        if(this.isAddPoint){
+        if(this.isAddPoint){//更改其他按钮状态
           this.addInterestPointStart();
         }
-        //更改其他按钮状态
-        if(this.isAddLine){
+        if(this.isAddLine){//更改其他按钮状态
           this.addRouteLineStart();
         }
-        //禁用更新指针
-        this.$store.state.mapConfig.cursorLock=true;
-        //通知预览启用
-        this.$root.sendSwitchInstruct('previewLine',true);
+        this.$store.state.mapConfig.cursorLock=true;//禁用更新指针
+        this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
       }else {
         this.isAddArea=false;//更改添加状态为“不可用”
         this.Url3Color='#ffffff';//更改背景色e72323
-        //更改按钮状态
-        this.theConfig.buttonC=false;
-        //修改svg鼠标悬浮样式
+        this.theConfig.buttonC=false;//更改按钮状态
         if(this.$store.state.mapConfig.cursorLock===false){
           this.$store.state.mapConfig.cursor='default';
         }
-        //通知预览停用
-        this.$root.sendSwitchInstruct('previewLine',false);
+        this.$root.sendSwitchInstruct('previewLine',false);//通知预览停用
       }
     },
     addArea(){
-      //1监听下一次的鼠标点击位置
       if(this.theConfig.obServe===false){
-        //允许更新，启用观察者
-        this.theConfig.obServe=true;
-        //避免重复添加监听，在第一次监听后即不再重复添加
-        if(this.areaListener===false){
+        this.theConfig.obServe=true;//启用观察者
+        if(this.areaListener===false){//避免重复
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddArea===true && this.addAreaClock===false && this.nodeSuppressor!==true){
-              //判断target
-              let tag=ev.target.nodeName;
+              let tag=ev.target.nodeName;//判断target
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
-                //计算新增点位置
-                let Pos=this.computeMouseActualPos(ev)
+                let Pos=this.computeMouseActualPos(ev)//计算新增点位置
                 this.theConfig.addAreaPos.push(Pos);
               }
             }
@@ -175,98 +138,69 @@ export default {
       }
     },
     addAreaCancel(){
-      //允许更新指针
-      this.$store.state.mapConfig.cursor='default';
+      this.$store.state.mapConfig.cursor='default';//允许更新指针
       this.$store.state.mapConfig.cursorLock=false;
-      //1.重置临时线位置
-      this.$store.state.mapConfig.tempArea.point.x=0;
+      this.$store.state.mapConfig.tempArea.point.x=0;//重置临时线位置
       this.$store.state.mapConfig.tempArea.point.y=0;
       this.$store.state.mapConfig.tempArea.points=[];
       this.$store.state.mapConfig.tempArea.showPos=[];
-      //2.观察者模式关闭
-      this.theConfig.obServe=false;
-      //3.重置属性面板位置
-      this.theConfig.areaBoardLeft=-400;
+      this.theConfig.obServe=false;//观察者模式关闭
+      this.theConfig.areaBoardLeft=-400;//重置属性面板位置
       this.theConfig.areaBoardTop=0;
-      //4.停用锁止
-      this.addAreaClock=false;
-      //清除点击位置缓存
-      this.theConfig.addAreaPos=[];
+      this.addAreaClock=false;//停用锁止
+      this.theConfig.addAreaPos=[];//清除点击位置缓存
     },
     addCurveStart(){
 
     },
-    //添加路径线
-    addRouteLineStart(){
+    addRouteLineStart(){//添加路径线
       if(!this.isAddLine){
         this.isAddLine=true;//更改添加点状态为“可用”
         this.Url2Color='#d2d2d2';//更改背景色
-        //更改按钮状态
-        this.theConfig.buttonB=true;
-        //修改svg鼠标悬浮样式
-        if(this.$store.state.mapConfig.cursorLock===false){
+        this.theConfig.buttonB=true;//更改按钮状态
+        if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='crosshair';
         }
-        //更改其他按钮状态
-        if(this.isAddPoint){
+        if(this.isAddPoint){//更改其他按钮状态
           this.addInterestPointStart();
         }
-        //更改其他按钮状态
         if(this.isAddArea){
           this.addAreaStart();
         }
-        //禁用更新指针
-        this.$store.state.mapConfig.cursorLock=true;
-        //通知预览启用
-        this.$root.sendSwitchInstruct('previewLine',true);
+        this.$store.state.mapConfig.cursorLock=true;//禁用更新指针
+        this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
       }else {
         this.isAddLine=false;//更改添加点状态为“不可用”
         this.Url2Color='#ffffff';//更改背景色e72323
-        //更改按钮状态
-        this.theConfig.buttonB=false;
-        //修改svg鼠标悬浮样式
-        if(this.$store.state.mapConfig.cursorLock===false){
+        this.theConfig.buttonB=false;//更改按钮状态
+        if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='default';
         }
-        //通知预览停用
-        this.$root.sendSwitchInstruct('previewLine',false);
+        this.$root.sendSwitchInstruct('previewLine',false);//通知预览停用
       }
     },
-    //取消添加线
-    addLineCancel(){
-      //允许更新指针
-      this.$store.state.mapConfig.cursor='default';
+    addLineCancel(){//取消添加线
+      this.$store.state.mapConfig.cursor='default';//允许更新指针
       this.$store.state.mapConfig.cursorLock=false;
-      //1.重置临时线位置
-      this.$store.state.mapConfig.tempLine.point.x=0;
+      this.$store.state.mapConfig.tempLine.point.x=0;//1.重置临时线位置
       this.$store.state.mapConfig.tempLine.point.y=0;
       this.$store.state.mapConfig.tempLine.points=[];
       this.$store.state.mapConfig.tempLine.showPos=[];
-      //2.观察者模式关闭
-      this.theConfig.obServe=false;
-      //3.重置属性面板位置
-      this.theConfig.lineBoardLeft=-400;
+      this.theConfig.obServe=false;//2.观察者模式关闭
+      this.theConfig.lineBoardLeft=-400;//3.重置属性面板位置
       this.theConfig.lineBoardTop=0;
-      //4.停用锁止
-      this.addLineClock=false;
-      //清除点击位置缓存
-      this.theConfig.addLinePos=[];
+      this.addLineClock=false;//4.停用锁止
+      this.theConfig.addLinePos=[];//清除点击位置缓存
     },
-    //添加线
-    addLine(){
-      //1监听下一次的鼠标点击位置
+    addLine(){//添加线
       if(this.theConfig.obServe===false){
-        //允许更新，启用观察者
-        this.theConfig.obServe=true;
-        //避免重复添加监听，在第一次监听后即不再重复添加
-        if(this.lineListener===false){
+        this.theConfig.obServe=true;//启用观察者
+        if(this.lineListener===false){//避免重复
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false && this.nodeSuppressor!==true){
-              //判断target
-              let tag=ev.target.nodeName;
+              let tag=ev.target.nodeName;//判断target
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
-                //计算新增点位置
-                let Pos=this.computeMouseActualPos(ev);
+                let Pos=this.computeMouseActualPos(ev);//计算新增点位置
                 this.theConfig.addLinePos.push(Pos);
               }
             }
@@ -275,58 +209,38 @@ export default {
         }
       }
     },
-    //双击结束添加线段
-    addAreaEnd(){
-      //禁用点更新
-      this.addAreaClock=true;
-      //再双击的位置打开一个线段编辑面板
-      //2调整属性面板位置
-      this.theConfig.areaBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;
+    addAreaEnd(){//双击结束添加线段
+      this.addAreaClock=true;//禁用点更新
+      this.theConfig.areaBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;//调整属性面板位置
       this.theConfig.areaBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
-      //结束通知
-      this.$root.sendSwitchInstruct('previewLine',false);
+      this.$root.sendSwitchInstruct('previewLine',false);//结束通知
     },
-    //双击结束添加线段
-    addLineEnd(){
-      //禁用点更新
-      this.addLineClock=true;
-      //再双击的位置打开一个线段编辑面板
-      //2调整属性面板位置
-      this.theConfig.lineBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;
+    addLineEnd(){//双击结束添加线段
+      this.addLineClock=true;//禁用点更新
+      this.theConfig.lineBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;//调整属性面板位置
       this.theConfig.lineBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
-      //结束通知
-      this.$root.sendSwitchInstruct('previewLine',false);
+      this.$root.sendSwitchInstruct('previewLine',false);//结束通知
     },
-    //取消添加点
-    addPointCancel(){
-      //1.重置临时点位置
-      this.$store.state.mapConfig.tempPoint.width=0;
+    addPointCancel(){//取消添加点
+      this.$store.state.mapConfig.tempPoint.width=0;//重置临时点位置
       this.$store.state.mapConfig.tempPoint.point.x=0;
       this.$store.state.mapConfig.tempPoint.point.y=0;
-      //2.观察者模式关闭
-      this.theConfig.obServe=false;
-      //3.重置属性面板位置
-      this.theConfig.bordPosLeft=-400;
+      this.theConfig.obServe=false;//观察者模式关闭
+      this.theConfig.bordPosLeft=-400;//重置属性面板位置
       this.theConfig.bordPosTop=0;
-      //允许更新指针
-      this.$store.state.mapConfig.cursor='default';
+      this.$store.state.mapConfig.cursor='default';//允许更新指针
       this.$store.state.mapConfig.cursorLock=false;
     },
-    //添加点
-    addPoint(){
-      //1监听下一次的鼠标点击位置
-      if(this.theConfig.obServe===false){
-        //启用观察者，保持更新
-        this.theConfig.obServe=true;
-        //避免重复添加监听
-        if(this.pointListener===false){
+    addPoint(){//添加点
+      if(this.theConfig.obServe===false){//监听下一次的鼠标点击位置
+        this.theConfig.obServe=true;//启用观察者
+
+        if(this.pointListener===false){//避免重复
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddPoint===true && this.nodeSuppressor!==true){
-              //判断target
-              let tag=ev.target.nodeName;
+              let tag=ev.target.nodeName;//判断target
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
-                //计算新增点位置
-                let Pos=this.computeMouseActualPos(ev)
+                let Pos=this.computeMouseActualPos(ev)//计算新增点位置
                 this.theConfig.addPointPos.x=Pos.x;
                 this.theConfig.addPointPos.y=Pos.y;
               }
@@ -336,44 +250,31 @@ export default {
         }
       }
     },
-    //计算用户鼠标点与p0的位置距离并返回用户鼠标点击位置的真实坐标
-    computeMouseActualPos(mouseEvent){
+    computeMouseActualPos(mouseEvent){//计算鼠标点与p0的位置距离并返回鼠标点击位置的坐标
       try{
-        //1.获取必要值 layer\mousePos\p0Pos
-        let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
+        let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];//获取必要值
         layer=this.$store.state.mapConfig.layer;
         mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
         p0Pos.x=this.$store.state.mapConfig.p0.point.x;
         p0Pos.y=this.$store.state.mapConfig.p0.point.y;
-        //2.开始计算
-        //没有缩放
-        if(layer===0){
+        if(layer===0){//没有缩放
           refPos.x=mousePos.x*this.unit1X+p0Pos.x+this.offsetX;//p0点加上鼠标的点击位置+精度补偿值
           refPos.y=p0Pos.y-mousePos.y*this.unit1Y+this.offsetY;
-          //检测点击的位置是否符合单位1
-          //console.log(refPos);
           return refPos;
         }
-        //缩小
-        if(layer>0){
-          //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=(mousePos.x*this.unit1X)+p0Pos.x;//鼠标位置乘以单位1
+        if(layer>0){//缩小
+          refPos.x=(mousePos.x*this.unit1X)+p0Pos.x;//获取鼠标与p0的屏幕显示距离px
           refPos.y=p0Pos.y-(mousePos.y*this.unit1Y);
-          //2.转化
-          for (let i=0;i<layer;i++){
+          for (let i=0;i<layer;i++){//转化
             refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
             refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
           }
-          //console.log(refPos);
           return refPos;
         }
-        //放大
-        if(layer<0){
-          //1.拿到鼠标与p0的屏幕显示距离px
-          refPos.x=mousePos.x*this.unit1X+p0Pos.x;
+        if(layer<0){//放大
+          refPos.x=mousePos.x*this.unit1X+p0Pos.x;//获取鼠标与p0的屏幕显示距离px
           refPos.y=p0Pos.y-mousePos.y*this.unit1X;
-          //2.转化
-          for(let i=0;i>layer;i--){
+          for(let i=0;i>layer;i--){//转化
             refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
             refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
           }
@@ -383,39 +284,30 @@ export default {
         return false;
       }
     },
-    //添加关注点
-    addInterestPointStart(){
+    addInterestPointStart(){//添加关注点
       if(!this.isAddPoint){
-        this.isAddPoint=true;//更改添加点状态为“可用”
-        this.Url1Color='#d2d2d2';//更改背景色
-        //更改按钮状态
-        this.theConfig.buttonA=true;
-        //修改svg鼠标悬浮样式
-        if(this.$store.state.mapConfig.cursorLock===false){
+        this.isAddPoint=true;//更改添加点状态
+        this.Url1Color='#d2d2d2';
+        this.theConfig.buttonA=true;//更改按钮状态
+        if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='crosshair';
         }
-        //禁用更新指针
-        this.$store.state.mapConfig.cursorLock=true;
-        //更改其他按钮状态
-        if(this.isAddLine){
+        this.$store.state.mapConfig.cursorLock=true;//禁用更新指针
+        if(this.isAddLine){//更改其他按钮状态
           this.addRouteLineStart();
         }
       }else {
-        this.isAddPoint=false;//更改添加点状态为“不可用”
-        this.Url1Color='#ffffff';//更改背景色e72323
-        //更改按钮状态
-        this.theConfig.buttonA=false;
-        //修改svg鼠标悬浮样式
-        if(this.$store.state.mapConfig.cursorLock===false){
+        this.isAddPoint=false;//更改添加点状态
+        this.Url1Color='#ffffff';
+        this.theConfig.buttonA=false;//更改按钮状态
+        if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='default';
         }
       }
     },
-    //用于监听单个按键的
-    KeyListen(){
+    KeyListen(){//监听单个按键
       document.body.addEventListener('keyup',(e)=>{
-        //在聚焦于输入框时拒绝操作
-        if(this.$store.state.mapConfig.inputFocusStatus){
+        if(this.$store.state.mapConfig.inputFocusStatus){//在聚焦模式下拒绝操作
           return false;
         }
         let KEY=e.key;
@@ -462,10 +354,9 @@ export default {
         }
       });
     },
-    //F8的事件
     F8Event(){
       this.$root.sendInstruct('openF4DebugBord');
-    }
+    },
   },
   computed:{
     unit1X(){
@@ -556,29 +447,24 @@ export default {
     },
     addNewPoint:{
       handler(newValue){
-        //1更新临时数据
-        this.$store.state.mapConfig.tempPoint.width=this.$store.state.mapConfig.tempPoint.defaultWidth;
+        this.$store.state.mapConfig.tempPoint.width=this.$store.state.mapConfig.tempPoint.defaultWidth;//1更新临时数据
         this.$store.state.mapConfig.tempPoint.point.x=newValue.x;
         this.$store.state.mapConfig.tempPoint.point.y=newValue.y;
-        //2调整属性面板位置
-        this.theConfig.bordPosLeft=this.$store.state.mapConfig.mousePoint.x+10;
+        this.theConfig.bordPosLeft=this.$store.state.mapConfig.mousePoint.x+10;//2调整属性面板位置
         this.theConfig.bordPosTop=this.$store.state.mapConfig.mousePoint.y+10;
       },
       deep:true
     },
     addNewLine:{
       handler(newValue){
-        //在窗口大小更新时禁止更新
-        if(this.$store.state.cameraConfig.windowChange===true){
+        if(this.$store.state.cameraConfig.windowChange===true){//在窗口大小更新时禁止更新
           return false;
         }
         if(newValue.length!==0){
-          //1更新临时线数据
-          this.$store.state.mapConfig.tempLine.point.x=newValue[0].x;
+          this.$store.state.mapConfig.tempLine.point.x=newValue[0].x;//1更新临时线数据
           this.$store.state.mapConfig.tempLine.point.y=newValue[0].y;
           this.$store.state.mapConfig.tempLine.points.push(newValue[newValue.length-1]);
-          //2.更新临时线显示位置
-          this.$store.state.mapConfig.tempLine.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X,y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});
+          this.$store.state.mapConfig.tempLine.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X,y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});//2.更新临时线显示位置
         }else {
           this.$store.state.mapConfig.tempLine.point.x=0;
           this.$store.state.mapConfig.tempLine.point.y=0;
@@ -590,18 +476,14 @@ export default {
     },
     addNewArea:{
       handler(newValue){
-        //在窗口大小更新时禁止更新
-        if(this.$store.state.cameraConfig.windowChange===true){
+        if(this.$store.state.cameraConfig.windowChange===true){//在窗口大小更新时禁止更新
           return false;
         }
-        //解决缩放问题，防抖
         if(newValue.length!==0){
-          //1更新临时线数据
-          this.$store.state.mapConfig.tempArea.point.x=newValue[0].x;
+          this.$store.state.mapConfig.tempArea.point.x=newValue[0].x;//1更新临时线数据
           this.$store.state.mapConfig.tempArea.point.y=newValue[0].y;
           this.$store.state.mapConfig.tempArea.points.push(newValue[newValue.length-1]);
-          //2.更新临时线显示位置
-          this.$store.state.mapConfig.tempArea.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X,y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});
+          this.$store.state.mapConfig.tempArea.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X,y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});//2.更新临时线显示位置
         }else {
           this.$store.state.mapConfig.tempArea.point.x=0;
           this.$store.state.mapConfig.tempArea.point.y=0;
@@ -612,9 +494,8 @@ export default {
       deep:true
     },
     svgDbClick:{
-      handler(newValue){
-        //检测正则进行的操作
-        if(this.isAddArea){
+      handler(){
+        if(this.isAddArea){//检测正则进行的操作
           this.addAreaEnd();
         }
         if(this.isAddLine){
@@ -625,9 +506,7 @@ export default {
     }
   },
   destroyed(){
-    //销毁连接及综合对象
-    //this.$store.commit('destroyComprehensive');
-    //console.log("layer control");
+
   }
 }
 </script>

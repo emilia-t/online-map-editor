@@ -1,15 +1,12 @@
 
 <template>
-  <!--起始页面左侧的菜单面板-->
-<div class="menuPanelLayer" ref="menuPanelLayer">
-  <!--关闭按钮-->
-  <div class="closeButtonBox" ref="closeButtonBox">
+<div class="menuPanelLayer" ref="menuPanelLayer"><!--起始页面左侧的菜单面板-->
+  <div class="closeButtonBox" ref="closeButtonBox"><!--关闭按钮-->
     <div class="closeButton" ref="closeButton" @click="close()">
       <svg class="icon2" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.64645 3.14645C5.45118 3.34171 5.45118 3.65829 5.64645 3.85355L9.79289 8L5.64645 12.1464C5.45118 12.3417 5.45118 12.6583 5.64645 12.8536C5.84171 13.0488 6.15829 13.0488 6.35355 12.8536L10.8536 8.35355C11.0488 8.15829 11.0488 7.84171 10.8536 7.64645L6.35355 3.14645C6.15829 2.95118 5.84171 2.95118 5.64645 3.14645Z" fill="currentColor"></path></svg>
     </div>
   </div>
-  <!--菜单按钮-->
-  <div class="listButtonBox selected" ref="MenuButtonHomePage">
+  <div class="listButtonBox selected" ref="MenuButtonHomePage"><!--菜单按钮-->
     <svg t="1681027976959" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5546" width="200" height="200"><path d="M853.376 930.688 646.016 930.688 646.016 585.6 376.832 585.6 376.832 930.688 170.368 930.688 170.368 504.576 113.024 504.576 113.024 988.032 434.176 988.032 434.176 643.072 588.672 643.072 588.672 988.032 910.72 988.032 910.72 504.576 853.376 504.576Z" p-id="5547"></path><path d="M511.872 28.288 27.904 443.008 27.904 518.528 511.872 103.808 996.096 518.784 996.096 443.136Z" p-id="5548"></path></svg>
     <span class="iconSpan">主页</span>
   </div>
@@ -36,17 +33,14 @@
     <span class="iconSpan">帮助</span>
   </div>
   <div class="SettingsBox" ref="SettingsBox" v-show="settingShow" @contextmenu="stopDefaultEvent($event)">
-    <div class="Settings" ref="Settings">
-      <!--具体的设置项目-->
-      <!--常规设置-->
-      <div class="Setting" v-show="GeneralSettings">
+    <div class="Settings" ref="Settings"><!--具体的设置项目-->
+      <div class="Setting" v-show="GeneralSettings"><!--常规设置-->
         <div class="SettingTitle">常规设置</div>
         <div class="SettingList">
           <div class="spans">
             <span class="spansA">启动时自动搜索服务器状态</span>
             <span class="spansB">这将有助于您选择地图服务器</span>
           </div>
-          <!--switch式开关-->
           <div class="switchOut" ref="GS01" @click="GS01($event)"><div ref="GS01_1" class="circle"></div></div>
         </div>
         <hr/>
@@ -55,7 +49,6 @@
             <span class="spansA">允许服务器修改本地配置</span>
             <span class="spansB">当地图服务器向您申请更新配置时，请开启此项</span>
           </div>
-          <!--switch式开关-->
           <div class="switchOut"><div class="circle"></div></div>
         </div>
         <hr/>
@@ -64,19 +57,16 @@
             <span class="spansA">断开连接时自动删除账号及密码</span>
             <span class="spansB">如果这不是您的设备请开启此项，以保障您的账户安全</span>
           </div>
-          <!--switch式开关-->
           <div class="switchOut"><div class="circle"></div></div>
         </div>
       </div>
-      <!--显示设置-->
-      <div class="Setting" v-show="DisplaySettings">
+      <div class="Setting" v-show="DisplaySettings"><!--显示设置-->
         <div class="SettingTitle">显示设置</div>
         <div class="SettingList">
           <div class="spans">
             <span class="spansA">显示地图元素列表</span>
             <span class="spansB">开启后将会在左侧悬浮一个地图元素列表</span>
           </div>
-          <!--switch式开关-->
           <div class="switchOut" ref="DS01" @click="DS01($event)"><div ref="DS01_1" class="circle"></div></div>
         </div>
         <hr/>
@@ -85,7 +75,6 @@
             <span class="spansA">在上方显示地图标尺</span>
             <span class="spansB">在浏览器顶部显示标尺</span>
           </div>
-          <!--switch式开关-->
           <div class="switchOut"><div class="circle"></div></div>
         </div>
         <hr/>
@@ -94,28 +83,10 @@
             <span class="spansA">在左侧显示地图标尺</span>
             <span class="spansB">在浏览器左侧显示标尺</span>
           </div>
-          <!--switch式开关-->
           <div class="switchOut"><div class="circle"></div></div>
         </div>
-<!--        <hr/>-->
-<!--        <div class="SettingListT1">-->
-<!--          <div class="spans">-->
-<!--            <span class="spansA">缩放层级限制调整</span>-->
-<!--            <span class="spansB">默认为-10~5</span>-->
-<!--          </div>-->
-<!--          &lt;!&ndash;滑块&ndash;&gt;-->
-<!--          <div class="slideBlock">-->
-<!--            <span class="blockName">&nbsp;&nbsp;最大值&nbsp;{{maxZoom}}</span>-->
-<!--            <orange-slide-block :max="maxZoom" :min="minZoom" :default="maxZoom" :widths="150" @OrangeSlideBlockCall="maxZoomSet"></orange-slide-block>-->
-<!--          </div>-->
-<!--          <div class="slideBlock">-->
-<!--            <span class="blockName">&nbsp;&nbsp;最小值&nbsp;{{minZoom}}</span>-->
-<!--            <orange-slide-block :max="maxZoom" :min="minZoom" :default="minZoom" :widths="150" @OrangeSlideBlockCall="minZoomSet"></orange-slide-block>-->
-<!--          </div>-->
-<!--        </div>-->
       </div>
-      <!--账号设置-->
-      <div class="Setting" v-show="AccountSettings">
+      <div class="Setting" v-show="AccountSettings"><!--账号设置-->
         <div class="SettingTitle">账号设置</div>
         <ul class="AccountSetUl">
           <li>
@@ -133,8 +104,7 @@
           </li>
         </ul>
         <hr/>
-        <!--单个账号-->
-        <ol class="AccountSetOl" v-for="value in accounts">
+        <ol class="AccountSetOl" v-for="value in accounts"><!--单个账号-->
           <li class="AccountSetLiC">
             <ol>
               <li class="">
@@ -150,11 +120,9 @@
           </li>
         </ol>
       </div>
-      <!--关于界面-->
-      <div class="Setting" v-show="AboutSettings">
-        <!--图标-->
+      <div class="Setting" v-show="AboutSettings"><!--关于界面-->
         <div class="AboutBox">
-          <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png">
+          <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png"><!--图标-->
           <p class="Ap2">在线地图编辑器</p>
           <p class="Ap1">OME版本0.3.9</p>
           <p class="Ap1"><a href="https://vuejs.org" target="_blank" style="color:blue">Vue</a>版本2.9.6</p>
@@ -163,14 +131,12 @@
           <p class="Ap3">鸣谢</p>
           <p class="Ap1">Emilia（测试）</p>
           <p class="Ap1">ALIMU（测试）</p>
-          <p class="Ap1">空梦（测试）</p>
           <p class="Ap1">水着yamiUwU（测试）</p>
-          <p class="Ap3">Power By</p>
-          <p class="Ap1"><span style="letter-spacing:2px;font-size:12px;font-weight:100;padding:2px;color:rgba(255,255,255,0.2);background-image:linear-gradient(to right, rgba(3,94,252,0.5), rgba(234,110,255,0.5));-webkit-text-fill-color:transparent;-webkit-text-stroke:1px;-webkit-text-stroke-color: #fff;">After The Stars Wither</span></p>
+          <p class="Ap3">Power by</p>
+          <p class="Ap1"><span style="letter-spacing:2px;font-size:12px;font-weight:100;padding:2px;color:rgba(255,255,255,0.2);background-image:linear-gradient(to right, rgba(3,94,252,0.5), rgba(234,110,255,0.5));-webkit-text-fill-color:transparent;-webkit-text-stroke:1px;-webkit-text-stroke-color: #fff;">Online map editor</span></p>
         </div>
       </div>
-      <!--帮助界面-->
-      <div class="Setting" v-show="HelpSettings">
+      <div class="Setting" v-show="HelpSettings"><!--帮助界面-->
         <div class="SettingTitle">帮助</div>
         <hr/>
         <div class="explain">
@@ -288,7 +254,6 @@
       </div>
     </div>
   </div>
-  <!--设置面板-->
 </div>
 </template>
 
@@ -315,90 +280,59 @@ export default {
     }
   },
   mounted() {
-    //初始设置
-    this.startSetting();
-    //监听窗口变化
-    this.watchWindowSize();
+    this.startSetting();//初始设置
   },
   methods:{
-    //初始设置
-    startSetting(){
-      //开启storage监听
-      this.watchStorage();
-      //查找本地配置（设置方面），若查找不到则设置一个默认的设置
-      this.findLocalSetConfig();
-      //设置主页按钮的功能
-      this.$refs.MenuButtonHomePage.addEventListener('click',this.MenuButtonHomePage);
-      //设置SettingsBox的大小
-      this.$refs.SettingsBox.style.width=window.innerWidth+'px';
+    startSetting(){//初始设置
+      this.watchWindowSize();//监听窗口变化
+      this.watchStorage();//开启storage监听
+      this.findLocalSetConfig();//查找本地配置（设置方面），若查找不到则设置一个默认的设置
+      this.$refs.MenuButtonHomePage.addEventListener('click',this.MenuButtonHomePage);//设置主页按钮的功能
+      this.$refs.SettingsBox.style.width=window.innerWidth+'px';//设置SettingsBox的大小
       this.$refs.SettingsBox.style.height=window.innerHeight+'px';
-      //设置点击空白处关闭按钮
-      this.$refs.SettingsBox.addEventListener('click',(ev)=>{
+      this.$refs.SettingsBox.addEventListener('click',(ev)=>{//设置点击空白处关闭按钮
         ev.stopPropagation();
-        //关闭所有设置
-        this.settingShow=false;
+        this.settingShow=false;//关闭所有设置
         this.GeneralSettings=false;
         this.DisplaySettings=false;
         this.AccountSettings=false;
         this.AboutSettings=false;
         this.HelpSettings=false;
       });
-      //阻止冒泡
-      this.$refs.Settings.addEventListener('click',(ev)=>{
+      this.$refs.Settings.addEventListener('click',(ev)=>{//阻止冒泡
         ev.stopPropagation();
       });
-      //查找本地账号配置
-      this.findLocalAccounts();
+      this.findLocalAccounts();//查找本地账号配置
     },
-    //修改最大缩放
-    maxZoomSet(number) {
-      this.$store.state.cameraConfig.maxZoom=number;
-    },
-    //修改最小缩放
-    minZoomSet(number) {
-      this.$store.state.cameraConfig.minZoom=number;
-    },
-    //删除账号
-    deleteAccount(name){
-      //get
-      let accounts=this.handleLocalStorage('get','accounts');
+    deleteAccount(name){//删除账号
+      let accounts=this.handleLocalStorage('get','accounts');//get
       if(accounts!==false){
         accounts=JSON.parse(accounts);
         delete accounts[name];
-        //更新account
-        this.handleLocalStorage('set','accounts',JSON.stringify(accounts));
-        //更新组件
-        this.findLocalAccounts();
+        this.handleLocalStorage('set','accounts',JSON.stringify(accounts));//更新account
+        this.findLocalAccounts();//更新组件
       }
-      //get
       let servers=this.handleLocalStorage('get','servers');
       if(servers!==false){
         servers=JSON.parse(servers);
-        //逐一检查，如果与要删除的账号同样则修改为空字符串
-        for(let key in servers){
+        for(let key in servers){//逐一检查，如果与要删除的账号同样则修改为空字符串
           if(servers[key].account===name){
             servers[key].account='';
             servers[key].password='';
           }
         }
-        //更新servers
-        this.handleLocalStorage('set','servers',JSON.stringify(servers));
-        //更新组件
-        this.$root.sendInstruct('reloadServers');
+        this.handleLocalStorage('set','servers',JSON.stringify(servers));//更新servers
+        this.$root.sendInstruct('reloadServers');//更新组件
       }
     },
-    //关闭默认事件
-    stopDefaultEvent(ev){
+    stopDefaultEvent(ev){//关闭默认事件
       ev.preventDefault();
     },
-    //查找本地账号配置
-    findLocalAccounts(){
-      //1get
+    findLocalAccounts(){//查找本地账号配置
       let find=this.handleLocalStorage('get','accounts');
       if(find!==false){
         let accounts=JSON.parse(this.handleLocalStorage('get','accounts'));
-        //更新
-        if(isObject(accounts)){
+        if(isObject(accounts)){//更新
           this.accounts=accounts;
         }
         function isObject(obj) {
@@ -406,20 +340,16 @@ export default {
         }
       }
     },
-    //查找本地设置配置
-    findLocalSetConfig(){
+    findLocalSetConfig(){//查找本地设置配置
       let localConfig=null;
       let hasLocalConfig=this.handleLocalStorage('get','setting');
       if(hasLocalConfig=='true'){
-        //格式化本地配置设置
-        let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));
+        let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));//格式化本地配置设置
         for(let key in nowLocalStorage){
           switch (key) {
-            //设置启动时自动检查服务器状态
-            case 'set_GS_AutoCheckServerStatus':{
+            case 'set_GS_AutoCheckServerStatus':{//设置启动时自动检查服务器状态
               if(nowLocalStorage[key]==true){
-                //更新样式
-                this.$refs.GS01.classList.add('switchOutOn');
+                this.$refs.GS01.classList.add('switchOutOn');//更新样式
                 this.$refs.GS01_1.classList.add('circleOn')
               }else if(nowLocalStorage[key]==false){
                 this.$refs.GS01.classList.remove('switchOutOn');
@@ -429,172 +359,139 @@ export default {
             }
             case 'set_DS_OpenElementPanel':{
               if(nowLocalStorage[key]==true){
-                //更新样式
-                this.$refs.DS01.classList.add('switchOutOn');
+                this.$refs.DS01.classList.add('switchOutOn');//更新样式
                 this.$refs.DS01_1.classList.add('circleOn');
-                //更新状态
-                this.$store.state.userSettingConfig.elementPanelLayerShow=true;
+                this.$store.state.userSettingConfig.elementPanelLayerShow=true;//更新状态
               }else if(nowLocalStorage[key]==false){
                 this.$refs.DS01.classList.remove('switchOutOn');
                 this.$refs.DS01_1.classList.remove('circleOn');
-                //更新状态
-                this.$store.state.userSettingConfig.elementPanelLayerShow=false;
+                this.$store.state.userSettingConfig.elementPanelLayerShow=false;//更新状态
               }
               break;
             }
           }
         }
       }else {
-        //创建设置对象
-        let SetObj={
+        let SetObj={//创建设置对象
           'set_GS_AutoCheckServerStatus':true
         };
-        //格式化对象
-        let SetStr=JSON.stringify(SetObj);
-        //添加默认配置
-        this.handleLocalStorage('set','setting','true');
+        let SetStr=JSON.stringify(SetObj);//格式化对象
+        this.handleLocalStorage('set','setting','true');//添加默认配置
         this.handleLocalStorage('set','settings',SetStr);
         this.handleLocalStorage('set','A_tips_cn','请勿在控制台修改本地配置');
         this.handleLocalStorage('set','A_tips_uk','Do not modify local configuration on the console');
-        //按钮初始化
-        this.settingSwitch('set_GS_AutoCheckServerStatus',true);
+        this.settingSwitch('set_GS_AutoCheckServerStatus',true);//按钮初始化
       }
     },
-    //主页按钮
-    MenuButtonHomePage(){
+    MenuButtonHomePage(){//主页按钮
       let newUrl=getDomainAndPort();
       location.replace(newUrl);
-      function getDomainAndPort() {
-        let url = window.location.href;
-        let arr = window.location.protocol.split(':');
-        let protocol = arr[0];
+      function getDomainAndPort(){
+        let url=window.location.href;
+        let arr=window.location.protocol.split(':');
+        let protocol=arr[0];
         let domainAndPort;
-        if (url.indexOf('http://') > -1) {
-          domainAndPort = url.split('http://')[1];
-        } else if (url.indexOf('https://') > -1) {
-          domainAndPort = url.split('https://')[1];
+        if (url.indexOf('http://')>-1){
+          domainAndPort=url.split('http://')[1];
+        } else if(url.indexOf('https://')>-1){
+          domainAndPort=url.split('https://')[1];
         }
-        arr = domainAndPort.split('/');
-        let domain = arr[0];
+        arr=domainAndPort.split('/');
+        let domain=arr[0];
         let port;
-        if (domain.indexOf(':') > -1) {
-          let tmp = domain.split(':');
-          domain = tmp[0];
-          port = tmp[1];
-        } else {
-          if (protocol === 'http') {
-            port = '80';
-          } else if (protocol === 'https') {
-            port = '443';
+        if(domain.indexOf(':')>-1){
+          let tmp=domain.split(':');
+          domain=tmp[0];
+          port=tmp[1];
+        }else{
+          if(protocol==='http'){
+            port='80';
+          }else if(protocol==='https'){
+            port='443';
           }
         }
-        if (port === '80' || port === '443') {
-          return protocol + '://' + domain;
-        } else {
-          return protocol + '://' + domain + ':' + port;
+        if(port==='80' || port==='443'){
+          return protocol+'://'+domain;
+        }else{
+          return protocol+'://'+domain+':'+port;
         }
       }
     },
-    //本地存储接口
-    handleLocalStorage(method, key, value) {
-      switch (method) {
-        case 'get' : {
+    handleLocalStorage(method, key, value) {//本地存储接口
+      switch (method){
+        case 'get':{
           let temp = window.localStorage.getItem(key);
           if (temp) {
-            return temp
+            return temp;
           } else {
-            return false
+            return false;
           }
         }
-        case 'set' : {
+        case 'set':{
           window.localStorage.setItem(key, value);
-          break
+          break;
         }
-        case 'remove': {
+        case 'remove':{
           window.localStorage.removeItem(key);
-          break
+          break;
         }
-        default : {
-          return false
+        default:{
+          return false;
         }
       }
     },
-    //显示设置（DS）下的功能开关
-    DS01(ev){
+    DS01(ev){//显示设置下的功能开关
       ev.stopPropagation();
-      //获取设置对象  "set_DS_OpenElementPanel":"false"
-      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
       let oldStatus=settingsObj.set_DS_OpenElementPanel;
-      //修改storage中的值
-      if(oldStatus==true){
+      if(oldStatus==true){//修改storage中的值
         settingsObj.set_DS_OpenElementPanel=false;
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
-        //更改样式
-        this.$refs.DS01.classList.remove('switchOutOn');
+        this.$refs.DS01.classList.remove('switchOutOn');//更改样式
         this.$refs.DS01_1.classList.remove('circleOn');
-        //更新状态
-        this.$store.state.userSettingConfig.elementPanelLayerShow=false;
+        this.$store.state.userSettingConfig.elementPanelLayerShow=false;//更新状态
       }else {
         settingsObj.set_DS_OpenElementPanel=true;
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
-        //更改样式
-        this.$refs.DS01.classList.add('switchOutOn');
+        this.$refs.DS01.classList.add('switchOutOn');//更改样式
         this.$refs.DS01_1.classList.add('circleOn');
-        //更新状态
-        this.$store.state.userSettingConfig.elementPanelLayerShow=true;
+        this.$store.state.userSettingConfig.elementPanelLayerShow=true;//更新状态
       }
     },
-    //常规设置（GS）下的功能开关
-    //01号开关
-    GS01(ev){
+    GS01(ev){//常规设置（GS）下的功能开关
       ev.stopPropagation();
-      //获取设置对象
-      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
       let oldStatus=settingsObj.set_GS_AutoCheckServerStatus;
-      //修改storage中的值
-      if(oldStatus==true){
+      if(oldStatus==true){//修改storage中的值
         settingsObj.set_GS_AutoCheckServerStatus=false;
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
-        //更改样式
-        this.$refs.GS01.classList.remove('switchOutOn');
-        this.$refs.GS01_1.classList.remove('circleOn')
+        this.$refs.GS01.classList.remove('switchOutOn');//更改样式
+        this.$refs.GS01_1.classList.remove('circleOn');
       }else {
         settingsObj.set_GS_AutoCheckServerStatus=true;
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
-        //更改样式
-        this.$refs.GS01.classList.add('switchOutOn');
-        this.$refs.GS01_1.classList.add('circleOn')
+        this.$refs.GS01.classList.add('switchOutOn');//更改样式
+        this.$refs.GS01_1.classList.add('circleOn');
       }
     },
-    //实时监听storage变化,这是为了用户多页面多操作考虑
-    watchStorage(){
+    watchStorage(){//实时监听storage变化
       window.addEventListener('storage', (e)=>{
         switch (e.key) {
-          //设置变动
-          case 'settings':{
-            //格式化
-            let newObj=JSON.parse(e.newValue);
+          case 'settings':{//设置变动
+            let newObj=JSON.parse(e.newValue);//格式化
             let oldObj=JSON.parse(e.oldValue);
-            //检查格式后的数据是否正常,如果不正常则删除settings以此重置配置（防篡改）
-            if(this.storageCheck(newObj)){
-              //检查被改动的项（新增项和旧值有改动项）
-              for(let key1 in newObj){
-                //当前key
-                //是否为新增
-                let isNewO=true;
-                //判断是否在old中存在
-                for(let key2 in oldObj){
+            if(this.storageCheck(newObj)){//检查格式后的数据是否正常,不正常则删除settings以此重置配置
+              for(let key1 in newObj){//检查被改动的项
+                let isNewO=true;//当前key是否为新增
+                for(let key2 in oldObj){//判断是否在old中存在
                   if(key1===key2){
-                    //找到同属性
-                    isNewO=false;
-                    //检测是否有变化
-                    if(newObj[key1]!==oldObj[key2]){
-                      this.settingSwitch(key1,newObj[key1])
+                    isNewO=false;//找到同属性
+                    if(newObj[key1]!==oldObj[key2]){//检测是否有变化
+                      this.settingSwitch(key1,newObj[key1]);
                     }
                   }
                 }
-                //如果为新增属性
-                if(isNewO){
+                if(isNewO){//如果为新增属性
                   this.settingSwitch(key1,newObj[key1]);
                 }
               }
@@ -607,27 +504,22 @@ export default {
         }
       });
     },
-    //处理设置项(来自其他页面的设置)
-    settingSwitch(key,value){
+    settingSwitch(key,value){//处理设置项(来自其他页面的设置)
       switch (key){
         case 'set_GS_AutoCheckServerStatus':{
           if(value==true){
-            //更新样式
-            this.$refs.GS01.classList.add('switchOutOn');
-            this.$refs.GS01_1.classList.add('circleOn')
+            this.$refs.GS01.classList.add('switchOutOn');//更新样式
+            this.$refs.GS01_1.classList.add('circleOn');
           }else if(value==false){
             this.$refs.GS01.classList.remove('switchOutOn');
-            this.$refs.GS01_1.classList.remove('circleOn')
+            this.$refs.GS01_1.classList.remove('circleOn');
           }
           break;
         }
         case 'set_DS_OpenElementPanel':{
           if(value==true){
-            //更新样式
-            this.$refs.DS01.classList.add('switchOutOn');
+            this.$refs.DS01.classList.add('switchOutOn');//更新样式
             this.$refs.DS01_1.classList.add('circleOn');
-            //打开元素面板
-
           }else if(value==false){
             this.$refs.DS01.classList.remove('switchOutOn');
             this.$refs.DS01_1.classList.remove('circleOn');
@@ -636,13 +528,10 @@ export default {
         }
       }
     },
-    //用于检测本地存储是否正常的，如果不正常则返回false，否则返回true
-    storageCheck(Obj){
-      //1.检测Obj是否为对象
-      if(isObject(Obj)){
+    storageCheck(Obj){//用于检测本地存储是否正常的，如果不正常则返回false，否则返回true
+      if(isObject(Obj)){//1.检测Obj是否为对象
         let sLock=true;
-        //2.检测各项属性的值是否为布尔
-        for(let key in Obj){
+        for(let key in Obj){//2.检测各项属性的值是否为布尔
           if(!isBoolean(Obj[key])){
             sLock=false;
           }
@@ -658,22 +547,18 @@ export default {
         return obj != null && typeof obj === 'object' && Array.isArray(obj) === false;
       }
     },
-    //监听窗口变化
-    watchWindowSize(){
+    watchWindowSize(){//监听窗口变化
       window.addEventListener('resize',()=>{
-        //更新
         this.$refs.SettingsBox.style.width=window.innerWidth+'px';
         this.$refs.SettingsBox.style.height=window.innerHeight+'px';
       })
     },
-    //关闭
-    close(){
+    close(){//关闭
       this.panelShow=!this.panelShow;
     },
     openSetting(name,ev){
       switch (name){
-        //常规设置
-        case 'a':{
+        case 'a':{//常规设置
           this.settingShow=true;
           this.GeneralSettings=true;
           this.DisplaySettings=false;
@@ -683,8 +568,7 @@ export default {
           this.setSettingsTop(ev);
           break;
         }
-        //显示设置
-        case 'b':{
+        case 'b':{//显示设置
           this.settingShow=true;
           this.GeneralSettings=false;
           this.DisplaySettings=true;
@@ -694,8 +578,7 @@ export default {
           this.setSettingsTop(ev);
           break;
         }
-        //账号设置
-        case 'c':{
+        case 'c':{//账号设置
           this.settingShow=true;
           this.GeneralSettings=false;
           this.DisplaySettings=false;
@@ -705,8 +588,7 @@ export default {
           this.setSettingsTop(ev);
           break;
         }
-        //关于
-        case 'o':{
+        case 'o':{//关于
           this.settingShow=true;
           this.GeneralSettings=false;
           this.DisplaySettings=false;
@@ -716,8 +598,7 @@ export default {
           this.setSettingsTop(ev);
           break;
         }
-        //帮助
-        case 'p':{
+        case 'p':{//帮助
           this.settingShow=true;
           this.GeneralSettings=false;
           this.DisplaySettings=false;
@@ -728,7 +609,6 @@ export default {
           break;
         }
       }
-
     },
     setSettingsTop(ev){
       setTimeout(()=>{
@@ -754,7 +634,7 @@ export default {
   },
   watch:{
     panelShow:{
-      handler(newValue){
+      handler(){
         this.$refs.menuPanelLayer.classList.toggle('HidePanel');
         this.$refs.closeButtonBox.classList.toggle('HideCloseBt');
         this.$refs.closeButton.classList.toggle('HideSvg');
@@ -770,36 +650,6 @@ export default {
 </script>
 
 <style scoped>
-.radioPab{
-  width: 100%;
-  height: auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: left;
-}
-.pabList{
-  width: 100%;
-  height: auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-.pabName{
-  font-weight: 100;
-  font-size: 13px;
-}
-.slideBlock{
-  width: 100%;
-  height: 28px;
-  /*background: red;*/
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-.blockName{
-  font-size: 13px;
-}
 .explainChild{
   display: flex;
   flex-direction: row;
@@ -819,7 +669,6 @@ export default {
 .shortcut{
   width: 100%;
   height: 30px;
-  /*background: red;*/
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -830,7 +679,6 @@ export default {
 }
 .cutB{
   width: calc(100% - 50px);
-
 }
 .title1{
   width: calc(100% - 20px);
@@ -961,11 +809,6 @@ a:hover, a:active {
   left: 85px;
   z-index: 545;
 }
-.whiteBack{
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
 .SettingTitle{
   font-weight: 600;
   font-size: 19px;
@@ -981,17 +824,6 @@ a:hover, a:active {
   align-items: center;
   flex-direction: row;
   flex-wrap: nowrap;
-}
-.SettingListT1{
-  width: calc(100% - 10px);
-  margin: 10px 0px;
-  height: auto;
-  padding: 5px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  flex-wrap: wrap;
 }
 .spans{
   display: flex;
@@ -1018,9 +850,6 @@ a:hover, a:active {
   display: flex;
   background: #cbccce;
 }
-.switchOutOff{
-  background: #3590ff !important;
-}
 .circle {
   transition: 0.4s;
   background: white;
@@ -1029,9 +858,6 @@ a:hover, a:active {
   border-radius: 21px;
   margin: 2px;
   transform: translateX(0px) translateY(1px);
-}
-.circleOff {
-  transform: translateX(22px) translateY(1px) !important;
 }
 .Setting{
   padding:0px 2px;
@@ -1067,15 +893,6 @@ a:hover, a:active {
   color: rgba(0,0,0,0.9);
   transition: 0.4s;
 }
-.icon3{
-  z-index: inherit;
-  width: 40px;
-  height: 40px;
-  transform: rotate(180deg);
-  position: absolute;
-  left: -27px;
-  top: 10px;
-}
 .HidePanel{
   left:-85px!important;
 }
@@ -1108,7 +925,6 @@ a:hover, a:active {
 .closeButtonBox{
   width: 20px;
   height: 20px;
-  /*background: red;*/
   position: absolute;
   top:50%;
   left:75px;

@@ -1,7 +1,4 @@
 <template>
-  <!--调色板-->
-  <!--接收：default，返回16进制的颜色字符串-->
-  <!--不要使用vuex-->
   <div class="color-picker">
     <input @input="CallBack" type="color" v-model:value="color">
   </div>
@@ -12,7 +9,6 @@ export default {
   name: "OrangeColorPalette",
   data(){
     return {
-      //这是颜色值
       color:null
     }
   },

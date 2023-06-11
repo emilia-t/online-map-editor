@@ -1,6 +1,6 @@
 # map
 
-> A client online map
+> online map editor
 
 ## Config set
 

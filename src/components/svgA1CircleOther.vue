@@ -1,6 +1,5 @@
 <template>
-<!--显示除我以外的A1位置-->
-  <g :elementId="elementId">
+  <g :elementId="elementId"><!--显示除我以外的A1位置-->
     <circle v-for="A1 in otherA1"  :key="A1.email+'-cir'" :cx="-A1.x" :cy="A1.y" r="5" stroke-width="1" :style="'fill:'+A1.color"/>
     <text v-for="A1 in otherA1"  :key="A1.email+'-txt'" class="selectNone" :x="-A1.x" :y="A1.y-10" v-text="A1.name" text-anchor="middle" :style="'fill:'+A1.color"></text>
   </g>
@@ -18,7 +17,6 @@ export default {
 
   },
   methods:{
-    //测试
 
   },
   computed:{

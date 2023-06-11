@@ -1,14 +1,9 @@
 <template>
-  <!--
-  职责：显示地图整体的简要属性、例如地图大小、以列表方式展示数据（类似于谷歌地图左侧的的面板）
-  允许访问、修改、删除$store.state.serverData内的数据elementPanelLayer
-  -->
   <div class="elementPanelLayer" v-show="this.$store.state.userSettingConfig.elementPanelLayerShow">
     <div class="title">
       元素列表
     </div>
-    <!--遍历-->
-    <div class="content">
+    <div class="content"><!--遍历-->
       <div class="listBox" v-for="element in theMapData.areas">
         <div class="listId">
           {{element.id}}
@@ -52,8 +47,7 @@ export default {
     startSetting(){
 
     },
-    //查找名称details并返回，如果没有找到则返回空值
-    searchNameKey(ele){
+    searchNameKey(ele){//查找名称details并返回，如果没有找到则返回空值
       try {
         let details=ele.details;
         for (let i=0;i<details.length;i++){
@@ -88,9 +82,7 @@ export default {
     }
   },
   destroyed(){
-    //销毁连接及综合对象
-    //this.$store.commit('destroyComprehensive');
-    //console.log("layer element panel");
+
   }
 }
 </script>
@@ -122,7 +114,6 @@ export default {
   font-size: 16px;
   display: flex;
   justify-content: flex-start;
-  /*background: rebeccapurple;*/
 }
 .listValue{
   width: calc(100% - 60px);
@@ -130,7 +121,6 @@ export default {
   font-size: 16px;
   display: flex;
   justify-content: flex-start;
-  /*background: #b5a4c9;*/
 }
 .elementPanelLayer{
   width: 350px;

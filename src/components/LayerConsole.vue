@@ -1,8 +1,4 @@
 <template>
-  <!--
-  职责：显示前端地图各项参数
-  权限：允许访问$store.*
-  -->
   <div class="consoleLayer" ref="consoleLayer" v-if="view">
     <h4 class="consoleTitle">F8 调试面板</h4>
     <div ref="consoleMap" class="consoleMap">
@@ -92,7 +88,7 @@ export default {
   margin: 10px 0px;
 }
 .consoleLayer{
-  width: 490px;
+  width: 350px;
   height: 490px;
   background: rgba(170, 170, 170, 0.9);
   color: rgba(255, 255, 255, 0.9);
