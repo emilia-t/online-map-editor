@@ -814,6 +814,11 @@ export default new Vuex.Store({
                   }
                 }
                 case 'logIn':{
+                  for(let i=0;i<this.presence.length;i++){//判断是否重复
+                    if(this.presence[i].userEmail===jsonData.data.userEmail){
+                      return false;
+                    }
+                  }
                   this.presence.push(jsonData.data);
                   break;
                 }
