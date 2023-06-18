@@ -1,7 +1,8 @@
 <template>
   <g :elementId="tempArea.id">
+    <polyline :points="previewAreaPoints" :style="pathLineStyle"/><!--区域主体-->
     <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+tempArea.color,strokeWidth:tempArea.width}"/>
-    <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2)"/><!--预览轨迹-->
+    <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2);pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/><!--预览轨迹-->
     <circle v-show="!doNeedMoveMap" v-for="point in tempArea.showPos"  :cx="circleCX(point.x)" :cy="circleCY(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
   </g>
 </template>
@@ -73,6 +74,15 @@ export default {
     this.startSetting();
   },
   computed:{
+    pathLineStyle(){
+      return {
+        stroke:'#dedede',
+        strokeWidth:3,
+        opacity:0.5,
+        strokeLinecap:'round',
+        fill:'red'
+      }
+    },
     browserX(){
       return this.$store.state.mapConfig.browser.width;
     },
@@ -156,9 +166,35 @@ export default {
       if(this.tempArea.points.length!==0){
         if(this.dynamicPointsStr.length!==0){
           let str='';
-          str+=this.dynamicPointsStr[this.dynamicPointsStr.length-1].c+' '+this.dynamicPointsStr[this.dynamicPointsStr.length-1].d;
+          for (let i=0;i<this.dynamicPointsStr.length;i++){
+            str+=this.dynamicPointsStr[i].a+','+this.dynamicPointsStr[i].b+' ';
+            if(i===this.dynamicPointsStr.length-1){
+              str+=this.dynamicPointsStr[i].c+','+this.dynamicPointsStr[i].d+' ';
+            }
+          }
+          str+=this.mouse.x+','+this.mouse.y;
+          return str;
+        }else if(this.dynamicPointsStr.length===0){
+          let str='';
+          str+=(this.tempArea.showPos[0].x/this.unit1Y)+' '+(-this.tempArea.showPos[0].y/this.unit1Y);
           str+=' ';
           str+=this.mouse.x+' '+this.mouse.y;
+          return str;
+        }else {
+          return ''
+        }
+      }
+    },
+    previewAreaPoints(){//预览lane的坐标
+      if(this.tempArea.points.length!==0){
+        if(this.dynamicPointsStr.length!==0){
+          let str='';
+          for (let i=0;i<this.dynamicPointsStr.length;i++){
+            str+=this.dynamicPointsStr[i].a+','+this.dynamicPointsStr[i].b+' ';
+            if(i===this.dynamicPointsStr.length-1){
+              str+=this.dynamicPointsStr[i].c+','+this.dynamicPointsStr[i].d+' ';
+            }
+          }
           return str;
         }else if(this.dynamicPointsStr.length===0){
           let str='';

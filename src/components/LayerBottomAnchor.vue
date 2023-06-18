@@ -3,8 +3,8 @@
     <div class="bottomAnchorLayerBox">
       Power by&nbsp;<a target="_blank" href="https://map.atsw.top">Online map editor</a>&nbsp;&nbsp;
       <img alt="图标" :src="batb" class="batb-d0289dc0"/>
-      <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=53062602000121">滇公网安备 53062602000121号</a>&nbsp;&nbsp;
-      <a target="_blank" href="https://beian.miit.gov.cn/">滇ICP备20002587号-2</a>&nbsp;&nbsp;
+      <a target="_blank" :href="'http://www.beian.gov.cn/portal/registerSystemInfo?recordcode='+this.$root.CONFIG.bottomAnchorTextC">{{this.$root.CONFIG.bottomAnchorTextA}}</a>&nbsp;&nbsp;
+      <a target="_blank" href="https://beian.miit.gov.cn/">{{this.$root.CONFIG.bottomAnchorTextB}}</a>&nbsp;&nbsp;
     </div>
   </div>
 </template>

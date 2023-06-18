@@ -51,6 +51,7 @@ export default {
       this.A1Cache.y=this.A1.y;
     },
     shiftStart(ev){//挪动节点
+      if(this.selectId!==this.myId){return false;}
       Object.assign(this.shiftStartPoint,this.pointConfig.point);//保存当前元素坐标位置
       this.shiftStartMouse.x=ev.x;//保存当前鼠标点击位置
       this.shiftStartMouse.y=ev.y;

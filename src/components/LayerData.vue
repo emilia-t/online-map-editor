@@ -107,7 +107,7 @@ export default {
       this.$store.state.mapConfig.svgDbClick.y=e.y;
     },
     visualAngleScale(){//缩放视角
-      let visualAngleTimer;//定时器标识
+      let visualAngleTimer=null;//定时器标识
       let browserAgent=window.navigator.userAgent;
       let browser=null;
       if(browserAgent.indexOf('Firefox')!==-1){
@@ -129,35 +129,28 @@ export default {
         }
       }
       let Callback=(e,browser)=>{
-        clearTimeout(visualAngleTimer);
-        visualAngleTimer=setTimeout(()=>{
-          let tp=null;
-          switch (browser){
-            case 'chrome':{
-              tp=e.wheelDelta;
-              break;
-            }
-            case 'firefox':{
-              tp=(e.detail)*-1;
-              break;
-            }
-          }
-          if(this.$store.state.commits.disableZoomAndMove===false){//在进行节点移动操作时禁用缩放
-            if(tp>0){//滚轮前进，放大
-              if(this.$store.state.mapConfig.layer<=this.$store.state.cameraConfig.minZoom){
-                return false;
+        this.$store.state.cameraConfig.zoomIng=true;
+        if(visualAngleTimer===null){
+          visualAngleTimer=setTimeout(()=>{
+            let tp=null;
+            switch (browser){case 'chrome':{tp=e.wheelDelta;break;}case 'firefox':{tp=(e.detail)*-1;break;}}
+            if(this.$store.state.commits.disableZoomAndMove===false){//在进行节点移动操作时禁用缩放
+              clearTimeout(visualAngleTimer);
+              visualAngleTimer=null;
+              if(tp>0){//滚轮前进，放大
+                if(this.$store.state.mapConfig.layer<=this.$store.state.cameraConfig.minZoom){return false;}
+                this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer;
+                this.$store.state.mapConfig.layer-=1;//层级下调
+                this.$store.state.cameraConfig.zoomIng=false;
+              }else {//滚轮后退，缩放
+                if(this.$store.state.mapConfig.layer>=this.$store.state.cameraConfig.maxZoom){return false;}
+                this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer;
+                this.$store.state.mapConfig.layer+=1;//层级下调
+                this.$store.state.cameraConfig.zoomIng=false;
               }
-              this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer;
-              this.$store.state.mapConfig.layer-=1;//层级下调
-            }else {//滚轮后退，缩放
-              if(this.$store.state.mapConfig.layer>=this.$store.state.cameraConfig.maxZoom){
-                return false;
-              }
-              this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer;
-              this.$store.state.mapConfig.layer+=1;//层级下调
             }
-          }
-        },200)
+          },this.$store.state.cameraConfig.wheelInterval);
+        }
       };
     },
     getBrowserConfig(){//获取浏览器高度和宽度
@@ -174,6 +167,9 @@ export default {
     mapMoveStart(){//dataLayer的鼠标移动监听-按下
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mousedown',(e)=>{
+        if(this.$store.state.commits.disableMove){//缩放时避免移动
+          return false;
+        }
         if(e.button===0){
           this.$store.state.cameraConfig.doNeedMoveMap=true;
           let point={x:null,y:null};

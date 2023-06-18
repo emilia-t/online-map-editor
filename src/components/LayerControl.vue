@@ -97,7 +97,7 @@ export default {
     addAreaStart(){
       if(!this.isAddArea){
         this.isAddArea=true;//更改添加状态为“可用”
-        this.Url3Color='#d2d2d2';//更改背景色
+        this.Url3Color='#82abfe';//更改背景色
         this.theConfig.buttonC=true;//更改按钮状态
         if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='crosshair';
@@ -156,7 +156,7 @@ export default {
     addRouteLineStart(){//添加路径线
       if(!this.isAddLine){
         this.isAddLine=true;//更改添加点状态为“可用”
-        this.Url2Color='#d2d2d2';//更改背景色
+        this.Url2Color='#82abfe';//更改背景色
         this.theConfig.buttonB=true;//更改按钮状态
         if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='crosshair';
@@ -209,7 +209,7 @@ export default {
         }
       }
     },
-    addAreaEnd(){//双击结束添加线段
+    addAreaEnd(){//双击结束添加区域
       this.addAreaClock=true;//禁用点更新
       this.theConfig.areaBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;//调整属性面板位置
       this.theConfig.areaBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
@@ -287,7 +287,7 @@ export default {
     addInterestPointStart(){//添加关注点
       if(!this.isAddPoint){
         this.isAddPoint=true;//更改添加点状态
-        this.Url1Color='#d2d2d2';
+        this.Url1Color='#82abfe';
         this.theConfig.buttonA=true;//更改按钮状态
         if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='crosshair';
@@ -359,6 +359,9 @@ export default {
     },
   },
   computed:{
+    zoomIng(){
+      return this.$store.state.cameraConfig.zoomIng;
+    },
     unit1X(){
       return this.$store.state.cameraConfig.unit1X;
     },
@@ -403,6 +406,16 @@ export default {
     }
   },
   watch:{
+    zoomIng:{
+      handler(newValue){
+        if(newValue){
+          this.$root.sendSwitchInstruct('disableMove',true);
+          setTimeout(()=>{
+            this.$root.sendSwitchInstruct('disableMove',false);
+          },this.$store.state.cameraConfig.wheelInterval);
+        }
+      }
+    },
     addNewAreaEnd:{
       handler(){
         this.addAreaStart();
@@ -532,15 +545,15 @@ export default {
   flex-direction: column;
   position: fixed;
   z-index: 550;
-  right: 0px;
-  top:85px;
+  right: 10px;
+  top:80px;
   background: rgb(252,252,252);
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
+  border-radius: 6px;
   box-shadow:  #c5c5c5 0px 0px 6px;
 }
 .controlButtonName{
-  font-size: 15px;
+  user-select: none;
+  font-size: 13px;
   font-weight: 400;
   margin-bottom: 10px;
   color: rgba(42,42,42,0.8);

@@ -18,17 +18,21 @@ export default new Vuex.Store({
           this.reinitializeSourcePoint=null;//初始化源
           this.socket=undefined;//会话
           this.messages=[];
+          this.presence=[];
           this.publickey='';
           this.userData=null;
           this.mapData={points:[],lines:[],areas:[]};
           this.config={};
           this.otherA1=[];
-          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData'];//指令类型合集
+          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence'];//指令类型合集
           this.Instruct={//指令合集
             login(email,password) {//登录指令
               this.email=email || '';
               this.password=password || '';
               return {type:'login',data:{email:this.email,password:this.password}}
+            },
+            get_presence() {//获取在线用户数据
+              return {type:'get_presence'}
             },
             get_publickey() {//获取公钥指令
               return {type:'get_publickey'}
@@ -378,6 +382,12 @@ export default new Vuex.Store({
         getUserData(){//获取用户数据
           this.send(this.Instruct.get_userData());
         }
+        clearPresence(){
+          this.presence=[];
+        }
+        getPresence(){
+          this.send(this.Instruct.get_presence());
+        }
         getMapData(){//获取地图数据
           this.send(this.Instruct.get_mapData());
         }
@@ -437,6 +447,10 @@ export default new Vuex.Store({
           if(jsonData.type!==undefined){
           let nowType=jsonData.type;//处理数据
           switch (nowType){
+            case 'send_presence':{
+              this.presence=jsonData.data;
+              break;
+            }
             case 'send_serverConfig':{//服务器发来配置信息
               this.config=jsonData.data;
               break;
@@ -799,6 +813,19 @@ export default new Vuex.Store({
 
                   }
                 }
+                case 'logIn':{
+                  this.presence.push(jsonData.data);
+                  break;
+                }
+                case 'logOut':{
+                  for(let i=0;i<this.presence.length;i++){
+                    if(this.presence[i].userEmail===jsonData.data.email){
+                      this.presence.splice(i,1);
+                      break;
+                    }
+                  }
+                  break;
+                }
               }
               break;
             }
@@ -832,6 +859,7 @@ export default new Vuex.Store({
      * 命令是用于个体组件与外界进行通讯的手段之一，请在main.js的sendInstruct进行注册
     **/
     commits:{
+      disableMove:false,
       disableZoomAndMove:false,
       createTestLine:false,
       openF4DebugBord:false,
@@ -846,13 +874,15 @@ export default new Vuex.Store({
     cameraConfig:{//相机配置
       windowChange:false,//窗口变化
       doNeedMoveMap:false,//是否需要移动地图
-      frameTime:1,//帧时间
+      frameTime:11,//帧时间
       maxZoom:5,//最大缩放
       minZoom:-10,//最小缩放
       unit1X:1,//横轴单位1
       unit1Y:1,//纵轴单位1
       offsetX:0,//x偏移补偿
       offsetY:0,//y偏移补偿
+      wheelInterval:250,//每次缩放间隔
+      zoomIng:false,//缩放中否
     },
     leafletConfig:{//底图配置
       enableBaseMap:false,

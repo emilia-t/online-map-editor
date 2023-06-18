@@ -24,6 +24,7 @@ new Vue({
       previewLine:{pass:0,intercept:0},
       addNewLineEnd:{pass:0,intercept:0},
       disableZoomAndMove:{pass:0,intercept:0},
+      disableMove:{pass:0,intercept:0},
       addNewAreaEnd:{pass:0,intercept:0},
     }
   }},
@@ -81,6 +82,15 @@ new Vue({
             this.commitsConfig.disableZoomAndMove.pass++;
           }else {
             this.commitsConfig.disableZoomAndMove.intercept++;
+          }
+          break;
+        }
+        case 'disableMove':{
+          if(this.filter(name)){
+            this.$store.state.commits.disableMove=status;
+            this.commitsConfig.disableMove.pass++;
+          }else {
+            this.commitsConfig.disableMove.intercept++;
           }
           break;
         }

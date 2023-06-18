@@ -10,14 +10,16 @@
       </div>
     </div>
     <banana-login-board v-show="isOpenBord" :server-key="serverKey"></banana-login-board>
+    <banana-users-presence></banana-users-presence>
   </div>
 </template>
 
 <script>
 import BananaLoginBoard from "./BananaLoginBoard";
+import BananaUsersPresence from "./BananaUsersPresence";
 export default {
   name: "LayerUser",
-  components: {BananaLoginBoard},
+  components: {BananaLoginBoard,BananaUsersPresence},
   data(){
     return {
       isOpenBord:false,
@@ -49,114 +51,11 @@ export default {
     }
   },
   mounted() {
-    this.mapMoveStart();
-    this.mapMoveIng();
-    this.mapMoveEnd();
+    this.startSetting();
   },
   methods:{
-    mapMoveStart(){
-      let dataLayer=this.$refs.userLayer;
-      dataLayer.addEventListener('mousedown',(e)=>{
-        if(e.button===0){
-          this.doNeedMove=true;
-          let point={x:null,y:null};
-          point.x=e.x;
-          point.y=e.y;
-          this.theData.moveStartPt=point;
-        }
-      })
-    },
-    mapMoveIng(){
-      let dataLayer=this.$refs.userLayer;
-      dataLayer.addEventListener('mousemove',(e)=>{
-        if(this.doNeedMove){
-          this.theData.moveMovePt={x:e.x,y:e.y};
-          if(this.theData.moveObServer===null){
-            this.setMoveObServer();
-          }
-        }
-      })
-    },
-    mapMoveEnd(){
-      let dataLayer=this.$refs.userLayer;
-      dataLayer.addEventListener('mouseup',(e)=>{
-        if(e.button===0){
-          this.doNeedMove=false;
-          let point={x:null,y:null};
-          point.x=e.x;
-          point.y=e.y;
-          this.theData.moveEndPt=point;
-          if(this.theData.moveObServer!==null){//停用移动侦测器
-            this.removeMoveObServer();
-          }
-          this.clearMoveCache();//清空移动缓存
-        }
-      })
-    },
-    setMoveObServer(){//设置移动侦测器
-      if(this.theData.moveObServer===null){
-        this.theData.moveObServer=setInterval(
-          ()=>{
-            try {
-              let pt=this.theData.moveMovePt;
-              let le=this.theData.moveObServerDt.length;
-              switch (le){
-                case 2:{
-                  this.theData.moveObServerDt.shift();
-                  this.theData.moveObServerDt.push(pt);
-                  let A1=this.theData.moveObServerDt[0];
-                  let A2=this.theData.moveObServerDt[1];
-                  let xc3=((A2.x-A1.x)*-1);
-                  let yc4=(A2.y-A1.y);
-                  this.A1.x+=xc3;
-                  this.A1.y+=yc4;
-                  break;
-                }
-                case 0:{
-                  this.theData.moveObServerDt.push(pt);
-                  let Apt=this.theData.moveStartPt;
-                  let xc,yc;
-                  xc=(pt.x-Apt.x)*-1;
-                  yc=(pt.y-Apt.y);
-                  this.A1.x+=xc;
-                  this.A1.y+=yc;
-                  break;
-                }
-                case 1:{
-                  this.theData.moveObServerDt.push(pt);
-                  let Bpt=this.theData.moveObServerDt[0];
-                  let xc2,yc2;
-                  xc2=(pt.x-Bpt.x)*-1;
-                  yc2=pt.y-Bpt.y;
-                  this.A1.x+=xc2;
-                  this.A1.y+=yc2;
-                  break;
-                }
-                default:{
-                  break;
-                }
-              }
-            }catch (e) {
+    startSetting(){
 
-            }
-          }
-          ,this.frameTime)
-      }
-    },
-    clearMoveCache(){//清空移动缓存
-      this.theData.moveStartPt.x=null;
-      this.theData.moveStartPt.y=null;
-      this.theData.moveMovePt.x=null;
-      this.theData.moveMovePt.y=null;
-      this.theData.moveEndPt.x=null;
-      this.theData.moveEndPt.y=null;
-      this.theData.moveObServerDt.length=0;
-    },
-    removeMoveObServer(){//移除移动侦测器
-      if(this.theData.moveObServer!==null) {
-        clearInterval(this.theData.moveObServer);
-        this.theData.moveObServer=null;
-      }
     },
     openLoginBord(){//打开登录面板
       this.isOpenBord=true
@@ -271,7 +170,13 @@ export default {
   user-select:none;
 }
 .userLayerBox{
-  box-shadow: #c1c1c1 0px 0px 4px;background: #fefefe;width: 240px;height: 60px;display: flex;justify-content: center;align-items: center;position: fixed;top: 10px;right: 10px;z-index: 550;border-radius: 6px;overflow: hidden;
+  box-shadow: #c1c1c1 0px 0px 4px;background: #fefefe;width: 220px;height: 60px;display: flex;justify-content: center;align-items: center;position: absolute;top: 10px;right: 10px;z-index: 550;border-radius: 6px;overflow: hidden;
+}
+.userLayer{
+  position: fixed;
+  z-index: 550;
+  right: 0px;
+  top: 0px;
 }
 .headImage{display: flex;justify-content: center;align-items: center;width: 60px;height: 60px}
 .headImage img:hover{box-shadow: #d7d7d7 0px 0px 4px;width: 60px;height: 60px}
