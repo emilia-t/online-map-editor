@@ -131,6 +131,10 @@ export default new Vuex.Store({
                 for(let i=0;i<details.length;i++){//2循环检查类型
                   if(Object.prototype.toString.call(details[i])!=='[object object]'){//3检查是否为对象
                     if(details[i].hasOwnProperty('key') && details[i].hasOwnProperty('value')){//4检查是否包含key，value属性
+                      if(details[i].key==''){
+                        alert('属性名不能为空');
+                        return false;
+                      }
                       if(KeyExp.test(details[i].key)){//5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
                         alert('列名错误，仅允许使用字母、数字、汉字、下划线');
                         return false;

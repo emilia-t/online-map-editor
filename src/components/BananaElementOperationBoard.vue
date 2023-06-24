@@ -2,46 +2,70 @@
   <div class="BananaElementOperationBoard" v-show="this.$store.state.elementOperationBoardConfig.display" :style="style">
     <div class="panel"><!--右键菜单-->
       <div class="ButtonBox" ref="deleteButtonBox">
-        <img @click="deleteElement()" class="ButtonImg" draggable="false" alt="按钮" :src="deleteButton"/>
+        <img title="删除元素" @click="deleteElement()" class="ButtonImg" draggable="false" alt="按钮" src="../../static/delete.png"/>
       </div>
       <div class="ButtonBox" ref="editButtonBox">
-        <img @click="editElement()" class="ButtonImg" draggable="false" alt="按钮" :src="editButton"/>
+        <img title="编辑元素" @click="editElement()" class="ButtonImg" draggable="false" alt="按钮" src="../../static/edit.png"/>
       </div>
-      <div class="ButtonBox" ref="moreButtonBox">
-        <img class="ButtonImg" draggable="false" alt="按钮" :src="moreButton"/>
+      <div class="ButtonBox" ref="hideElement">
+        <img title="隐藏元素" @click="" class="ButtonImg" draggable="false" alt="按钮" src="../../static/hideElement.png"/>
       </div>
+      <div class="ButtonBox" ref="historyRecord">
+        <img title="历史记录" @click="" class="ButtonImg" draggable="false" alt="按钮" src="../../static/historyRecord.png"/>
+      </div>
+<!--      <div class="ButtonBox" ref="moreButtonBox">-->
+<!--        <img title="展开更多" class="ButtonImg" draggable="false" alt="按钮" src="../../static/more.png"/>-->
+<!--      </div>-->
     </div>
-    <div v-show="editPanelShow" class="EditPanel"><!--编辑面板-->
-      <div class="BananaPointAttributeBoard">
+    <div v-show="editPanelShow" class="boxOut" ref="BananaAttributeBoard"><!--编辑面板-->
+      <div class="BananaAttributeBoard">
         <div class="headName mouseType1" contenteditable="false">编辑元素</div>
-        <div class="centerList mouseDefault">
-          <div class="centerListItem">
-            <div class="leftAttribute"><div>颜色</div></div>
-            <div class="centerLine"></div>
-            <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="colorInput" contenteditable="true" v-model="operatedCache.color" rows="1" maxlength="7"></textarea>
-            <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ffffff'"></orange-color-palette>
+        <div class="boxSet"><!--面板本体设置，面板透明度、关闭按钮-->
+          <img src="../../static/waterDroplet.png" ref="waterDroplet" class="icon15" alt="waterDroplet" title="透明化面板">
+          <img @click="editElement()" src="../../static/close.png" class="closeButton" alt="closeButton" title="关闭面板">
+        </div>
+        <div class="item iStyle"><!--样式设置，修改颜色、宽度、透明度-->
+          <div class="iTitle"><!--标题-->
+            样式设置
           </div>
-          <div class="centerListItem">
-            <div class="leftAttribute"><div>宽度</div></div>
-            <div class="centerLine"></div>
-            <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="widthInput" contenteditable="true" v-model="operatedCache.width" maxlength="7"></textarea>
-            <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :max="64" :min="2" :default="5"></orange-slide-block>
-          </div>
-          <div class="centerListItem" v-for="detail in operated.details">
-            <div class="leftAttribute">
-              <textarea @focus="onFocusMode()" @blur="noFocusMode()"  contenteditable="true" v-model="detail.key" rows="2" maxlength="8"></textarea>
+          <div class="iStyContent"><!--内容-->
+            <div class="iStyP">
+              <div class="iStyName">当前颜色</div>
+              <div class="iStyView" title="当前颜色" :style="operatedColor"></div>
+              <div class="iStyName">自选颜色</div>
+              <orange-color-palette @OrangeColorPaletteFocusout="instantChangeColor" @OrangeColorPaletteCall="paletteHandle" class="iStyInput" default="#ffffff"></orange-color-palette>
             </div>
-            <div class="centerLine"></div>
-            <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="rightValue" contenteditable="true" v-model="detail.value" rows="3" maxlength="128"></textarea>
-            <div class="tickButton">
-              <div class="sleBtn" ref="sleBtn" @click="selectList($event)" data-select-state="no"></div>
+            <div class="iStyColors"><!--选择区域-->
+              <div class="iStyColor" v-for="color in colors" :style="'background:#'+color" @click="instantChangeColor(color)"></div>
+            </div>
+            <div class="iStyP">
+              <div class="iStyName">当前宽度</div>
+              <div class="iStyWidth" title="当前宽度">{{this.operatedCache.width}}</div>
+            </div>
+            <div class="iStySlide">
+              <orange-slide-block @OrangeSlideBlockFocusout="instantChangeWidth"  @OrangeSlideBlockCall="sliderHandle" :div-style="'width:267px;left:-92px;top:34%'" max="64" min="2" :default="this.operatedCache.width"></orange-slide-block>
             </div>
           </div>
         </div>
-        <div class="bottomButton mouseType1">
-          <button @click="insertRow($event)">插入列</button>
-          <button @click="removeRow($event)">删除列</button>
-          <button @click="submitEdit($event)">上传</button>
+        <div class="item iAttribute"><!--属性编辑，区域、名称、类型....-->
+          <div class="iTitle">
+            属性编辑
+          </div>
+          <div class="iAttContent"><!--内容-->
+            <div class="iAttItem" v-for="detail in operated.details">
+              <div class="keyTips">在您编辑结束后同步</div>
+              <div class="leftProperty">
+                <input @input="keyCheck($event)" @focusout="instantChangeDetail" @focus="onFocusMode()" @blur="noFocusMode()" contenteditable="true" v-model:value="detail.key" maxlength="12"/>
+                <img src="../../static/downInsert.png" alt="downInsert" class="icon15" title="向下插入" @click="downInsertDetail(detail.key)">
+                <img src="../../static/upInsert.png" alt="upInsert" class="icon15" title="向上插入" @click="upInsertDetail(detail.key)">
+                <img src="../../static/delete.png" alt="deleteButton" class="icon15" title="删除此行" @click="deleteRow(detail.key)">
+              </div>
+              <div class="rightValue">
+                <img src="../../static/keyToValue.png" class="keyToValue" alt="keyToValue"/>
+                <textarea @focusout="instantChangeDetail" @focus="onFocusMode()" @blur="noFocusMode()" contenteditable="true" v-model:value="detail.value"></textarea>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -50,9 +74,6 @@
 
 <script>
 import Lodash from 'lodash'
-import deleteButton from '../../static/delete.png'
-import moreButton from '../../static/more.png'
-import editButton from '../../static/edit.png'
 import orangeColorPalette from './OrangeColorPalette'
 import orangeSlideBlock from './OrangeSlideBlock'
 export default {
@@ -60,9 +81,6 @@ export default {
   components:{orangeColorPalette,orangeSlideBlock},
   data(){
     return {
-      deleteButton,
-      moreButton,
-      editButton,
       editPanelShow:false,
       theConfig:{
         selectNum:-1
@@ -70,7 +88,11 @@ export default {
       operatedCache:{
 
       },
-      operatedBack:null
+      operatedBack:null,
+      colors:['cc0066','ff6666','ff6600','ffcc33','ffff00','99cc33','66cc33','009966','009999','0099cc','333399','993399','666633',
+        '993300','ff6600','ffcc00','996600','669933','006633','006699','333366','6633cc','cccccc','666666','333333','000000'],
+      translucent:false,
+      insertCount:1
     }
   },
   mounted() {
@@ -78,7 +100,44 @@ export default {
   },
   methods:{
     startSetting(){
-
+      this.waterDropletEvent();
+    },
+    keyCheck(ev){
+        let lock=false;
+        let nowValue=ev.target.value;
+        let count=0;
+        if(nowValue===''){
+          ev.target.parentElement.parentElement.firstChild.innerText='不能重复或为空';
+          ev.target.parentElement.parentElement.firstChild.style.display='block';
+          lock=true;
+        }
+        for(let i=0;i<this.operated.details.length;i++){
+          if(nowValue===this.operated.details[i].key){
+            count++;
+            if(count>=2){
+              setTimeout(()=>ev.target.value='',50);
+              ev.target.parentElement.parentElement.firstChild.innerText='不能重复或为空';
+              ev.target.parentElement.parentElement.firstChild.style.display='block';
+              lock=true;
+              break;
+            }
+          }
+       }
+       if(lock===false){
+         ev.target.parentElement.parentElement.firstChild.innerText='';
+         ev.target.parentElement.parentElement.firstChild.style.display='none';
+       }
+    },
+    waterDropletEvent(){
+      this.$refs.waterDroplet.addEventListener('click',(ev)=>{
+        if(!this.translucent){
+          this.$refs.BananaAttributeBoard.classList.toggle('transparent');
+          this.translucent=true;
+        }else {
+          this.$refs.BananaAttributeBoard.classList.toggle('transparent');
+          this.translucent=false;
+        }
+      });
     },
     onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
@@ -86,11 +145,7 @@ export default {
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
-    buttonAnimation(ev){//按钮动画
-      ev.target.classList.contains('animation')?ev.target.classList.toggle('animationB'):ev.target.classList.toggle('animation');
-    },
     submitEdit(ev){//提交-更新缓存-同时上传数据
-      this.buttonAnimation(ev);
       let changes=this.compareObjects(this.operatedBack,this.operatedCache)
       if(changes.isChange){
         changes.id=this.operatedCache.id;
@@ -114,7 +169,7 @@ export default {
         changes,
        }
      },
-     isEqual(value,other){//判断两个值是否相等
+    isEqual(value,other){//判断两个值是否相等
       if (value===other){
         return true
       }
@@ -123,48 +178,45 @@ export default {
       }
       return false
     },
-    removeRow(ev){//删除列
-      let nowSelList=this.theConfig.selectNum;//选中列
-      if(nowSelList==-1){
-        alert('请选择需要删除的列');
-        return false;
-      }
-      this.operatedCache.details.splice(nowSelList,1);
-      let sleBtn=this.$refs.sleBtn;//重置样式
-      let leng=sleBtn.length;
-      for(let i=0;i<leng;i++){
-        sleBtn[i].setAttribute('data-select-state','no');
-        sleBtn[i].classList.remove('sleBtnSelected');
-      }
-      this.theConfig.selectNum=-1;//重置选择
-      this.buttonAnimation(ev)
-    },
-    insertRow(ev){//插入列
-      let nowSelList=this.theConfig.selectNum===-1?0:this.theConfig.selectNum;//选中列
-      let temp={"key":"空值","value":"空值"};
-      this.operatedCache.details.splice(nowSelList,0,temp);
-      let sleBtn=this.$refs.sleBtn;//重置样式
-      let leng=sleBtn.length;
-      for(let i=0;i<leng;i++){
-        sleBtn[i].setAttribute('data-select-state','no');
-        sleBtn[i].classList.remove('sleBtnSelected');
-      }
-      this.theConfig.selectNum=-1;//重置选择
-      this.buttonAnimation(ev)
-    },
-    selectList(ev){//选中
-      let nowSle=ev.target;//0.获取当前选中点
-      let sleBtn=this.$refs.sleBtn;//1.查询该class属于第几个
-      let leng=sleBtn.length;
-      for(let i=0;i<leng;i++){
-        if(sleBtn[i]==nowSle){
-          this.theConfig.selectNum=i;
-          sleBtn[i].setAttribute('data-select-state','yes');
-          sleBtn[i].classList.add('sleBtnSelected');
-        }else {
-          sleBtn[i].setAttribute('data-select-state','no');
-          sleBtn[i].classList.remove('sleBtnSelected');
+    upInsertDetail(key){
+      let index=-1;
+      for(let i=0;i<this.operated.details.length;i++){
+        if(this.operated.details[i].key==key){
+          index=i+1;
+          break;
         }
+      }
+      if(index!==-1){
+        let newRow={'key':'名'+this.insertCount,'value':'值'};
+        this.operated.details.splice(index-1,0,newRow);
+      }
+      this.insertCount++;
+    },
+    downInsertDetail(key){
+      let index=-1;
+      for(let i=0;i<this.operated.details.length;i++){
+        if(this.operated.details[i].key==key){
+          index=i+1;
+          break;
+        }
+      }
+      if(index!==-1){
+        let newRow={'key':'名'+this.insertCount,'value':'值'};
+        this.operated.details.splice(index,0,newRow);
+      }
+      this.insertCount++;
+    },
+    deleteRow(key){
+      let index=-1;
+      for(let i=0;i<this.operated.details.length;i++){
+        if(this.operated.details[i].key==key){
+          index=i+1;
+          break;
+        }
+      }
+      if(index!==-1){
+        this.operated.details.splice(index-1,1);
+        this.instantChangeDetail();
       }
     },
     sliderHandle(data){//滑块
@@ -177,17 +229,32 @@ export default {
     paletteHandle(data){//色块
       this.operatedCache.color=data;
     },
+    instantChangeDetail(){
+      this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{details:this.operated.details}});
+    },
+    instantChangeWidth(data){
+      this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{width:data}});
+    },
+    instantChangeColor(data){
+      this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{color:data}});
+    },
     editElement(){//编辑操作
       this.editPanelShow=!this.editPanelShow;
     },
-    //删除操作
-    deleteElement(){
+    deleteElement(){//删除操作
       let id=this.$store.state.mapConfig.operated.id;//select id
       this.$store.state.serverData.socket.broadcastDeleteElement(id);
       this.$store.state.elementOperationBoardConfig.display=false;
     }
   },
   computed:{
+    operatedColor(){
+      if(this.operated.color){
+        return 'background:#'+this.operated.color;
+      }else {
+        return 'background:#ff0000';
+      }
+    },
     style(){
       let x=this.$store.state.elementOperationBoardConfig.posX+14;
       let y=this.$store.state.elementOperationBoardConfig.posY+5;
@@ -234,9 +301,18 @@ export default {
 </script>
 
 <style scoped>
-.EditPanel{
-  position: absolute;
-  left: 40px;
+.keyTips{
+  position: relative;
+  top:-10px;
+  left: 4px;
+  font-size: 13px;
+  font-weight: 100;
+  width: 100%;
+  height: 10px;
+  display: block;
+}
+.transparent{
+  opacity: 0.4;
 }
 .BananaElementOperationBoard{
   position: fixed;
@@ -248,6 +324,7 @@ export default {
 .panel{
   user-select: none;
   position: absolute;
+  z-index: 550;
   left: 0px;
   width: 30px;
   height: auto;
@@ -257,7 +334,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-items: flex-start;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,1);
 }
 .ButtonBox{
   width: 30px;
@@ -278,32 +355,10 @@ export default {
   width: 25px;
   height: 25px;
 }
-@keyframes buttonAnimation {
-  0%{
-    background: #979797;
-  }
-  100%{
-    background: white;
-  }
-}
-@keyframes buttonAnimationB {
-  0%{
-    background: #979796;
-  }
-  100%{
-    background: white;
-  }
-}
-.animation{
-  animation: buttonAnimation .5s forwards;
-}
-.animationB{
-  animation: buttonAnimationB .5s forwards;
-}
-.BananaPointAttributeBoard{
+.BananaAttributeBoard{
   position: absolute;
   width: 300px;
-  height: 400px;
+  height: 420px;
   background: white;
   box-shadow: #b1b1b1 2px 2px 10px;
   border-radius: 5px;
@@ -330,128 +385,155 @@ export default {
 .mouseType1{
   cursor: default;
 }
-.centerList{
+/**/
+.boxSet{
+  position: absolute;
+  z-index: 550;
+  top: 8px;
+  width: calc(100% - 10px);
+  height: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+.iAttItem{
   width: 100%;
-  height: calc(100% - 35px - 25px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  display: flex;
-  justify-content: left;
-  flex-direction: column;
-  position:relative;
-  z-index: 200;
+  height: auto;
+  padding: 10px 0px;
 }
-.centerListItem{
-  min-width: calc(100% - 10px);
-  margin: 3px 10px 3px 0px;
-  padding: 2px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  flex-direction: row;
-  background: white;
-  border-radius: 3px;
-  border:1px dashed #d8d8d8;
-}
-.bottomButton{
-  width: 100%;
-  height: 25px;
-  border-radius: 3px;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  box-shadow: 1px 0px 4px #c1c1c1;
-  position:relative;
-  z-index: 400;
-}
-button{
-  background: white;
-  border: none;
-  border-radius: 3px;
+.leftProperty input{
   font-size: 13px;
-  box-shadow: 0px 0px 1px #adadad;
+  font-weight: 200;
+  width: 194px;
 }
-
-.leftAttribute{
-  width: 70px;
-  min-height: 100%;
+.leftProperty{
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  justify-content: left;
-  color: rgba(50, 50, 50, 0.8);
-  font-weight: 400;
-}
-.leftAttribute textarea{
-  font-weight: 400;
-  font-size: 14px;
-}
-.leftAttribute div{
-  margin: 3px 0px;
-  padding: 2px 2px;
-  font-size: 14px;
-}
-.centerLine{
-  width: 2px;
-  height: 100%;
-  overflow: hidden;
-  background: white;
-}
-.rightValue{
-  width: calc(100% - 70px - 2px - 8px - 20px - 4px);
-  min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  font-size: 14px;
-  padding:0px 4px;
-  color: rgb(45, 45, 45);
-  line-height: 18px;
-}
-.tickButton{
-  width: 20px;
-  height: 100%;
-  margin-right: 4px;
-  padding: 4px 0px;
-  display: flex;
+  flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+}
+.rightValue{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.rightValue textarea{
+  font-size: 13px;
+  font-weight: 200;
+  min-width: calc(90% - 17px);
+  max-width: calc(90% - 17px);
+  width: calc(90% - 17px);
+  padding: 2px 4px;
+  min-height: 38px;
+  max-height: 300px;
+  height: auto;
+  margin: 4px 0px 0px 0px;
+}
+.keyToValue{
+  width: 20px;
+  height: 20px;
+}
+.icon15{
+  width: 20px;
+  height: 20px;
+  margin: 0px 2px;
+}
+.closeButton{
+  width: 20px;
+  height: 20px;
+  margin: 0px 12px 0px 2px;
+}
+.boxOut{
+  position: fixed;
+  z-index: 550;
+  top: 0px;
+  left: 40px;
+  width: 310px;
+  height: 420px;
+  box-shadow: #b1b1b1 2px 2px 10px;
+  display: flex;
   flex-direction: column;
-}
-.sleBtn{
-  width: 14px;
-  height: 14px;
-  border: 1px solid #a9a9a9;
-  border-radius: 15px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #ffffff;
-  overflow: hidden;
-  cursor: pointer;
+  border-radius: 6px;
 }
-.sleBtnSelected{
-  background: #4b9bfd;
+.item{
+  width: calc(100% - 10px);
+  height: auto;
+  background: #ffffff;
+  padding: 5px;
+  margin: 0px 0px 5px 0px;
 }
-textarea{
-  border:none;
-  outline: none;
-  resize: none;
-  background:white;
-  appearance:none;
-  cursor: text;
+.iTitle{
+  width: 100%;
+  height: 30px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  font-weight: 600;
 }
-.widthInput{
-  width: calc(100% - 2px - 70px - 100px - 4px);
-  height: 35px;
-  border: none;
-  padding: 0px 0px 0px 4px;
+.iStyContent{
+  width: 100%;
+  height: 110px;
+}
+.iStyP{
+  width: 100%;
+  height: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+.iStyName{
+  font-weight: 400;
   font-size: 14px;
-  vertical-align:middle;
-  line-height: 35px;
 }
-.colorInput{
-  width: calc(100% - 2px - 70px - 45px - 4px);
-  height: 35px;
-  border: none;
-  padding: 0px 0px 0px 4px;
+.iStyView{
+  width: 15px;
+  height: 15px;
+  background: red;
+  margin: 0px 60px 0px 20px;
+}
+.iStyWidth{
+  margin: 0px 50px 0px 20px;
   font-size: 14px;
-  vertical-align:middle;
-  line-height: 35px;
+  font-weight: 400;
+}
+.iStyInput{
+  margin: 0px 0px 0px 20px;
+  height: 20px!important;
+}
+.iStyColors{
+  width: 280px;
+  height: 46px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 5px 0px 5px 0px;
+}
+.iStyColor{
+  width: 15px;
+  height: 15px;
+  margin: 3px;
+}
+.iStySlide{
+  width: 100%;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.iAttContent{
+  width: 100%;
+  height: auto;
 }
 </style>

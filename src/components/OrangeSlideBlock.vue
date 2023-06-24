@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="slider" :style="style">
-      <input @input="CallBack" type="range" :min="min" :max="max" v-model:value="number" class="slider-range">
+      <input @focusout="focusout($event)" @input="CallBack" type="range" :min="min" :max="max" v-model:value="number" :style="divStyle" class="slider-range">
     </div>
   </div>
 </template>
@@ -29,9 +29,15 @@ export default {
     },
     widths:{
       default:100
+    },
+    divStyle:{
+      default:''
     }
   },
   methods:{
+    focusout(ev){
+      this.$emit('OrangeSlideBlockFocusout',ev.target.value);
+    },
     CallBack(){
       this.$emit('OrangeSlideBlockCall',this.number)
     },

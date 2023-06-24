@@ -1,48 +1,57 @@
 <template>
-  <div class="BananaPointAttributeBoard" v-bind:style="BoardPos" v-show="show"><!--点数据属性面板-->
-    <div class="headName mouseType1" contenteditable="false"><!--头部名称-->
-      编辑新增点
-    </div>
-    <div class="centerList mouseDefault"><!--属性列表-->
-      <div class="centerListItem">
-        <div class="leftAttribute"><!--左侧属性名-->
-          <div><!--名称-->
-            颜色
+  <div class="boxOut" v-bind:style="BoardPos" v-show="show" ref="BananaAttributeBoard"><!--点数据属性面板-->
+    <div class="BananaAttributeBoard">
+      <div class="headName mouseType1" contenteditable="false">编辑元素</div>
+      <div class="boxSet"><!--面板本体设置，面板透明度、关闭按钮-->
+        <img src="../../static/waterDroplet.png" ref="waterDroplet" class="icon15" alt="waterDroplet" title="透明化面板">
+      </div>
+      <div class="item iStyle"><!--样式设置，修改颜色、宽度、透明度-->
+        <div class="iTitle"><!--标题-->
+          样式设置
+        </div>
+        <div class="iStyContent"><!--内容-->
+          <div class="iStyP">
+            <div class="iStyName">当前颜色</div>
+            <div class="iStyView" title="当前颜色" :style="styleColor"></div>
+            <div class="iStyName">自选颜色</div>
+            <orange-color-palette @OrangeColorPaletteCall="paletteHandle" class="iStyInput" :default="'#'+color"></orange-color-palette>
+          </div>
+          <div class="iStyColors"><!--选择区域-->
+            <div class="iStyColor" v-for="color in colors" :style="'background:#'+color" @click="paletteHandle(color)"></div>
+          </div>
+          <div class="iStyP">
+            <div class="iStyName">当前宽度</div>
+            <div class="iStyWidth" title="当前宽度">{{width}}</div>
+          </div>
+          <div class="iStySlide">
+            <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :div-style="'width:267px;left:-92px;top:34%'" max="64" min="2" :default="width"></orange-slide-block>
           </div>
         </div>
-        <div class="centerLine"><!--中间的分割线-->
-        </div>
-        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="colorInput" contenteditable="true" v-model="color" rows="1" maxlength="7"></textarea><!--右侧属性值-->
-        <orange-color-palette @OrangeColorPaletteCall="paletteHandle" :default="'#ff0000'"></orange-color-palette>
       </div>
-      <div class="centerListItem">
-        <div class="leftAttribute">
-          <div>
-            宽度
+      <div class="item iAttribute"><!--属性编辑，区域、名称、类型....-->
+        <div class="iTitle">
+          属性编辑
+        </div>
+        <div class="iAttContent"><!--内容-->
+          <div class="iAttItem" v-for="detail in details">
+            <div class="keyTips">将在您上传后同步</div>
+            <div class="leftProperty">
+              <input @input="keyCheck($event)" @focus="onFocusMode()" @blur="noFocusMode()" contenteditable="true" v-model:value="detail.key" maxlength="12"/>
+              <img src="../../static/downInsert.png" alt="downInsert" class="icon15" title="向下插入" @click="downInsertDetail(detail.key)">
+              <img src="../../static/upInsert.png" alt="upInsert" class="icon15" title="向上插入" @click="upInsertDetail(detail.key)">
+              <img src="../../static/delete.png" alt="deleteButton" class="icon15" title="删除此行" @click="deleteRow(detail.key)">
+            </div>
+            <div class="rightValue">
+              <img src="../../static/keyToValue.png" class="keyToValue" alt="keyToValue"/>
+              <textarea @focus="onFocusMode()" @blur="noFocusMode()" contenteditable="true" v-model:value="detail.value"></textarea>
+            </div>
           </div>
-        </div>
-        <div class="centerLine">
-        </div>
-        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="widthInput" contenteditable="true" v-model="width" maxlength="7"></textarea>
-        <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :max="64" :min="2" :default="5"></orange-slide-block>
-      </div>
-      <div class="centerListItem" v-for="detail in details">
-        <div class="leftAttribute">
-          <textarea @focus="onFocusMode()" @blur="noFocusMode()"  contenteditable="true" v-model="detail.key" rows="2" maxlength="8"></textarea>
-        </div>
-        <div class="centerLine">
-        </div>
-        <textarea @focus="onFocusMode()" @blur="noFocusMode()"  class="rightValue" contenteditable="true" v-model="detail.value" rows="3" maxlength="128"></textarea>
-        <div class="tickButton">
-          <div class="sleBtn" ref="sleBtn" @click="selectList($event)" data-select-state="no"></div>
         </div>
       </div>
     </div>
-    <div class="bottomButton mouseType1"><!--底部按钮-->
-      <button @click="insertRow($event)">插入列</button>
-      <button @click="removeRow($event)">删除列</button>
-      <button @click="cancelEdit($event)">重置</button>
-      <button @click="submitEdit($event)">上传</button>
+    <div class="bottomButtons mouseType1"><!--底部按钮-->
+      <div class="bottomButton" @click="cancelEdit($event)">重置</div>
+      <div class="bottomButton" @click="submitEdit($event)">上传</div>
     </div>
   </div>
 </template>
@@ -75,7 +84,10 @@ export default {
         details:[]
       },
       tempId:1,
-      show:false
+      show:false,
+      colors:['cc0066','ff6666','ff6600','ffcc33','ffff00','99cc33','66cc33','009966','009999','0099cc','333399','993399','666633',
+        '993300','ff6600','ffcc00','996600','669933','006633','006699','333366','6633cc','cccccc','666666','333333','000000'],
+      insertCount:1,
     }
   },
   props:{
@@ -96,6 +108,84 @@ export default {
       this.cache.name=this.name;//拷贝
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
+      this.waterDropletEvent();
+    },
+    keyCheck(ev){
+      let lock=false;
+      let nowValue=ev.target.value;
+      let count=0;
+      if(nowValue===''){
+        ev.target.parentElement.parentElement.firstChild.innerText='不能重复或为空';
+        ev.target.parentElement.parentElement.firstChild.style.display='block';
+        lock=true;
+      }
+      for(let i=0;i<this.details.length;i++){
+        if(nowValue===this.details[i].key){
+          count++;
+          if(count>=2){
+            setTimeout(()=>ev.target.value='',50);
+            ev.target.parentElement.parentElement.firstChild.innerText='不能重复或为空';
+            ev.target.parentElement.parentElement.firstChild.style.display='block';
+            lock=true;
+            break;
+          }
+        }
+      }
+      if(lock===false){
+        ev.target.parentElement.parentElement.firstChild.innerText='';
+        ev.target.parentElement.parentElement.firstChild.style.display='none';
+      }
+    },
+    downInsertDetail(key){
+      let index=-1;
+      for(let i=0;i<this.details.length;i++){
+        if(this.details[i].key==key){
+          index=i+1;
+          break;
+        }
+      }
+      if(index!==-1){
+        let newRow={'key':'名'+this.insertCount,'value':'值'};
+        this.details.splice(index,0,newRow);
+      }
+      this.insertCount++;
+    },
+    upInsertDetail(key){
+      let index=-1;
+      for(let i=0;i<this.details.length;i++){
+        if(this.details[i].key==key){
+          index=i+1;
+          break;
+        }
+      }
+      if(index!==-1){
+        let newRow={'key':'名'+this.insertCount,'value':'值'};
+        this.details.splice(index-1,0,newRow);
+      }
+      this.insertCount++;
+    },
+    deleteRow(key){
+      let index=-1;
+      for(let i=0;i<this.details.length;i++){
+        if(this.details[i].key==key){
+          index=i+1;
+          break;
+        }
+      }
+      if(index!==-1){
+        this.details.splice(index-1,1);
+      }
+    },
+    waterDropletEvent(){
+      this.$refs.waterDroplet.addEventListener('click',(ev)=>{
+        if(!this.translucent){
+          this.$refs.BananaAttributeBoard.classList.toggle('transparent');
+          this.translucent=true;
+        }else {
+          this.$refs.BananaAttributeBoard.classList.toggle('transparent');
+          this.translucent=false;
+        }
+      });
     },
     onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
@@ -109,14 +199,10 @@ export default {
     sliderHandle(data){
       this.width=data;
     },
-    buttonAnimation(ev){//按钮动画
-      ev.target.classList.contains('animation')?ev.target.classList.toggle('animationB'):ev.target.classList.toggle('animation');
-    },
     submitEdit(ev){//提交-更新缓存-同时上传数据
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
-      this.buttonAnimation(ev);
       let obj={
         class:"point",
         point:this.point,
@@ -132,54 +218,16 @@ export default {
       this.name=this.cache.name;
       this.color=this.cache.color;
       this.details=JSON.parse(JSON.stringify(this.cache.details));
-      this.buttonAnimation(ev);
     },
-    selectList(ev){//选择列
-      let nowSle=ev.target;
-      let sleBtn=this.$refs.sleBtn;
-      let leng=sleBtn.length;
-      for(let i=0;i<leng;i++){
-        if(sleBtn[i]==nowSle){
-          this.theConfig.selectNum=i;
-          sleBtn[i].setAttribute('data-select-state','yes');
-          sleBtn[i].classList.add('sleBtnSelected');
-        }else {
-          sleBtn[i].setAttribute('data-select-state','no');
-          sleBtn[i].classList.remove('sleBtnSelected');
-        }
-      }
-    },
-    insertRow(ev){//插入列
-      let nowSelList=this.theConfig.selectNum===-1?0:this.theConfig.selectNum;//选中列
-      let temp={"key":"空值","value":"空值"};
-      this.details.splice(nowSelList,0,temp);
-      let sleBtn=this.$refs.sleBtn;//重置样式
-      let leng=sleBtn.length;
-      for(let i=0;i<leng;i++){
-        sleBtn[i].setAttribute('data-select-state','no');
-        sleBtn[i].classList.remove('sleBtnSelected');
-      }
-      this.theConfig.selectNum=-1;//重置选择
-      this.buttonAnimation(ev);
-    },
-    removeRow(ev){//删除列
-      let nowSelList=this.theConfig.selectNum;//选中列
-      if(nowSelList==-1){
-        alert('请选择需要删除的列');
-        return false;
-      }
-      this.details.splice(nowSelList,1);
-      let sleBtn=this.$refs.sleBtn;//重置样式
-      let leng=sleBtn.length;
-      for(let i=0;i<leng;i++){
-        sleBtn[i].setAttribute('data-select-state','no');
-        sleBtn[i].classList.remove('sleBtnSelected');
-      }
-      this.theConfig.selectNum=-1;//重置选择
-      this.buttonAnimation(ev);
-    }
   },
   computed:{
+    styleColor(){
+      if(this.color){
+        return 'background:#'+this.color;
+      }else {
+        return 'background:#ff0000';
+      }
+    },
     browserSize(){
       return this.$store.state.mapConfig.browser;
     },
@@ -238,38 +286,6 @@ export default {
 </script>
 
 <style scoped>
-@keyframes buttonAnimation {
-  0%{
-    background: #979797;
-  }
-  100%{
-    background: white;
-  }
-}
-@keyframes buttonAnimationB {
-  0%{
-    background: #979796;
-  }
-  100%{
-    background: white;
-  }
-}
-.animation{
-  animation: buttonAnimation .5s forwards;
-}
-.animationB{
-  animation: buttonAnimationB .5s forwards;
-}
-.BananaPointAttributeBoard{
-  position: fixed;
-  z-index: 550;
-  width: 300px;
-  height: 400px;
-  background: rgba(255,255,255,0.85);
-  box-shadow: #b1b1b1 2px 2px 5px;
-  border-radius: 5px;
-  padding: 5px;
-}
 .headName{
   width: calc(100% - 10px);
   height: 35px;
@@ -285,132 +301,207 @@ export default {
   position: relative;
   z-index: 400;
 }
-.mouseDefault{
-  cursor:no-drop
-}
 .mouseType1{
   cursor: default;
 }
-.centerList{
+.bottomButtons{
+  position: absolute;
+  bottom:0px;
   width: 100%;
-  height: calc(100% - 35px - 25px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  display: flex;
-  justify-content: left;
-  flex-direction: column;
-  position:relative;
-  z-index: 200;
-}
-.centerListItem{
-  min-width: calc(100% - 10px);
-  margin: 3px 10px 3px 0px;
-  padding: 2px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  flex-direction: row;
-  background: white;
-  border-radius: 3px;
-  border:1px dashed #d8d8d8;
-}
-.bottomButton{
-  width: 100%;
-  height: 25px;
+  height: 26px;
   border-radius: 3px;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   box-shadow: 1px 0px 4px #c1c1c1;
-  position:relative;
   z-index: 400;
-}
-button{
   background: white;
-  border: none;
-  border-radius: 3px;
-  font-size: 13px;
-  box-shadow: 0px 0px 1px #adadad;
 }
-
-.leftAttribute{
-  width: 70px;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: left;
-  color: rgba(50, 50, 50, 0.8);
-  font-weight: 400;
-}
-.leftAttribute textarea{
-  font-weight: 400;
-  font-size: 14px;
-}
-.leftAttribute div{
-  margin: 3px 0px;
-  padding: 2px 2px;
-  font-size: 14px;
-}
-.centerLine{
-  width: 2px;
+.bottomButton{
+  background: #ffffff;
+  width: 50%;
   height: 100%;
-  overflow: hidden;
-  background: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-weight: 400;
+  font-size: 14px;
+  color: #282828;
+  transition: 0.4s;
 }
-.rightValue{
-  width: calc(100% - 70px - 2px - 8px - 20px - 4px);
-  min-height: 100%;
-  overflow-x: hidden;
+.bottomButton:first-child:hover{
+  background: #ffacac;
+}
+.bottomButton:last-child:hover{
+  background: #69cfff;
+}
+.BananaAttributeBoard{
+  position: absolute;
+  width: 300px;
+  height: 394px;
   overflow-y: auto;
-  font-size: 14px;
-  padding:0px 4px;
-  color: rgb(45, 45, 45);
-  line-height: 18px;
+  background: white;
+  box-shadow: #b1b1b1 2px 2px 10px;
+  border-radius: 5px;
+  padding: 5px;
 }
-.tickButton{
-  width: 20px;
-  height: 100%;
-  margin-right: 4px;
-  padding: 4px 0px;
+.keyTips{
+  position: relative;
+  top:-10px;
+  left: 4px;
+  font-size: 13px;
+  font-weight: 100;
+  width: 100%;
+  height: 10px;
+  display: block;
+}
+.transparent{
+  opacity: 0.4;
+}
+.boxSet{
+  position: absolute;
+  z-index: 550;
+  top: 8px;
+  width: calc(100% - 10px);
+  height: 20px;
   display: flex;
+  justify-content: flex-end;
+}
+.iAttItem{
+  width: 100%;
+  height: auto;
+  padding: 10px 0px;
+}
+.leftProperty input{
+  font-size: 13px;
+  font-weight: 200;
+  width: 194px;
+}
+.leftProperty{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+}
+.rightValue{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.rightValue textarea{
+  font-size: 13px;
+  font-weight: 200;
+  min-width: calc(90% - 17px);
+  max-width: calc(90% - 17px);
+  width: calc(90% - 17px);
+  padding: 2px 4px;
+  min-height: 38px;
+  max-height: 300px;
+  height: auto;
+  margin: 4px 0px 0px 0px;
+}
+.keyToValue{
+  width: 20px;
+  height: 20px;
+}
+.icon15{
+  width: 20px;
+  height: 20px;
+  margin: 0px 2px;
+}
+.boxOut{
+  position: fixed;
+  z-index: 550;
+  top: 0px;
+  left: 40px;
+  width: 310px;
+  height: 420px;
+  box-shadow: #b1b1b1 2px 2px 10px;
+  display: flex;
   flex-direction: column;
-}
-.sleBtn{
-  width: 14px;
-  height: 14px;
-  border: 1px solid #a9a9a9;
-  border-radius: 15px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #ffffff;
-  overflow: hidden;
-  cursor: pointer;
+  border-radius: 6px;
 }
-.sleBtnSelected{
-  background: #4b9bfd;
+.item{
+  width: calc(100% - 10px);
+  height: auto;
+  background: #ffffff;
+  padding: 5px;
+  margin: 0px 0px 5px 0px;
 }
-textarea{
-  border:none;
-  outline: none;
-  resize: none;
-  background:white;
-  appearance:none;
-  cursor: text;
+.iTitle{
+  width: 100%;
+  height: 30px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  font-weight: 600;
 }
-.widthInput{
-  width: calc(100% - 2px - 70px - 100px - 4px);
-  height: 35px;
-  border: none;
-  padding: 0px 0px 0px 4px;
+.iStyContent{
+  width: 100%;
+  height: 110px;
+}
+.iStyP{
+  width: 100%;
+  height: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+.iStyName{
+  font-weight: 400;
   font-size: 14px;
-  line-height: 35px;
 }
-.colorInput{
-  width: calc(100% - 2px - 70px - 45px - 4px);
-  height: 35px;
-  border: none;
-  padding: 0px 0px 0px 4px;
+.iStyView{
+  width: 15px;
+  height: 15px;
+  background: red;
+  margin: 0px 60px 0px 20px;
+}
+.iStyWidth{
+  margin: 0px 50px 0px 20px;
   font-size: 14px;
-  line-height: 35px;
+  font-weight: 400;
+}
+.iStyInput{
+  margin: 0px 0px 0px 20px;
+  height: 20px!important;
+}
+.iStyColors{
+  width: 280px;
+  height: 46px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 5px 0px 5px 0px;
+}
+.iStyColor{
+  width: 15px;
+  height: 15px;
+  margin: 3px;
+}
+.iStySlide{
+  width: 100%;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.iAttContent{
+  width: 100%;
+  height: auto;
 }
 </style>

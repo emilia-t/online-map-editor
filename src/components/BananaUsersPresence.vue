@@ -90,7 +90,6 @@ export default {
     },
     presence:{
       handler(newValue){
-        console.log(newValue);
         this.usersList=newValue;
         setTimeout(()=>{
           this.$refs.userBox.animate([

@@ -75,12 +75,16 @@ export default {
   },
   computed:{
     pathLineStyle(){
+      let rgb='rgba(10, 10, 10, 0.2)';
+      if(this.tempArea.color){
+        rgb='#'+this.tempArea.color;
+      }
       return {
         stroke:'#dedede',
         strokeWidth:3,
         opacity:0.5,
         strokeLinecap:'round',
-        fill:'red'
+        fill:rgb
       }
     },
     browserX(){
