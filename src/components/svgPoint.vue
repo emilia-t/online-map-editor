@@ -1,7 +1,13 @@
 <template>
   <g :elementId="this.myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)">
-    <circle ref="element" @click="showDetails()" :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color" @contextmenu="rightClickOperation($event)"/>
-    <circle v-if="selectId===myId" ref="element" @contextmenu="rightClickOperation($event)" @click="showDetails()" :cx="-dynamicPointsX" :cy="dynamicPointsY" :r="dynamicStyle" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
+    <g v-if="this.pointConfig.custom===null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
+      <circle v-if="selectId===myId" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="dynamicStyle" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
+    </g>
+    <g v-if="this.pointConfig.custom!==null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
+      <circle r="13px" :cx="dynamicPointsX" :cy="dynamicPointsY" :fill="this.pointConfig.custom.color"/>
+      <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26" height="26" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
+    </g>
   </g>
 </template>
 
@@ -67,9 +73,11 @@ export default {
       this.shiftStatus=false;
     },
     showDetails(){//展示自身details
-      this.$store.state.detailsPanelConfig.target=this.myId;//广播被选中id（myId）
-      this.$store.state.detailsPanelConfig.data=this.pointConfig;
-      this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
+      setTimeout(()=>{
+        this.$store.state.detailsPanelConfig.data=this.pointConfig;
+        this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
+        this.$store.state.detailsPanelConfig.target=this.myId;//广播被选中id（myId）
+      },0);//异步
     },
     mouseEvent(){//监听鼠标移动
       document.body.addEventListener('mousemove',(e)=>{
@@ -182,9 +190,9 @@ export default {
     dynamicPointsX(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let A1mvX=this.A1Cache.x-this.A1.x;
-        return -(this.pointConfig.point.x/this.unit1X) - A1mvX;//先转化为单位量，再相减
+        return (this.pointConfig.point.x/this.unit1X) + A1mvX;//先转化为单位量，再相减
       }else {
-        return -this.pointConfig.point.x/this.unit1X;//等于自生的坐标除以单位1
+        return this.pointConfig.point.x/this.unit1X;//等于自生的坐标除以单位1
       }
     },
     dynamicPointsY(){
@@ -312,5 +320,8 @@ export default {
 </script>
 
 <style scoped>
-
+.customIcon{
+  width: 20px;
+  height: 20px;
+}
 </style>

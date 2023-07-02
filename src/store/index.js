@@ -486,6 +486,7 @@ export default new Vuex.Store({
                   jsonData.data[i].points=Ps;
                   jsonData.data[i].point=Pt;
                   let [loc,baseD,Pu]=[true,null,null];//details
+                  let [lock,base64,ref]=[true,null,null];//custom
                   try{
                     baseD=window.atob(jsonData.data[i].details);
                   }
@@ -497,6 +498,18 @@ export default new Vuex.Store({
                   }catch(e){loc=false;}
                   if(loc){
                     jsonData.data[i].details=Pu;
+                  }
+                  try{
+                    base64=window.atob(jsonData.data[i].custom);
+                  }
+                  catch(e){loc=false;}
+                  try {
+                    if(lock){
+                      ref=JSON.parse(base64);
+                    }
+                  }catch(e){loc=false;}
+                  if(lock){
+                    jsonData.data[i].custom=ref;
                   }
                   let NowType=jsonData.data[i].type;//分组
                   switch (NowType) {
