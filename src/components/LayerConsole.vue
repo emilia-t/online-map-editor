@@ -40,7 +40,9 @@
       <br>
       unit1X&Y：{{$store.state.cameraConfig.unit1X}} : {{$store.state.cameraConfig.unit1Y}}
       <br>
-      启用额外的底图：{{$store.state.leafletConfig.enableBaseMap}}
+      启用额外的底图：{{$store.state.baseMapConfig.enableBaseMap}}
+      <br>
+      底图类型：{{$store.state.baseMapConfig.baseMapType}}
     </div>
   </div>
 </template>
@@ -89,7 +91,7 @@ export default {
 }
 .consoleLayer{
   width: 350px;
-  height: 490px;
+  height: auto;
   background: rgba(170, 170, 170, 0.9);
   color: rgba(255, 255, 255, 0.9);
   display: flex;

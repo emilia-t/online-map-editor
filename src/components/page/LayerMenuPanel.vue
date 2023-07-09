@@ -126,7 +126,6 @@
           <p class="Ap2">在线地图编辑器</p>
           <p class="Ap1">OME版本0.3.9</p>
           <p class="Ap1"><a href="https://vuejs.org" target="_blank" style="color:blue">Vue</a>版本2.9.6</p>
-          <p class="Ap1"><a href="https://leafletjs.com" target="_blank" style="color:blue">Leaflet</a>版本1.9.4</p>
           <p class="Ap1"><a href="https://github.com/emilia-t/online-map-editor" target="_blank" style="color:blue">开放源代码</a></p>
           <p class="Ap3">鸣谢</p>
           <p class="Ap1">Emilia（测试）</p>

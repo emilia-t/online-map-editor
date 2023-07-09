@@ -131,40 +131,53 @@ export default {
       this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
     },
     initializePosition(){//初始化定位
-      try{
-        let [layer,p0Pos]=[null,{x:null,y:null}];//1.获取必要值 layer\pointPos\p0Pos
-        let pointsPos=this.polyLineConfig.points;//当前的点集合
-        layer=this.$store.state.mapConfig.layer;
-        p0Pos.x=-this.$store.state.mapConfig.p0.point.x;
-        p0Pos.y=-this.$store.state.mapConfig.p0.point.y;
-        for(let i=0;i<pointsPos.length;i++){
-          if(layer===0){//无缩放
-            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
-            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
-            continue;
-          }
-          if(layer>0){//有缩小
-            for (let x=0;x<layer;x++){//1.计算缩小后-p0与新点之间的距离
-              pointsPos[i].x=pointsPos[i].x+(pointsPos[i].x*this.$store.state.mapConfig.zoomSub);
-              pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomSub);
-            }
-            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
-            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
-            continue;
-          }
-          if(layer<0){//放大
-            for(let y=0;y>layer;y--){
-              pointsPos[i].x=pointsPos[i].x+(pointsPos[i].x*this.$store.state.mapConfig.zoomAdd);
-              pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomAdd);
-            }
-            //添加p0
-            this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
-            this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
-            continue;
-          }
+      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+        let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.polyLineConfig.point.y,this.polyLineConfig.point.x);
+        this.polyLineConfig.point.x=viewPosition.x;
+        this.polyLineConfig.point.y=-viewPosition.y;
+        //循环遍历
+        for(let i=0;i<this.polyLineConfig.points.length;i++){
+          let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.polyLineConfig.points[i].y,this.polyLineConfig.points[i].x)
+          this.polyLineConfig.points[i].x=viewPosition.x;
+          this.polyLineConfig.points[i].y=-viewPosition.y;
         }
-      }catch (e) {
-        return false;
+      }
+      if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
+        try{
+          let [layer,p0Pos]=[null,{x:null,y:null}];//1.获取必要值 layer\pointPos\p0Pos
+          let pointsPos=this.polyLineConfig.points;//当前的点集合
+          layer=this.$store.state.mapConfig.layer;
+          p0Pos.x=-this.$store.state.mapConfig.p0.point.x;
+          p0Pos.y=-this.$store.state.mapConfig.p0.point.y;
+          for(let i=0;i<pointsPos.length;i++){
+            if(layer===0){//无缩放
+              this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+              this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+              continue;
+            }
+            if(layer>0){//有缩小
+              for (let x=0;x<layer;x++){//1.计算缩小后-p0与新点之间的距离
+                pointsPos[i].x=pointsPos[i].x+(pointsPos[i].x*this.$store.state.mapConfig.zoomSub);
+                pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomSub);
+              }
+              this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+              this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+              continue;
+            }
+            if(layer<0){//放大
+              for(let y=0;y>layer;y--){
+                pointsPos[i].x=pointsPos[i].x+(pointsPos[i].x*this.$store.state.mapConfig.zoomAdd);
+                pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomAdd);
+              }
+              //添加p0
+              this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+              this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
+              continue;
+            }
+          }
+        }catch (e) {
+          return false;
+        }
       }
     },
     move(){//移动
@@ -338,24 +351,24 @@ export default {
     },
   },
   watch:{
-    browserX:{
-      handler(newValue,oldValue){
-        let offset=(newValue-oldValue)/2;
-        for(let i=0;i<this.polyLineConfig.points.length;i++){
-          this.polyLineConfig.points[i].x+=offset*this.unit1X;
-        }
-      },
-      deep:true
-    },
-    browserY:{
-      handler(newValue,oldValue){
-        let offset=(oldValue-newValue)/2;
-        for(let i=0;i<this.polyLineConfig.points.length;i++){
-          this.polyLineConfig.points[i].y+=offset*this.unit1Y;
-        }
-      },
-      deep:true
-    },
+    // browserX:{//仅限于canvas不支持动态视图才开启
+    //   handler(newValue,oldValue){
+    //     let offset=(newValue-oldValue)/2;
+    //     for(let i=0;i<this.polyLineConfig.points.length;i++){
+    //       this.polyLineConfig.points[i].x+=offset*this.unit1X;
+    //     }
+    //   },
+    //   deep:true
+    // },
+    // browserY:{
+    //   handler(newValue,oldValue){
+    //     let offset=(oldValue-newValue)/2;
+    //     for(let i=0;i<this.polyLineConfig.points.length;i++){
+    //       this.polyLineConfig.points[i].y+=offset*this.unit1Y;
+    //     }
+    //   },
+    //   deep:true
+    // },
     clearClick:{
       handler(){
         this.shiftNodeOrder=null;

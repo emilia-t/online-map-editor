@@ -43,13 +43,13 @@ export default {
       this.moveIng();
       this.A1Cache=JSON.parse(JSON.stringify(this.A1));//初始化A1cache
       setTimeout(()=>{
-          this.baseMap=L.map("leaflet", this.leafletConfig.options);
-          L.tileLayer(this.leafletConfig.baseLayer).addTo(this.baseMap);
+          this.baseMap=L.map("leaflet", this.baseMapConfig.options);
+          L.tileLayer(this.baseMapConfig.baseLayer).addTo(this.baseMap);
         }
       ,120)
       setTimeout(()=>{
-        let SCX=this.$store.state.leafletConfig.resolution.width;//获取服务器设定分辨率
-        let SCY=this.$store.state.leafletConfig.resolution.height;
+        let SCX=this.$store.state.baseMapConfig.resolution.width;//获取服务器设定分辨率
+        let SCY=this.$store.state.baseMapConfig.resolution.height;
         let MCX=this.$store.state.mapConfig.browser.width;//获取当前窗口大小
         let MCY=this.$store.state.mapConfig.browser.height;
         let offsetX=(MCX-SCX)/2;//计算差异
@@ -112,8 +112,8 @@ export default {
     A1(){
       return this.$store.state.mapConfig.A1;
     },
-    leafletConfig(){
-      return this.$store.state.leafletConfig;
+    baseMapConfig(){
+      return this.$store.state.baseMapConfig;
     },
     svgMouseDown(){
       return this.$store.state.mapConfig.svgMouseDown;
@@ -160,18 +160,18 @@ export default {
     layer:{
       handler(newValue){
         if(newValue<this.odlLayer){//放大
-          this.$store.state.leafletConfig.options.zoom+=1;
+          this.$store.state.baseMapConfig.options.zoom+=1;
           let mouserPos=JSON.parse(JSON.stringify(this.mouse));//获取鼠标位置的经纬度
           let browser=JSON.parse(JSON.stringify(this.$store.state.mapConfig.browser));
           let point=this.baseMap.containerPointToLayerPoint([mouserPos.x, mouserPos.y]);//2.将屏幕坐标转换为地图容器内的坐标
           let latlng=this.baseMap.layerPointToLatLng(point);//3.将地图容器坐标转换为经纬度坐标
-          this.baseMap.setZoomAround(latlng,this.$store.state.leafletConfig.options.zoom);
+          this.baseMap.setZoomAround(latlng,this.$store.state.baseMapConfig.options.zoom);
         }else {
-          this.$store.state.leafletConfig.options.zoom-=1;
+          this.$store.state.baseMapConfig.options.zoom-=1;
           let mouserPos=this.mouse;
           let point=this.baseMap.containerPointToLayerPoint([mouserPos.x, mouserPos.y]);
           let latlng=this.baseMap.layerPointToLatLng(point);
-          this.baseMap.setZoomAround(latlng,this.$store.state.leafletConfig.options.zoom);
+          this.baseMap.setZoomAround(latlng,this.$store.state.baseMapConfig.options.zoom);
         }
       }
     }

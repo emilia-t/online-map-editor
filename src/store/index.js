@@ -1,10 +1,348 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import * as Leaflet from "leaflet";
+import Vue from 'vue';
+import Vuex from 'vuex';
+import axios from "axios";
+
 Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     classList:{
+      realisticBaseMap:class realisticBaseMap {//真实地图底图类
+        constructor(mountDocument,baseMapOptions){
+          this.ctx=null;
+          this.el=null;//挂载点
+          this.tileSize=256;
+          this.network={
+            tileCache:[],
+            downloadManage:[],
+            allTileCount:0,
+            downTileCount:0,
+            needTiles:[],
+          };
+          this.map={
+            width:null,//宽度
+            height:null,//高度
+            browserX:null,//视窗宽度
+            browserY:null,//视窗高度
+          };
+          this.view={
+            offsetX:0,//横轴虚拟坐标偏移量
+            offsetY:0,//纵轴虚拟坐标偏移量
+            cacheX:0,
+            cacheY:0,
+          };
+          this.options={//选项
+
+          };
+          this.QIR={//质检间
+            isObject (obj) {
+              return Object.prototype.toString.call(obj) === '[object Object]';
+            },
+            hasProperty(obj, propName) {
+              return obj.hasOwnProperty(propName);
+            },
+            isNumber(value) {
+              if (typeof value === 'string' && !isNaN(value)) {
+                return true;
+              }
+              return typeof value === 'number' && !isNaN(value);
+            },
+            isArray(obj) {
+              return Array.isArray(obj);
+            }
+          };
+          this.initial(mountDocument,baseMapOptions);
+        }
+        initial(mountDocument,baseMapOptions){//初始化
+          this.el=mountDocument;
+          this.ctx=mountDocument.getContext('2d');
+          this.el.width=this.el.clientWidth;
+          this.el.height=this.el.clientHeight;
+          this.map.width=mountDocument.clientWidth;
+          this.map.height=mountDocument.clientHeight;
+          if(this.optionCheck(baseMapOptions)===false)return false;
+          this.options=baseMapOptions;
+          this.options['zoom']=baseMapOptions.defaultZoom;
+          let latLng=this.latLngRotate(this.options.defaultY,this.options.defaultX);
+          if(latLng===false)return false;
+          this.view.offsetY=(this.map.height/2)-(this.latToTileY(latLng.lat,this.options.defaultZoom)*this.tileSize);
+          this.view.offsetX=(this.map.width/2)-(this.lngToTileX(latLng.lng,this.options.defaultZoom)*this.tileSize);
+          this.render();
+        }
+        render(){//渲染函数
+          this.clearCanvas();
+          let leftTopPos=this.screenToTile(0,0);
+          let rightBottomPos=this.screenToTile(this.map.width,this.map.height);
+          let minNumberX=this.callTileNumber(leftTopPos.x,this.tileSize,this.options.zoom);
+          let minNumberY=this.callTileNumber(leftTopPos.y,this.tileSize,this.options.zoom);
+          let maxNumberX=this.callTileNumber(rightBottomPos.x,this.tileSize,this.options.zoom);
+          let maxNumberY=this.callTileNumber(rightBottomPos.y,this.tileSize,this.options.zoom);
+          let rowCount=maxNumberX-minNumberX+1;
+          let columnCount=maxNumberY-minNumberY+1;
+          let tails=[];
+          for(let i=0;i<rowCount;i++){
+            for(let j=0;j<columnCount;j++){
+              let x=minNumberX+i;
+              let y=minNumberY+j;
+              tails.push({x,y})
+            }
+          }
+          this.network.needTiles=this.tilesFilter(tails);//获取当前需要的瓦图的二参
+          let zoom=this.options.zoom===parseInt(this.options.zoom)?
+            this.options.zoom:
+            parseInt(this.options.zoom)+1;
+          this.network.downloadManage.forEach((tile)=>{
+              if(tile.z!==zoom){
+                if(this.network.needTiles.find((e)=>e.x===tile.x&&e.y===tile.y)===undefined){
+                  tile.xhr.abort();
+                  this.removeArrayValue(this.network.downloadManage,tile);
+                }
+              }
+            }
+          );
+          this.network.allTileCount+=this.network.needTiles.length;
+          this.network.needTiles.forEach(et => {
+            const etSize = this.callTileSize(this.tileSize, this.options.zoom);
+            const tileV = this.mapLatToViewport(et.x * etSize, et.y * etSize);
+            this.drawRect(tileV.x, tileV.y, etSize, etSize);
+            const text = `${zoom}/${et.x}/${et.y}.png`;
+            this.drawText(text, tileV.x + etSize / 2, tileV.y + etSize / 2);
+            this.drawTileImg(zoom, et.x, et.y);
+          });
+        }
+        setCanvasSize(){
+          this.el.width=this.el.clientWidth;
+          this.el.height=this.el.clientHeight;
+          this.map.width=this.el.clientWidth;
+          this.map.height=this.el.clientHeight;
+        }
+        axiosDownloadImg(z,x,y){
+              let url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+              let imgAxios=axios.create({
+                responseType:'blob'
+              });
+              imgAxios
+                .get(url)
+                .then(ref=>{
+                    if(ref.status===200){
+                      let blob = new Blob([ref.data], { type: 'image/png' });
+                      let img = createImageBitmap(blob);
+                      this.network.tileCache.push({ img: img, z: z, x: x, y: y });
+                      this.network.downTileCount++;
+                      return img;
+                    }
+                  }
+                )
+        }
+        drawTileImg(z, x, y) {
+          const img = this.getImg(this, z, x, y);
+          img.then((e) => {
+            if (this.isTileShouldDownload( z, x, y)) {
+              if (e instanceof ImageBitmap) {//判断是否为ImageBitmap
+                const etSize = this.callTileSize(this.tileSize, this.options.zoom);
+                const tileV = this.mapLatToViewport(x * etSize, y * etSize);
+                this.ctx.drawImage(e, tileV.x, tileV.y, etSize, etSize);
+              }
+            }
+          }).catch((e) => {
+            console.log(e);
+          });
+        }
+        isTileShouldDownload( z, x, y) {
+          let zoom = this.options.zoom;
+          if (this.options.zoom !== Math.floor(this.options.zoom)) {
+            zoom = Math.floor(this.options.zoom + 1);
+          }
+          return !!this.network.needTiles.find(t => z === zoom && t.x === x && t.y === y);
+        }
+        async getImg(vp, z, x, y) {
+          const found = this.network.tileCache.find(e => (e.z === z && e.x=== x && e.y === y));
+          if (found === undefined) {//缓存中没有
+            const downloadManageObj = this.network.downloadManage.find(e => (e.z === z && e.x === x && e.y === y));
+            //console.log(dmObj);
+            //console.log(this.network.downloadManage);
+            if (downloadManageObj === undefined) {
+              return this.xhrDownloadImg(z, x, y);
+            }
+            else {
+              return Promise.reject('需要等待下载完成');
+            }
+          } else {
+            return found.img;
+          }
+        }
+        xhrDownloadImg(z, x, y) {
+          return new Promise((resolve, reject) =>
+          {
+            let url = this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+            let imgXhr = new XMLHttpRequest();
+            let downloadObj = { xhr: imgXhr, z: z, x: x, y: y };
+            downloadObj.xhr.open('GET', url, true);
+            downloadObj.xhr.responseType = 'blob';
+            downloadObj.xhr.onload = (e)=> {
+              if (downloadObj.xhr.status === 200 && downloadObj.xhr.response) {
+                let blob = new Blob([downloadObj.xhr.response], { type: 'image/png' });
+                let img = createImageBitmap(blob);
+                this.network.tileCache.push({ img: img, z: z, x: x, y: y });
+                this.network.downTileCount += 1;
+                this.removeArrayValue(this.network.downloadManage,downloadObj);//下载完成后移除
+                //console.log('dm下载完成减少');
+                resolve(img);
+              } else {
+                reject('下载似乎失败了');
+                this.removeArrayValue(this.network.downloadManage,downloadObj);
+                console.log('dm下载失败减少');
+              }
+            };
+            this.network.downloadManage.push(downloadObj);//保存xhr对象 和xyz索引
+            downloadObj.xhr.send(null);
+          }
+          );
+        }
+        drawText(text, x, y) {
+          this.ctx.fillStyle = "white"
+          this.ctx.font = "18px serif";
+          this.ctx.textAlign = "center";
+          this.ctx.textBaseline = "middle";
+          this.ctx.fillText(text, x, y);
+        }
+        drawRect(x, y, width, height) {
+          this.ctx.strokeStyle = 'white';
+          this.ctx.strokeRect(x, y, width, height);
+        }
+        removeArrayValue(arr, value) {
+          let index = arr.indexOf(value);
+          while(index > -1){
+            arr.splice(index, 1);
+            index = arr.indexOf(value);
+          }
+        }
+        clearCanvas(){//清除canvas
+          this.ctx.clearRect(0, 0, this.map.width, this.map.height);
+        }
+        panBy(offset,option){//移动地图
+          this.view.offsetX-=offset.x;
+          this.view.offsetY-=offset.y;
+          this.render();
+        }
+        viewPositionToLatLng(mouseX,mouseY){//鼠标位置转经纬度
+            let mouseVirtualPosition=this.screenToTile(mouseX,mouseY);
+            if(this.virtualPositionCheck(mouseVirtualPosition.x,mouseVirtualPosition.y)){
+              let lng=this.tileToLng(mouseVirtualPosition.x/this.tileSize,this.options.zoom);
+              let lat=this.tileToLat(mouseVirtualPosition.y/this.tileSize,this.options.zoom);
+              return {lat,lng};
+            }else {
+              return {lat:-1, lng:-1}
+            }
+        }
+        latLngToViewPosition(lat, lng) {
+          ({ lat: lat, lng: lng } = this.latLngRotate(lat, lng)); //尝试使用解构赋值
+          const my = this.latToTileY(lat, this.options.zoom) * this.tileSize;
+          const mx = this.lngToTileX(lng, this.options.zoom) * this.tileSize;
+          const vp = this.mapLatToViewport(mx, my);
+          return { x: vp.x, y: vp.y };
+        }
+        virtualPositionCheck(virtualX,virtualY){//检查坐标否处于瓦图范围外
+          let maxSize=this.options.zoom===parseInt(this.options.zoom)?
+            this.callTileSize(this.tileSize,this.options.zoom)*Math.pow(2,this.options.zoom):
+            this.callTileSize(this.tileSize,this.options.zoom)*Math.pow(2,parseInt(this.options.zoom)+1);
+          return !(virtualX <= 0 || virtualY <= 0 || virtualX >= maxSize || virtualY >= maxSize);
+        }
+        screenToTile(mouseX,mouseY){//get (screen/Mouse) Position On Tile
+          return{
+            x:mouseX-this.view.offsetX,
+            y:mouseY-this.view.offsetY
+          }
+        }
+        mapLatToViewport(mx, my){
+          const vx = mx + this.view.offsetX;
+          const vy = my + this.view.offsetY;
+          return { x: vx, y: vy };
+        }
+        tilesFilter(tails) {//过滤不需要加载的瓦图
+          let news=[];
+          let max=Math.pow(2, this.options.zoom);
+          if (this.options.zoom !== Math.floor(this.options.zoom)) {
+            max = Math.pow(2, Math.floor(this.options.zoom + 1));
+          }
+          for (let i = 0; i < tails.length; i++) {
+            const e = tails[i];
+            if (e.x >= 0 && e.y >= 0 && e.x < max && e.y < max) {
+              news.push(e);
+            }
+          }
+          return news;
+        }
+        latLngRotate(lat,lng) {//经纬度转化
+          let latLimit = 85.0511287798066;
+          lng = lng - Math.floor((lng + 180) / 360) * 360;
+          return {lat,lng};
+        }
+        latLngCheck(lat,lng){//经纬度检查
+          let latLimit = 85.0511287798066;
+          lng = lng - Math.floor((lng + 180) / 360) * 360;
+          return !(lat < (0 - latLimit) || lat > latLimit);
+        }
+        tileToLat(tileY,zoom){//瓦片位置虚拟位置转经纬度
+          let n = Math.PI - 2 * Math.PI * tileY / Math.pow(2, zoom);
+          return (180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))));
+        }
+        tileToLng(tileX,zoom){//瓦片位置虚拟位置转经纬度
+          return (tileX / Math.pow(2, zoom) * 360 - 180);
+        }
+        lngToTileX(lon,z){//转化经度为瓦片x
+          return ((lon+180)/360*Math.pow(2,z));
+        }
+        latToTileY(lat,z){//转化纬度为瓦片y
+          let radian=lat*Math.PI/180;//将角度转化为弧度 lat * PI / 180
+          return(
+            (
+              1-Math.log(
+                Math.tan(radian)+ //计算纬度的正切
+                1/Math.cos(radian) //计算纬度的反接余弦
+              )//计算两者之和的对数
+              /Math.PI//除以PI
+           )
+           /2*Math.pow(2,z)//除以2的指定缩放级别的幂
+          );
+        }
+        callTileNumber(coordinate,tileSize,zoom){
+          return Math.floor(coordinate/this.callTileSize(tileSize,zoom));
+        }
+        callTileSize(tileSize,zoomLevel){//根据不同缩放等级计算缩放后的瓦片尺寸
+          let rtSize = tileSize;
+          if (zoomLevel !== Math.floor(zoomLevel)) {
+            rtSize = tileSize * Math.pow(2, zoomLevel - Math.floor(zoomLevel + 1));
+          }
+          return rtSize;
+        }
+        updateViewport(scrollX, scrollY, oldZ, newZ) {//计算鼠标滚轮缩放位置的虚拟位置并更新偏移(移动)
+          const mousePos = this.screenToTile(scrollX, scrollY);
+          const baseScale = Math.pow(2, newZ - oldZ);
+          const newPos = { x: mousePos.x * baseScale, y: mousePos.y * baseScale };
+          this.view.offsetX = scrollX - newPos.x;
+          this.view.offsetY = scrollY - newPos.y;
+        }
+        optionCheck(baseMapOptions){//参数检查
+          if(!this.QIR.isObject(baseMapOptions))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'defaultX'))return false;
+          if(!this.QIR.isNumber(baseMapOptions.defaultX))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'defaultY'))return false;
+          if(!this.QIR.isNumber(baseMapOptions.defaultY))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'resolutionX'))return false;
+          if(!this.QIR.isNumber(baseMapOptions.resolutionX))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'resolutionY'))return false;
+          if(!this.QIR.isNumber(baseMapOptions.resolutionY))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'maxZoom'))return false;
+          if(!this.QIR.isNumber(baseMapOptions.maxZoom))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'minZoom'))return false;
+          if(!this.QIR.isNumber(baseMapOptions.minZoom))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'defaultZoom'))return false;
+          if(!this.QIR.isNumber(baseMapOptions.defaultZoom))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'scaling'))return false;
+          if(!this.QIR.isNumber(baseMapOptions.scaling))return false;
+          if(!this.QIR.hasProperty(baseMapOptions,'baseMapUrl'))return false;
+        }
+      },
       comprehensive:class comprehensive {//综合的一个连接服务端的通讯类
         constructor(url){
           this.url=url;
@@ -336,13 +674,16 @@ export default new Vuex.Store({
               fatherRelation:'',
               childNodes:[],
               fatherNode:'',
-              details:[]
+              details:[],
+              custom:null
             };
             basicStructure.points[0]=data.point;
             basicStructure.point=data.point;
             basicStructure.color=data.color;
             basicStructure.width=data.width || basicStructure.width;
             basicStructure.details=data.details || basicStructure.details;
+            basicStructure.custom=data.custom || basicStructure.custom;
+            console.log(basicStructure);
             this.send(this.Instruct.broadcast_point(basicStructure));
           }catch (e) {}
         }
@@ -421,7 +762,7 @@ export default new Vuex.Store({
           this.socket.onerror=(ev)=>this.onError(ev);
           return true;
         }
-        send(instructObj){////发送数据
+        send(instructObj){//发送数据
           if(this.isLink){
             if(this.instructObjCheck(instructObj)){//1.数据检查
               let json=JSON.stringify(instructObj);
@@ -655,6 +996,7 @@ export default new Vuex.Store({
                   }catch(e){}
                   try{
                     let [lock,baseA,Ps]=[true,null,null];
+                    let [lockCustom,baseCustom,ref]=[true,null,null];
                     try{
                       baseA=window.atob(jsonData.data.details);
                     }
@@ -666,6 +1008,18 @@ export default new Vuex.Store({
                     }catch(e){lock=false;}
                     if(lock){
                       jsonData.data.details=Ps;
+                    }
+                    try{
+                      baseCustom=window.atob(jsonData.data.custom);
+                    }
+                    catch(e){lockCustom=false;}
+                    try {
+                      if(lockCustom){
+                        ref=JSON.parse(baseCustom);
+                      }
+                    }catch(e){lockCustom=false;}
+                    if(lockCustom){
+                      jsonData.data.custom=ref;
                     }
                   }catch(e){}
                   let NewMessageObj={'type':'broadcast','class':'point','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
@@ -705,9 +1059,13 @@ export default new Vuex.Store({
                   break;
                 }
                 case 'updateElement':{//更新某一元素的广播
+                  console.log(jsonData);
                   try{
                     if(jsonData.data.hasOwnProperty('details')){//解码details如果有的话
                       jsonData.data.details=JSON.parse(window.atob(jsonData.data.details));
+                    }
+                    if(jsonData.data.hasOwnProperty('custom')){//解码details如果有的话
+                      jsonData.data.custom=JSON.parse(window.atob(jsonData.data.custom));
                     }
                     let eId=jsonData.data.id;//提取id
                     for (let i=0;i<this.mapData.points.length;i++){//查找相应的地图数据并修改地图数据
@@ -870,7 +1228,7 @@ export default new Vuex.Store({
           this.getServerConfig();//获取服务器配置
           return true;
         }
-      },
+      }
     },
     anonymousInstruct:{//匿名命令的临时缓存
       name:null,
@@ -896,18 +1254,20 @@ export default new Vuex.Store({
     cameraConfig:{//相机配置
       windowChange:false,//窗口变化
       doNeedMoveMap:false,//是否需要移动地图
-      frameTime:11,//帧时间
+      frameTime:8,//帧时间
       maxZoom:5,//最大缩放
       minZoom:-10,//最小缩放
       unit1X:1,//横轴单位1
       unit1Y:1,//纵轴单位1
       offsetX:0,//x偏移补偿
       offsetY:0,//y偏移补偿
-      wheelInterval:250,//每次缩放间隔
+      wheelInterval:50,//每次缩放间隔
       zoomIng:false,//缩放中否
     },
-    leafletConfig:{//底图配置
+    baseMapConfig:{//底图配置
       enableBaseMap:false,
+      baseMapType:'unknown',
+      baseMap:null,
       resolution:{
         width:null,
         height:null
@@ -920,8 +1280,8 @@ export default new Vuex.Store({
         zoomControl:false,
         scrollWheelZoom:false,
         attributionControl:false,
-        crs:L.CRS.EPSG3857,
-        inertia:false
+        inertia:false,
+        scaling:null
       },
       baseLayer:'',
     },
@@ -930,7 +1290,7 @@ export default new Vuex.Store({
       layer:0,
       oldLayer:null,
       zoomAdd:1,//k
-      zoomSub:(Math.pow(1+1,-1))-1,
+      zoomSub:-1/(1+1),//-k/(1+k)
       browser:{
         width:null,
         height:null
@@ -1041,6 +1401,14 @@ export default new Vuex.Store({
       clearClick:{
         x:0,
         y:0
+      },
+      mouseWheelPos:{
+        x:0,
+        y:0
+      },
+      mouseClickLatLng:{
+        x:null,
+        y:null
       },
       operated:{//元素被右键选择
         id:null,//被操作元素id
@@ -1173,8 +1541,8 @@ export default new Vuex.Store({
         cursor:'default',cursorLock:false,reinitializeId:-1,inputFocusStatus:false
       }
     },
-    restoreLeafletConfig(state){//恢复默认底图配置
-      state.leafletConfig={
+    restoreBaseMapConfig(state){//恢复默认底图配置
+      state.baseMapConfig={
         enableBaseMap:false,
         options:{
           minZoom:3,

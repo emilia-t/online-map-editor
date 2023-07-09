@@ -1,6 +1,8 @@
 <template>
 <div id="SeparateMap" v-if="mapSeparateState">
-  <layer-background v-if="this.$store.state.leafletConfig.enableBaseMap"></layer-background><!--背景层-->
+<!--  <layer-background v-if="this.$store.state.baseMapConfig.enableBaseMap"></layer-background>&lt;!&ndash;背景层&ndash;&gt;-->
+  <layer-realistic-base-map v-if="this.$store.state.baseMapConfig.enableBaseMap && this.$store.state.baseMapConfig.baseMapType==='realistic'"></layer-realistic-base-map><!--背景层-->
+  <layer-fictitious-base-map v-if="this.$store.state.baseMapConfig.enableBaseMap && this.$store.state.baseMapConfig.baseMapType==='fictitious'"></layer-fictitious-base-map><!--背景层-->
   <layer-user :server-key="serverKey"></layer-user><!--用户层-->
   <layer-data></layer-data><!--数据层-->
   <layer-message></layer-message><!--消息层-->
@@ -17,6 +19,8 @@
 import LayerData from "./LayerData";
 import LayerRuler from "./LayerRuler";
 import LayerBackground from "./LayerBackground";
+import LayerRealisticBaseMap from "./LayerRealisticBaseMap";
+import LayerFictitiousBaseMap from "./LayerFictitiousBaseMap";
 import LayerCreate from "./LayerCreate";
 import LayerControl from "./LayerControl";
 import LayerElementPanel from "./LayerElementPanel";
@@ -28,7 +32,7 @@ export default {
   name: "SeparateMap",
   components:{
     LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerConsole,
-    LayerUser,LayerDetailsPanel,LayerMessage
+    LayerUser,LayerDetailsPanel,LayerMessage,LayerRealisticBaseMap,LayerFictitiousBaseMap
   },
   props:{
     serverKey:{
@@ -171,36 +175,39 @@ export default {
         this.$store.state.cameraConfig.offsetY=QIR.returnNumber(config['offset_y']);
       }
       if(QIR.hasProperty(config,'zoom_add')!==false){
-        let add=QIR.returnNumber(config['zoom_add'])
+        let add=QIR.returnNumber(config['zoom_add']);
+        let zoomAdd=Math.log2(1+add);//Math.pow(2,Math.add)-1，Math.log2(1+0.25)
+        this.$store.state.baseMapConfig.options.scaling=zoomAdd;
         this.$store.state.mapConfig.zoomAdd=add;
-        this.$store.state.mapConfig.zoomSub=(Math.pow(1+add,-1))-1;//(Math.pow(1+1,-1))-1
+        this.$store.state.mapConfig.zoomSub=-add/(1+add);//-k/(1+k)
       }
       if(QIR.hasProperty(config,'enable_base_map')!==false){//地图底图相关配置，如果启用的话：
-        this.$store.state.leafletConfig.enableBaseMap=config['enable_base_map'];
+        this.$store.state.baseMapConfig.enableBaseMap=config['enable_base_map'];
+        this.$store.state.baseMapConfig.baseMapType=config['base_map_type'];
         if(config['enable_base_map']===true){
           if(QIR.hasProperty(config,'max_zoom')!==false){
-            this.$store.state.leafletConfig.options.maxZoom=QIR.returnNumber(config['max_zoom']);
+            this.$store.state.baseMapConfig.options.maxZoom=QIR.returnNumber(config['max_zoom']);
           }
           if(QIR.hasProperty(config,'min_zoom')!==false){
-            this.$store.state.leafletConfig.options.minZoom=QIR.returnNumber(config['min_zoom']);
+            this.$store.state.baseMapConfig.options.minZoom=QIR.returnNumber(config['min_zoom']);
           }
           if(QIR.hasProperty(config,'default_zoom')!==false){
-            this.$store.state.leafletConfig.options.zoom=QIR.returnNumber(config['default_zoom']);
+            this.$store.state.baseMapConfig.options.zoom=QIR.returnNumber(config['default_zoom']);
           }
           if(QIR.hasProperty(config,'base_map_url')!==false){
-            this.$store.state.leafletConfig.baseLayer=config['base_map_url'];
+            this.$store.state.baseMapConfig.baseLayer=config['base_map_url'];
           }
           if(QIR.hasProperty(config,'default_x')!==false){
-            this.$store.state.leafletConfig.options.center[1]=QIR.returnNumber(config['default_x']);
+            this.$store.state.baseMapConfig.options.center[1]=QIR.returnNumber(config['default_x']);
           }
           if(QIR.hasProperty(config,'default_y')!==false){
-            this.$store.state.leafletConfig.options.center[0]=QIR.returnNumber(config['default_y']);
+            this.$store.state.baseMapConfig.options.center[0]=QIR.returnNumber(config['default_y']);
           }
           if(QIR.hasProperty(config,'resolution_x')!==false){
-            this.$store.state.leafletConfig.resolution.width=QIR.returnNumber(config['resolution_x']);
+            this.$store.state.baseMapConfig.resolution.width=QIR.returnNumber(config['resolution_x']);
           }
           if(QIR.hasProperty(config,'resolution_y')!==false){
-            this.$store.state.leafletConfig.resolution.height=QIR.returnNumber(config['resolution_y']);
+            this.$store.state.baseMapConfig.resolution.height=QIR.returnNumber(config['resolution_y']);
           }
         }
       }
@@ -238,7 +245,7 @@ export default {
   destroyed(){
     this.$store.commit('destroyComprehensive');//主体被销毁时，一并重置数据
     this.$store.commit('restoreCameraConfig');
-    this.$store.commit('restoreLeafletConfig');
+    this.$store.commit('restoreBaseMapConfig');
     this.$store.commit('restoreMapConfig');
   }
 }

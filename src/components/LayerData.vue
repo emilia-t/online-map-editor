@@ -52,6 +52,7 @@ export default {
       this.getBrowserConfig();//获取浏览器配置
       this.getScreenCenter();//获取屏幕中心点
       this.getMousePos();//实时获取鼠标位置
+      //this.mapMoveOut();
       this.mapMoveStart();//添加移动侦听
       this.mapMoveIng();
       this.mapMoveEnd();
@@ -142,11 +143,15 @@ export default {
                 this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer;
                 this.$store.state.mapConfig.layer-=1;//层级下调
                 this.$store.state.cameraConfig.zoomIng=false;
+                this.$store.state.mapConfig.mouseWheelPos.x=e.x;
+                this.$store.state.mapConfig.mouseWheelPos.y=e.y;
               }else {//滚轮后退，缩放
                 if(this.$store.state.mapConfig.layer>=this.$store.state.cameraConfig.maxZoom){return false;}
                 this.$store.state.mapConfig.oldLayer=this.$store.state.mapConfig.layer;
                 this.$store.state.mapConfig.layer+=1;//层级下调
                 this.$store.state.cameraConfig.zoomIng=false;
+                this.$store.state.mapConfig.mouseWheelPos.x=e.x;
+                this.$store.state.mapConfig.mouseWheelPos.y=e.y;
               }
             }
           },this.$store.state.cameraConfig.wheelInterval);
@@ -163,6 +168,26 @@ export default {
     },
     createTestLine(){//创建一条测试用的Line
 
+    },
+    mapMoveOut(){//鼠标移出界面外后停止移动
+      let dataLayer=this.$refs.dataLayer;
+      dataLayer.addEventListener('mouseout',(e)=>{
+        console.log("out")
+        if(e.button===0){
+          this.$store.state.cameraConfig.doNeedMoveMap=false;
+          let point={x:null,y:null};
+          point.x=e.x;
+          point.y=e.y;
+          this.theData.moveEndPt=point;
+          if(this.theData.moveObServer!==null){//停用移动侦测器
+            this.removeMoveObServer();
+          }
+          this.clearMoveCache();//清空移动缓存
+        }
+        if(this.$store.state.mapConfig.cursorLock===false){//更改cursor
+          this.$store.state.mapConfig.cursor='default';
+        }
+      });
     },
     mapMoveStart(){//dataLayer的鼠标移动监听-按下
       let dataLayer=this.$refs.dataLayer;

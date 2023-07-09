@@ -11,7 +11,16 @@
         </div>
         <div class="iStyContent"><!--内容-->
           <div class="iStyP">
-            <div class="iStyName">当前颜色</div>
+            <div class="iStyName">选择图标</div>
+            <div class="iStyWidth" title="当前图标">
+              <img src="../../static/icons/usualIcon000.png" alt=""/>
+            </div>
+          </div>
+          <div class="iStySlide">
+            <orange-icons-custom @OrangeIconsCustomCall="iconsHandle"></orange-icons-custom>
+          </div>
+          <div class="iStyP">
+            <div class="iStyName">挑选颜色</div>
             <div class="iStyView" title="当前颜色" :style="styleColor"></div>
             <div class="iStyName">自选颜色</div>
             <orange-color-palette @OrangeColorPaletteCall="paletteHandle" class="iStyInput" :default="'#'+color"></orange-color-palette>
@@ -20,7 +29,7 @@
             <div class="iStyColor" v-for="color in colors" :style="'background:#'+color" @click="paletteHandle(color)"></div>
           </div>
           <div class="iStyP">
-            <div class="iStyName">当前宽度</div>
+            <div class="iStyName">设置宽度</div>
             <div class="iStyWidth" title="当前宽度">{{width}}</div>
           </div>
           <div class="iStySlide">
@@ -30,7 +39,7 @@
       </div>
       <div class="item iAttribute"><!--属性编辑，区域、名称、类型....-->
         <div class="iTitle">
-          属性编辑
+          编辑属性
         </div>
         <div class="iAttContent"><!--内容-->
           <div class="iAttItem" v-for="detail in details">
@@ -57,17 +66,23 @@
 </template>
 
 <script>
+import OrangeIconsCustom from "./OrangeIconsCustom";
 import OrangeColorPalette from "./OrangeColorPalette";
 import OrangeSlideBlock from "./OrangeSlideBlock";
 export default {
   name: "BananaPointAttributeBoard",
-  components:{OrangeSlideBlock,OrangeColorPalette},
+  components:{OrangeSlideBlock,OrangeColorPalette,OrangeIconsCustom},
   data(){
     return {
       id:"-1",
       color:"000000",
       width:5,
       point:{x:0,y:0},
+      custom:{
+        color:null,
+        icon:null,
+        width:null
+      },
       details:[
         {"key":"名称","value":""},
         {"key":"地址","value":""},
@@ -195,20 +210,27 @@ export default {
     },
     paletteHandle(data){
       this.color=data;
+      this.custom.color='#'+data;
     },
     sliderHandle(data){
       this.width=data;
+      this.custom.width=data;
+    },
+    iconsHandle(data){
+      this.custom.icon=data;
     },
     submitEdit(ev){//提交-更新缓存-同时上传数据
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
+      this.cache.custom=JSON.parse(JSON.stringify(this.custom));
       let obj={
         class:"point",
-        point:this.point,
+        point:{x:this.$store.state.mapConfig.tempPoint.point.x,y:this.$store.state.mapConfig.tempPoint.point.y},
         color:this.color,
         width:this.width,
         details:this.details,
+        custom:this.custom,
       };
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
       this.show=false;
@@ -241,18 +263,8 @@ export default {
       }
       return "left:"+Sl+"px;top:"+St+"px"
     },
-    TempPoint(){
-      return this.$store.state.mapConfig.tempPoint.point;
-    }
   },
   watch:{
-    TempPoint:{
-      handler(newValue){
-        this.point.x=newValue.x;
-        this.point.y=newValue.y;
-      },
-      deep:true
-    },
     BoardPos:{//被移动位置时触发
       handler(newValue){
         this.show=true;
@@ -448,7 +460,7 @@ export default {
 }
 .iStyContent{
   width: 100%;
-  height: 110px;
+  height: 170px;
 }
 .iStyP{
   width: 100%;

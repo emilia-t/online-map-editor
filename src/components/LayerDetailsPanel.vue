@@ -27,8 +27,11 @@
       <div class="iTitle">
         其他属性
       </div>
-      <div v-if="exampleConfig.id!==undefined" class="iOtherText">
+      <div v-if="exampleConfig.id!==undefined && this.$store.state.baseMapConfig.baseMapType==='fictitious'" class="iOtherText">
         坐标<br>{{exampleConfig.point.x}}<br>{{exampleConfig.point.y}}
+      </div>
+      <div v-if="exampleConfig.id!==undefined && this.$store.state.baseMapConfig.baseMapType==='realistic'" class="iOtherText">
+        经度<br>{{this.$store.state.detailsPanelConfig.sourcePoint.x}}<br>纬度<br>{{this.$store.state.detailsPanelConfig.sourcePoint.y}}
       </div>
       <div v-if="exampleConfig.id!==undefined" class="iOtherText">
         E-ID {{exampleConfig.id}}

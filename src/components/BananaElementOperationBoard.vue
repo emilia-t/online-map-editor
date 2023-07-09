@@ -29,6 +29,15 @@
             样式设置
           </div>
           <div class="iStyContent"><!--内容-->
+            <div class="iStyP" v-if="this.operated.type==='point'">
+              <div class="iStyName">选择图标</div>
+              <div class="iStyWidth" title="当前图标">
+                <img src="../../static/icons/usualIcon000.png" alt=""/>
+              </div>
+            </div>
+            <div class="iStySlide" v-if="this.operated.type==='point'">
+              <orange-icons-custom @OrangeIconsCustomCall="instantChangeIcon"></orange-icons-custom>
+            </div>
             <div class="iStyP">
               <div class="iStyName">当前颜色</div>
               <div class="iStyView" title="当前颜色" :style="operatedColor"></div>
@@ -74,11 +83,12 @@
 
 <script>
 import Lodash from 'lodash'
-import orangeColorPalette from './OrangeColorPalette'
-import orangeSlideBlock from './OrangeSlideBlock'
+import OrangeColorPalette from './OrangeColorPalette'
+import OrangeSlideBlock from './OrangeSlideBlock'
+import OrangeIconsCustom from './OrangeIconsCustom'
 export default {
   name: "BananaElementOperationBoard",
-  components:{orangeColorPalette,orangeSlideBlock},
+  components:{OrangeColorPalette,OrangeSlideBlock,OrangeIconsCustom},
   data(){
     return {
       editPanelShow:false,
@@ -236,7 +246,20 @@ export default {
       this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{width:data}});
     },
     instantChangeColor(data){
-      this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{color:data}});
+      if(this.operated.type==='point'){
+        if(this.operated.custom!==null){
+          this.operated.custom.color='#'+data;
+          this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{custom:this.operated.custom,color:data}});
+        }else {
+          this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{color:data}});
+        }
+      }else {
+        this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{color:data}});
+      }
+    },
+    instantChangeIcon(data){
+      this.operated.custom.icon=data;
+      this.$store.state.serverData.socket.broadcastUpdateElement({id:this.operated.id,changes:{custom:this.operated.custom}});
     },
     editElement(){//编辑操作
       this.editPanelShow=!this.editPanelShow;
@@ -275,7 +298,8 @@ export default {
           "father_relation":null,
           "child_nodes":null,
           "father_node":null,
-          "details":[{"key":"名称","value":""}]
+          "details":[{"key":"名称","value":""}],
+          "custom":null
         }
       }else {
         return this.$store.state.mapConfig.operated.data;
@@ -480,7 +504,7 @@ export default {
 }
 .iStyContent{
   width: 100%;
-  height: 110px;
+  height: auto;
 }
 .iStyP{
   width: 100%;

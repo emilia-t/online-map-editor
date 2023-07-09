@@ -176,37 +176,43 @@ new Vue({
       }
     },
     computeMouseActualPos(mouseEvent){//返回移动后的元素坐标位置
-      try{
-        let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
-        layer=this.$store.state.mapConfig.layer;
-        mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
-        p0Pos.x=this.$store.state.mapConfig.p0.point.x;
-        p0Pos.y=this.$store.state.mapConfig.p0.point.y;
-        if(layer===0){
-          refPos.x=mousePos.x*this.unit1X+p0Pos.x+this.offsetX;
-          refPos.y=p0Pos.y-mousePos.y*this.unit1Y+this.offsetY;
-          return refPos;
-        }
-        if(layer>0){
-          refPos.x=(mousePos.x*this.unit1X)+p0Pos.x;
-          refPos.y=p0Pos.y-(mousePos.y*this.unit1Y);
-          for (let i=0;i<layer;i++){
-            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
-            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
+      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+        let latLng=this.$store.state.baseMapConfig.baseMap.viewPositionToLatLng(mouseEvent.x,mouseEvent.y);
+        return {x:latLng.lng,y:latLng.lat};
+      }
+      if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){//虚拟
+        try{
+          let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
+          layer=this.$store.state.mapConfig.layer;
+          mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
+          p0Pos.x=this.$store.state.mapConfig.p0.point.x;
+          p0Pos.y=this.$store.state.mapConfig.p0.point.y;
+          if(layer===0){
+            refPos.x=mousePos.x*this.unit1X+p0Pos.x+this.offsetX;
+            refPos.y=p0Pos.y-mousePos.y*this.unit1Y+this.offsetY;
+            return refPos;
           }
-          return refPos;
-        }
-        if(layer<0){
-          refPos.x=mousePos.x*this.unit1X+p0Pos.x;
-          refPos.y=p0Pos.y-mousePos.y*this.unit1X;
-          for(let i=0;i>layer;i--){
-            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
-            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
+          if(layer>0){
+            refPos.x=(mousePos.x*this.unit1X)+p0Pos.x;
+            refPos.y=p0Pos.y-(mousePos.y*this.unit1Y);
+            for (let i=0;i<layer;i++){
+              refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
+              refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
+            }
+            return refPos;
           }
-          return refPos;
+          if(layer<0){
+            refPos.x=mousePos.x*this.unit1X+p0Pos.x;
+            refPos.y=p0Pos.y-mousePos.y*this.unit1X;
+            for(let i=0;i>layer;i--){
+              refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
+              refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
+            }
+            return refPos;
+          }
+        }catch (e) {
+          return false;
         }
-      }catch (e) {
-        return false;
       }
     },
   },

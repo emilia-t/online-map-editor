@@ -1,10 +1,10 @@
 <template>
   <g :elementId="this.myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)">
-    <g v-if="this.pointConfig.custom===null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
+    <g v-if="this.pointConfig.custom.icon===null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
       <circle v-if="selectId===myId" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="dynamicStyle" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
     </g>
-    <g v-if="this.pointConfig.custom!==null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
+    <g v-if="this.pointConfig.custom.icon!==null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
       <circle r="13px" :cx="dynamicPointsX" :cy="dynamicPointsY" :fill="this.pointConfig.custom.color"/>
       <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26" height="26" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
     </g>
@@ -34,8 +34,8 @@ export default {
         return {
           id:'p0000',
           type:'point',
-          points:[{x:-0.0000001,y:0.0000001}],
-          point:{x:-0.0000001,y:0.0000001},
+          points:[{x:0,y:0}],
+          point:{x:0,y:0},
           color:'#ec3232',
           width:2
         }
@@ -49,7 +49,7 @@ export default {
   methods:{
     startSetting(){//初始化配置
       this.myId=this.pointConfig.id;//拷贝
-      Object.assign(this.dataSourcePoint,this.pointConfig.point);
+      this.dataSourcePoint=JSON.parse(JSON.stringify(this.pointConfig.point));
       this.mouseEvent();//监听鼠标移动
       this.initializePosition();//初始化
       setInterval(()=>{this.radius.push(this.radius.shift());},110)
@@ -85,43 +85,50 @@ export default {
       })
     },
     initializePosition(){//初始化定位
-      try{
-        let [layer,pointPos,p0Pos,refPos,tempPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null},{x:null,y:null}];
-        layer=this.$store.state.mapConfig.layer;
-        pointPos.x=this.pointConfig.point.x;pointPos.y=this.pointConfig.point.y;
-        p0Pos.x=-this.$store.state.mapConfig.p0.point.x;
-        p0Pos.y=-this.$store.state.mapConfig.p0.point.y;
-        if(layer===0){
-          refPos.x=pointPos.x+p0Pos.x;
-          refPos.y=pointPos.y+p0Pos.y;
-          this.pointConfig.point.x=refPos.x;
-          this.pointConfig.point.y=refPos.y;
-        }
-        if(layer>0){
-          for (let i=0;i<layer;i++){
-            pointPos.x=pointPos.x+(pointPos.x*this.$store.state.mapConfig.zoomSub);
-            pointPos.y=pointPos.y+(pointPos.y*this.$store.state.mapConfig.zoomSub);
+      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+        let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.pointConfig.point.y,this.pointConfig.point.x);
+        this.pointConfig.point.x=viewPosition.x;
+        this.pointConfig.point.y=-viewPosition.y;
+      }
+      if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
+        try{
+          let [layer,pointPos,p0Pos,refPos,tempPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null},{x:null,y:null}];
+          layer=this.$store.state.mapConfig.layer;
+          pointPos.x=this.pointConfig.point.x;pointPos.y=this.pointConfig.point.y;
+          p0Pos.x=-this.$store.state.mapConfig.p0.point.x;
+          p0Pos.y=-this.$store.state.mapConfig.p0.point.y;
+          if(layer===0){
+            refPos.x=pointPos.x+p0Pos.x;
+            refPos.y=pointPos.y+p0Pos.y;
+            this.pointConfig.point.x=refPos.x;
+            this.pointConfig.point.y=refPos.y;
           }
-          refPos.x=pointPos.x+p0Pos.x;
-          refPos.y=pointPos.y+p0Pos.y;
-          this.pointConfig.point.x=refPos.x;
-          this.pointConfig.point.y=refPos.y;
-          return true;
-        }
-        if(layer<0){
-          for(let i=0;i>layer;i--){
-            pointPos.x=pointPos.x+(pointPos.x*this.$store.state.mapConfig.zoomAdd);
-            pointPos.y=pointPos.y+(pointPos.y*this.$store.state.mapConfig.zoomAdd);
+          if(layer>0){
+            for (let i=0;i<layer;i++){
+              pointPos.x=pointPos.x+(pointPos.x*this.$store.state.mapConfig.zoomSub);
+              pointPos.y=pointPos.y+(pointPos.y*this.$store.state.mapConfig.zoomSub);
+            }
+            refPos.x=pointPos.x+p0Pos.x;
+            refPos.y=pointPos.y+p0Pos.y;
+            this.pointConfig.point.x=refPos.x;
+            this.pointConfig.point.y=refPos.y;
+            return true;
           }
-          refPos.x=pointPos.x+p0Pos.x;
-          refPos.y=pointPos.y+p0Pos.y;
-          this.pointConfig.point.x=refPos.x;
-          this.pointConfig.point.y=refPos.y;
+          if(layer<0){
+            for(let i=0;i>layer;i--){
+              pointPos.x=pointPos.x+(pointPos.x*this.$store.state.mapConfig.zoomAdd);
+              pointPos.y=pointPos.y+(pointPos.y*this.$store.state.mapConfig.zoomAdd);
+            }
+            refPos.x=pointPos.x+p0Pos.x;
+            refPos.y=pointPos.y+p0Pos.y;
+            this.pointConfig.point.x=refPos.x;
+            this.pointConfig.point.y=refPos.y;
+            return true;
+          }
           return true;
+        }catch (e) {
+          return false;
         }
-        return true;
-      }catch (e) {
-        return false;
       }
     },
     move(){//移动
@@ -232,20 +239,20 @@ export default {
     }
   },
   watch:{
-    browserX:{
-      handler(newValue,oldValue){
-        let offset=(newValue-oldValue)/2;
-        this.pointConfig.point.x+=offset*this.unit1X;
-      },
-      deep:true
-    },
-    browserY:{
-      handler(newValue,oldValue){
-        let offset=(oldValue-newValue)/2;
-        this.pointConfig.point.y+=offset*this.unit1Y;
-      },
-      deep:true
-    },
+    // browserX:{//仅限于canvas不支持动态视图才开启
+    //   handler(newValue,oldValue){
+    //     let offset=(newValue-oldValue)/2;
+    //     this.pointConfig.point.x+=offset*this.unit1X;
+    //   },
+    //   deep:true
+    // },
+    // browserY:{
+    //   handler(newValue,oldValue){
+    //     let offset=(oldValue-newValue)/2;
+    //     this.pointConfig.point.y+=offset*this.unit1Y;
+    //   },
+    //   deep:true
+    // },
     reinitializeElement:{
       handler(newValue){
         if(newValue!==0){
@@ -296,7 +303,6 @@ export default {
           if(this.shiftStartPoint.x!==this.pointConfig.point.x || this.shiftStartPoint.y!==this.pointConfig.point.y){
             if(this.targetId===this.myId){
               let newPos=this.$root.computeMouseActualPos(newValue);//1.计算新的位置
-              console.log(newPos);
               let uObj={
                 id:null,
                 point:null,

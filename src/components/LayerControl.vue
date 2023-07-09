@@ -69,14 +69,6 @@ export default {
           x:null,
           y:null
         },
-        tempPoint:{//临时点数据
-          id:'tempPoint',
-          type:'point',
-          points:[{x:0,y:0}],
-          point:{x:0,y:0},
-          color:'#000000',
-          width:0
-        },
         bordPosTop:0,//点属性面板的位置
         bordPosLeft:-400,
         lineBoardTop:0,//线属性面板的位置
@@ -241,6 +233,7 @@ export default {
               let tag=ev.target.nodeName;//判断target
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
                 let Pos=this.computeMouseActualPos(ev)//计算新增点位置
+                console.log(Pos)
                 this.theConfig.addPointPos.x=Pos.x;
                 this.theConfig.addPointPos.y=Pos.y;
               }
@@ -251,37 +244,43 @@ export default {
       }
     },
     computeMouseActualPos(mouseEvent){//计算鼠标点与p0的位置距离并返回鼠标点击位置的坐标
-      try{
-        let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];//获取必要值
-        layer=this.$store.state.mapConfig.layer;
-        mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
-        p0Pos.x=this.$store.state.mapConfig.p0.point.x;
-        p0Pos.y=this.$store.state.mapConfig.p0.point.y;
-        if(layer===0){//没有缩放
-          refPos.x=mousePos.x*this.unit1X+p0Pos.x+this.offsetX;//p0点加上鼠标的点击位置+精度补偿值
-          refPos.y=p0Pos.y-mousePos.y*this.unit1Y+this.offsetY;
-          return refPos;
-        }
-        if(layer>0){//缩小
-          refPos.x=(mousePos.x*this.unit1X)+p0Pos.x;//获取鼠标与p0的屏幕显示距离px
-          refPos.y=p0Pos.y-(mousePos.y*this.unit1Y);
-          for (let i=0;i<layer;i++){//转化
-            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
-            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
+      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+        let latLng=this.$store.state.baseMapConfig.baseMap.viewPositionToLatLng(mouseEvent.x,mouseEvent.y);
+        return {x:latLng.lng,y:latLng.lat};
+      }
+      if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){//虚拟
+        try{
+          let [layer,mousePos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];//获取必要值
+          layer=this.$store.state.mapConfig.layer;
+          mousePos.x=mouseEvent.x;mousePos.y=mouseEvent.y;
+          p0Pos.x=this.$store.state.mapConfig.p0.point.x;
+          p0Pos.y=this.$store.state.mapConfig.p0.point.y;
+          if(layer===0){//没有缩放
+            refPos.x=mousePos.x*this.unit1X+p0Pos.x+this.offsetX;//p0点加上鼠标的点击位置+精度补偿值
+            refPos.y=p0Pos.y-mousePos.y*this.unit1Y+this.offsetY;
+            return refPos;
           }
-          return refPos;
-        }
-        if(layer<0){//放大
-          refPos.x=mousePos.x*this.unit1X+p0Pos.x;//获取鼠标与p0的屏幕显示距离px
-          refPos.y=p0Pos.y-mousePos.y*this.unit1X;
-          for(let i=0;i>layer;i--){//转化
-            refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
-            refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
+          if(layer>0){//缩小
+            refPos.x=(mousePos.x*this.unit1X)+p0Pos.x;//获取鼠标与p0的屏幕显示距离px
+            refPos.y=p0Pos.y-(mousePos.y*this.unit1Y);
+            for (let i=0;i<layer;i++){//转化
+              refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomAdd);
+              refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomAdd);
+            }
+            return refPos;
           }
-          return refPos;
+          if(layer<0){//放大
+            refPos.x=mousePos.x*this.unit1X+p0Pos.x;//获取鼠标与p0的屏幕显示距离px
+            refPos.y=p0Pos.y-mousePos.y*this.unit1X;
+            for(let i=0;i>layer;i--){//转化
+              refPos.x=refPos.x+(refPos.x*this.$store.state.mapConfig.zoomSub);
+              refPos.y=refPos.y+(refPos.y*this.$store.state.mapConfig.zoomSub);
+            }
+            return refPos;
+          }
+        }catch (e) {
+          return false;
         }
-      }catch (e) {
-        return false;
       }
     },
     addInterestPointStart(){//添加关注点
@@ -460,6 +459,7 @@ export default {
     },
     addNewPoint:{
       handler(newValue){
+        console.log(newValue);
         this.$store.state.mapConfig.tempPoint.width=this.$store.state.mapConfig.tempPoint.defaultWidth;//1更新临时数据
         this.$store.state.mapConfig.tempPoint.point.x=newValue.x;
         this.$store.state.mapConfig.tempPoint.point.y=newValue.y;
