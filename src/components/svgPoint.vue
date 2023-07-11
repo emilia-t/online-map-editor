@@ -1,10 +1,13 @@
 <template>
-  <g :elementId="this.myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)">
-    <g v-if="this.pointConfig.custom.icon===null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
+  <g ref="svgElement" class="" :elementId="this.myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)">
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" v-if="this.pointConfig.custom.icon===null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
+      <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="22" stroke="#ffffff" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
+      <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="1" stroke="#ffffff70" stroke-width="45" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
-      <circle v-if="selectId===myId" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="dynamicStyle" stroke="#fa5454" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
     </g>
-    <g v-if="this.pointConfig.custom.icon!==null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" v-if="this.pointConfig.custom.icon!==null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
+      <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="22" stroke="#ffffff" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
+      <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="1" stroke="#ffffff70" stroke-width="45" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
       <circle r="13px" :cx="dynamicPointsX" :cy="dynamicPointsY" :fill="this.pointConfig.custom.color"/>
       <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26" height="26" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
     </g>
@@ -21,10 +24,10 @@ export default {
       A1Cache:{x:0,y:0},
       myId:null,
       selectId:-1,//被选中的id
-      radius:[1,2,3,4,5,6,5,4,3,2],
       shiftStatus:false,//挪动的状态，当元素被选中后再次左键按下则状态为true，表示可挪动节点，默认为false
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
+      mouseover:false
     }
   },
   props:{
@@ -52,7 +55,6 @@ export default {
       this.dataSourcePoint=JSON.parse(JSON.stringify(this.pointConfig.point));
       this.mouseEvent();//监听鼠标移动
       this.initializePosition();//初始化
-      setInterval(()=>{this.radius.push(this.radius.shift());},110)
       this.A1Cache.x=this.A1.x;//初始化A1cache
       this.A1Cache.y=this.A1.y;
     },
@@ -86,7 +88,7 @@ export default {
     },
     initializePosition(){//初始化定位
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
-        let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.pointConfig.point.y,this.pointConfig.point.x);
+        let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
         this.pointConfig.point.x=viewPosition.x;
         this.pointConfig.point.y=-viewPosition.y;
       }
@@ -132,32 +134,44 @@ export default {
       }
     },
     move(){//移动
-      if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
-        let A1mvX=this.A1Cache.x-this.A1.x;
-        let A1mvY=this.A1Cache.y-this.A1.y;
-        let newArr=this.pointConfig.point;
-        this.pointConfig.point.x=newArr.x+(A1mvX*this.unit1X);
-        this.pointConfig.point.y=newArr.y+(A1mvY*this.unit1Y);
+      if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
+        if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
+          let A1mvX=this.A1Cache.x-this.A1.x;
+          let A1mvY=this.A1Cache.y-this.A1.y;
+          let newArr=this.pointConfig.point;
+          this.pointConfig.point.x=newArr.x+(A1mvX*this.unit1X);
+          this.pointConfig.point.y=newArr.y+(A1mvY*this.unit1Y);
+          this.A1Cache.x=this.A1.x;
+          this.A1Cache.y=this.A1.y;
+          this.occurredMoveMap=false;
+        }
+      }
+      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
-        this.occurredMoveMap=false;
+        this.initializePosition();
       }
       return true;
     },
     scale(){//缩放
-      let layer=this.layer;
-      let oldLayer=this.oldLayer;
-      let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
-      let pointPos={};
-      pointPos=JSON.parse(JSON.stringify(this.pointConfig.point));
-      const MOX=this.mouse.x;
-      const MOY=this.mouse.y;
-      const TRX=pointPos.x/this.unit1X;
-      const TRY=-pointPos.y/this.unit1Y;
-      const axSize=MOX-TRX;
-      const aySize=MOY-TRY;
-      this.pointConfig.point.x=(TRX-((zoom*axSize)))*this.unit1X;
-      this.pointConfig.point.y=-(TRY-((zoom*aySize)))*this.unit1Y;
+      if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
+        let layer=this.layer;
+        let oldLayer=this.oldLayer;
+        let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
+        let pointPos={};
+        pointPos=JSON.parse(JSON.stringify(this.pointConfig.point));
+        const MOX=this.mouse.x;
+        const MOY=this.mouse.y;
+        const TRX=pointPos.x/this.unit1X;
+        const TRY=-pointPos.y/this.unit1Y;
+        const axSize=MOX-TRX;
+        const aySize=MOY-TRY;
+        this.pointConfig.point.x=(TRX-((zoom*axSize)))*this.unit1X;
+        this.pointConfig.point.y=-(TRY-((zoom*aySize)))*this.unit1Y;
+      }
+      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+        this.initializePosition();
+      }
     },
     rightClickOperation(mouseEvent){
       mouseEvent.preventDefault();
@@ -190,9 +204,6 @@ export default {
     },
     svgMouseUp(){
       return this.$store.state.mapConfig.svgMouseUp;
-    },
-    dynamicStyle(){
-      return ((this.pointConfig.width+0)/10+this.radius[0])+'px'
     },
     dynamicPointsX(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
@@ -231,6 +242,9 @@ export default {
     targetId(){
       return this.$store.state.detailsPanelConfig.target;
     },
+    reinitializeSourcePoint(){
+      return this.$store.state.serverData.socket.reinitializeSourcePoint;
+    },
     reinitializeElement(){
       return this.$store.state.serverData.socket.reinitializeElement;
     },
@@ -256,7 +270,8 @@ export default {
     reinitializeElement:{
       handler(newValue){
         if(newValue!==0){
-          if(this.reinitializeId==this.myId){
+          if(this.reinitializeId===this.myId){
+            this.dataSourcePoint=JSON.parse(JSON.stringify(this.reinitializeSourcePoint));//更新源
             this.initializePosition();
           }
         }
@@ -313,6 +328,13 @@ export default {
               uObj.points.push(newPos);
               uObj.type='point';
               this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);
+              if(this.$refs.svgElement.classList.contains('animationFirst')){
+                this.$refs.svgElement.classList.remove('animationFirst');
+                this.$refs.svgElement.classList.add('animationAfter');
+              }else {
+                this.$refs.svgElement.classList.remove('animationAfter');
+                this.$refs.svgElement.classList.add('animationFirst');
+              }
               this.shiftStartPoint.x=null;//处理完毕后清空
               this.shiftStartPoint.y=null;
             }
@@ -325,9 +347,7 @@ export default {
 }
 </script>
 
-<style scoped>
-.customIcon{
-  width: 20px;
-  height: 20px;
-}
+<style>
+.animationFirst{animation:graduallyEmergingFirst 2s forwards;}
+.animationAfter{animation:graduallyEmergingAfter 2s forwards;}
 </style>

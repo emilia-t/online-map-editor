@@ -58,7 +58,6 @@ export default {
       this.myId=this.areaConfig.id;
       this.dataSourcePoint=JSON.parse(JSON.stringify(this.areaConfig.point));
       this.dataSourcePoints=JSON.parse(JSON.stringify(this.areaConfig.points));
-      console.log(this.dataSourcePoint.x);
       this.mouseEvent();//不要提前
       this.initializePosition();
       this.A1Cache.x=this.A1.x;
@@ -136,12 +135,12 @@ export default {
     },
     initializePosition(){//初始化定位
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
-        let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.areaConfig.point.y,this.areaConfig.point.x);
+        let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
         this.areaConfig.point.x=viewPosition.x;
         this.areaConfig.point.y=-viewPosition.y;
         //循环遍历
-        for(let i=0;i<this.areaConfig.points.length;i++){
-          let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.areaConfig.points[i].y,this.areaConfig.points[i].x)
+        for(let i=0;i<this.dataSourcePoints.length;i++){
+          let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x)
           this.areaConfig.points[i].x=viewPosition.x;
           this.areaConfig.points[i].y=-viewPosition.y;
         }
@@ -184,39 +183,51 @@ export default {
       }
     },
     move(){//移动
-      if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
-        let A1mvX=this.A1.x-this.A1Cache.x;
-        let A1mvY=this.A1Cache.y-this.A1.y;
-        let newArr=this.areaConfig.points;
-        for (let i=0;i<newArr.length;i++){
-          this.areaConfig.points[i].x=(newArr[i].x/this.unit1X-A1mvX)*this.unit1X;
-          this.areaConfig.points[i].y=(newArr[i].y/this.unit1Y+A1mvY)*this.unit1Y;
+      if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
+        if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
+          let A1mvX=this.A1.x-this.A1Cache.x;
+          let A1mvY=this.A1Cache.y-this.A1.y;
+          let newArr=this.areaConfig.points;
+          for (let i=0;i<newArr.length;i++){
+            this.areaConfig.points[i].x=(newArr[i].x/this.unit1X-A1mvX)*this.unit1X;
+            this.areaConfig.points[i].y=(newArr[i].y/this.unit1Y+A1mvY)*this.unit1Y;
+          }
+          this.A1Cache.x=this.A1.x;
+          this.A1Cache.y=this.A1.y;
+          this.occurredMoveMap=false;//告知已经处理本次移动
         }
+      }
+      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
-        this.occurredMoveMap=false;//告知已经处理本次移动
+        this.initializePosition();
       }
       return true;
     },
     scale(){//缩放
-      let layer=this.layer;
-      let oldLayer=this.oldLayer;
-      let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
-      let newPosArr=[];
-      for (let i=0;i<this.areaConfig.points.length;i++){
-        const MOX=this.mouse.x;
-        const MOY=this.mouse.y;
-        const pointPos=this.areaConfig.points[i];
-        const TRX=pointPos.x/this.unit1X;
-        const TRY=-pointPos.y/this.unit1Y;
-        const axSize=MOX-TRX;
-        const aySize=MOY-TRY;
-        let newPos={x:null,y:null};
-        newPos.x=(TRX-((zoom*axSize)))*this.unit1X;
-        newPos.y=-(TRY-((zoom*aySize)))*this.unit1Y;
-        newPosArr.push(newPos);
+      if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
+        let layer=this.layer;
+        let oldLayer=this.oldLayer;
+        let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
+        let newPosArr=[];
+        for (let i=0;i<this.areaConfig.points.length;i++){
+          const MOX=this.mouse.x;
+          const MOY=this.mouse.y;
+          const pointPos=this.areaConfig.points[i];
+          const TRX=pointPos.x/this.unit1X;
+          const TRY=-pointPos.y/this.unit1Y;
+          const axSize=MOX-TRX;
+          const aySize=MOY-TRY;
+          let newPos={x:null,y:null};
+          newPos.x=(TRX-((zoom*axSize)))*this.unit1X;
+          newPos.y=-(TRY-((zoom*aySize)))*this.unit1Y;
+          newPosArr.push(newPos);
+        }
+        this.areaConfig.points=newPosArr;
       }
-      this.areaConfig.points=newPosArr;
+      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+        this.initializePosition();
+      }
     },
     mouseEvent(){//监听鼠标移动
       document.body.addEventListener('mousemove',(e)=>{
@@ -408,7 +419,7 @@ export default {
     reinitializeElement:{
       handler(newValue){
         if(newValue!==0){
-          if(this.reinitializeId==this.myId){
+          if(this.reinitializeId===this.myId){
             this.dataSourcePoints=JSON.parse(JSON.stringify(this.reinitializeSourcePoints));//更新源
             if(this.reinitializeSourcePoint!==null){//更新起始点源（如果有变化）
               if(this.dataSourcePoint.x!==this.reinitializeSourcePoint.x || this.dataSourcePoint.y!==this.reinitializeSourcePoint.y){
@@ -421,12 +432,12 @@ export default {
       }
     },
     layer:{
-      handler(newValue,oldValue){
+      handler(){
         this.scale();
       }
     },
     doNeedMoveMap:{
-      handler(newValue,oldValue){
+      handler(){
         this.move();
       }
     },

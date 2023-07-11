@@ -32,13 +32,13 @@ const webpackConfig = merge(baseWebpackConfig, {
       uglifyOptions: {
         compress: {
           warnings: false,
-          //drop_console: true, // 删除所有的 console 语句
-          //pure_funcs: ['console.log'] // 删除指定的 console 语句
+          drop_console: true, // 删除所有的 console 语句
+          pure_funcs: ['console.log'] // 删除指定的 console 语句
         },
         comments: false
       },
       //sourceMap: config.build.productionSourceMap,
-      sourceMap:true,
+      sourceMap:false,
       parallel: true
     }),
     // http://vuejs.github.io/vue-loader/en/workflow/production.html

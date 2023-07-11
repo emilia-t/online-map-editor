@@ -52,7 +52,7 @@
               <div class="iStyWidth" title="当前宽度">{{this.operatedCache.width}}</div>
             </div>
             <div class="iStySlide">
-              <orange-slide-block @OrangeSlideBlockFocusout="instantChangeWidth"  @OrangeSlideBlockCall="sliderHandle" :div-style="'width:267px;left:-92px;top:34%'" max="64" min="2" :default="this.operatedCache.width"></orange-slide-block>
+              <orange-slide-block @OrangeSlideBlockFocusout="instantChangeWidth"  @OrangeSlideBlockCall="sliderHandle" :div-style="'width:267px;left:-92px;top:34%'" max="15" min="2" :default="this.operatedCache.width"></orange-slide-block>
             </div>
           </div>
         </div>

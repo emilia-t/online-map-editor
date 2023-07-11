@@ -1,6 +1,6 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer" style="pointer-events: auto">
-    <svg class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
+    <svg style="transform: translateZ(0)" class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
       <svg-area v-for="area in MyAreaData" :key="area.id" :area-config="area"></svg-area><!--区域数据-->
       <svg-line v-for="line in MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line><!--线段数据-->
       <svg-point v-for="point in MyPointData" :key="point.id" :point-config="point"></svg-point><!--点位数据-->
