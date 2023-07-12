@@ -6,38 +6,40 @@
       <img src="../../static/waterDroplet.png" class="waterDroplet" ref="waterDroplet" alt="waterDroplet" title="透明化面板">
       <img @click="hidden()" src="../../static/close.png" class="closeIcon" alt="closeButton" title="关闭面板">
     </div>
-    <div class="item"><!--属性编辑，区域、名称、类型....-->
-      <div class="iTitle">
-        元素属性
-      </div>
-      <div class="iAttContent"><!--内容-->
-        <div class="iAttItem" v-for="detail in exampleConfig.details">
-          <div class="leftProperty">
-            {{detail.key}}
-          </div>
-          <div class="rightValue">
-            <img src="../../static/keyToValue.png" class="keyToValue" alt="keyToValue"/>
-            <div class="rightValueText">{{detail.value}}</div>
-            <div class="rightValueText" v-if="detail.value===''">NULL</div>
+    <div class="items">
+      <div class="item"><!--属性编辑，区域、名称、类型....-->
+        <div class="iTitle">
+          元素属性
+        </div>
+        <div class="iAttContent"><!--内容-->
+          <div class="iAttItem" v-for="detail in exampleConfig.details">
+            <div class="leftProperty">
+              {{detail.key}}
+            </div>
+            <div class="rightValue">
+              <img src="../../static/keyToValue.png" class="keyToValue" alt="keyToValue"/>
+              <div class="rightValueText">{{detail.value}}</div>
+              <div class="rightValueText" v-if="detail.value===''">NULL</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="item">
-      <div class="iTitle">
-        其他属性
-      </div>
-      <div v-if="exampleConfig.id!==undefined && this.$store.state.baseMapConfig.baseMapType==='fictitious'" class="iOtherText">
-        坐标<br>{{exampleConfig.point.x}}<br>{{exampleConfig.point.y}}
-      </div>
-      <div v-if="exampleConfig.id!==undefined && this.$store.state.baseMapConfig.baseMapType==='realistic'" class="iOtherText">
-        经度<br>{{this.$store.state.detailsPanelConfig.sourcePoint.x}}<br>纬度<br>{{this.$store.state.detailsPanelConfig.sourcePoint.y}}
-      </div>
-      <div v-if="exampleConfig.id!==undefined" class="iOtherText">
-        E-ID {{exampleConfig.id}}
-      </div>
-      <div v-if="exampleConfig.id===undefined" class="iOtherText">
-        等待选中
+      <div class="item">
+        <div class="iTitle">
+          其他属性
+        </div>
+        <div v-if="exampleConfig.id!==undefined && this.$store.state.baseMapConfig.baseMapType==='fictitious'" class="iOtherText">
+          坐标<br>{{exampleConfig.point.x}}<br>{{exampleConfig.point.y}}
+        </div>
+        <div v-if="exampleConfig.id!==undefined && this.$store.state.baseMapConfig.baseMapType==='realistic'" class="iOtherText">
+          经度<br>{{this.$store.state.detailsPanelConfig.sourcePoint.x}}<br>纬度<br>{{this.$store.state.detailsPanelConfig.sourcePoint.y}}
+        </div>
+        <div v-if="exampleConfig.id!==undefined" class="iOtherText">
+          E-ID {{exampleConfig.id}}
+        </div>
+        <div v-if="exampleConfig.id===undefined" class="iOtherText">
+          等待选中
+        </div>
       </div>
     </div>
   </div>
@@ -70,6 +72,7 @@ export default {
       dragStatus:false,
       dragStartPt:{x:null,y:null},
       dragOffset:{x:null,y:null},
+      dragArea:{maxX:null,maxY:null,minX:null,minY:null},
       nailStatus:false,
       translucent:false,
     }
@@ -115,18 +118,28 @@ export default {
     dragStart(){
       this.$refs.smallSlider.addEventListener('mousedown',(ev)=>{
         let rect=this.$refs.LayerDetailsPanel.getClientRects();
+        let windowWidth=window.innerWidth;
+        let windowHeight=window.innerHeight;
         this.dragStartPt.x=ev.x;
         this.dragStartPt.y=ev.y;
         this.dragOffset.x=rect[0].x-ev.x;
         this.dragOffset.y=rect[0].y-ev.y;
+        this.dragArea.minX=ev.x-rect[0].left;
+        this.dragArea.maxX=windowWidth-(rect[0].right-ev.x);
+        this.dragArea.minY=ev.y-rect[0].y;
+        this.dragArea.maxY=windowHeight-15;
         this.dragStatus=true;
       });
     },
     dragIng(){
       document.addEventListener('mousemove',(ev)=>{
         if(this.dragStatus){
-          this.$refs.LayerDetailsPanel.style.left=(ev.x+this.dragOffset.x)+'px';
-          this.$refs.LayerDetailsPanel.style.top=(ev.y+this.dragOffset.y)+'px';
+          if(ev.x>=this.dragArea.minX && ev.x<=this.dragArea.maxX){
+            this.$refs.LayerDetailsPanel.style.left=(ev.x+this.dragOffset.x)+'px';
+          }
+          if(ev.y>=this.dragArea.minY && ev.y<=this.dragArea.maxY){
+            this.$refs.LayerDetailsPanel.style.top=(ev.y+this.dragOffset.y)+'px';
+          }
         }
       });
     },
@@ -135,6 +148,7 @@ export default {
         this.dragStatus=false;
         this.dragStartPt={x:null,y:null};
         this.dragOffset={x:null,y:null};
+        this.dragArea={maxX:null,maxY:null,minX:null,minY:null};
       });
     },
     setSelectionOn(){//文字选择
@@ -229,7 +243,9 @@ export default {
   cursor: grabbing;
 }
 .boxSet{
+  user-select: none;
   position: absolute;
+  z-index: 550;
   top: 8px;
   width: calc(100% - 5px);
   height: 20px;
@@ -289,7 +305,7 @@ export default {
 }
 .detailsPanelLayer{
   position: fixed;
-  z-index: 550;
+  z-index: 585;
   top:370px;
   left: -350px;
   width: 300px;
@@ -301,7 +317,7 @@ export default {
   justify-content: flex-start;
   align-items: flex-start;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
   background: #ffffff;
   border-radius: 6px;
 }
@@ -309,12 +325,19 @@ export default {
   width: calc(100% - 10px);
   height: auto;
   background: #ffffff;
-  padding: 5px;
-  margin: 5px 0px;
+  padding: 0px 5px;
+}
+.items{
+  position: absolute;
+  width: calc(100% - 5px);
+  height: calc(100% - 30px);
+  top: 30px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .iTitle{
   width: 100%;
-  height: 30px;
+  height: 25px;
   font-size: 16px;
   display: flex;
   flex-direction: row;
