@@ -215,6 +215,9 @@ export default {
 </script>
 
 <style scoped>
+.selectionNone{
+  user-select: none;
+}
 .transparent{
   opacity: 0.4;
 }

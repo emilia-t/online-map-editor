@@ -26,6 +26,7 @@ export default {
       boxWidth:42,
       usersList:[],
       duration:800,
+      maxShow:10
     }
   },
   mounted() {
@@ -61,6 +62,13 @@ export default {
   },
   computed:{
     usersNumber(){
+      if(this.usersList.length>this.maxShow){
+        return this.maxShow;
+      }else {
+        return this.usersList.length;
+      }
+    },
+    usersCount(){
       return this.usersList.length;
     },
     isLogin(){
@@ -92,6 +100,9 @@ export default {
       handler(newValue){
         this.usersList=newValue;
         setTimeout(()=>{
+          if(this.usersCount>this.maxShow){
+            this.$refs.userBox.classList.add('scrollbar');
+          }
           this.$refs.userBox.animate([
               {width:0+'px'},{width:this.usersNumber*this.boxWidth+'px'}],
             {duration:0,iterations:1,fill:'forwards',easing:'ease'});
@@ -100,13 +111,24 @@ export default {
           this.panelStatus=true;
           },50)
       },deep:true
+    },
+    usersCount:{
+      handler(newValue){
+        if(newValue>this.maxShow){
+          this.$refs.userBox.classList.add('scrollbar');
+        }else {
+          this.$refs.userBox.classList.remove('scrollbar');
+        }
+      },deep:true
     }
   }
 }
 </script>
 
 <style scoped>
-
+.scrollbar{
+  overflow-x: auto!important;
+}
 .leftHandle{
   width: 16px;
   height: 45px;
@@ -161,13 +183,27 @@ export default {
 }
 .usersBox{
   min-width: 0px;
-  overflow: hidden;
+  max-width: 420px;
+  overflow-x: hidden;
+  overflow-y: hidden;
   height: 45px;
   display: flex;
   align-items: center;
   flex-direction: row;
   flex-wrap: nowrap;
   transition: 0.8s;
+}
+.usersBox::-webkit-scrollbar {
+  width: 100%;
+  height: 4px;
+}
+.usersBox::-webkit-scrollbar-thumb {
+  border-radius: 2px;
+  background: rgba(0,0,0,0.2);
+}
+.usersBox::-webkit-scrollbar-track {
+  border-radius: 0;
+  background: rgba(0,0,0,0.1);
 }
 .userHeadBox{
   width: auto;
