@@ -1,9 +1,9 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer" style="pointer-events: auto">
     <svg style="transform: translateZ(0)" class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
-      <svg-area v-for="area in MyAreaData" :key="area.id" :area-config="area"></svg-area><!--区域数据-->
-      <svg-line v-for="line in MyPolyLineData" :key="line.id" :poly-line-config="line"></svg-line><!--线段数据-->
-      <svg-point v-for="point in MyPointData" :key="point.id" :point-config="point"></svg-point><!--点位数据-->
+      <svg-area v-for="area in MyAreaData" :key="area.id" :selectConfig="selectElement(area.id)" :area-config="area"></svg-area><!--区域数据-->
+      <svg-line v-for="line in MyPolyLineData" :key="line.id" :selectConfig="selectElement(line.id)" :poly-line-config="line"></svg-line><!--线段数据-->
+      <svg-point v-for="point in MyPointData" :key="point.id" :selectConfig="selectElement(point.id)" :point-config="point"></svg-point><!--点位数据-->
       <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"></svg-point-p0><!--p0-->
       <svg-point-temp></svg-point-temp><!--临时点数据-->
       <svg-line-temp></svg-line-temp><!--临时线数据-->
@@ -63,6 +63,14 @@ export default {
       this.listenBrowserSize();//检测浏览器窗口大小变化
       this.getMouseUpSvg();//启用鼠标左键松开按下监听
       this.getMouseDownSvg();
+    },
+    selectElement(id){
+      let select=this.selectElements.find(num=>num.id===id);
+      if(this.selectElements.find(num=>num.id===id)===undefined){
+        return {}
+      }else {
+        return select;
+      }
     },
     preventDefault(mouseEvent){//阻止右键选中
       mouseEvent.preventDefault();
@@ -322,9 +330,11 @@ export default {
     },
     clearSelect(){//清除选中要素及选中要素数据
       this.$refs.elementData.addEventListener('click',(ev)=>{
-        let nodeNames=['polyline','circle'];//可以被选中的要素nodeName合集
+        let nodeNames=['polyline','circle','path'];//可以被选中的要素nodeName合集
         if(nodeNames.indexOf(ev.target.nodeName)===-1){
           this.$store.state.detailsPanelConfig.target=-1;
+          this.$store.state.mapConfig.operated.id=-1;
+          this.$store.state.mapConfig.operated.data=null;
           this.$store.state.detailsPanelConfig.data={point:{x:null,y:null}};
           this.$store.state.mapConfig.clearClick.x=ev.x;//更新点击空白处操作位置
           this.$store.state.mapConfig.clearClick.y=ev.y;
@@ -334,6 +344,9 @@ export default {
     }
   },
   computed:{
+    selectElements(){
+      return this.$store.state.serverData.socket.selectElements;
+    },
     cursor(){
       return this.$store.state.mapConfig.cursor;
     },

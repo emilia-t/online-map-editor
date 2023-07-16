@@ -10,6 +10,7 @@
       <circle v-if="index===dynamicPointsStr.length-1" :key="'endNodeEffect'" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"/>
       <circle v-show="nodeDisplay" :cx="str.a" :cy="str.b" :key="index+'node'" v-bind:data-node-order="index" :style="pathNodeStyle" @click="selectNode(index)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)"/><!--区域节点-->
       <circle v-show="nodeDisplay" v-if="index===dynamicPointsStr.length-1" :key="'endNode'" :cx="str.c" :style="pathNodeStyle" :cy="str.d" v-bind:data-node-order="index+1" @click="selectNode(index+1)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)"/>
+      <text :x="str.a+20" :y="str.b" v-show="selectConfig.id===myId" v-if="index===0" class="svgSelectText">{{selectConfig.user}}</text>
     </g>
   </g>
 </template>
@@ -33,7 +34,8 @@ export default {
       shiftAllStartMouse:{x:null,y:null},
       shiftAllStartPoint:{x:null,y:null},
       shiftAllMoveCache:[],
-      NodeDisplay:false
+      NodeDisplay:false,
+      rightLock:false,
     }
   },
   props:{
@@ -47,6 +49,12 @@ export default {
           point:{x:0.0000001,y:-0.0000001},
           color:'ec3232'
         }
+      }
+    },
+    "selectConfig":{
+      type:Object,
+      default:function (){
+        return {}
       }
     }
   },
@@ -120,6 +128,7 @@ export default {
       this.$root.sendSwitchInstruct('disableZoomAndMove',false);//关闭抑制details
     },
     rightClickOperation(mouseEvent){//右键选中
+      if(this.rightLock){return false;}
       mouseEvent.preventDefault();
       this.$store.state.elementOperationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
       this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
@@ -410,6 +419,12 @@ export default {
     //   },
     //   deep:true
     // },
+    selectConfig:{
+      handler(newValue){
+        let lock=newValue.id;
+        this.rightLock = lock !== undefined;
+      }
+    },
     clearClick:{
       handler(){
         this.shiftNodeOrder=null;
@@ -566,3 +581,10 @@ export default {
   }
 }
 </script>
+<style>
+.svgSelectText{
+  transform: translateX(-8px) translateY(-8px);
+  font-size: 14px;
+  fill: #ff5e5e;
+}
+</style>

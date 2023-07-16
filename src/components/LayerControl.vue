@@ -341,6 +341,22 @@ export default {
             if(this.buttonC){
               this.addAreaStart();
             }
+            break;
+          }
+          case 'Delete':{
+            if(this.$store.state.detailsPanelConfig.target!==-1){
+              this.$store.state.serverData.socket.broadcastDeleteElement(this.$store.state.detailsPanelConfig.target)
+            }
+            break;
+          }
+          case 'Enter':{
+            if(this.isAddArea){
+              this.addAreaEnd();
+            }
+            if(this.isAddLine){
+              this.addLineEnd();
+            }
+            break;
           }
         }
       });
@@ -402,7 +418,10 @@ export default {
     },
     addNewAreaEnd(){
       return this.$store.state.commits.addNewAreaEnd;
-    }
+    },
+    rightTarget(){
+      return this.$store.state.mapConfig.operated.id;
+    },
   },
   watch:{
     zoomIng:{
@@ -516,6 +535,20 @@ export default {
         }
       },
       deep:true
+    },
+    rightTarget:{
+      handler(newValue,oldValue){
+        if(newValue!==-1){
+          if(oldValue!==null && oldValue!==-1){
+            this.$store.state.serverData.socket.broadcastSelectEndElement(oldValue);
+          }
+          this.$store.state.serverData.socket.broadcastSelectIngElement(newValue);
+        }else {
+          if(oldValue!==null && oldValue!==-1) {
+            this.$store.state.serverData.socket.broadcastSelectEndElement(oldValue);
+          }
+        }
+      }
     }
   },
   destroyed(){

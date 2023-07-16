@@ -7,7 +7,7 @@
     <div class="InterfaceHead"><!--顶部-->
       <div class="HeadLeft"><!--标题-->
         <svg t="1681041457556" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="27339" width="200" height="200"><path d="M0 0" fill="" p-id="27340"></path><path d="M128 608h768v192H128v-192z m0-256h768v192H128v-192z m32-140.8h704l28.8 73.6H131.2L160 211.2zM131.2 160L64 284.8V864h896V284.8L896 160H131.2z" fill="" p-id="27341"></path><path d="M768 416h64v64h-64zM768 672h64v64h-64z" fill="" p-id="27342"></path></svg>
-        <span class="InterfaceHeadTitle">服务器列表</span>
+        <span class="InterfaceHeadTitle">在线地图</span>
       </div>
       <svg ref="addNewConnectButton" t="1681030518295" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="26321" width="200" height="200"><path d="M546.133333 479.662933h360.533334a32 32 0 1 1 0 64H546.133333v364.8a32 32 0 1 1-64 0v-364.8H117.333333a32 32 0 1 1 0-64H482.133333v-360.533333a32 32 0 0 1 64 0v360.533333z" fill="#333333" p-id="26322"></path></svg><!--创建新链接按钮-->
     </div>
@@ -16,6 +16,19 @@
       <banana-connection-box v-for="value in serverLocalConfig" :key="value.serverAddress" :account="value.account" :password="value.password" :default-x="value.defaultX" :default-y="value.defaultY" :img-time="value.imgTime" :max-height="value.maxHeight" :online-number="value.onlineNumber" :max-online-user="value.maxOnlineUser" :max-width="value.maxWidth" :server-address="value.serverAddress" :server-img="value.serverImg" :server-key="value.serverKey" :server-name="value.serverName" @ancBoxChange="handlerCnBox"></banana-connection-box>
     </div>
   </div>
+<!--  <div class="content">&lt;!&ndash;主内容&ndash;&gt;-->
+<!--    <div class="InterfaceHead">&lt;!&ndash;顶部&ndash;&gt;-->
+<!--      <div class="HeadLeft">&lt;!&ndash;标题&ndash;&gt;-->
+<!--        <svg t="1681041457556" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="27339" width="200" height="200"><path d="M0 0" fill="" p-id="27340"></path><path d="M128 608h768v192H128v-192z m0-256h768v192H128v-192z m32-140.8h704l28.8 73.6H131.2L160 211.2zM131.2 160L64 284.8V864h896V284.8L896 160H131.2z" fill="" p-id="27341"></path><path d="M768 416h64v64h-64zM768 672h64v64h-64z" fill="" p-id="27342"></path></svg>-->
+<!--        <span class="InterfaceHeadTitle">本地地图</span>-->
+<!--      </div>-->
+<!--      <svg ref="addNewLocalMap" t="1681030518295" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="26321" width="200" height="200"><path d="M546.133333 479.662933h360.533334a32 32 0 1 1 0 64H546.133333v364.8a32 32 0 1 1-64 0v-364.8H117.333333a32 32 0 1 1 0-64H482.133333v-360.533333a32 32 0 0 1 64 0v360.533333z" fill="#333333" p-id="26322"></path></svg>&lt;!&ndash;创建新链接按钮&ndash;&gt;-->
+<!--    </div>-->
+<!--    <hr/>-->
+<!--    <div class="connectionInterfaceBox">&lt;!&ndash;连接盒子&ndash;&gt;-->
+<!--      <banana-local-map-box v-for="value in localMapConfig" :key="value.serverAddress" :config="value"></banana-local-map-box>-->
+<!--    </div>-->
+<!--  </div>-->
   <div class="addNewConnectBox" ref="addNewConnectBox" v-show="AncShow" @contextmenu="stopDefaultEvent($event)"><!--添加连接的面板-->
     <div class="addNewConnectBoard" ref="addNewConnectBoard"><!--中间的实际面板-->
       <div class="AncTitle"><!--标题-->
@@ -67,23 +80,51 @@
       </div>
     </div>
   </div>
+  <div class="addNewConnectBox" ref="newLocalMap" v-show="lmShow" @contextmenu="stopDefaultEvent($event)">
+    <div class="newLocalMapBoard">
+      <div>
+        地图类型：
+        <div>现实的</div>
+        <div>虚拟的</div>
+      </div>
+      <div>
+        中心点经度
+        <input type="text"/>
+      </div>
+      <div>
+        中心点纬度
+        <input type="text"/>
+      </div>
+      <div>
+        中心点X值
+        <input type="text"/>
+      </div>
+      <div>
+        中心点Y值
+        <input type="text"/>
+      </div>
+    </div>
+  </div>
 </div>
 </template>
 
 <script>
-import BananaConnectionBox from "./BananaConnectionBox"
+import BananaConnectionBox from "./BananaConnectionBox";
+import BananaLocalMapBox from "./BananaLocalMapBox";
 export default {
   name: "LayerConnectionInterface",
   data(){
     return {
       AncShow:false,
+      lmShow:false,
       PasswordHide:true,
       isNewAddServer:true,
-      serverLocalConfig:[]
+      serverLocalConfig:null,
+      localMapConfig:null
     }
   },
   components:{
-    BananaConnectionBox
+    BananaConnectionBox,BananaLocalMapBox
   },
   mounted() {
     this.startSetting();
@@ -96,10 +137,20 @@ export default {
       this.stopBubble();
       this.getLocalServerConfig();//获取本地服务器配置
       this.watchStorage();//监听本地配置变动
+      this.getLocalMapConfig()
     },
     handlerCnBox(message){//接收来自Box的消息
       if(message=='reload'){
         this.getLocalServerConfig();
+      }
+    },
+    getLocalMapConfig(){
+      let localConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','localMaps'));
+      if(!localConfig){
+        this.$root.general_script.handleLocalStorage('set','localMaps','{}')
+        this.localMapConfig={};
+      }else {
+        this.localMapConfig=localConfig;
       }
     },
     getLocalServerConfig(){//获取本地服务器配置
@@ -322,6 +373,10 @@ export default {
 </script>
 
 <style scoped>
+.newLocalMapBoard{
+  width: 400px;
+  height: auto;
+}
 .Tips{
   position: absolute;
   bottom:45px;
@@ -480,6 +535,8 @@ input:focus{
   user-select: none;
   width: calc(100% - 100px - 2px - 16px);
   height: calc(100% - 8px - 16px - 2px);
+  overflow-x: hidden;
+  overflow-y: auto;
   margin: 0px 8px 8px 108px;
   border-radius: 4px;
   border: 1px solid rgb(220,220,220);

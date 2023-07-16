@@ -4,12 +4,14 @@
       <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="22" stroke="#ffffff" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
       <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="1" stroke="#ffffff70" stroke-width="45" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
+      <text class="svgSelectText" v-show="selectConfig.id===myId" :x="dynamicPointsX-13" :y="dynamicPointsY-13">{{selectConfig.user}}</text>
     </g>
     <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" v-if="this.pointConfig.custom.icon!==null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
       <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="22" stroke="#ffffff" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
       <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="1" stroke="#ffffff70" stroke-width="45" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
       <circle r="13px" :cx="dynamicPointsX" :cy="dynamicPointsY" :fill="this.pointConfig.custom.color"/>
       <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26" height="26" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
+      <text class="svgSelectText" v-show="selectConfig.id===myId" :x="dynamicPointsX-13" :y="dynamicPointsY-13">{{selectConfig.user}}</text>
     </g>
   </g>
 </template>
@@ -44,6 +46,12 @@ export default {
         }
       },
       required:true
+    },
+    "selectConfig":{
+      type:Object,
+      default:function (){
+        return {}
+      }
     }
   },
   mounted() {
@@ -174,6 +182,7 @@ export default {
       }
     },
     rightClickOperation(mouseEvent){
+      if(this.rightLock){return false;}
       mouseEvent.preventDefault();
       this.$store.state.elementOperationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
       this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
@@ -267,6 +276,12 @@ export default {
     //   },
     //   deep:true
     // },
+    selectConfig:{
+      handler(newValue){
+        let lock=newValue.id;
+        this.rightLock = lock !== undefined;
+      }
+    },
     reinitializeElement:{
       handler(newValue){
         if(newValue!==0){

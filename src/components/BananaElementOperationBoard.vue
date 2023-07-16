@@ -17,7 +17,7 @@
 <!--        <img title="展开更多" class="ButtonImg" draggable="false" alt="按钮" src="../../static/more.png"/>-->
 <!--      </div>-->
     </div>
-    <div v-show="editPanelShow" class="boxOut" ref="BananaAttributeBoard"><!--编辑面板-->
+    <div v-show="editPanelShow" class="boxOut" ref="BananaAttributeBoard" :style="boxOutStyle"><!--编辑面板-->
       <div class="BananaAttributeBoard">
         <div class="headName mouseType1" contenteditable="false">编辑元素</div>
         <div class="boxSet"><!--面板本体设置，面板透明度、关闭按钮-->
@@ -271,6 +271,28 @@ export default {
     }
   },
   computed:{
+    boxOutStyle(){
+      let posX=this.$store.state.elementOperationBoardConfig.posX;
+      let posY=this.$store.state.elementOperationBoardConfig.posY;
+      let top=0;
+      let left=35;
+      if(posX+50+315>=this.maxWidth){
+        left=-315;
+      }
+      if(posY+430>=this.maxHeight){
+        top=-260;
+      }
+      return{
+        top: top+'px',
+        left: left+'px'
+      };
+    },
+    maxWidth(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    maxHeight(){
+      return this.$store.state.mapConfig.browser.height;
+    },
     operatedColor(){
       if(this.operated.color){
         return 'background:#'+this.operated.color;
@@ -279,9 +301,17 @@ export default {
       }
     },
     style(){
-      let x=this.$store.state.elementOperationBoardConfig.posX+14;
-      let y=this.$store.state.elementOperationBoardConfig.posY+5;
-      return 'left:'+x+'px;top:'+y+'px'
+      let posX=this.$store.state.elementOperationBoardConfig.posX;
+      let posY=this.$store.state.elementOperationBoardConfig.posY;
+      if(posX+50>=this.maxWidth){
+        posX=this.maxWidth-65;
+      }
+      if(posY+170>=this.maxHeight){
+        posY=this.maxHeight-170;
+      }
+      let x=posX+14;
+      let y=posY+5;
+      return 'left:'+x+'px;top:'+y+'px';
     },
     operated() {
       if(this.$store.state.mapConfig.operated.data===null){
@@ -300,7 +330,7 @@ export default {
           "father_node":null,
           "details":[{"key":"名称","value":""}],
           "custom":null
-        }
+        };
       }else {
         return this.$store.state.mapConfig.operated.data;
       }
@@ -409,7 +439,6 @@ export default {
 .mouseType1{
   cursor: default;
 }
-/**/
 .boxSet{
   position: absolute;
   z-index: 550;
@@ -471,8 +500,6 @@ export default {
 .boxOut{
   position: fixed;
   z-index: 550;
-  top: 0px;
-  left: 40px;
   width: 310px;
   height: 420px;
   box-shadow: #b1b1b1 2px 2px 10px;

@@ -357,6 +357,7 @@ export default new Vuex.Store({
           this.socket=undefined;//会话
           this.messages=[];
           this.presence=[];
+          this.selectElements=[];
           this.publickey='';
           this.userData=null;
           this.mapData={points:[],lines:[],areas:[]};
@@ -407,7 +408,13 @@ export default new Vuex.Store({
             },
             broadcast_updateElementNode(data){//以广播形式更新元素节点
               return {type:'broadcast',class:'updateElementNode',data}
-            }
+            },
+            broadcast_selectIngElement(data){
+              return {type:'broadcast',class:'selectIngElement',data}
+            },
+            broadcast_selectEndElement(data){
+              return {type:'broadcast',class:'selectEndElement',data}
+            },
           };
           this.QIR={//检测间
             /**检测是否为对象类型的数据,是则返回t
@@ -516,6 +523,12 @@ export default new Vuex.Store({
           this.mapData.points=[];//3.清除地图数据
           this.mapData.lines=[];
           this.mapData.areas=[];
+        }
+        broadcastSelectIngElement(id){
+          this.send(this.Instruct.broadcast_selectIngElement(id));
+        }
+        broadcastSelectEndElement(id){
+          this.send(this.Instruct.broadcast_selectEndElement(id));
         }
         broadcastUpdateElementNode(data){//广播更新元素节点
           try{
@@ -1187,6 +1200,24 @@ export default new Vuex.Store({
                   }catch (e) {
 
                   }
+                  break;
+                }
+                case 'selectIngElement':{
+                  let obj={
+                    id:jsonData.data,
+                    user:jsonData.conveyor
+                  };
+                  this.selectElements.push(obj);
+                  break;
+                }
+                case 'selectEndElement':{
+                  for(let i=0;i<this.selectElements.length;i++){
+                    if(this.selectElements[i].id===jsonData.data){
+                      this.selectElements.splice(i,1,0);
+                      break;
+                    }
+                  }
+                  break;
                 }
                 case 'logIn':{
                   for(let i=0;i<this.presence.length;i++){//判断是否重复
