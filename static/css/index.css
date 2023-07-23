@@ -1,0 +1,5 @@
+@keyframes graduallyEmergingFirst{from{opacity:0;}to{opacity:1;}}
+@keyframes graduallyEmergingAfter{from{opacity:0;}to{opacity:1;}}
+.svgSelectText{transform:translateX(-9px) translateY(-9px);font-size:14px;fill:#ff5e5e;}
+.graduallyEmergingFirst{animation:graduallyEmergingFirst 1s forwards;}
+.graduallyEmergingAfter{animation:graduallyEmergingAfter 1s forwards;}

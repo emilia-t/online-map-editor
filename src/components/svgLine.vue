@@ -1,15 +1,15 @@
 <template>
-  <g :elementId="polyLineConfig.id" style="pointer-events: all">
+  <g :elementId="polyLineConfig.id" style="pointer-events: all" ref="svgElement">
     <g v-for="(str,index) in dynamicPointsStr">
-      <polyline @mouseenter="showNode()" @mouseleave="hideNode()"  :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" v-show="selectId===myId"/><!--路径选中边框-->
-      <path :id="'line'+polyLineConfig.id+'S'+index" @mouseenter="showNode()" @mouseleave="hideNode()" :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d+' Z'" :key="index+'main'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--路径主体-->
-      <circle :cx="str.a" :cy="str.b" :key="index+'effect'" :style="nodeEffectStyle(index)"/><!--路径选中效果-->
-      <circle v-if="index===dynamicPointsStr.length-1" :key="'endNodeEffect'" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"/>
-      <circle v-show="nodeDisplay" :cx="str.a" :cy="str.b" :key="index+'node'" v-bind:data-node-order="index" :style="pathNodeStyle" @click="selectNode(index)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)"/>路径节点
-      <circle v-show="nodeDisplay" v-if="index===dynamicPointsStr.length-1" :key="'endNode'" :cx="str.c" :style="pathNodeStyle" :cy="str.d" v-bind:data-node-order="index+1" @click="selectNode(index+1)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)"/>
-      <text v-show="selectConfig.id===myId" v-if="index===0" class="svgSelectText">
-        <textPath v-bind:xlink:href="'#line'+polyLineConfig.id+'S'+index">{{selectConfig.user}}</textPath>
-      </text>
+      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" @mouseenter="showNode()" @mouseleave="hideNode()" v-show="selectId===myId"/><!--选中路径-->
+      <path :id="'element'+polyLineConfig.id+'s'+index" :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d+' Z'" :key="index+'main'" :style="pathLineStyle" @mouseenter="showNode()" @mouseleave="hideNode()" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--路径主体-->
+      <circle :cx="str.a" :cy="str.b" :key="index+'fillNode'" :style="fillNodeStyle"/><!--填充节点-->
+      <circle :cx="str.c" :cy="str.d" :key="'endFillNode'" :style="fillNodeStyle" v-if="index===dynamicPointsStr.length-1"/>
+      <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" v-show="nodeDisplay"/><!--节点-->
+      <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
+      <circle :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :key="index+'virtualNode'" @mousedown="virtualNodeDown(index,$event)" @mouseup="virtualNodeUp($event)" :style="virtualNodeStyle(index)" v-show="selectId===myId"/><!--虚拟节点-->
+      <text v-if="index===0" v-show="selectConfig.id===myId" class="svgSelectText">
+      <textPath v-bind:xlink:href="'#element'+polyLineConfig.id+'s'+index">{{selectConfig.user}}</textPath></text>
     </g>
   </g>
 </template>
@@ -25,15 +25,18 @@ export default {
       highlightShow:false,
       myId:null,
       selectId:-1,
+      shiftStatus:false,
       shiftNodeOrder:null,
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
-      shiftStatus:false,
       shiftAllStatus:false,
       shiftAllStartMouse:{x:null,y:null},
       shiftAllStartPoint:{x:null,y:null},
       shiftAllMoveCache:[],
-      NodeDisplay:false
+      NodeDisplay:false,
+      virtualPoint:[],
+      shiftVirtualStatus:false,
+      shiftVirtualNodeOrder:null,
     }
   },
   props:{
@@ -68,6 +71,55 @@ export default {
       this.initializePosition();//不要提前
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
+    },
+    virtualNodeDown(index,event){//更改虚拟节点样式
+      this.shiftVirtualStatus=true;
+      this.shiftVirtualNodeOrder=index;
+      this.$root.sendSwitchInstruct('disableZoomAndMove',true);
+    },
+    virtualNodeUp(event){//松开即创建节点
+      this.shiftVirtualStatus=false;
+      this.shiftVirtualNodeOrder=null;
+      this.$root.sendSwitchInstruct('disableZoomAndMove',false);
+    },
+    getVirtualCenterX(pt1x,pt2x){//计算并返回中心的虚拟点
+      return (pt1x+pt2x)/2;
+    },
+    getVirtualCenterY(pt1y,pt2y){
+      return (pt1y+pt2y)/2;
+    },
+    virtualNodeStyle(index){
+      if(this.shiftVirtualNodeOrder===index){
+        if(this.shiftVirtualStatus && this.selectId===this.myId){
+          return {
+            cx:this.mouse.x,
+            cy:this.mouse.y,
+            r:parseInt(this.polyLineConfig.width)+2+'px',
+            strokeWidth:1,
+            stroke:'#000000',
+            pointerEvents:'fill',
+            fill:'#ffffff'
+          }
+        }else {
+          return {
+            r:parseInt(this.polyLineConfig.width)+2+'px',
+            strokeWidth:1,
+            stroke:'#000000',
+            pointerEvents:'fill',
+            fill:'#ffffff'
+          }
+        }
+      }else {
+        return {
+          r:parseInt(this.polyLineConfig.width)+1+'px',
+          strokeWidth:1,
+          stroke:'#8e8b86',
+          pointerEvents:'fill',
+          fillOpacity:0.8,
+          fill:'#ffffff'
+        }
+      }
+
     },
     showNode(){
       this.NodeDisplay=true;
@@ -178,8 +230,7 @@ export default {
                 pointsPos[i].x=pointsPos[i].x+(pointsPos[i].x*this.$store.state.mapConfig.zoomAdd);
                 pointsPos[i].y=pointsPos[i].y+(pointsPos[i].y*this.$store.state.mapConfig.zoomAdd);
               }
-              //添加p0
-              this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;
+              this.polyLineConfig.points[i].x=pointsPos[i].x+p0Pos.x;//添加p0
               this.polyLineConfig.points[i].y=pointsPos[i].y+p0Pos.y;
               continue;
             }
@@ -242,13 +293,23 @@ export default {
       })
     },
     nodeEffectStyle(order){
-      return {
-        r:parseInt(this.polyLineConfig.width)+4+'px',
-        strokeWidth:1,
-        pointerEvents:'fill',
-        fillOpacity:0.9,
-        fill:this.shiftNodeOrder===order?'#ff9191':'#bbb',
-        display:this.shiftNodeOrder===order?'inherit':'none'
+      if(this.shiftNodeOrder===order){
+        return {
+          r:parseInt(this.polyLineConfig.width)+3+'px',
+          strokeWidth:1,
+          stroke:'#010101',
+          pointerEvents:'fill',
+          fill:'#ffffff',
+          fillOpacity:0.95
+        }
+      }else {
+        return {
+          r:parseInt(this.polyLineConfig.width)+2+'px',
+          strokeWidth:1,
+          stroke:'#000000',
+          pointerEvents:'fill',
+          fill:'#ffffff'
+        }
       }
     },
   },
@@ -277,13 +338,13 @@ export default {
     clearClick(){
       return this.$store.state.mapConfig.clearClick;
     },
-    pathNodeStyle(){
+    fillNodeStyle(){
       return {
-        r:parseInt(this.polyLineConfig.width)+1+'px',
+        r:parseInt(this.polyLineConfig.width/2)+'px',
         strokeWidth:1,
         pointerEvents:'fill',
         fillOpacity:1,
-        fill:'#bbb'
+        fill:'#'+this.polyLineConfig.color
       }
     },
     svgMouseUp(){
@@ -292,14 +353,13 @@ export default {
     pathLineStyle(){
       return {
         stroke:'#'+this.polyLineConfig.color,
-        strokeWidth:parseInt(this.polyLineConfig.width),
-        strokeLinecap:'round'
+        strokeWidth:parseInt(this.polyLineConfig.width)
       }
     },
     highlightStyle(){
       return {
         strokeWidth:parseInt(this.polyLineConfig.width)+5,
-        stroke:'#9a9a9a',
+        stroke:'#'+this.polyLineConfig.color,
         strokeLinecap:'round'
       }
     },
@@ -485,13 +545,36 @@ export default {
             }
           }
         }
+        if(this.shiftVirtualStatus){
+          if(this.polyLineConfig.points.length===this.dataSourcePoints.length){
+            this.polyLineConfig.points.splice(this.shiftVirtualNodeOrder+1,0,{x:newValue.x,y:-newValue.y});
+          }else {
+            this.polyLineConfig.points.splice(this.shiftVirtualNodeOrder+1,1,{x:newValue.x,y:-newValue.y});
+          }
+        }
       }
     },
     svgMouseUp:{
       handler(newValue){
+        if(this.shiftVirtualStatus){
+          let points=JSON.parse(JSON.stringify(this.dataSourcePoints));
+          let newPoint=this.$store.state.baseMapConfig.baseMap.viewPositionToLatLng(newValue.x,newValue.y);
+          points.splice(this.shiftVirtualNodeOrder+1,0,{x:newPoint.lng,y:newPoint.lat});
+          let data={id:this.myId,points,type:'line'};
+          this.$store.state.serverData.socket.broadcastUpdateElementNode(data);
+          this.shiftVirtualStatus=false;
+          this.shiftVirtualNodeOrder=null;
+          if(this.$refs.svgElement.classList.contains('graduallyEmergingFirst')){
+            this.$refs.svgElement.classList.remove('graduallyEmergingFirst');
+            this.$refs.svgElement.classList.add('graduallyEmergingAfter');
+          }else {
+            this.$refs.svgElement.classList.remove('graduallyEmergingAfter');
+            this.$refs.svgElement.classList.add('graduallyEmergingFirst');
+          }
+        }
         this.shiftStatus=false;//节点移动
-        let nowOrder=this.shiftNodeOrder;
-        if(nowOrder!==null){
+        if(this.shiftNodeOrder!==null){
+          let nowOrder=this.shiftNodeOrder;
           if(this.shiftStartPoint.x!==null && this.shiftStartPoint.y!==null){
             if(this.shiftStartPoint.x!==this.polyLineConfig.points[nowOrder].x || this.shiftStartPoint.y!==this.polyLineConfig.points[nowOrder].y){
               if(this.targetId===this.myId){
@@ -520,7 +603,7 @@ export default {
             }
           }
         }
-        if(this.shiftAllStatus===true){//整体移动
+        if(this.shiftAllStatus){//整体移动
           let newAccPos=this.$root.computeMouseActualPos(newValue);//1.计算新的位置
           if(newAccPos!==false && this.shiftAllStartPoint!==false){
             let axOffset=newAccPos.x-this.shiftAllStartPoint.x;//计算实际偏移量

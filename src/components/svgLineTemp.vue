@@ -1,8 +1,8 @@
 <template>
   <g :elementId="tempLine.id">
-    <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" v-for="str in dynamicPointsStr" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+tempLine.color,strokeWidth:tempLine.width}"/>
-    <polyline :points="previewLinePoints" v-if="previewLineShow" style="fill: rgba(10,10,10,0.2);stroke-width: 3px;stroke: rgba(10,10,10,0.2)"/><!--预览轨迹-->
-    <circle v-show="!doNeedMoveMap" v-for="point in tempLine.showPos"  :cx="circleCX(point.x)" :cy="circleCY(point.y)" r="4px" stroke-width="1" style="pointer-events: fill;fill-opacity: 0.8;fill: #bbb"/>
+    <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :style="{fill:'rgba(255,255,255,0)',stroke:'#'+tempLine.color,strokeWidth:tempLine.width}" v-for="str in dynamicPointsStr"/>
+    <polyline :points="previewLinePoints" style="fill:rgba(10,10,10,0.2);stroke-width:3px;stroke:rgba(10,10,10,0.2)" v-if="previewLineShow"/><!--预览轨迹-->
+    <circle :cx="circleCX(point.x)" :cy="circleCY(point.y)" r="4px" style="stroke-width:1;stroke:#010101;pointer-events:fill;fill-opacity:1;fill:#ffffff" v-show="!doNeedMoveMap" v-for="point in tempLine.showPos"/>
   </g>
 </template>
 <script>

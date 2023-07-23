@@ -10,6 +10,8 @@ Vue.config.productionTip = false;//允许生产环境输入错误信息
 new Vue({
   el:'#app',
   data(){return{
+    lastTime:0,
+    fps:0,
     CONFIG,
     general_script,
     commitsConfig:{
@@ -32,6 +34,12 @@ new Vue({
   store,
   components:{App},
   template:'<app></app>',
+  created(){
+    if(this.$store.state.userSettingConfig.openFpsMonitor){
+      setTimeout(()=>this.monitorFPS(),1000);
+      setInterval(()=>this.$store.state.monitorData.fps=this.fps,1000);
+    }
+  },
   methods:{
     filter(name){
       let list=this.commitsConfig.disabledList;
@@ -215,6 +223,14 @@ new Vue({
         }
       }
     },
+    monitorFPS() {
+      let now = performance.now();
+      if (this.lastTime !== 0) {
+        this.fps=Math.floor(1000 / (now - this.lastTime));
+      }
+      this.lastTime = now;
+      requestAnimationFrame(this.monitorFPS);
+    }
   },
   computed:{
     unit1X(){

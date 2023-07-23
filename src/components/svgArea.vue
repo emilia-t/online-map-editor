@@ -1,16 +1,16 @@
 <template>
   <g :elementId="areaConfig.id">
-    <polyline @mouseenter="showNode()" @mouseleave="hideNode()" :points="dynamicPointsString" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--区域主体-->
+    <polyline :points="dynamicPointsString" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)" @mouseenter="showNode()" @mouseleave="hideNode()"/><!--区域主体-->
     <g v-for="(str,index) in dynamicPointsStr">
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'main'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--区域外边框-->
-      <polyline v-if="index===dynamicPointsStr.length-1" :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endMain'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/>
+      <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endMain'" :style="pathLineStyle" v-if="index===dynamicPointsStr.length-1" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/>
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" v-show="selectId===myId"/><!--区域选中边框-->
-      <polyline v-if="index===dynamicPointsStr.length-1" :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endBorder'" :style="highlightStyle" v-show="selectId===myId"/>
+      <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endBorder'" :style="highlightStyle" v-if="index===dynamicPointsStr.length-1" v-show="selectId===myId"/>
       <circle :cx="str.a" :cy="str.b" :key="index+'effect'" :style="nodeEffectStyle(index)"/><!--区域节点选中效果-->
-      <circle v-if="index===dynamicPointsStr.length-1" :key="'endNodeEffect'" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"/>
-      <circle v-show="nodeDisplay" :cx="str.a" :cy="str.b" :key="index+'node'" v-bind:data-node-order="index" :style="pathNodeStyle" @click="selectNode(index)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)"/><!--区域节点-->
-      <circle v-show="nodeDisplay" v-if="index===dynamicPointsStr.length-1" :key="'endNode'" :cx="str.c" :style="pathNodeStyle" :cy="str.d" v-bind:data-node-order="index+1" @click="selectNode(index+1)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)"/>
-      <text :x="str.a+20" :y="str.b" v-show="selectConfig.id===myId" v-if="index===0" class="svgSelectText">{{selectConfig.user}}</text>
+      <circle :cx="str.c" :cy="str.d" :key="'endNodeEffect'" :style="nodeEffectStyle(index+1)" v-if="index===dynamicPointsStr.length-1"/>
+      <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="pathNodeStyle" v-bind:data-node-order="index" @click="selectNode(index)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" v-show="nodeDisplay"/><!--区域节点-->
+      <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="pathNodeStyle" v-bind:data-node-order="index+1" @click="selectNode(index+1)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
+      <text :x="str.a+20" :y="str.b" v-if="index===0" v-show="selectConfig.id===myId" class="svgSelectText">{{selectConfig.user}}</text>
     </g>
   </g>
 </template>
@@ -581,10 +581,3 @@ export default {
   }
 }
 </script>
-<style>
-.svgSelectText{
-  transform: translateX(-8px) translateY(-8px);
-  font-size: 14px;
-  fill: #ff5e5e;
-}
-</style>

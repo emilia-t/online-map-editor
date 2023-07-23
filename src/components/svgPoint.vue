@@ -1,17 +1,17 @@
 <template>
-  <g ref="svgElement" class="" :elementId="this.myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)">
-    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" v-if="this.pointConfig.custom.icon===null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
-      <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="22" stroke="#ffffff" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
-      <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="1" stroke="#ffffff70" stroke-width="45" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
+  <g :elementId="this.myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)" ref="svgElement">
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom.icon===null">
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
-      <text class="svgSelectText" v-show="selectConfig.id===myId" :x="dynamicPointsX-13" :y="dynamicPointsY-13">{{selectConfig.user}}</text>
+      <text :x="dynamicPointsX-13" :y="dynamicPointsY-13" v-show="selectConfig.id===myId" class="svgSelectText">{{selectConfig.user}}</text>
     </g>
-    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" v-if="this.pointConfig.custom.icon!==null" @contextmenu="rightClickOperation($event)" @click="showDetails()">
-      <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="22" stroke="#ffffff" stroke-width="2" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
-      <circle v-show="selectId===myId || mouseover" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="1" stroke="#ffffff70" stroke-width="45" :style="'pointer-events:fill;fill-opacity:0.8;fill:none'"/>
-      <circle r="13px" :cx="dynamicPointsX" :cy="dynamicPointsY" :fill="this.pointConfig.custom.color"/>
-      <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26" height="26" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
-      <text class="svgSelectText" v-show="selectConfig.id===myId" :x="dynamicPointsX-13" :y="dynamicPointsY-13">{{selectConfig.user}}</text>
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom.icon!==null">
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="13px" :fill="this.pointConfig.custom.color"/>
+      <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26px" height="26px" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
+      <text :x="dynamicPointsX-13" :y="dynamicPointsY-13" v-show="selectConfig.id===myId" class="svgSelectText">{{selectConfig.user}}</text>
     </g>
   </g>
 </template>
@@ -343,12 +343,12 @@ export default {
               uObj.points.push(newPos);
               uObj.type='point';
               this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);
-              if(this.$refs.svgElement.classList.contains('animationFirst')){
-                this.$refs.svgElement.classList.remove('animationFirst');
-                this.$refs.svgElement.classList.add('animationAfter');
+              if(this.$refs.svgElement.classList.contains('graduallyEmergingFirst')){
+                this.$refs.svgElement.classList.remove('graduallyEmergingFirst');
+                this.$refs.svgElement.classList.add('graduallyEmergingAfter');
               }else {
-                this.$refs.svgElement.classList.remove('animationAfter');
-                this.$refs.svgElement.classList.add('animationFirst');
+                this.$refs.svgElement.classList.remove('graduallyEmergingAfter');
+                this.$refs.svgElement.classList.add('graduallyEmergingFirst');
               }
               this.shiftStartPoint.x=null;//处理完毕后清空
               this.shiftStartPoint.y=null;
@@ -361,8 +361,3 @@ export default {
   }
 }
 </script>
-
-<style>
-.animationFirst{animation:graduallyEmergingFirst 2s forwards;}
-.animationAfter{animation:graduallyEmergingAfter 2s forwards;}
-</style>

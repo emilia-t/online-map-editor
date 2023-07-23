@@ -696,7 +696,6 @@ export default new Vuex.Store({
             basicStructure.width=data.width || basicStructure.width;
             basicStructure.details=data.details || basicStructure.details;
             basicStructure.custom=data.custom || basicStructure.custom;
-            console.log(basicStructure);
             this.send(this.Instruct.broadcast_point(basicStructure));
           }catch (e) {}
         }
@@ -1474,6 +1473,7 @@ export default new Vuex.Store({
       UpdateServerStatusTime:60000,
       startUpdateServerStatus:true,//2.是否启用启动时自动搜索服务器状态
       elementPanelLayerShow:false,//是否开启元素面板
+      openFpsMonitor:false,//fps监控开启
     },
     serverData:{//服务器相关数据
       socket:undefined,//1.服务器连接会话
@@ -1491,6 +1491,9 @@ export default new Vuex.Store({
         'user_qq': '1077365277',
         'head_color': 'ffffff'
       }
+    },
+    monitorData:{
+      fps:0
     },
   },
   getters: {

@@ -61,7 +61,7 @@ export default {
     },
     moveIng(){//移动中
       document.addEventListener('mousemove',(e)=>{
-        if(this.moveStatus){
+        if(this.moveStatus && this.doNeedMoveMap){
           let moveX=this.A1Cache.x-this.A1.x;
           let moveY=this.A1Cache.y-this.A1.y;
           this.baseMap.view.offsetX=this.offsetCache.x+moveX;
@@ -100,6 +100,9 @@ export default {
     },
     browserSize(){
       return this.$store.state.mapConfig.browser;
+    },
+    doNeedMoveMap(){
+      return this.$store.state.cameraConfig.doNeedMoveMap;
     }
   },
   watch:{
@@ -118,7 +121,6 @@ export default {
           return;
         }
         this.baseMap.updateViewport(this.wheelMouse.x,this.wheelMouse.y, oldZ, this.baseMap.options.zoom);
-        console.log(this.baseMap.options.zoom);
         this.baseMap.render();
       }
     },

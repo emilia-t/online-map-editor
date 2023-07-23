@@ -1,6 +1,6 @@
 <template>
   <div class="consoleLayer" ref="consoleLayer" v-if="view">
-    <h4 class="consoleTitle">F8 调试面板</h4>
+    <h4 class="consoleTitle">F8 监控面板</h4>
     <div ref="consoleMap" class="consoleMap">
       浏览器尺寸：{{$store.state.mapConfig.browser.width}} x {{$store.state.mapConfig.browser.height}}
       <br>
@@ -43,6 +43,8 @@
       启用额外的底图：{{$store.state.baseMapConfig.enableBaseMap}}
       <br>
       底图类型：{{$store.state.baseMapConfig.baseMapType}}
+      <br>
+      FPS：{{$store.state.monitorData.fps}}
     </div>
   </div>
 </template>

@@ -330,6 +330,13 @@ export default {
     },
     clearSelect(){//清除选中要素及选中要素数据
       this.$refs.elementData.addEventListener('click',(ev)=>{
+        let downX=this.$store.state.mapConfig.svgMouseDown.x;
+        let upX=this.$store.state.mapConfig.svgMouseUp.x;
+        let downY=this.$store.state.mapConfig.svgMouseDown.y;
+        let upY=this.$store.state.mapConfig.svgMouseUp.y;
+        if(downX!==upX || downY!==upY){
+          return false;
+        }
         let nodeNames=['polyline','circle','path'];//可以被选中的要素nodeName合集
         if(nodeNames.indexOf(ev.target.nodeName)===-1){
           this.$store.state.detailsPanelConfig.target=-1;
@@ -338,6 +345,7 @@ export default {
           this.$store.state.detailsPanelConfig.data={point:{x:null,y:null}};
           this.$store.state.mapConfig.clearClick.x=ev.x;//更新点击空白处操作位置
           this.$store.state.mapConfig.clearClick.y=ev.y;
+          console.log("so");
         }
         this.$store.state.elementOperationBoardConfig.display=false;//关闭element operation board
       })
