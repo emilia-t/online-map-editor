@@ -1,15 +1,14 @@
 <template>
-  <g :elementId="areaConfig.id">
+  <g :elementId="areaConfig.id" ref="svgElement">
     <polyline :points="dynamicPointsString" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)" @mouseenter="showNode()" @mouseleave="hideNode()"/><!--区域主体-->
     <g v-for="(str,index) in dynamicPointsStr">
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'main'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--区域外边框-->
       <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endMain'" :style="pathLineStyle" v-if="index===dynamicPointsStr.length-1" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/>
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" v-show="selectId===myId"/><!--区域选中边框-->
       <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endBorder'" :style="highlightStyle" v-if="index===dynamicPointsStr.length-1" v-show="selectId===myId"/>
-      <circle :cx="str.a" :cy="str.b" :key="index+'effect'" :style="nodeEffectStyle(index)"/><!--区域节点选中效果-->
-      <circle :cx="str.c" :cy="str.d" :key="'endNodeEffect'" :style="nodeEffectStyle(index+1)" v-if="index===dynamicPointsStr.length-1"/>
-      <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="pathNodeStyle" v-bind:data-node-order="index" @click="selectNode(index)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" v-show="nodeDisplay"/><!--区域节点-->
-      <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="pathNodeStyle" v-bind:data-node-order="index+1" @click="selectNode(index+1)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
+      <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" v-show="nodeDisplay"/><!--区域节点-->
+      <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="nodeEffectStyle(index+1)" v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
+      <circle :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :key="index+'virtualNode'" @mousedown="virtualNodeDown(index,$event)" @mouseup="virtualNodeUp($event)" :style="virtualNodeStyle(index)" v-show="selectId===myId"/><!--虚拟节点-->
       <text :x="str.a+20" :y="str.b" v-if="index===0" v-show="selectConfig.id===myId" class="svgSelectText">{{selectConfig.user}}</text>
     </g>
   </g>
@@ -29,6 +28,7 @@ export default {
       shiftNodeOrder:null,
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
+      shiftEndMouse:{x:null,y:null},
       shiftStatus:false,
       shiftAllStatus:false,
       shiftAllStartMouse:{x:null,y:null},
@@ -36,6 +36,8 @@ export default {
       shiftAllMoveCache:[],
       NodeDisplay:false,
       rightLock:false,
+      shiftVirtualStatus:false,
+      shiftVirtualNodeOrder:null,
     }
   },
   props:{
@@ -70,6 +72,91 @@ export default {
       this.initializePosition();
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
+      this.KeyListen();
+    },
+    KeyListen(){//监听单个按键
+      document.body.addEventListener('keyup',(e)=>{
+        if(this.selectId!==this.myId){
+          return false;
+        }
+        if(this.$store.state.mapConfig.inputFocusStatus){//在聚焦模式下拒绝操作
+          return false;
+        }
+        let KEY=e.key;
+        switch (KEY){
+          case 'Delete':{
+            if(this.dataSourcePoints.length<4 || this.areaConfig.points.length<4){
+              this.$root.general_script.alert_tips('至少需要保留三个节点');
+              return false;
+            }
+            if(this.$store.state.detailsPanelConfig.targetNode!==null){
+              let delOrder=this.shiftNodeOrder;
+              let sourcePoints=JSON.parse(JSON.stringify(this.dataSourcePoints));
+              let sendObj={
+                id:this.myId,
+                type:'area',
+              };
+              sourcePoints.splice(delOrder,1);
+              if(delOrder===0){
+                sendObj['point']={x:sourcePoints[0].x,y:sourcePoints[0].y};
+                sendObj['points']=sourcePoints;
+              }else {
+                sendObj['points']=sourcePoints;
+              }
+              this.$store.state.serverData.socket.broadcastUpdateElementNode(sendObj);
+            }
+            break;
+          }
+        }
+      });
+    },
+    virtualNodeDown(index,event){//更改虚拟节点样式
+      this.shiftVirtualStatus=true;
+      this.shiftVirtualNodeOrder=index;
+      this.$root.sendSwitchInstruct('disableZoomAndMove',true);
+    },
+    virtualNodeUp(event){//松开即创建节点
+      this.shiftVirtualStatus=false;
+      this.shiftVirtualNodeOrder=null;
+      this.$root.sendSwitchInstruct('disableZoomAndMove',false);
+    },
+    getVirtualCenterX(pt1x,pt2x){//计算并返回中心的虚拟点
+      return (pt1x+pt2x)/2;
+    },
+    getVirtualCenterY(pt1y,pt2y){
+      return (pt1y+pt2y)/2;
+    },
+    virtualNodeStyle(index){
+      if(this.shiftVirtualNodeOrder===index){
+        if(this.shiftVirtualStatus && this.selectId===this.myId){
+          return {
+            cx:this.mouse.x,
+            cy:this.mouse.y,
+            r:'8px',
+            strokeWidth:1,
+            stroke:'#000000',
+            pointerEvents:'fill',
+            fill:'#ffffff'
+          }
+        }else {
+          return {
+            r:'6px',
+            strokeWidth:1,
+            stroke:'#000000',
+            pointerEvents:'fill',
+            fill:'#ffffff'
+          }
+        }
+      }else {
+        return {
+          r:'6px',
+          strokeWidth:1,
+          stroke:'#8e8b86',
+          pointerEvents:'fill',
+          fillOpacity:0.8,
+          fill:'#ffffff'
+        }
+      }
     },
     showNode(){
       this.NodeDisplay=true;
@@ -101,31 +188,48 @@ export default {
         return !this.doNeedMoveMap;
       }
     },
-    selectNode(order) {//选中节点
-      if(order===this.shiftNodeOrder){//如果再次选中自己则表示取消选中
-        this.shiftNodeOrder=null;
-        return true;
+    selectNode(order,ev) {//选中节点
+      let startX=this.shiftStartMouse.x;
+      let endX=this.shiftEndMouse.x;
+      let startY=this.shiftStartMouse.y;
+      let endY=this.shiftEndMouse.y;
+      if(startX===endX && startY===endY){//定点点击取消或选中
+        let nowValue=ev.target.getAttribute('data-select');
+        if(nowValue===null){
+          ev.target.setAttribute('data-select','n');
+          nowValue='n';
+        }
+        if(nowValue==='n'){
+          ev.target.setAttribute('data-select','y');
+          this.shiftNodeOrder=order;
+        }else {
+          ev.target.setAttribute('data-select','n');
+          this.shiftNodeOrder=null;
+        }
+      }else {//移动过后保持选中
+        ev.target.setAttribute('data-select','y');
+        this.shiftNodeOrder=order;
       }
-      this.shiftNodeOrder=order;
     },
     shiftStart(order,ev){//挪动节点开始
-      this.shiftNodeOrder=order;
+      if(ev.button!==0)return false;
+      if(this.shiftNodeOrder!==order)this.shiftNodeOrder=order;//允许中途更换节点
+      if(this.shiftNodeOrder===null)this.shiftNodeOrder=order;//确定选中节点是哪个
       this.$store.state.detailsPanelConfig.target=this.myId;//更新targetId
       this.$root.sendSwitchInstruct('disableZoomAndMove',true);//抑制details
       Object.assign(this.shiftStartPoint,this.areaConfig.points[order]);//保存当前节点坐标位置
       this.shiftStartMouse.x=ev.x;//保存当前鼠标点击位置
       this.shiftStartMouse.y=ev.y;
-      if(ev.button!==0){
-        return false;
-      }
       this.shiftStatus=true;
     },
     shiftEnd(ev){//结束移动
       if(ev.button!==0){
         return false;
       }
+      this.shiftEndMouse.x=ev.x;//保存当前鼠标点击位置
+      this.shiftEndMouse.y=ev.y;
       this.shiftStatus=false;
-      this.$root.sendSwitchInstruct('disableZoomAndMove',false);//关闭抑制details
+      this.$root.sendSwitchInstruct('disableZoomAndMove',false);
     },
     rightClickOperation(mouseEvent){//右键选中
       if(this.rightLock){return false;}
@@ -244,6 +348,24 @@ export default {
       })
     },
     nodeEffectStyle(order){//path node 的动态样式
+      if(this.shiftNodeOrder===order){
+        return {
+          r:'8px',
+          strokeWidth:1,
+          stroke:'#010101',
+          pointerEvents:'fill',
+          fill:'#ffffff',
+          fillOpacity:0.95
+        }
+      }else {
+        return {
+          r:'6px',
+          strokeWidth:1,
+          stroke:'#000000',
+          pointerEvents:'fill',
+          fill:'#ffffff'
+        }
+      }
       return {
         r:8+'px',
         strokeWidth:1,
@@ -278,15 +400,6 @@ export default {
     },
     clearClick(){
       return this.$store.state.mapConfig.clearClick;
-    },
-    pathNodeStyle(){
-      return {
-        r:6+'px',
-        strokeWidth:1,
-        pointerEvents:'fill',
-        fillOpacity:1,
-        fill:'#bbb'
-      }
     },
     svgMouseUp(){
       return this.$store.state.mapConfig.svgMouseUp;
@@ -514,13 +627,36 @@ export default {
             }
           }
         }
+        if(this.shiftVirtualStatus){
+          if(this.areaConfig.points.length===this.dataSourcePoints.length){
+            this.areaConfig.points.splice(this.shiftVirtualNodeOrder+1,0,{x:newValue.x,y:-newValue.y});
+          }else {
+            this.areaConfig.points.splice(this.shiftVirtualNodeOrder+1,1,{x:newValue.x,y:-newValue.y});
+          }
+        }
       }
     },
     svgMouseUp:{
       handler(newValue){
+        if(this.shiftVirtualStatus){
+          let points=JSON.parse(JSON.stringify(this.dataSourcePoints));
+          let newPoint=this.$store.state.baseMapConfig.baseMap.viewPositionToLatLng(newValue.x,newValue.y);
+          points.splice(this.shiftVirtualNodeOrder+1,0,{x:newPoint.lng,y:newPoint.lat});
+          let data={id:this.myId,points,type:'area'};
+          this.$store.state.serverData.socket.broadcastUpdateElementNode(data);
+          this.shiftVirtualStatus=false;
+          this.shiftVirtualNodeOrder=null;
+          if(this.$refs.svgElement.classList.contains('graduallyEmergingFirst')){
+            this.$refs.svgElement.classList.remove('graduallyEmergingFirst');
+            this.$refs.svgElement.classList.add('graduallyEmergingAfter');
+          }else {
+            this.$refs.svgElement.classList.remove('graduallyEmergingAfter');
+            this.$refs.svgElement.classList.add('graduallyEmergingFirst');
+          }
+        }
         this.shiftStatus=false;//节点移动
-        let nowOrder=this.shiftNodeOrder;
-        if(nowOrder!==null){
+        if(this.shiftNodeOrder!==null){
+          let nowOrder=this.shiftNodeOrder;
           if(this.shiftStartPoint.x!==null && this.shiftStartPoint.y!==null){
             if(this.shiftStartPoint.x!==this.areaConfig.points[nowOrder].x || this.shiftStartPoint.y!==this.areaConfig.points[nowOrder].y){
               if(this.targetId===this.myId){
@@ -544,7 +680,7 @@ export default {
                 if(nowOrder===0){//如果更新了起始点
                   this.dataSourcePoint=uObj['point'];
                 }
-                this.shiftNodeOrder=null;//清除选中点
+                //this.shiftNodeOrder=null;//清除选中点
               }
             }
           }
@@ -577,6 +713,11 @@ export default {
         }
       },
       deep:true
+    },
+    shiftNodeOrder:{
+      handler(newValue){
+        this.$store.state.detailsPanelConfig.targetNode=newValue;
+      }
     }
   }
 }

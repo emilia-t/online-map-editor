@@ -175,10 +175,13 @@
             <span class="cutA">空格</span><span class="cutB">暂停创建节点</span>
           </div>
           <div class="shortcut">
+            <span class="cutA">Enter</span><span class="cutB">结束创建节点</span>
+          </div>
+          <div class="shortcut">
             <span class="cutA">Esc</span><span class="cutB">取消创建要素</span>
           </div>
           <div class="shortcut">
-            <span class="cutA">Enter</span><span class="cutB">结束创建节点</span>
+            <span class="cutA">Del</span><span class="cutB">删除节点或元素</span>
           </div>
         </div>
         <div class="title1">

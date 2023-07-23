@@ -144,7 +144,7 @@ export default new Vuex.Store({
               }
             }
           }).catch((e) => {
-            console.log(e);
+            //console.log(e);
           });
         }
         isTileShouldDownload( z, x, y) {
@@ -1456,7 +1456,8 @@ export default new Vuex.Store({
         x:null,
         y:null
       },
-      target:null
+      target:null,
+      targetNode:null,
     },
     elementOperationBoardConfig:{//元素右键操作面板的配置
       posX:null,

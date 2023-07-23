@@ -2,11 +2,11 @@
   <g :elementId="polyLineConfig.id" style="pointer-events: all" ref="svgElement">
     <g v-for="(str,index) in dynamicPointsStr">
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" @mouseenter="showNode()" @mouseleave="hideNode()" v-show="selectId===myId"/><!--选中路径-->
-      <path :id="'element'+polyLineConfig.id+'s'+index" :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d+' Z'" :key="index+'main'" :style="pathLineStyle" @mouseenter="showNode()" @mouseleave="hideNode()" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--路径主体-->
+      <path :id="'element'+polyLineConfig.id+'s'+index" :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d+' Z'" :key="index+'main'" :style="pathLineStyle" @mouseenter="showNode()" @mouseleave="hideNode()" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)"/><!--路径主体-->
       <circle :cx="str.a" :cy="str.b" :key="index+'fillNode'" :style="fillNodeStyle"/><!--填充节点-->
       <circle :cx="str.c" :cy="str.d" :key="'endFillNode'" :style="fillNodeStyle" v-if="index===dynamicPointsStr.length-1"/>
-      <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" v-show="nodeDisplay"/><!--节点-->
-      <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
+      <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" @contextmenu="" v-show="nodeDisplay"/><!--节点-->
+      <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
       <circle :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :key="index+'virtualNode'" @mousedown="virtualNodeDown(index,$event)" @mouseup="virtualNodeUp($event)" :style="virtualNodeStyle(index)" v-show="selectId===myId"/><!--虚拟节点-->
       <text v-if="index===0" v-show="selectConfig.id===myId" class="svgSelectText">
       <textPath v-bind:xlink:href="'#element'+polyLineConfig.id+'s'+index">{{selectConfig.user}}</textPath></text>
@@ -29,6 +29,7 @@ export default {
       shiftNodeOrder:null,
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
+      shiftEndMouse:{x:null,y:null},
       shiftAllStatus:false,
       shiftAllStartMouse:{x:null,y:null},
       shiftAllStartPoint:{x:null,y:null},
@@ -71,6 +72,43 @@ export default {
       this.initializePosition();//不要提前
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
+      this.KeyListen();
+    },
+    KeyListen(){//监听单个按键
+      document.body.addEventListener('keyup',(e)=>{
+        if(this.selectId!==this.myId){
+          return false;
+        }
+        if(this.$store.state.mapConfig.inputFocusStatus){//在聚焦模式下拒绝操作
+          return false;
+        }
+        let KEY=e.key;
+        switch (KEY){
+          case 'Delete':{
+            if(this.dataSourcePoints.length<3 || this.polyLineConfig.points.length<3){
+              this.$root.general_script.alert_tips('至少需要保留两个节点');
+              return false;
+            }
+            if(this.$store.state.detailsPanelConfig.targetNode!==null){
+              let delOrder=this.shiftNodeOrder;
+              let sourcePoints=JSON.parse(JSON.stringify(this.dataSourcePoints));
+              let sendObj={
+                id:this.myId,
+                type:'line',
+              };
+              sourcePoints.splice(delOrder,1);
+              if(delOrder===0){
+                sendObj['point']={x:sourcePoints[0].x,y:sourcePoints[0].y};
+                sendObj['points']=sourcePoints;
+              }else {
+                sendObj['points']=sourcePoints;
+              }
+              this.$store.state.serverData.socket.broadcastUpdateElementNode(sendObj);
+            }
+            break;
+          }
+        }
+      });
     },
     virtualNodeDown(index,event){//更改虚拟节点样式
       this.shiftVirtualStatus=true;
@@ -119,7 +157,6 @@ export default {
           fill:'#ffffff'
         }
       }
-
     },
     showNode(){
       this.NodeDisplay=true;
@@ -141,9 +178,6 @@ export default {
         }
       }
     },
-    shiftAllEnd(ev){
-
-    },
     circleShow(order){//显示节点
       if(order===this.shiftNodeOrder){
         return true;
@@ -151,29 +185,46 @@ export default {
         return !this.doNeedMoveMap;
       }
     },
-    selectNode(order) {//选中节点
-      if(order===this.shiftNodeOrder){//如果再次选中自己则表示取消选中
-        this.shiftNodeOrder=null;
-        return true;
+    selectNode(order,ev) {//选中节点
+      let startX=this.shiftStartMouse.x;
+      let endX=this.shiftEndMouse.x;
+      let startY=this.shiftStartMouse.y;
+      let endY=this.shiftEndMouse.y;
+      if(startX===endX && startY===endY){//定点点击取消或选中
+        let nowValue=ev.target.getAttribute('data-select');
+        if(nowValue===null){
+          ev.target.setAttribute('data-select','n');
+          nowValue='n';
+        }
+        if(nowValue==='n'){
+          ev.target.setAttribute('data-select','y');
+          this.shiftNodeOrder=order;
+        }else {
+          ev.target.setAttribute('data-select','n');
+          this.shiftNodeOrder=null;
+        }
+      }else {//移动过后保持选中
+        ev.target.setAttribute('data-select','y');
+        this.shiftNodeOrder=order;
       }
-      this.shiftNodeOrder=order;//确定选中节点是哪个
     },
     shiftStart(order,ev){//挪动节点开始
-      this.shiftNodeOrder=order;//如果按下鼠标后鼠标在其他节点上则更改需要移动的节点
+      if(ev.button!==0)return false;
+      if(this.shiftNodeOrder!==order)this.shiftNodeOrder=order;//允许中途更换节点
+      if(this.shiftNodeOrder===null)this.shiftNodeOrder=order;//确定选中节点是哪个
       this.$store.state.detailsPanelConfig.target=this.myId;//更新targetId
       this.$root.sendSwitchInstruct('disableZoomAndMove',true);//抑制details
       Object.assign(this.shiftStartPoint,this.polyLineConfig.points[order]);//保存当前节点坐标位置
       this.shiftStartMouse.x=ev.x;//保存当前鼠标点击位置
       this.shiftStartMouse.y=ev.y;
-      if(ev.button!==0){
-        return false;
-      }
       this.shiftStatus=true;
     },
     shiftEnd(ev){//结束挪动
       if(ev.button!==0){
         return false;
       }
+      this.shiftEndMouse.x=ev.x;//保存当前鼠标点击位置
+      this.shiftEndMouse.y=ev.y;
       this.shiftStatus=false;
       this.$root.sendSwitchInstruct('disableZoomAndMove',false);
     },
@@ -295,7 +346,7 @@ export default {
     nodeEffectStyle(order){
       if(this.shiftNodeOrder===order){
         return {
-          r:parseInt(this.polyLineConfig.width)+3+'px',
+          r:parseInt(this.polyLineConfig.width)+4+'px',
           strokeWidth:1,
           stroke:'#010101',
           pointerEvents:'fill',
@@ -598,7 +649,7 @@ export default {
                 if(nowOrder===0){//如果更新了起始点
                   this.dataSourcePoint=uObj['point'];
                 }
-                this.shiftNodeOrder=null;
+                //this.shiftNodeOrder=null;
               }
             }
           }
@@ -631,6 +682,11 @@ export default {
         }
       },
       deep:true
+    },
+    shiftNodeOrder:{
+      handler(newValue){
+        this.$store.state.detailsPanelConfig.targetNode=newValue;
+      }
     }
   }
 }

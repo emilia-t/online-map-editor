@@ -343,8 +343,10 @@ export default {
             break;
           }
           case 'Delete':{
-            if(this.$store.state.detailsPanelConfig.target!==-1){
-              this.$store.state.serverData.socket.broadcastDeleteElement(this.$store.state.detailsPanelConfig.target)
+            if(this.$store.state.detailsPanelConfig.targetNode===null){
+              if(this.$store.state.detailsPanelConfig.target!==-1){
+                this.$store.state.serverData.socket.broadcastDeleteElement(this.$store.state.detailsPanelConfig.target)
+              }
             }
             break;
           }
