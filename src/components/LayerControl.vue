@@ -233,7 +233,6 @@ export default {
               let tag=ev.target.nodeName;//判断target
               if(tag=="svg" || tag=="polyline" || tag=="circle"){
                 let Pos=this.computeMouseActualPos(ev)//计算新增点位置
-                console.log(Pos)
                 this.theConfig.addPointPos.x=Pos.x;
                 this.theConfig.addPointPos.y=Pos.y;
               }
@@ -478,7 +477,6 @@ export default {
     },
     addNewPoint:{
       handler(newValue){
-        console.log(newValue);
         this.$store.state.mapConfig.tempPoint.width=this.$store.state.mapConfig.tempPoint.defaultWidth;//1更新临时数据
         this.$store.state.mapConfig.tempPoint.point.x=newValue.x;
         this.$store.state.mapConfig.tempPoint.point.y=newValue.y;

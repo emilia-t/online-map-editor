@@ -345,7 +345,6 @@ export default {
           this.$store.state.detailsPanelConfig.data={point:{x:null,y:null}};
           this.$store.state.mapConfig.clearClick.x=ev.x;//更新点击空白处操作位置
           this.$store.state.mapConfig.clearClick.y=ev.y;
-          console.log("so");
         }
         this.$store.state.elementOperationBoardConfig.display=false;//关闭element operation board
       })

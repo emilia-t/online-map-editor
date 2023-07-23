@@ -125,14 +125,16 @@
           <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png"><!--图标-->
           <p class="Ap2">在线地图编辑器</p>
           <p class="Ap1">OME版本0.4.5</p>
-          <p class="Ap1"><a href="https://vuejs.org" target="_blank" style="color:blue">Vue</a>版本2.9.6</p>
+          <p class="Ap1"><a href="https://vuejs.org" target="_blank" style="color:blue">Vue版本2.9.6</a></p>
           <p class="Ap1"><a href="https://github.com/emilia-t/online-map-editor" target="_blank" style="color:blue">开放源代码</a></p>
+          <p class="Ap1"><a href="https://hitokoto.cn" target="_blank" style="color:blue">一言提供</a></p>
+          <p class="Ap3" style="letter-spacing:1px">Power by</p>
+          <p class="Ap1">Online map editor</p>
           <p class="Ap3">鸣谢</p>
-          <p class="Ap1">Emilia（测试）</p>
           <p class="Ap1">ALIMU（测试）</p>
-          <p class="Ap1">水着yamiUwU（测试）</p>
-          <p class="Ap3">Power by</p>
-          <p class="Ap1"><span style="letter-spacing:2px;font-size:12px;font-weight:100;padding:2px;color:rgba(255,255,255,0.2);background-image:linear-gradient(to right, rgba(3,94,252,0.5), rgba(234,110,255,0.5));-webkit-text-fill-color:transparent;-webkit-text-stroke:1px;-webkit-text-stroke-color: #fff;">Online map editor</span></p>
+          <p class="Ap1">Emilia（测试）</p>
+          <p class="Ap3">一言</p>
+          <p class="Ap1" v-cloak v-text="'『 '+classicQuote+' 』'"></p>
         </div>
       </div>
       <div class="Setting" v-show="HelpSettings"><!--帮助界面-->
@@ -160,21 +162,23 @@
           <div class="shortcut">
             <span class="cutA">按键</span><span class="cutB">功能描述</span>
           </div>
-          <br/>
           <div class="shortcut">
-            <span class="cutA">1</span><span class="cutB">创建点</span>
+            <span class="cutA">1</span><span class="cutB">创建兴趣点</span>
           </div>
-          <br/>
           <div class="shortcut">
             <span class="cutA">2</span><span class="cutB">创建路径</span>
           </div>
-          <br/>
           <div class="shortcut">
             <span class="cutA">3</span><span class="cutB">创建区域</span>
           </div>
-          <br/>
           <div class="shortcut">
-            <span class="cutA">空格</span><span class="cutB">移动视图</span>
+            <span class="cutA">空格</span><span class="cutB">暂停创建节点</span>
+          </div>
+          <div class="shortcut">
+            <span class="cutA">Esc</span><span class="cutB">取消创建要素</span>
+          </div>
+          <div class="shortcut">
+            <span class="cutA">Enter</span><span class="cutB">结束创建节点</span>
           </div>
         </div>
         <div class="title1">
@@ -272,6 +276,7 @@ export default {
       AccountSettings:false,
       AboutSettings:false,
       HelpSettings:false,
+      classicQuote:null,
       offsetY:-31,
       accounts:{},
       deleteButton,
@@ -280,6 +285,7 @@ export default {
   },
   mounted() {
     this.startSetting();//初始设置
+    this.getHiToKoTo();
   },
   methods:{
     startSetting(){//初始设置
@@ -302,6 +308,17 @@ export default {
         ev.stopPropagation();
       });
       this.findLocalAccounts();//查找本地账号配置
+    },
+    async getHiToKoTo(){
+      let xhr = new XMLHttpRequest();
+      xhr.open('get', 'https://v1.hitokoto.cn/?c=a&c=b&c=d&c=i&max_length=18');
+      xhr.onreadystatechange = ()=> {
+        if (xhr.readyState === 4) {
+          const data = JSON.parse(xhr.responseText);
+          this.classicQuote=data.hitokoto;
+        }
+      }
+      xhr.send();
     },
     deleteAccount(name){//删除账号
       let accounts=this.handleLocalStorage('get','accounts');//get
@@ -632,6 +649,11 @@ export default {
     }
   },
   watch:{
+    AboutSettings:{
+      handler(){
+        this.getHiToKoTo();
+      }
+    },
     panelShow:{
       handler(){
         this.$refs.menuPanelLayer.classList.toggle('HidePanel');
@@ -706,12 +728,14 @@ export default {
   color: rgba(5,5,5,0.75);
   margin: 5px 0px;
   font-weight: 600;
+  letter-spacing: 3px;
 }
 .Ap2{
   font-size: 14px;
   color: rgba(5,5,5,0.75);
   margin: 5px 0px;
   font-weight: 600;
+  letter-spacing: 3px;
 }
 .Ap1{
   font-size: 12px;
@@ -952,4 +976,5 @@ a:hover, a:active {
   z-index: inherit;
   transition:0.4s;
 }
+[v-cloak]{display: none}
 </style>

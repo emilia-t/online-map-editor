@@ -1071,7 +1071,6 @@ export default new Vuex.Store({
                   break;
                 }
                 case 'updateElement':{//更新某一元素的广播
-                  console.log(jsonData);
                   try{
                     if(jsonData.data.hasOwnProperty('details')){//解码details如果有的话
                       jsonData.data.details=JSON.parse(window.atob(jsonData.data.details));
