@@ -1,15 +1,72 @@
 <template>
   <g :elementId="areaConfig.id" ref="svgElement">
-    <polyline :points="dynamicPointsString" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)" @mouseenter="showNode()" @mouseleave="hideNode()"/><!--区域主体-->
+    <polygon ref="Polygon"
+             :points="dynamicPointsString"
+             :fill="pathLineFill"
+             @contextmenu="rightClickOperation($event)"
+             @click="showDetails()"
+             @mousedown="shiftAllStart($event)"
+             @mouseup="shiftAllEnd($event)"
+             @mouseenter="showNode()"
+             @mouseleave="hideNode()"
+             filter="url(#svgFilterShadowArea)"
+             class="svgAreaPathLine"/><!--区域主体-->
     <g v-for="(str,index) in dynamicPointsStr">
-      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'main'" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--区域外边框-->
-      <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endMain'" :style="pathLineStyle" v-if="index===dynamicPointsStr.length-1" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/>
-      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" v-show="selectId===myId"/><!--区域选中边框-->
-      <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b" :key="index+'endBorder'" :style="highlightStyle" v-if="index===dynamicPointsStr.length-1" v-show="selectId===myId"/>
-      <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" v-show="nodeDisplay"/><!--区域节点-->
-      <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="nodeEffectStyle(index+1)" v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
-      <circle :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :key="index+'virtualNode'" @mousedown="virtualNodeDown(index,$event)" @mouseup="virtualNodeUp($event)" :style="virtualNodeStyle(index)" v-show="selectId===myId"/><!--虚拟节点-->
-      <text :x="str.a+20" :y="str.b" v-if="index===0" v-show="selectConfig.id===myId" class="svgSelectText">{{selectConfig.user}}</text>
+      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d"
+                :key="index+'main'" :fill="pathLineFill"
+                @contextmenu="rightClickOperation($event)"
+                @click="showDetails()"
+                @mousedown="shiftAllStart($event)"
+                @mouseup="shiftAllEnd($event)"
+                class="svgAreaPathLine"/><!--区域外边框-->
+      <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b"
+                :key="index+'endMain'"
+                :fill="pathLineFill"
+                @contextmenu="rightClickOperation($event)"
+                @click="showDetails()"
+                @mousedown="shiftAllStart($event)"
+                @mouseup="shiftAllEnd($event)"
+                v-if="index===dynamicPointsStr.length-1"
+                class="svgAreaPathLine"/>
+      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d"
+                :key="index+'border'"
+                :stroke="highlightStroke"
+                v-show="selectConfig.id===myId || pickConfig.id===myId"
+                class="svgAreaHighlight"/><!--区域选中边框-->
+      <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b"
+                :key="index+'endBorder'"
+                :stroke="highlightStroke"
+                v-if="index===dynamicPointsStr.length-1"
+                v-show="selectConfig.id===myId || pickConfig.id===myId"
+                class="svgAreaHighlight"/>
+      <circle :cx="str.a" :cy="str.b" :key="index+'node'"
+              :style="nodeEffectStyle(index)"
+              v-bind:data-node-order="index"
+              @click="selectNode(index,$event)"
+              @mousedown="shiftStart(index,$event)"
+              @mouseup="shiftEnd($event)"
+              v-show="nodeDisplay"/><!--区域节点-->
+      <circle :cx="str.c" :cy="str.d" :key="'endNode'"
+              :style="nodeEffectStyle(index+1)"
+              v-bind:data-node-order="index+1"
+              @click="selectNode(index+1,$event)"
+              @mousedown="shiftStart(index+1,$event)"
+              @mouseup="shiftEnd($event)"
+              v-if="index===dynamicPointsStr.length-1"
+              v-show="nodeDisplay"/>
+      <circle :cx="getVirtualCenterX(str.a,str.c)"
+              :cy="getVirtualCenterY(str.b,str.d)"
+              :style="virtualNodeStyle(index)"
+              :key="index+'virtualNode'"
+              @mousedown="virtualNodeDown(index,$event)"
+              @mouseup="virtualNodeUp($event)"
+              v-show="selectId===myId"/><!--虚拟节点-->
+      <text :x="areaCenterX" :y="areaCenterY" :style="pickFill"
+            v-if="index===0"
+            v-show="selectConfig.id===myId || pickConfig.id===myId"
+            v-text="svgText"
+            text-anchor="middle"
+            class="svgAreaSelectText"></text>
     </g>
   </g>
 </template>
@@ -36,8 +93,11 @@ export default {
       shiftAllMoveCache:[],
       NodeDisplay:false,
       rightLock:false,
+      leftLock:false,
       shiftVirtualStatus:false,
       shiftVirtualNodeOrder:null,
+      areaCenterX:0,
+      areaCenterY:0,
     }
   },
   props:{
@@ -58,6 +118,12 @@ export default {
       default:function (){
         return {}
       }
+    },
+    "pickConfig":{
+      type:Object,
+      default:function (){
+        return {}
+      }
     }
   },
   mounted:function (){
@@ -73,6 +139,7 @@ export default {
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
       this.KeyListen();
+      this.getCenter();
     },
     KeyListen(){//监听单个按键
       document.body.addEventListener('keyup',(e)=>{
@@ -232,7 +299,12 @@ export default {
       this.$root.sendSwitchInstruct('disableZoomAndMove',false);
     },
     rightClickOperation(mouseEvent){//右键选中
-      if(this.rightLock){return false;}
+      if(this.rightLock){
+        if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
+          this.$root.general_script.alert_tips(this.selectConfig.user+'正在编辑属性，请稍等');
+        }
+        return false;
+      }
       mouseEvent.preventDefault();
       this.$store.state.elementOperationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
       this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
@@ -242,6 +314,12 @@ export default {
       return mouseEvent;
     },
     showDetails(){//显示详情
+      if(this.leftLock){
+        if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
+          this.$root.general_script.alert_tips(this.pickConfig.user+'正在更新形状，请稍等');
+        }
+        return false;
+      }
       this.$store.state.detailsPanelConfig.target=this.myId;
       this.$store.state.detailsPanelConfig.data=this.areaConfig;
       this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
@@ -375,8 +453,54 @@ export default {
         display:this.shiftNodeOrder===order?'inherit':'none'
       }
     },
+    getCenter(){//获取元素中心点
+      setTimeout(//异步
+        ()=>{
+          let svgElement=this.$refs.Polygon;
+          const observer = new MutationObserver(mutations => {
+            let svgElement=this.$refs.Polygon;
+            let bbox = svgElement.getBBox();
+            let x = bbox.x + bbox.width/2;
+            let y = bbox.y + bbox.height/2;
+            this.areaCenterX=x;
+            this.areaCenterY=y;
+          });
+          observer.observe(svgElement,{attributes: true});
+          let bbox = svgElement.getBBox();
+          let x = bbox.x + bbox.width/2;
+          let y = bbox.y + bbox.height/2;
+          this.areaCenterX=x;
+          this.areaCenterY=y;
+        }
+      ,0);
+    },
   },
   computed:{
+    pickFill(){
+      if(this.pickConfig.user!==undefined){
+        return{
+          fill:'#'+this.pickConfig.color
+        }
+      }else if(this.selectConfig.user!==undefined){
+        return{
+          fill:'#'+this.selectConfig.color
+        }
+      }else {
+        return{
+          fill:'#ff5e5e'
+        }
+      }
+    },
+    svgText(){
+      if(this.selectConfig.user===undefined || this.pickConfig.user===undefined){
+        if(this.selectConfig.user===undefined){
+          return this.pickConfig.user;
+        }
+        return this.selectConfig.user;
+      }else {
+        return `${this.pickConfig.user}、${this.selectConfig.user}`
+      }
+    },
     nodeDisplay(){
       return this.NodeDisplay === true || this.selectId === this.myId;
     },
@@ -404,20 +528,16 @@ export default {
     svgMouseUp(){
       return this.$store.state.mapConfig.svgMouseUp;
     },
-    pathLineStyle(){
-      return {
-        stroke:'#dedede',
-        strokeWidth:3,
-        opacity:0.5,
-        strokeLinecap:'round',
-        fill:'#'+this.areaConfig.color
-      }
+    pathLineFill(){
+      return '#'+this.areaConfig.color;
     },
-    highlightStyle(){
-      return {
-        strokeWidth:5,
-        stroke:'#9a9a9a',
-        strokeLinecap:'round'
+    highlightStroke(){
+      if(this.pickConfig.user!==undefined){
+        return '#'+this.pickConfig.color;
+      }else if(this.selectConfig.user!==undefined){
+        return '#'+this.selectConfig.color;
+      }else {
+        return '#ff5e5e';
       }
     },
     doNeedMoveMap(){
@@ -472,7 +592,7 @@ export default {
         return refArr;
       }
     },
-    dynamicPointsString() {
+    dynamicPointsString(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let newArr = [];
         let refArr = '';
@@ -532,6 +652,12 @@ export default {
     //   },
     //   deep:true
     // },
+    pickConfig:{
+      handler(newValue){
+        let lock=newValue.id;
+        this.leftLock = lock !== undefined;
+      }
+    },
     selectConfig:{
       handler(newValue){
         let lock=newValue.id;

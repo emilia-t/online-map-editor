@@ -2,16 +2,18 @@
   <g :elementId="this.myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)" ref="svgElement">
     <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom.icon===null">
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
-      <text :x="dynamicPointsX-13" :y="dynamicPointsY-13" v-show="selectConfig.id===myId" class="svgSelectText">{{selectConfig.user}}</text>
+      <text :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :style="pickFill" class="svgPointSelectText" v-text="svgText"></text>
     </g>
     <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom.icon!==null">
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="13px" :fill="this.pointConfig.custom.color"/>
       <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26px" height="26px" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
-      <text :x="dynamicPointsX-13" :y="dynamicPointsY-13" v-show="selectConfig.id===myId" class="svgSelectText">{{selectConfig.user}}</text>
+      <text :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :style="pickFill" class="svgPointSelectText" v-text="svgText"></text>
     </g>
   </g>
 </template>
@@ -29,7 +31,9 @@ export default {
       shiftStatus:false,//挪动的状态，当元素被选中后再次左键按下则状态为true，表示可挪动节点，默认为false
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
-      mouseover:false
+      mouseover:false,
+      rightLock:false,
+      leftLock:false,
     }
   },
   props:{
@@ -52,7 +56,13 @@ export default {
       default:function (){
         return {}
       }
-    }
+    },
+    "pickConfig":{
+      type:Object,
+      default:function (){
+        return {}
+      }
+    },
   },
   mounted() {
     this.startSetting();
@@ -83,6 +93,12 @@ export default {
       this.shiftStatus=false;
     },
     showDetails(){//展示自身details
+      if(this.leftLock){
+        if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
+          this.$root.general_script.alert_tips(this.pickConfig.user+'正在更新坐标，请稍等');
+        }
+        return false;
+      }
       setTimeout(()=>{
         this.$store.state.detailsPanelConfig.data=this.pointConfig;
         this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
@@ -182,7 +198,12 @@ export default {
       }
     },
     rightClickOperation(mouseEvent){
-      if(this.rightLock){return false;}
+      if(this.rightLock){
+        if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
+          this.$root.general_script.alert_tips(this.selectConfig.user+'正在编辑属性，请稍等');
+        }
+        return false;
+      }
       mouseEvent.preventDefault();
       this.$store.state.elementOperationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
       this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
@@ -193,6 +214,40 @@ export default {
     }
   },
   computed:{
+    pickFill(){
+      if(this.pickConfig.user!==undefined){
+        return{
+          fill:'#'+this.pickConfig.color
+        }
+      }else if(this.selectConfig.user!==undefined){
+        return{
+          fill:'#'+this.selectConfig.color
+        }
+      }else {
+        return{
+          fill:'#ff5e5e'
+        }
+      }
+    },
+    pickStroke(){
+      if(this.pickConfig.user!==undefined){
+        return '#'+this.pickConfig.color;
+      }else if(this.selectConfig.user!==undefined){
+        return '#'+this.selectConfig.color;
+      }else {
+        return '#ff5e5e';
+      }
+    },
+    svgText(){
+      if(this.selectConfig.user===undefined || this.pickConfig.user===undefined){
+        if(this.selectConfig.user===undefined){
+          return this.pickConfig.user;
+        }
+        return this.selectConfig.user;
+      }else {
+        return `${this.pickConfig.user}、${this.selectConfig.user}`
+      }
+    },
     browserX(){
       return this.$store.state.mapConfig.browser.width;
     },
@@ -276,6 +331,12 @@ export default {
     //   },
     //   deep:true
     // },
+    pickConfig:{
+      handler(newValue){
+        let lock=newValue.id;
+        this.leftLock = lock !== undefined;
+      }
+    },
     selectConfig:{
       handler(newValue){
         let lock=newValue.id;

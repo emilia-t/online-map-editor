@@ -48,7 +48,9 @@ export default {
         if(e.target.tagName==='svg' ||
           e.target.tagName==='circle' ||
           e.target.tagName==='polyline' ||
-          e.target.tagName==='image'
+          e.target.tagName==='image' ||
+          e.target.tagName==='polygon' ||
+          e.target.tagName==='path'
         ){
           this.moveStatus=true;
           this.A1Cache.x=this.A1.x;

@@ -150,6 +150,7 @@ export default {
     loginEd(){//登录成功后
       this.$store.state.serverData.socket.getUserData();
       this.$store.state.serverData.socket.getMapData();
+      this.$store.state.serverData.socket.getActiveData();
       this.$root.general_script.alert_tips('登录成功');
     },
     logout(){//注销账号

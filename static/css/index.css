@@ -1,5 +1,44 @@
-@keyframes graduallyEmergingFirst{from{opacity:0;}to{opacity:1;}}
-@keyframes graduallyEmergingAfter{from{opacity:0;}to{opacity:1;}}
-.svgSelectText{transform:translateX(-9px) translateY(-9px);font-size:14px;fill:#ff5e5e;}
+@keyframes graduallyEmergingFirst{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+@keyframes graduallyEmergingAfter{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+.svgAreaPathLine{
+  opacity:0.5;
+  stroke-linecap:round;
+  fill-rule:evenodd;
+}
+.svgAreaHighlight{
+  stroke-width:5px;
+  stroke-linecap:round;
+}
+.svgAreaSelectText{
+  font-size:15px;
+  text-shadow:1px 1px 1px #343434;
+  user-select:none;
+  pointer-events:none;
+}
+.svgLineSelectText{
+  font-size:15px;
+  text-shadow:1px 1px 1px #737373;
+  user-select:none;
+  pointer-events:none;
+}
+.svgPointSelectText{
+  transform:translateX(0px) translateY(-14px);
+  font-size:15px;
+  text-shadow:1px 1px 1px #737373;
+  text-anchor:middle;
+  user-select:none;
+  pointer-events:none;
+}
+.svgLineTextPath{
+  fill:none;
+  user-select:none;
+  pointer-events:none;
+}
 .graduallyEmergingFirst{animation:graduallyEmergingFirst 1s forwards;}
 .graduallyEmergingAfter{animation:graduallyEmergingAfter 1s forwards;}

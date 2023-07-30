@@ -1,9 +1,27 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer" style="pointer-events: auto">
     <svg style="transform: translateZ(0)" class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
-      <svg-area v-for="area in MyAreaData" :key="area.id" :selectConfig="selectElement(area.id)" :area-config="area"></svg-area><!--区域数据-->
-      <svg-line v-for="line in MyPolyLineData" :key="line.id" :selectConfig="selectElement(line.id)" :poly-line-config="line"></svg-line><!--线段数据-->
-      <svg-point v-for="point in MyPointData" :key="point.id" :selectConfig="selectElement(point.id)" :point-config="point"></svg-point><!--点位数据-->
+      <defs><!--滤镜-->
+        <filter id="svgFilterShadow">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
+        </filter>
+        <filter id="svgFilterShadowArea">
+          <feFlood flood-color="#000000" />
+          <feComposite in2="SourceGraphic" operator="out" />
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feComposite operator="atop" in2="SourceGraphic"/>
+        </filter>
+        <filter id="svgFilterOutline">
+          <feMorphology in="SourceAlpha" result="DILATED" operator="dilate" radius="1"></feMorphology>
+          <feMerge>
+            <feMergeNode in="DILATED" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <svg-area v-for="area in MyAreaData" :key="area.id" :pick-config="pickElement(area.id)" :select-config="selectElement(area.id)" :area-config="area"></svg-area><!--区域数据-->
+      <svg-line v-for="line in MyPolyLineData" :key="line.id" :pick-config="pickElement(line.id)" :select-config="selectElement(line.id)" :poly-line-config="line"></svg-line><!--线段数据-->
+      <svg-point v-for="point in MyPointData" :key="point.id" :pick-config="pickElement(point.id)" :select-config="selectElement(point.id)" :point-config="point"></svg-point><!--点位数据-->
       <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"></svg-point-p0><!--p0-->
       <svg-point-temp></svg-point-temp><!--临时点数据-->
       <svg-line-temp></svg-line-temp><!--临时线数据-->
@@ -67,6 +85,14 @@ export default {
     selectElement(id){
       let select=this.selectElements.find(num=>num.id===id);
       if(this.selectElements.find(num=>num.id===id)===undefined){
+        return {}
+      }else {
+        return select;
+      }
+    },
+    pickElement(id){
+      let select=this.pickElements.find(num=>num.id===id);
+      if(this.pickElements.find(num=>num.id===id)===undefined){
         return {}
       }else {
         return select;
@@ -337,7 +363,7 @@ export default {
         if(downX!==upX || downY!==upY){
           return false;
         }
-        let nodeNames=['polyline','circle','path'];//可以被选中的要素nodeName合集
+        let nodeNames=['polyline','polygon','circle','path'];//可以被选中的要素nodeName合集
         if(nodeNames.indexOf(ev.target.nodeName)===-1){
           this.$store.state.detailsPanelConfig.target=-1;
           this.$store.state.mapConfig.operated.id=-1;
@@ -351,6 +377,9 @@ export default {
     }
   },
   computed:{
+    pickElements(){
+      return this.$store.state.serverData.socket.pickElements;
+    },
     selectElements(){
       return this.$store.state.serverData.socket.selectElements;
     },

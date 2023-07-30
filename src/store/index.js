@@ -358,12 +358,13 @@ export default new Vuex.Store({
           this.messages=[];
           this.presence=[];
           this.selectElements=[];
+          this.pickElements=[];
           this.publickey='';
           this.userData=null;
           this.mapData={points:[],lines:[],areas:[]};
           this.config={};
           this.otherA1=[];
-          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence'];//指令类型合集
+          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData'];//指令类型合集
           this.Instruct={//指令合集
             login(email,password) {//登录指令
               this.email=email || '';
@@ -384,6 +385,9 @@ export default new Vuex.Store({
             },
             get_serverConfig(){//获取服务器配置
               return {type:'get_serverConfig'}
+            },
+            get_activeData(){//获取活动的数据
+              return {type:'get_activeData'}
             },
             broadcast_A1(x,y,color,name){//广播我的A1位置
               return {type:'broadcast',class:'A1',data: {x,y,color,name}}
@@ -414,6 +418,12 @@ export default new Vuex.Store({
             },
             broadcast_selectEndElement(data){
               return {type:'broadcast',class:'selectEndElement',data}
+            },
+            broadcast_pickIngElement(data){
+              return {type:'broadcast',class:'pickIngElement',data}
+            },
+            broadcast_pickEndElement(data){
+              return {type:'broadcast',class:'pickEndElement',data}
             },
           };
           this.QIR={//检测间
@@ -529,6 +539,12 @@ export default new Vuex.Store({
         }
         broadcastSelectEndElement(id){
           this.send(this.Instruct.broadcast_selectEndElement(id));
+        }
+        broadcastPickIngElement(id){
+          this.send(this.Instruct.broadcast_pickIngElement(id));
+        }
+        broadcastPickEndElement(id){
+          this.send(this.Instruct.broadcast_pickEndElement(id));
         }
         broadcastUpdateElementNode(data){//广播更新元素节点
           try{
@@ -751,6 +767,9 @@ export default new Vuex.Store({
         getServerConfig(){//获取服务器配置信息
           this.send(this.Instruct.get_serverConfig());
         }
+        getActiveData(){//获取服务器配置信息
+          this.send(this.Instruct.get_activeData());
+        }
         getServerPublickey(){//获取服务器公钥
           this.send(this.Instruct.get_publickey());
         }
@@ -828,6 +847,32 @@ export default new Vuex.Store({
             }
             case 'send_userData':{//服务器发来的用户数据
               this.userData=jsonData.data;
+              break;
+            }
+            case 'send_activeData':{//活动的数据
+              let pickElements=[];
+              let selectElements=[];
+              for (let key in jsonData.data) {
+                let eId=key.slice(1);
+                let pickUser=jsonData.data[key]['pick'];
+                let selectUser=jsonData.data[key]['select'];
+                if(pickUser!==null){
+                  pickElements.push({
+                    id:eId,
+                    user:pickUser.name,
+                    color:pickUser.color,
+                  });
+                }
+                if(selectUser!==null){
+                  selectElements.push({
+                    id:eId,
+                    user:selectUser.name,
+                    color:selectUser.color,
+                  });
+                }
+              }
+              this.selectElements=selectElements;
+              this.pickElements=pickElements;
               break;
             }
             case 'send_mapData':{//服务器发来的地图数据
@@ -1202,8 +1247,9 @@ export default new Vuex.Store({
                 }
                 case 'selectIngElement':{
                   let obj={
-                    id:jsonData.data,
-                    user:jsonData.conveyor
+                    id:jsonData.data.id,
+                    user:jsonData.conveyor,
+                    color:jsonData.data.color,
                   };
                   this.selectElements.push(obj);
                   break;
@@ -1212,6 +1258,24 @@ export default new Vuex.Store({
                   for(let i=0;i<this.selectElements.length;i++){
                     if(this.selectElements[i].id===jsonData.data){
                       this.selectElements.splice(i,1,0);
+                      break;
+                    }
+                  }
+                  break;
+                }
+                case 'pickIngElement':{
+                  let obj={
+                    id:jsonData.data.id,
+                    user:jsonData.conveyor,
+                    color:jsonData.data.color,
+                  };
+                  this.pickElements.push(obj);
+                  break;
+                }
+                case 'pickEndElement':{
+                  for(let i=0;i<this.pickElements.length;i++){
+                    if(this.pickElements[i].id===jsonData.data){
+                      this.pickElements.splice(i,1,0);
                       break;
                     }
                   }

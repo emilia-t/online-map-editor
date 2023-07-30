@@ -1,15 +1,20 @@
 <template>
   <g :elementId="polyLineConfig.id" style="pointer-events: all" ref="svgElement">
+    <g v-show="selectConfig.id===myId || pickConfig.id===myId">
+      <path :id="'textPath'+polyLineConfig.id" :d="dynamicPointsString" :style="highlightStyle" filter="url(#svgFilterShadow)" class="svgLineTextPath"/><!--文字路径-->
+    </g>
     <g v-for="(str,index) in dynamicPointsStr">
-      <polyline :points="str.a+','+str.b+' '+str.c+','+str.d" :key="index+'border'" :style="highlightStyle" @mouseenter="showNode()" @mouseleave="hideNode()" v-show="selectId===myId"/><!--选中路径-->
-      <path :id="'element'+polyLineConfig.id+'s'+index" :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d+' Z'" :key="index+'main'" :style="pathLineStyle" @mouseenter="showNode()" @mouseleave="hideNode()" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)"/><!--路径主体-->
+      <path :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d" :key="index+'main'" :style="pathLineStyle" @mouseenter="showNode()" @mouseleave="hideNode()" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)"/><!--路径主体-->
       <circle :cx="str.a" :cy="str.b" :key="index+'fillNode'" :style="fillNodeStyle"/><!--填充节点-->
       <circle :cx="str.c" :cy="str.d" :key="'endFillNode'" :style="fillNodeStyle" v-if="index===dynamicPointsStr.length-1"/>
       <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" @contextmenu="" v-show="nodeDisplay"/><!--节点-->
       <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
       <circle :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :key="index+'virtualNode'" @mousedown="virtualNodeDown(index,$event)" @mouseup="virtualNodeUp($event)" :style="virtualNodeStyle(index)" v-show="selectId===myId"/><!--虚拟节点-->
-      <text v-if="index===0" v-show="selectConfig.id===myId" class="svgSelectText">
-      <textPath v-bind:xlink:href="'#element'+polyLineConfig.id+'s'+index">{{selectConfig.user}}</textPath></text>
+    </g>
+    <g v-show="selectConfig.id===myId || pickConfig.id===myId">
+      <text :style="textPathPos" :fill="svgTextFill" class="svgLineSelectText">
+        <textPath v-bind:xlink:href="'#textPath'+polyLineConfig.id" v-text="svgText"></textPath>
+      </text>
     </g>
   </g>
 </template>
@@ -38,6 +43,8 @@ export default {
       virtualPoint:[],
       shiftVirtualStatus:false,
       shiftVirtualNodeOrder:null,
+      rightLock:false,
+      leftLock:false,
     }
   },
   props:{
@@ -58,7 +65,13 @@ export default {
       default:function (){
         return {}
       }
-    }
+    },
+    "pickConfig":{
+      type:Object,
+      default:function (){
+        return {}
+      }
+    },
   },
   mounted:function (){
     this.startSetting();
@@ -229,7 +242,12 @@ export default {
       this.$root.sendSwitchInstruct('disableZoomAndMove',false);
     },
     rightClickOperation(mouseEvent){//右键选中
-      if(this.rightLock){return false;}
+      if(this.rightLock){
+        if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
+          this.$root.general_script.alert_tips(this.selectConfig.user+'正在编辑属性，请稍等');
+        }
+        return false;
+      }
       mouseEvent.preventDefault();
       this.$store.state.elementOperationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
       this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
@@ -239,6 +257,12 @@ export default {
       return mouseEvent;
     },
     showDetails(){//显示详情
+      if(this.leftLock){
+        if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
+          this.$root.general_script.alert_tips(this.pickConfig.user+'正在更新形状，请稍等');
+        }
+        return false;
+      }
       this.$store.state.detailsPanelConfig.target=this.myId;//广播被选中id
       this.$store.state.detailsPanelConfig.data=this.polyLineConfig;
       this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
@@ -365,6 +389,53 @@ export default {
     },
   },
   computed:{
+    svgTextFill(){
+      if(this.pickConfig.user!==undefined){
+        return '#'+this.pickConfig.color;
+      }else if(this.selectConfig.user!==undefined){
+        return '#'+this.selectConfig.color;
+      }else {
+        return '#ff5e5e';
+      }
+    },
+    svgText(){
+      if(this.selectConfig.user===undefined || this.pickConfig.user===undefined){
+        if(this.selectConfig.user===undefined){
+          return this.pickConfig.user;
+        }
+        return this.selectConfig.user;
+      }else {
+        return `${this.pickConfig.user}、${this.selectConfig.user}`
+      }
+    },
+    textPathPos(){
+      let X=null;
+      let Y=null;
+      let dx=this.polyLineConfig.points[1].x-this.polyLineConfig.points[0].x;
+      let dy=this.polyLineConfig.points[1].y-this.polyLineConfig.points[0].y;
+      let angle=Math.atan2(dy,dx)*180/Math.PI;
+      let rotate=0;
+      if(angle>=0 && angle<90){//第一象限
+        X=0;Y=-20;
+        if(angle>45){X=-20;}
+      }
+      if(angle>=90 && angle<180){//第二象限
+        X=-20;Y=0;
+        if(angle>135){Y=10;}
+      }
+      if(angle>=-180 && angle<-90){//第二象限
+        X=0;Y=20;
+        if(angle>-135){X=20;}
+      }
+      if(angle>=-90 && angle<0){//第二象限
+        X=20;Y=0;
+        if(angle>-45){Y=-10;}
+      }
+      return {
+        transform:`translateX(${X}px) translateY(${Y}px) rotate(${rotate}deg)`,
+        rotate:0
+      }
+    },
     nodeDisplay(){
       return this.NodeDisplay === true || this.selectId === this.myId;
     },
@@ -391,7 +462,7 @@ export default {
     },
     fillNodeStyle(){
       return {
-        r:parseInt(this.polyLineConfig.width/2)+'px',
+        r:parseInt(this.polyLineConfig.width)/2+'px',
         strokeWidth:1,
         pointerEvents:'fill',
         fillOpacity:1,
@@ -408,10 +479,15 @@ export default {
       }
     },
     highlightStyle(){
+      let color='ff4f4f';
+      if(this.pickConfig.user!==undefined){
+        color=this.pickConfig.color;
+      }else if(this.selectConfig.user!==undefined){
+        color=this.selectConfig.color;
+      }
       return {
-        strokeWidth:parseInt(this.polyLineConfig.width)+5,
-        stroke:'#'+this.polyLineConfig.color,
-        strokeLinecap:'round'
+        strokeWidth:parseInt(this.polyLineConfig.width)+8,
+        stroke:'#'+color,
       }
     },
     doNeedMoveMap(){
@@ -429,7 +505,44 @@ export default {
     mouse(){
       return {x:this.$store.state.mapConfig.mousePoint.x,y:this.$store.state.mapConfig.mousePoint.y};
     },
-    dynamicPointsStr() {
+    dynamicPointsString(){
+      if(this.doNeedMoveMap && this.occurredMoveMap===true){
+        let newArr = [];
+        let refArr = '';
+        let A1mvX=this.A1.x-this.A1Cache.x;
+        let A1mvY=this.A1Cache.y-this.A1.y;
+        newArr = this.polyLineConfig.points;
+        for (let i = 0; i < newArr.length; i++) {
+          if(i===0){
+            let x = newArr[i].x/this.unit1X - A1mvX;
+            let y = -(newArr[i].y/this.unit1Y + A1mvY);
+            refArr+='M'+x+','+y+' ';
+          }else {
+            let x = newArr[i].x/this.unit1X - A1mvX;
+            let y = -(newArr[i].y/this.unit1Y + A1mvY);
+            refArr+='L'+x+','+y+' ';
+          }
+        }
+        return refArr
+      }else {
+        let newArr = [];
+        let refArr = '';
+        newArr = this.polyLineConfig.points;
+        for (let i = 0; i < newArr.length; i++) {
+          if(i===0){
+            let x = newArr[i].x/this.unit1X;
+            let y = -newArr[i].y/this.unit1Y;
+            refArr+='M'+x+','+y+' ';
+          }else {
+            let x = newArr[i].x/this.unit1X;
+            let y = -newArr[i].y/this.unit1Y;
+            refArr+='L'+x+','+y+' ';
+          }
+        }
+        return refArr;
+      }
+    },
+    dynamicPointsStr(){
       if(this.doNeedMoveMap && this.occurredMoveMap===true){
         let newArr = [];
         let refArr = [];
@@ -501,6 +614,12 @@ export default {
     //   },
     //   deep:true
     // },
+    pickConfig:{
+      handler(newValue){
+        let lock=newValue.id;
+        this.leftLock = lock !== undefined;
+      }
+    },
     selectConfig:{
       handler(newValue){
         let lock=newValue.id;

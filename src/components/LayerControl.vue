@@ -423,6 +423,9 @@ export default {
     rightTarget(){
       return this.$store.state.mapConfig.operated.id;
     },
+    leftTarget(){
+      return this.$store.state.detailsPanelConfig.target;
+    },
   },
   watch:{
     zoomIng:{
@@ -549,7 +552,21 @@ export default {
           }
         }
       }
-    }
+    },
+    leftTarget:{
+      handler(newValue,oldValue){
+        if(newValue!==-1){
+          if(oldValue!==null && oldValue!==-1){
+            this.$store.state.serverData.socket.broadcastPickEndElement(oldValue);
+          }
+          this.$store.state.serverData.socket.broadcastPickIngElement(newValue);
+        }else {
+          if(oldValue!==null && oldValue!==-1) {
+            this.$store.state.serverData.socket.broadcastPickEndElement(oldValue);
+          }
+        }
+      }
+    },
   },
   destroyed(){
 
