@@ -31,6 +31,7 @@ export default {
       shiftStatus:false,//挪动的状态，当元素被选中后再次左键按下则状态为true，表示可挪动节点，默认为false
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
+      shiftEndMouse:{x:null,y:null},
       mouseover:false,
       rightLock:false,
       leftLock:false,
@@ -77,22 +78,23 @@ export default {
       this.A1Cache.y=this.A1.y;
     },
     shiftStart(ev){//挪动节点
-      if(this.selectId!==this.myId){return false;}
-      Object.assign(this.shiftStartPoint,this.pointConfig.point);//保存当前元素坐标位置
-      this.shiftStartMouse.x=ev.x;//保存当前鼠标点击位置
+      this.shiftStartMouse.x=ev.x;
       this.shiftStartMouse.y=ev.y;
-      if(ev.button!==0){//必须按下的是鼠标左键
-        return false;
-      }
+      if(this.selectId!==this.myId){return false;}
+      if(ev.button!==0){return false;}
+      Object.assign(this.shiftStartPoint,this.pointConfig.point);//保存当前元素坐标位置
       this.shiftStatus=true;//使挪动状态变更为true
     },
     shiftEnd(ev){//鼠标在svg中、松开左键、固定节点位置
-      if(ev.button!==0){
-        return false;
-      }
+      if(ev.button!==0){return false;}
+      this.shiftEndMouse.x=ev.x;//保存当前鼠标点击位置
+      this.shiftEndMouse.y=ev.y;
       this.shiftStatus=false;
     },
     showDetails(){//展示自身details
+      if(this.shiftStartMouse.x!==this.shiftEndMouse.x || this.shiftStartMouse.y!==this.shiftEndMouse.y){
+        return false;
+      }
       if(this.leftLock){
         if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$root.general_script.alert_tips(this.pickConfig.user+'正在更新坐标，请稍等');

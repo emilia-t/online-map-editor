@@ -98,6 +98,8 @@ export default {
       shiftVirtualNodeOrder:null,
       areaCenterX:0,
       areaCenterY:0,
+      mouseDownPosition:{x:null,y:null},
+      mouseUpPosition:{x:null,y:null},
     }
   },
   props:{
@@ -232,6 +234,8 @@ export default {
       this.NodeDisplay=false;
     },
     shiftAllStart(ev){//整体移动
+      this.mouseDownPosition.x=ev.x;
+      this.mouseDownPosition.y=ev.y;
       if(ev.button!==0){//左键
         return false;
       }
@@ -246,7 +250,8 @@ export default {
       }
     },
     shiftAllEnd(ev){
-
+      this.mouseUpPosition.x=ev.x;
+      this.mouseUpPosition.y=ev.y;
     },
     circleShow(order){//显示节点
       if(order===this.shiftNodeOrder){
@@ -314,6 +319,9 @@ export default {
       return mouseEvent;
     },
     showDetails(){//显示详情
+      if(this.mouseDownPosition.x!==this.mouseUpPosition.x || this.mouseDownPosition.y!==this.mouseUpPosition.y){
+        return false;
+      }
       if(this.leftLock){
         if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$root.general_script.alert_tips(this.pickConfig.user+'正在更新形状，请稍等');
@@ -733,7 +741,6 @@ export default {
         }
         if(this.shiftAllStatus){//整体移动
           if(this.shiftAllStartMouse.x!==null && this.shiftAllStartMouse.y!==null){
-            this.$store.state.detailsPanelConfig.target=-1;
             let xOffset=0;
             let yOffset=0;
             if(this.shiftAllMoveCache.length===0){
