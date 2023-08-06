@@ -229,7 +229,7 @@ export default {
   background: #7d7d7d;
 }
 .nail:hover{
-  background: #000000!important;
+  /*background: #000000!important;*/
 }
 .smallSlider{
   width: 80px;

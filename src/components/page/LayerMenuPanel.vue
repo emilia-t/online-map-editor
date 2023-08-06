@@ -183,6 +183,24 @@
           <div class="shortcut">
             <span class="cutA">Del</span><span class="cutB">删除节点或元素</span>
           </div>
+          <div class="shortcutTypeB">
+            <div class="shortcutText">
+              <span class="cutA">Ctrl+Z</span><span class="cutC">撤回</span><span @click="doubtRevoke=!doubtRevoke" class="doubtIcon" title="点击显示更多信息">?</span>
+            </div>
+            <div v-show="doubtRevoke" class="doubtContent">
+              撤回快捷键允许您将之前的操作撤销
+              <br/><br/>
+              以下列举了一些撤回的情景：
+              <br/><br/>
+              1.创建线段时误点击了鼠标，需要撤回刚才创建的节点，可以使用Ctrl+Z撤销本次添加的节点。
+              <br/><br/>
+              2.选中元素后误点击了Del按键，需要恢复刚才删除的元素，可以使用Ctrl+Z还原被删除的元素。
+              <br/><br/>
+              3.创建好一个新的元素后，坐标整体偏移，需要重新绘制，可以使用Ctrl+Z撤销本次添加的元素。
+              <br/><br/>
+              如果您不清楚您进行了哪些操作，您还可以使用快捷键在显示设置中打开步骤记录器以查询您的历史操作。
+            </div>
+          </div>
         </div>
         <div class="title1">
           基本操作(Ctrl + F 可进行搜索)
@@ -283,7 +301,8 @@ export default {
       offsetY:-31,
       accounts:{},
       deleteButton,
-      editButton
+      editButton,
+      doubtRevoke:false
     }
   },
   mounted() {
@@ -674,6 +693,27 @@ export default {
 </script>
 
 <style scoped>
+.doubtContent{
+  width: calc(100% - 10px);
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px #909090 solid;
+  height: auto;
+}
+.doubtIcon{
+  width: 13px;
+  height: 13px;
+  display: block;
+  border-radius: 13px;
+  overflow: hidden;
+  font-size: 12px;
+  text-align: center;
+  line-height: 13px;
+  transform: translateY(1px);
+  font-weight: 800;
+  background: #8aaaff;
+  color: #ffffff;
+}
 .explainChild{
   display: flex;
   flex-direction: row;
@@ -690,6 +730,22 @@ export default {
   text-decoration: underline;
   text-decoration-style: wavy;
 }
+.shortcutTypeB{
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+}
+.shortcutText{
+  width: 100%;
+  height: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+}
 .shortcut{
   width: 100%;
   height: 30px;
@@ -703,6 +759,10 @@ export default {
 }
 .cutB{
   width: calc(100% - 50px);
+}
+.cutC{
+  width:auto;
+  margin-right:10px;
 }
 .title1{
   width: calc(100% - 20px);
@@ -723,6 +783,7 @@ export default {
   padding: 10px;
   height: auto;
   font-size: 13px;
+  letter-spacing: 1px;
   font-weight: 200;
   line-height: 20px;
 }

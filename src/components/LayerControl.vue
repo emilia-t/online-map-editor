@@ -85,6 +85,7 @@ export default {
   methods:{
     startSetting(){
       this.KeyListen();//开启键盘监听
+      this.MultiKeyListen();
     },
     addAreaStart(){
       if(!this.isAddArea){
@@ -119,7 +120,7 @@ export default {
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddArea===true && this.addAreaClock===false && this.nodeSuppressor!==true){
               let tag=ev.target.nodeName;//判断target
-              if(tag=="svg" || tag=="polyline" || tag=="circle"){
+              if(tag==="svg" || tag==="polyline" || tag==="circle"){
                 let Pos=this.computeMouseActualPos(ev)//计算新增点位置
                 this.theConfig.addAreaPos.push(Pos);
               }
@@ -191,7 +192,7 @@ export default {
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false && this.nodeSuppressor!==true){
               let tag=ev.target.nodeName;//判断target
-              if(tag=="svg" || tag=="polyline" || tag=="circle"){
+              if(tag==="svg" || tag==="polyline" || tag==="circle"){
                 let Pos=this.computeMouseActualPos(ev);//计算新增点位置
                 this.theConfig.addLinePos.push(Pos);
               }
@@ -303,7 +304,7 @@ export default {
         }
       }
     },
-    KeyListen(){//监听单个按键
+    KeyListen(){//监听按键
       document.body.addEventListener('keyup',(e)=>{
         if(this.$store.state.mapConfig.inputFocusStatus){//在聚焦模式下拒绝操作
           return false;
@@ -366,6 +367,29 @@ export default {
         switch (KEY){
           case ' ':{
             this.nodeSuppressor=true;
+          }
+        }
+      });
+    },
+    MultiKeyListen(){
+      document.addEventListener('keydown', (event)=> {
+        if(this.$store.state.mapConfig.inputFocusStatus){//在聚焦模式下拒绝操作
+          return false;
+        }
+        let secondly=event.key;
+        if(event.ctrlKey){
+          switch (secondly) {
+            case 'z':{
+              if(this.$store.state.mapConfig.tempLine.points.length!==0){
+                this.$store.state.mapConfig.tempLine.points.pop();
+                this.$store.state.mapConfig.tempLine.showPos.pop();
+              }
+              if(this.$store.state.mapConfig.tempArea.points.length!==0){
+                this.$store.state.mapConfig.tempArea.points.pop();
+                this.$store.state.mapConfig.tempArea.showPos.pop();
+              }
+              break;
+            }
           }
         }
       });
