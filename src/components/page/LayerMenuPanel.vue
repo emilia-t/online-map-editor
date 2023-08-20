@@ -85,6 +85,14 @@
           </div>
           <div class="switchOut"><div class="circle"></div></div>
         </div>
+        <hr/>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">打开历史记录面板</span>
+            <span class="spansB">在浏览器左上角显示历史记录面板</span>
+          </div>
+          <div class="switchOut" ref="DS04" @click="DS04($event)"><div ref="DS04_1" class="circle"></div></div>
+        </div>
       </div>
       <div class="Setting" v-show="AccountSettings"><!--账号设置-->
         <div class="SettingTitle">账号设置</div>
@@ -198,7 +206,7 @@
               <br/><br/>
               3.创建好一个新的元素后，坐标整体偏移，需要重新绘制，可以使用Ctrl+Z撤销本次添加的元素。
               <br/><br/>
-              如果您不清楚您进行了哪些操作，您还可以使用快捷键在显示设置中打开步骤记录器以查询您的历史操作。
+              如果您不清楚您进行了哪些操作，您还可以在显示设置中打开历史记录面板以查询您的历史操作。
             </div>
           </div>
         </div>
@@ -407,6 +415,18 @@ export default {
               }
               break;
             }
+            case 'set_DS_OpenStepRecorder':{
+              if(nowLocalStorage[key]==true){
+                this.$refs.DS04.classList.add('switchOutOn');//更新样式
+                this.$refs.DS04_1.classList.add('circleOn');
+                this.$store.state.userSettingConfig.openStepRecorder=true;//更新状态
+              }else if(nowLocalStorage[key]==false){
+                this.$refs.DS04.classList.remove('switchOutOn');
+                this.$refs.DS04_1.classList.remove('circleOn');
+                this.$store.state.userSettingConfig.openStepRecorder=false;//更新状态
+              }
+              break;
+            }
           }
         }
       }else {
@@ -482,7 +502,7 @@ export default {
       ev.stopPropagation();
       let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
       let oldStatus=settingsObj.set_DS_OpenElementPanel;
-      if(oldStatus==true){//修改storage中的值
+      if(oldStatus===true){//修改storage中的值
         settingsObj.set_DS_OpenElementPanel=false;
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         this.$refs.DS01.classList.remove('switchOutOn');//更改样式
@@ -496,11 +516,29 @@ export default {
         this.$store.state.userSettingConfig.elementPanelLayerShow=true;//更新状态
       }
     },
+    DS04(ev){//显示设置下的历史面板开关
+      ev.stopPropagation();
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+      let oldStatus=settingsObj.set_DS_OpenStepRecorder;
+      if(oldStatus===true){//修改storage中的值
+        settingsObj.set_DS_OpenStepRecorder=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.DS04.classList.remove('switchOutOn');//更改样式
+        this.$refs.DS04_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.openStepRecorder=false;
+      }else {
+        settingsObj.set_DS_OpenStepRecorder=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.DS04.classList.add('switchOutOn');//更改样式
+        this.$refs.DS04_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.openStepRecorder=true;
+      }
+    },
     GS01(ev){//常规设置（GS）下的功能开关
       ev.stopPropagation();
       let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
       let oldStatus=settingsObj.set_GS_AutoCheckServerStatus;
-      if(oldStatus==true){//修改storage中的值
+      if(oldStatus===true){//修改storage中的值
         settingsObj.set_GS_AutoCheckServerStatus=false;
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         this.$refs.GS01.classList.remove('switchOutOn');//更改样式
@@ -556,11 +594,25 @@ export default {
         }
         case 'set_DS_OpenElementPanel':{
           if(value==true){
+            this.$store.state.userSettingConfig.elementPanelLayerShow=true;
             this.$refs.DS01.classList.add('switchOutOn');//更新样式
             this.$refs.DS01_1.classList.add('circleOn');
           }else if(value==false){
+            this.$store.state.userSettingConfig.elementPanelLayerShow=false;
             this.$refs.DS01.classList.remove('switchOutOn');
             this.$refs.DS01_1.classList.remove('circleOn');
+          }
+          break;
+        }
+        case 'set_DS_OpenStepRecorder':{
+          if(value==true){
+            this.$store.state.userSettingConfig.openStepRecorder=true;
+            this.$refs.DS04.classList.add('switchOutOn');//更新样式
+            this.$refs.DS04_1.classList.add('circleOn');
+          }else if(value==false){
+            this.$store.state.userSettingConfig.openStepRecorder=false;
+            this.$refs.DS04.classList.remove('switchOutOn');
+            this.$refs.DS04_1.classList.remove('circleOn');
           }
           break;
         }
@@ -668,6 +720,9 @@ export default {
     },
     minZoom(){
       return this.$store.state.cameraConfig.minZoom;
+    },
+    openStepRecorder(){
+      return this.$store.state.userSettingConfig.openStepRecorder;
     }
   },
   watch:{
@@ -686,6 +741,14 @@ export default {
     reloadAccounts:{
       handler(){
         this.findLocalAccounts();
+      }
+    },
+    openStepRecorder:{
+      handler(newValue){
+        if(!newValue){
+          this.$refs.DS04.classList.remove('switchOutOn');
+          this.$refs.DS04_1.classList.remove('circleOn');
+        }
       }
     }
   }

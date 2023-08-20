@@ -54,7 +54,6 @@ export default {
   border-radius: 5px;
   overflow: hidden;
   transition: 0.3s;
-  box-shadow:#e1e0e0 2px 2px 4px 1px;
 }
 .selectNone{
   -webkit-touch-callout:none;

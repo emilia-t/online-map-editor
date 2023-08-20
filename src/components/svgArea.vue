@@ -163,8 +163,20 @@ export default {
               let sourcePoints=JSON.parse(JSON.stringify(this.dataSourcePoints));
               let sendObj={
                 id:this.myId,
+                updateId:'up'+this.$store.state.serverData.socket.updateId++,
                 type:'area',
               };
+              let recordObj=JSON.parse(JSON.stringify({
+                type:'updateNode',
+                class:'area',
+                id:sendObj.updateId,
+                changes:['node'],
+                oldValue:{
+                  point:this.dataSourcePoint,
+                  points:this.dataSourcePoints
+                },
+              }));
+              this.$store.state.recorderData.initialIntent.push(recordObj);
               sourcePoints.splice(delOrder,1);
               if(delOrder===0){
                 sendObj['point']={x:sourcePoints[0].x,y:sourcePoints[0].y};
@@ -311,9 +323,9 @@ export default {
         return false;
       }
       mouseEvent.preventDefault();
-      this.$store.state.elementOperationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
-      this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
-      this.$store.state.elementOperationBoardConfig.posY=mouseEvent.y;
+      this.$store.state.operationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
+      this.$store.state.operationBoardConfig.posX=mouseEvent.x;
+      this.$store.state.operationBoardConfig.posY=mouseEvent.y;
       this.$store.state.mapConfig.operated.id=this.myId;//设置operated
       this.$store.state.mapConfig.operated.data=this.areaConfig;
       return mouseEvent;
@@ -775,7 +787,22 @@ export default {
           let points=JSON.parse(JSON.stringify(this.dataSourcePoints));
           let newPoint=this.$store.state.baseMapConfig.baseMap.viewPositionToLatLng(newValue.x,newValue.y);
           points.splice(this.shiftVirtualNodeOrder+1,0,{x:newPoint.lng,y:newPoint.lat});
-          let data={id:this.myId,points,type:'area'};
+          let data={
+            id:this.myId,
+            updateId:'up'+this.$store.state.serverData.socket.updateId++,
+            points,type:'area'
+          };
+          let recordObj=JSON.parse(JSON.stringify({
+            type:'updateNode',
+            class:'area',
+            id:data.updateId,
+            changes:['node'],
+            oldValue:{
+              point:this.dataSourcePoint,
+              points:this.dataSourcePoints
+            },
+          }));
+          this.$store.state.recorderData.initialIntent.push(recordObj);
           this.$store.state.serverData.socket.broadcastUpdateElementNode(data);
           this.shiftVirtualStatus=false;
           this.shiftVirtualNodeOrder=null;
@@ -796,6 +823,7 @@ export default {
                 let newPos=this.$root.computeMouseActualPos(newValue);//1.计算新的位置
                 let uObj={
                   id:null,
+                  updateId:'up'+this.$store.state.serverData.socket.updateId++,
                   points:[]
                 };
                 uObj.id=this.myId;
@@ -806,6 +834,17 @@ export default {
                 sourcePoints[nowOrder]=newPos;//更新源的某个节点
                 uObj.points=sourcePoints;
                 uObj.type='area';
+                let recordObj=JSON.parse(JSON.stringify({
+                  type:'updateNode',
+                  class:'area',
+                  id:uObj.updateId,
+                  changes:['node'],
+                  oldValue:{
+                    point:this.dataSourcePoint,
+                    points:this.dataSourcePoints
+                  },
+                }));
+                this.$store.state.recorderData.initialIntent.push(recordObj);
                 this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);
                 this.shiftStartPoint.x=null;//处理完毕后清空
                 this.shiftStartPoint.y=null;
@@ -819,6 +858,18 @@ export default {
           }
         }
         if(this.shiftAllStatus===true){//整体移动
+          let updateId='up'+this.$store.state.serverData.socket.updateId++;
+          let recordObj=JSON.parse(JSON.stringify({
+            type:'updateNode',
+            class:'area',
+            id:updateId,
+            changes:['node'],
+            oldValue:{
+              point:this.dataSourcePoint,
+              points:this.dataSourcePoints
+            },
+          }));
+          this.$store.state.recorderData.initialIntent.push(recordObj);
           let newAccPos=this.$root.computeMouseActualPos(newValue);//计算新的位置
           if(newAccPos!==false && this.shiftAllStartPoint!==false){
             let axOffset=newAccPos.x-this.shiftAllStartPoint.x;//计算实际偏移量
@@ -829,6 +880,7 @@ export default {
             }
             let auObj={
               id:null,
+              updateId:updateId,
               points:[],
               point:{x:null,y:null}
             };

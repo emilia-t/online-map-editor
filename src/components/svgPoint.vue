@@ -207,9 +207,9 @@ export default {
         return false;
       }
       mouseEvent.preventDefault();
-      this.$store.state.elementOperationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
-      this.$store.state.elementOperationBoardConfig.posX=mouseEvent.x;
-      this.$store.state.elementOperationBoardConfig.posY=mouseEvent.y;
+      this.$store.state.operationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
+      this.$store.state.operationBoardConfig.posX=mouseEvent.x;
+      this.$store.state.operationBoardConfig.posY=mouseEvent.y;
       this.$store.state.mapConfig.operated.id=this.myId;//设置operated
       this.$store.state.mapConfig.operated.data=this.pointConfig;
       return mouseEvent;
@@ -398,13 +398,28 @@ export default {
               let newPos=this.$root.computeMouseActualPos(newValue);//1.计算新的位置
               let uObj={
                 id:null,
+                updateId:null,
                 point:null,
                 points:[]
               };
               uObj.id=this.myId;
+              uObj.updateId='up'+this.$store.state.serverData.socket.updateId++;
               uObj.point=newPos;
               uObj.points.push(newPos);
               uObj.type='point';
+              let recordObj=JSON.parse(JSON.stringify(
+                {
+                  type:'updateNode',
+                  class:'point',
+                  id:uObj.updateId,
+                  changes:['node'],
+                  oldValue:{
+                    point:this.dataSourcePoint,
+                    points:[this.dataSourcePoint],
+                  },
+                }
+              ));
+              this.$store.state.recorderData.initialIntent.push(recordObj);
               this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);
               if(this.$refs.svgElement.classList.contains('graduallyEmergingFirst')){
                 this.$refs.svgElement.classList.remove('graduallyEmergingFirst');

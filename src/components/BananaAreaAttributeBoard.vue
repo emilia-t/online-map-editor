@@ -202,6 +202,7 @@ export default {
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
+      let localId=this.$store.state.serverData.socket.localId--;
       let obj={//信息汇总
         childNodes:[],
         childRelations:[],
@@ -210,7 +211,7 @@ export default {
         details:this.details,
         fatherNode:'',
         fatherRelation: '',
-        id:0,
+        id:localId,
         length:null,
         point:this.tempArea.point,
         points:this.tempArea.points,
@@ -218,6 +219,12 @@ export default {
         type:'area',
         width:this.width
       };
+      let recordObj={
+        type:'upload',
+        class:'area',
+        id:localId,
+      };
+      this.$store.state.recorderData.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastSendLine(obj,'area');//上传到服务器
       this.$store.commit('clearTempAreaCache');//清空缓存
       this.show=false;//隐藏面板

@@ -206,7 +206,6 @@ export default {
     mapMoveOut(){//鼠标移出界面外后停止移动
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mouseout',(e)=>{
-        console.log("out")
         if(e.button===0){
           this.$store.state.cameraConfig.doNeedMoveMap=false;
           let point={x:null,y:null};
@@ -372,7 +371,7 @@ export default {
           this.$store.state.mapConfig.clearClick.x=ev.x;//更新点击空白处操作位置
           this.$store.state.mapConfig.clearClick.y=ev.y;
         }
-        this.$store.state.elementOperationBoardConfig.display=false;//关闭element operation board
+        this.$store.state.operationBoardConfig.display=false;//关闭element operation board
       })
     }
   },

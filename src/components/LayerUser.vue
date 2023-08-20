@@ -5,8 +5,13 @@
         <img id="headImage" draggable="false" @click="openLoginBord()" :src="'http://q.qlogo.cn/g?b=qq&amp;nk='+qq+'&amp;s=640&amp;mType=friendlist'" alt="头像"/>
       </div>
       <div class="right">
-        <span>{{name}}</span>
-        <span>{{email}}</span>
+        <div class="userName">{{name}}</div>
+        <div class="userEmail">{{email}}</div>
+        <div class="userPanelBottom">
+          <div class="userPanelButton">
+            Test mode
+          </div>
+        </div>
       </div>
     </div>
     <banana-login-board v-show="isOpenBord" :server-key="serverKey"></banana-login-board>
@@ -170,7 +175,19 @@ export default {
   user-select:none;
 }
 .userLayerBox{
-  box-shadow: #c1c1c1 0px 0px 4px;background: #fefefe;width: 220px;height: 60px;display: flex;justify-content: center;align-items: center;position: absolute;top: 10px;right: 10px;z-index: 550;border-radius: 6px;overflow: hidden;
+  box-shadow: #c1c1c1 0px 0px 4px;
+  background: #fefefe;
+  width: 220px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 550;
+  border-radius: 6px;
+  overflow: hidden;
 }
 .userLayer{
   position: fixed;
@@ -178,10 +195,68 @@ export default {
   right: 0px;
   top: 0px;
 }
-.headImage{display: flex;justify-content: center;align-items: center;width: 60px;height: 60px}
-.headImage img:hover{box-shadow: #d7d7d7 0px 0px 4px;width: 60px;height: 60px}
-.headImage img{border-radius: 6px;box-shadow: #cdcdcd 0px 0px 4px;transition: .4s;width: 45px;height: 45px}
-.right{width: calc(100% - 55px);margin-left: 5px;height: 100%;display: flex;justify-content: left;align-content: space-around;align-items: center;flex-wrap: wrap;overflow: hidden}
-.right span:first-child{text-shadow: #d2d2d2 2px 2px 2px;width: calc(100% - 2px);line-height: 36px;height: 50%;font-weight: 800;font-size: 18px;color: #181818;overflow: hidden}
-.right span:last-child{text-shadow: #d4d4d4 2px 2px 2px;width: calc(100% - 2px);line-height: 24px;height: 50%;font-weight: 400;font-size: 12px;color: #3590ff}
+.headImage{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 70px;
+  height: 60px
+}
+.headImage img:hover{
+  transform: scale(1.25);
+}
+.headImage img{
+  transition: .4s;
+  width: 60px;
+  height: 60px;
+}
+.right{
+  width: calc(100% - 70px);
+  height: 100%;
+  display: flex;
+  justify-content: left;
+  align-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  overflow: hidden;
+}
+.userName{
+  width: calc(100% - 2px);
+  height: 20px;
+  font-weight: 800;
+  font-size: 16px;
+  color: #181818;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.userEmail{
+  width: calc(100% - 2px);
+  height: 20px;
+  font-weight: 400;
+  font-size: 12px;
+  color: #3590ff;
+  display: flex;
+  align-items: center;
+}
+.userPanelBottom{
+  height: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.userPanelButton{
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 100;
+  font-size: 12px;
+  transition: 0.4s;
+}
+.userPanelButton:first-child:hover{
+  background: #b2d3ff;
+}
 </style>

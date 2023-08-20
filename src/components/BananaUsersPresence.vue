@@ -217,7 +217,6 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  box-shadow: #cdcdcd 0px 0px 4px;
   -webkit-user-drag: none;
 }
 </style>

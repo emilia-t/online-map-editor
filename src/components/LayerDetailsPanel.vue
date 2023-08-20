@@ -117,6 +117,7 @@ export default {
     },
     dragStart(){
       this.$refs.smallSlider.addEventListener('mousedown',(ev)=>{
+        this.$refs.LayerDetailsPanel.style.transition='none';
         let rect=this.$refs.LayerDetailsPanel.getClientRects();
         let windowWidth=window.innerWidth;
         let windowHeight=window.innerHeight;
@@ -145,6 +146,7 @@ export default {
     },
     dragEnd(){
       document.addEventListener('mouseup',(ev)=>{
+        this.$refs.LayerDetailsPanel.style.transition='0.3s';
         this.dragStatus=false;
         this.dragStartPt={x:null,y:null};
         this.dragOffset={x:null,y:null};
@@ -228,9 +230,6 @@ export default {
   margin: 0px 2px;
   background: #7d7d7d;
 }
-.nail:hover{
-  /*background: #000000!important;*/
-}
 .smallSlider{
   width: 80px;
   height: 20px;
@@ -307,6 +306,7 @@ export default {
   transform: rotate(25deg);
 }
 .detailsPanelLayer{
+  transition: 0.3s;
   position: fixed;
   z-index: 585;
   top:370px;

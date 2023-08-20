@@ -224,14 +224,22 @@ export default {
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
       this.cache.custom=JSON.parse(JSON.stringify(this.custom));
+      let localId=this.$store.state.serverData.socket.localId--;
       let obj={
-        class:"point",
+        id:localId,
+        class:'point',
         point:{x:this.$store.state.mapConfig.tempPoint.point.x,y:this.$store.state.mapConfig.tempPoint.point.y},
         color:this.color,
         width:this.width,
         details:this.details,
         custom:this.custom,
       };
+      let recordObj={
+        type:'upload',
+        class:'point',
+        id:localId,
+      };
+      this.$store.state.recorderData.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
       this.show=false;
       this.$root.sendInstruct('addNewPointEnd');

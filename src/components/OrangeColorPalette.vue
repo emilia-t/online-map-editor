@@ -1,6 +1,6 @@
 <template>
   <div class="color-picker">
-    <input @focusout="focusout($event)" class="colorInput" title="点击选择颜色" @input="CallBack" type="color" v-model:value="color">
+    <input @click="openInput()" @focusout="focusout($event)" class="colorInput" title="点击选择颜色" @input="CallBack" type="color" v-model:value="color">
   </div>
 </template>
 
@@ -9,14 +9,15 @@ export default {
   name: "OrangeColorPalette",
   data(){
     return {
-      color:null
+      color:null,
+      open:false,
     }
   },
   props:{
     default:{
       type:String,
       default:'#ffffff',
-      required:true
+      required:true,
     }
   },
   mounted(){
@@ -24,10 +25,19 @@ export default {
   },
   methods:{
     focusout(ev){
-      this.$emit('OrangeColorPaletteFocusout',ev.target.value.substring(1));
+      if(this.open){
+        this.open=false;
+        this.$emit('OrangeColorPaletteFocusout',ev.target.value.substring(1));
+      }
     },
     CallBack(){
       this.$emit('OrangeColorPaletteCall',this.color.substring(1));
+    },
+    openInput(){
+      if(!this.open){
+        this.open=true;
+        this.$emit('OrangeColorPaletteMousedown','');
+      }
     }
   },
   computed:{
@@ -45,6 +55,11 @@ export default {
         if(newValue.color!==undefined){
           this.color='#'+newValue.color;
         }
+      }
+    },
+    default:{
+      handler(newValue){
+        this.color=newValue;
       }
     }
   }

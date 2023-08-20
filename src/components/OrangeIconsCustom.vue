@@ -1,6 +1,6 @@
 <template>
 <div class="OrangeIconsCustom">
-  <div class="iconBox" v-for="icon in icons" :key="icon.serial" @click="call(icon)">
+  <div class="iconBox" v-for="icon in icons" :key="icon.serial" @click="callBack(icon)" @mousedown="selectStart($event)">
     <img v-if="selected!==icon.serial" class="icon" :src="'../../static/icons/'+icon.icon" alt="" :title="icon.name"/>
     <img v-if="selected===icon.serial" class="selected" :src="'../../static/icons/'+icon.icon" alt="" :title="icon.name"/>
   </div>
@@ -34,13 +34,19 @@ export default {
           'serial':3
         }
       ],
-      selected:0
+      selected:0,
     }
   },
   methods:{
-    call(data){
+    callBack(data){
       this.selected=data.serial;
       this.$emit('OrangeIconsCustomCall',data.icon);
+    },
+    selectStart(ev){
+      if(ev.button!==0){
+        return false;
+      }
+      this.$emit('OrangeIconsCustomMousedown','');
     }
   }
 }

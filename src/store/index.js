@@ -190,7 +190,7 @@ export default new Vuex.Store({
               } else {
                 reject('下载似乎失败了');
                 this.removeArrayValue(this.network.downloadManage,downloadObj);
-                console.log('dm下载失败减少');
+                //console.log('dm下载失败减少');
               }
             };
             this.network.downloadManage.push(downloadObj);//保存xhr对象 和xyz索引
@@ -348,6 +348,8 @@ export default new Vuex.Store({
           this.url=url;
           this.isLink=false;
           this.isLogin=false;
+          this.localId=-1;//元素创建后的本地虚拟id
+          this.updateId=1;//提交给服务器的本次变更id前缀为"up"为提交变更,前缀为"re"为撤销变更
           this.numberOfLoginAttempts=0;//登录成功次数
           this.numberOfLoginFailed=0;//登录失败次数
           this.reinitializeElement=0;//重新初始化元素
@@ -355,6 +357,8 @@ export default new Vuex.Store({
           this.reinitializeSourcePoints=[];//初始化源
           this.reinitializeSourcePoint=null;//初始化源
           this.socket=undefined;//会话
+          this.errors=[];//错误数据
+          this.corrects=[];
           this.messages=[];
           this.presence=[];
           this.selectElements=[];
@@ -364,7 +368,7 @@ export default new Vuex.Store({
           this.mapData={points:[],lines:[],areas:[]};
           this.config={};
           this.otherA1=[];
-          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData'];//指令类型合集
+          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct'];//指令类型合集
           this.Instruct={//指令合集
             login(email,password) {//登录指令
               this.email=email || '';
@@ -424,6 +428,9 @@ export default new Vuex.Store({
             },
             broadcast_pickEndElement(data){
               return {type:'broadcast',class:'pickEndElement',data}
+            },
+            broadcast_restoreElement(data){
+              return {type:'broadcast',class:'restoreElement',data}
             },
           };
           this.QIR={//检测间
@@ -560,6 +567,7 @@ export default new Vuex.Store({
             }
             sObj.type=data.type;
             sObj.id=data.id;
+            sObj.updateId=data.updateId;
             sObj.points=data.points;
             if(this.QIR.hasProperty(data,'point')){
              if(this.QIR.isObject(data.point)){
@@ -573,7 +581,7 @@ export default new Vuex.Store({
             this.send(this.Instruct.broadcast_updateElementNode(sObj));
           }
           catch (e) {
-
+            console.log(e);
           }
         }
         broadcastUpdateElement(data){//广播更新某一要素
@@ -601,6 +609,9 @@ export default new Vuex.Store({
         }
         broadcastDeleteElement(id){//广播删除某一要素
           this.send(this.Instruct.broadcast_deleteElement(id));
+        }
+        broadcastRestoreElement(id){//广播删除某一要素
+          this.send(this.Instruct.broadcast_restoreElement(id));
         }
         broadcastSendText(data){//广播普通文本信息
           this.send(this.Instruct.broadcast_textMessage(data));
@@ -640,7 +651,7 @@ export default new Vuex.Store({
               }
             }
             let basicStructure={//1.0构建点数据基本结构
-              id:0,
+              id:data.id,
               type:'line',
               points:[],
               point:null,//必要
@@ -691,14 +702,12 @@ export default new Vuex.Store({
               }
             }
             let basicStructure={
-              id:0,
+              id:data.id,
               type:'point',
               points:[],
               point:null,
               color:'',
-              length:null,
               width:2,
-              size:null,
               childRelations:[],
               fatherRelation:'',
               childNodes:[],
@@ -1302,6 +1311,14 @@ export default new Vuex.Store({
               }
               break;
             }
+            case 'send_error':{
+              this.errors.push(jsonData);
+              break;
+            }
+            case 'send_correct':{
+              this.corrects.push(jsonData);
+              break;
+            }
             default:{
             }
           }
@@ -1523,7 +1540,7 @@ export default new Vuex.Store({
       target:null,
       targetNode:null,
     },
-    elementOperationBoardConfig:{//元素右键操作面板的配置
+    operationBoardConfig:{//元素右键操作面板的配置
       posX:null,
       posY:null,
       display:false
@@ -1538,6 +1555,7 @@ export default new Vuex.Store({
       startUpdateServerStatus:true,//2.是否启用启动时自动搜索服务器状态
       elementPanelLayerShow:false,//是否开启元素面板
       openFpsMonitor:false,//fps监控开启
+      openStepRecorder:false,//步骤记录器
     },
     serverData:{//服务器相关数据
       socket:undefined,//1.服务器连接会话
@@ -1558,6 +1576,17 @@ export default new Vuex.Store({
     },
     monitorData:{
       fps:0
+    },
+    recorderData:{
+      initialIntent:[
+
+      ],
+      reachIntent:[
+
+      ],
+      failIntent:[
+
+      ]
     },
   },
   getters: {

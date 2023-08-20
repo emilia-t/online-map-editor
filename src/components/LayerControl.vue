@@ -3,25 +3,22 @@
     <div class="controlButtonBox"><!--添加按钮-->
       <div @click="addInterestPointStart()" class="ButtonOut">
         <banana-control-button :color="Url1Color" :button-img-prop="Url1"></banana-control-button>
-        <span class="controlButtonName">兴趣点</span>
       </div>
       <div @click="addRouteLineStart()" class="ButtonOut">
         <banana-control-button :color="Url2Color" :button-img-prop="Url2"></banana-control-button>
-        <span class="controlButtonName">路径</span>
       </div>
       <div @click="addAreaStart()" class="ButtonOut">
         <banana-control-button :color="Url3Color" :button-img-prop="Url3"></banana-control-button>
-        <span class="controlButtonName">区域</span>
       </div>
       <div @click="addCurveStart()" class="ButtonOut">
         <banana-control-button :color="Url4Color" :button-img-prop="Url4"></banana-control-button>
-        <span class="controlButtonName">曲线</span>
       </div>
     </div>
     <banana-element-operation-board></banana-element-operation-board><!--元素右键编辑面板-->
     <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"></banana-point-attribute-board><!--点编辑属性面板-->
     <banana-line-attribute-board :style-top="theConfig.lineBoardTop" :style-left="theConfig.lineBoardLeft"></banana-line-attribute-board><!--线编辑属性面板-->
     <banana-area-attribute-board :style-top="theConfig.areaBoardTop" :style-left="theConfig.areaBoardLeft"></banana-area-attribute-board><!--区域编辑属性面板-->
+    <banana-recorder-panel></banana-recorder-panel>
   </div>
 </template>
 
@@ -31,13 +28,14 @@ import BananaControlButton from "./BananaControlButton";
 import BananaAreaAttributeBoard from "./BananaAreaAttributeBoard";
 import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
 import BananaLineAttributeBoard from "./BananaLineAttributeBoard";
+import BananaRecorderPanel from "./BananaRecorderPanel";
 import interestPoint from '../../static/point.png';
 import lineImg from '../../static/route.png';
 import regionImg from '../../static/area.png';
 import curveImg from '../../static/curve.png';
 export default {
   name: "LayerControl",
-  components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaLineAttributeBoard,BananaAreaAttributeBoard},
+  components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaRecorderPanel,BananaLineAttributeBoard,BananaAreaAttributeBoard},
   data(){
     return {
       MY_NAME:"LayerControl",
@@ -76,7 +74,7 @@ export default {
         areaBoardTop:0,//区域属性面板的位置
         areaBoardLeft:-400,
         obServe:false,//观察者
-      }
+      },
     }
   },
   mounted() {
@@ -346,7 +344,14 @@ export default {
           case 'Delete':{
             if(this.$store.state.detailsPanelConfig.targetNode===null){
               if(this.$store.state.detailsPanelConfig.target!==-1){
-                this.$store.state.serverData.socket.broadcastDeleteElement(this.$store.state.detailsPanelConfig.target)
+                let id=this.$store.state.detailsPanelConfig.target;
+                let recordObj=JSON.parse(JSON.stringify({
+                  type:'delete',
+                  class:this.$store.state.detailsPanelConfig.data.type,
+                  id:id,
+                }));
+                this.$store.state.recorderData.initialIntent.push(recordObj);
+                this.$store.state.serverData.socket.broadcastDeleteElement(id);
               }
             }
             break;
@@ -383,16 +388,87 @@ export default {
               if(this.$store.state.mapConfig.tempLine.points.length!==0){
                 this.$store.state.mapConfig.tempLine.points.pop();
                 this.$store.state.mapConfig.tempLine.showPos.pop();
+                return true;
               }
               if(this.$store.state.mapConfig.tempArea.points.length!==0){
                 this.$store.state.mapConfig.tempArea.points.pop();
                 this.$store.state.mapConfig.tempArea.showPos.pop();
+                return true;
+              }
+              if(this.$store.state.recorderData.reachIntent.length!==0){
+                this.restoreOldIntent(this.$store.state.recorderData.reachIntent.shift());
               }
               break;
             }
           }
         }
       });
+    },
+    restoreOldIntent(intent){
+      let id=intent.id;
+      let type=intent.type;
+      let kind=intent.class;
+      switch (type){
+        case 'upload':{
+          this.$root.general_script.alert_tips('撤回操作不可逆，且无法保证执行成功');
+          this.$store.state.serverData.socket.broadcastDeleteElement(id);
+          break;
+        }
+        case 'updateElement':{
+          for(let i=0;i<intent.changes.length;i++){
+            let change=intent.changes[i];
+            switch (change){
+              case 'color':{
+                let sendDataObj={
+                  id:id,
+                  changes:{color:intent.oldValue}
+                };
+                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+                break;
+              }
+              case 'width':{
+                let sendDataObj={
+                  id:id,
+                  changes:{width:intent.oldValue}
+                };
+                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+                break;
+              }
+              case 'custom':{
+                let sendDataObj={
+                  id:id,
+                  changes:{custom:intent.oldValue}
+                };
+                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+                break;
+              }
+              case 'details':{
+                let sendDataObj={
+                  id:id,
+                  changes:{details:intent.oldValue}
+                };
+                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+                break;
+              }
+            }
+          }
+          break;
+        }
+        case 'updateNode':{
+          let sendDataObj={
+            id:id,
+            point:intent.oldValue.point,
+            points:intent.oldValue.points,
+            type:kind,
+          };
+          this.$store.state.serverData.socket.broadcastUpdateElementNode(sendDataObj);
+          break;
+        }
+        case 'delete':{
+          this.$store.state.serverData.socket.broadcastRestoreElement(id);
+          break;
+        }
+      }
     },
     F8Event(){
       this.$root.sendInstruct('openF4DebugBord');
@@ -611,8 +687,8 @@ export default {
   align-items: center;
 }
 .controlButtonBox{
-  width: 70px;
-  height: 325px;
+  width: 60px;
+  height: 220px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -621,15 +697,8 @@ export default {
   z-index: 550;
   right: 10px;
   top:80px;
-  background: rgb(252,252,252);
+  background: white;
   border-radius: 6px;
   box-shadow:  #c5c5c5 0px 0px 6px;
-}
-.controlButtonName{
-  user-select: none;
-  font-size: 13px;
-  font-weight: 400;
-  margin-bottom: 10px;
-  color: rgba(42,42,42,0.8);
 }
 </style>

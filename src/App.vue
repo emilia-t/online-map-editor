@@ -53,6 +53,10 @@ body, html {
 :root{
 
 }
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.1) rgba(0,0,0,0.2);
+}
 *::-webkit-scrollbar {
   width: 4px;
 }
@@ -63,6 +67,10 @@ body, html {
 *::-webkit-scrollbar-track {
   border-radius: 0;
   background: rgba(0,0,0,0.1);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.1) rgba(0,0,0,0.2);
 }
 *{
   font-family: Roboto;

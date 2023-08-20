@@ -202,6 +202,7 @@ export default {
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));
+      let localId=this.$store.state.serverData.socket.localId--;
       let obj={
         childNodes:[],
         childRelations:[],
@@ -210,7 +211,7 @@ export default {
         details:this.details,
         fatherNode:'',
         fatherRelation: '',
-        id:0,
+        id:localId,
         length:null,
         point:this.tempLine.point,
         points:this.tempLine.points,
@@ -218,6 +219,12 @@ export default {
         type:'line',
         width:this.width
       };
+      let recordObj={
+        type:'upload',
+        class:'line',
+        id:localId,
+      };
+      this.$store.state.recorderData.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastSendLine(obj);
       this.$store.commit('clearTempLineCache');
       this.show=false;

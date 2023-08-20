@@ -1,8 +1,6 @@
 <template>
-  <div>
-    <div class="slider" :style="style">
-      <input @focusout="focusout($event)" @input="CallBack" type="range" :min="min" :max="max" v-model:value="number" :style="divStyle" class="slider-range">
-    </div>
+  <div class="slider" :style="style">
+    <input @mousedown="openInput($event)" @focusout="focusout($event)" @input="CallBack" type="range" :min="min" :max="max" v-model:value="number" :style="divStyle" class="slider-range">
   </div>
 </template>
 
@@ -11,7 +9,8 @@ export default {
   name: "OrangeSlideBlock",
   data(){
     return {
-      number:0//这是滑动块的数值
+      number:0,
+      open:false,
     }
   },
   props:{
@@ -34,13 +33,28 @@ export default {
       default:''
     }
   },
+  mounted() {
+    this.number=this.default;
+  },
   methods:{
     focusout(ev){
-      this.$emit('OrangeSlideBlockFocusout',ev.target.value);
+      if(this.open){
+        this.open=false;
+        this.$emit('OrangeSlideBlockFocusout',ev.target.value);
+      }
     },
     CallBack(){
       this.$emit('OrangeSlideBlockCall',this.number)
     },
+    openInput(ev){
+      if(ev.button!==0){
+        return false;
+      }
+      if(!this.open){
+        this.open=true;
+        this.$emit('OrangeSlideBlockMousedown','');
+      }
+    }
   },
   computed:{
     style(){
@@ -49,8 +63,12 @@ export default {
       }
     }
   },
-  mounted() {
-    this.number=this.default;
+  watch:{
+    default:{
+      handler(newValue){
+        this.number=newValue;
+      }
+    }
   }
 }
 </script>
