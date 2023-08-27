@@ -84,7 +84,7 @@ export default {
         width:null
       },
       details:[
-        {"key":"名称","value":""},
+        {"key":"名称","value":"点"},
         {"key":"地址","value":""},
         {"key":"类型","value":""},
         {"key":"区域","value":""},
@@ -239,6 +239,13 @@ export default {
         class:'point',
         id:localId,
       };
+      this.details=[
+        {"key":"名称","value":"点"+this.$store.state.serverData.socket.localId},
+        {"key":"地址","value":""},
+        {"key":"类型","value":""},
+        {"key":"区域","value":""},
+        {"key":"备注","value":""}
+      ];
       this.$store.state.recorderData.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
       this.show=false;

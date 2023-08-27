@@ -3,7 +3,7 @@
   <div class="strip">
 
   </div>
-  <div class="content"><!--主内容-->
+  <div class="content" ref="content"><!--主内容-->
     <div class="InterfaceHead"><!--顶部-->
       <div class="HeadLeft"><!--标题-->
         <svg t="1681041457556" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="27339" width="200" height="200"><path d="M0 0" fill="" p-id="27340"></path><path d="M128 608h768v192H128v-192z m0-256h768v192H128v-192z m32-140.8h704l28.8 73.6H131.2L160 211.2zM131.2 160L64 284.8V864h896V284.8L896 160H131.2z" fill="" p-id="27341"></path><path d="M768 416h64v64h-64zM768 672h64v64h-64z" fill="" p-id="27342"></path></svg>
@@ -71,7 +71,7 @@
           </div>
         </div>
         <div class="Tips"><!--提示信息-->
-          账户和密码可以不填写
+
         </div>
       </div>
       <div class="AncButton"><!--提交按钮-->
@@ -137,7 +137,44 @@ export default {
       this.stopBubble();
       this.getLocalServerConfig();//获取本地服务器配置
       this.watchStorage();//监听本地配置变动
-      this.getLocalMapConfig()
+      this.getLocalMapConfig();
+      this.setDropEvent();
+    },
+    setDropEvent(){
+      function isValidJson(fileContent) {
+        try {
+          JSON.parse(fileContent);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+      // 为box添加拖拽事件
+      this.$refs.content.addEventListener('dragover', (e) => {
+        e.preventDefault(); // 阻止默认行为
+      });
+      this.$refs.content.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        const reader = new FileReader();// 读取文件内容
+        reader.onload = (e) => {
+          const fileContent = e.target.result;
+          const status=isValidJson(fileContent);
+          if(status){
+            let OMS=JSON.parse(fileContent);
+            if(OMS.hasOwnProperty('oms') && OMS.hasOwnProperty('version')){
+              let version=OMS.version;
+              switch (version){
+                case '1.0':{
+                  this.createServerThroughFile(OMS);
+                  break;
+                }
+              }
+            }
+          }
+        };
+        reader.readAsText(file);
+      });
     },
     handlerCnBox(message){//接收来自Box的消息
       if(message=='reload'){
@@ -199,6 +236,28 @@ export default {
       let url=this.$refs.UrlInput.value;//1收集信息
       let account=this.$refs.AccountInput.value;
       let password=this.$refs.PasswordInput.value;
+      if(!this.isValidUrl(url)){//2.检测URL合理性
+        this.$root.general_script.alert_tips('Url格式错误，请参照帮助界面');
+        return false;
+      }
+      if(account!==''){//3.检测账号（电子邮箱）合理性
+        if(!this.isValidEmail(account)){
+          this.$root.general_script.alert_tips('账号格式错误，请参照帮助界面');
+          return false;
+        }
+      }
+      if(password!==''){//4.检测密码合理性
+        if(!this.isValidPassword(password)){
+          this.$root.general_script.alert_tips('密码含有非法字符，请参照帮助界面');
+          return false;
+        }
+      }
+      this.saveLocalServerConfig({url,account,password});//5.保存至本地
+    },
+    createServerThroughFile(OMS){//创建服务器
+      let url=OMS.serverAddress;//1收集信息
+      let account=OMS.account;
+      let password=OMS.password;
       if(!this.isValidUrl(url)){//2.检测URL合理性
         this.$root.general_script.alert_tips('Url格式错误，请参照帮助界面');
         return false;
@@ -576,15 +635,15 @@ input:focus{
 .icon{
   width: 30px;
   height: 30px;
-  padding: 0px 40px 0px 0px;
+  padding: 0px 10px 0px 0px;
 }
 .InterfaceHeadTitle{
   font-size: 20px;
   font-weight: 400;
-  letter-spacing:4px
+  letter-spacing:2px
 }
 .HeadLeft{
-  width: 260px;
+  width: 200px;
   display: flex;
   justify-content: center;
   align-content: center;

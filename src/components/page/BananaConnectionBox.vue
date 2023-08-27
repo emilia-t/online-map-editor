@@ -4,6 +4,9 @@
     <img class="ConnectionImg" alt="服务器显示图" :src="serverImg"/>
   </div>
   <router-link :to="`/m/${serverKey}`" title="点击打开地图"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
+  <div class="downloadButtonBox" title="下载OMS文件" @click="downLoad()"><!--右上角更多属性按钮-->
+    <img class="icon" src="/static/download.png" alt="">
+  </div>
   <div class="moreButtonBox" title="点击查看更多" @click="openDetailBoard()"><!--右上角更多属性按钮-->
     <svg t="1681047402121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="33387" width="200" height="200"><path d="M288 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33388" data-spm-anchor-id="a313x.7781069.0.i32" class="selected"></path><path d="M512 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33389" data-spm-anchor-id="a313x.7781069.0.i33" class="selected"></path><path d="M736 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33390" data-spm-anchor-id="a313x.7781069.0.i34" class="selected"></path></svg>
   </div>
@@ -295,6 +298,31 @@ export default {
       }catch (e) {
       }
     },
+    downLoad(){
+      let account=this.account;
+      let password=null;
+      let serverName=this.serverName;
+      let serverAddress=this.serverAddress;
+      let localAccounts=JSON.parse(window.localStorage.getItem('accounts'));
+      for(let key in localAccounts){
+        if(key===account){
+          password=localAccounts[key].P;
+        }
+      }
+      let OMS={
+        oms:'oms',
+        version:'1.0',
+        account,
+        password,
+        serverName,
+        serverAddress,
+      };
+      const file=new Blob([JSON.stringify(OMS)], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(file);
+      a.download = serverName+'.oms';
+      a.click();
+    },
     openDetailBoard(){
       this.$refs.moreBoard.style.top='0px';
     },
@@ -360,6 +388,15 @@ export default {
   position: absolute;
   z-index: 550;
   top:0px;
+  cursor: pointer;
+}
+.downloadButtonBox{
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 0px;
+  right: 40px;
+  z-index: 550;
   cursor: pointer;
 }
 .moreButtonBox{

@@ -5,7 +5,6 @@ import general_script from './js/general_script_v1.1';
 import CONFIG from './js/config';
 import store from './store';
 import '@/icons';
-import {JSEncrypt} from "jsencrypt";
 Vue.config.productionTip = false;//允许生产环境输入错误信息
 new Vue({
   el:'#app',
@@ -23,6 +22,7 @@ new Vue({
       reloadAccounts:{pass:0,intercept:0},
       reloadServers:{pass:0,intercept:0},
       addNewPointEnd:{pass:0,intercept:0},
+      setMenuPanelDisplay:{pass:0,intercept:0},
       previewLine:{pass:0,intercept:0},
       addNewLineEnd:{pass:0,intercept:0},
       disableZoomAndMove:{pass:0,intercept:0},
@@ -245,5 +245,5 @@ new Vue({
     offsetY(){
       return this.$store.state.cameraConfig.offsetY;
     },
-  }
+  },
 })

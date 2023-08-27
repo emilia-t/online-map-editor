@@ -338,6 +338,13 @@ export default {
         ev.stopPropagation();
       });
       this.findLocalAccounts();//查找本地账号配置
+      this.checkRouter();
+    },
+    checkRouter(){
+      let rex=/^\/m/;
+      if(rex.test(this.$router.currentRoute.path)){
+        this.panelShow=false;
+      }
     },
     async getHiToKoTo(){
       let xhr = new XMLHttpRequest();
@@ -712,6 +719,9 @@ export default {
     }
   },
   computed:{
+    menuPanelDisplay(){
+      return this.$store.state.commits.menuPanelDisplay;
+    },
     reloadAccounts(){
       return this.$store.state.commits.reloadAccounts;
     },
@@ -726,6 +736,20 @@ export default {
     }
   },
   watch:{
+    '$route'(to,from){
+      const regex = /^\/m/;
+      if (from.path === '/' && regex.test(to.path)) {
+        this.panelShow=false;
+      }
+      if(regex.test(from.path) && to.path=== '/'){
+        this.panelShow=true;
+      }
+    },
+    menuPanelDisplay:{
+      handler(newValue){
+       this.panelShow=newValue;
+      }
+    },
     AboutSettings:{
       handler(){
         this.getHiToKoTo();
