@@ -5,7 +5,7 @@
   </div>
   <router-link :to="`/m/${serverKey}`" title="点击打开地图"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
   <div class="downloadButtonBox" title="下载OMS文件" @click="downLoad()"><!--右上角更多属性按钮-->
-    <img class="icon" src="/static/download.png" alt="">
+    <download></download>
   </div>
   <div class="moreButtonBox" title="点击查看更多" @click="openDetailBoard()"><!--右上角更多属性按钮-->
     <svg t="1681047402121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="33387" width="200" height="200"><path d="M288 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33388" data-spm-anchor-id="a313x.7781069.0.i32" class="selected"></path><path d="M512 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33389" data-spm-anchor-id="a313x.7781069.0.i33" class="selected"></path><path d="M736 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33390" data-spm-anchor-id="a313x.7781069.0.i34" class="selected"></path></svg>
@@ -56,8 +56,10 @@
 </template>
 
 <script>
+import Download from "../svgValidIcons/download";
 export default {
   name: "BananaConnectionBox",
+  components:{Download},
   data(){
     return {
       MyConfig:{
@@ -398,6 +400,9 @@ export default {
   right: 40px;
   z-index: 550;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .moreButtonBox{
   width: 40px;

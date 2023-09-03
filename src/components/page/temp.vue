@@ -3,12 +3,7 @@
     <div class="panelHead">
       <div class="headTitle">
         <span>坪山区测试地图</span>
-        <svg :copyright="this.$root.Copyright" style="cursor:pointer;padding-left:10px"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          width="14px" height="20px">
-          <path fill-rule="evenodd"  fill="rgb(92, 92, 92)" d="M2.500,4.500 C1.464,4.500 0.625,3.661 0.625,2.625 C0.625,1.589 1.464,0.750 2.500,0.750 C3.536,0.750 4.375,1.589 4.375,2.625 C4.375,3.661 3.536,4.500 2.500,4.500 ZM4.271,9.500 C4.271,10.536 3.431,11.375 2.396,11.375 C1.360,11.375 0.521,10.536 0.521,9.500 C0.521,8.464 1.360,7.625 2.396,7.625 C3.431,7.625 4.271,8.464 4.271,9.500 ZM2.396,14.500 C3.431,14.500 4.271,15.339 4.271,16.375 C4.271,17.411 3.431,18.250 2.396,18.250 C1.360,18.250 0.521,17.411 0.521,16.375 C0.521,15.339 1.360,14.500 2.396,14.500 Z"/>
-        </svg>
+        <more custom="cursor:pointer"></more>
       </div>
       <div class="headText">
         浏览次数&nbsp;147&nbsp;&nbsp;&nbsp;提交次数&nbsp;2784
@@ -19,34 +14,19 @@
     </div>
     <div class="panelButton">
       <div class="buttonBox">
+        <add-new-layer></add-new-layer>
         <div class="buttonBoxText">
           普通图层
         </div>
       </div>
       <div class="buttonBox">
-        <svg :copyright="this.$root.Copyright"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          width="20.875px" height="15.875px">
-          <path fill-rule="evenodd"  stroke="rgb(92, 92, 92)" stroke-width="1.25px" stroke-linecap="butt" stroke-linejoin="miter" opacity="0.8" fill="none" d="M4.750,10.250 L4.750,8.000 L15.500,8.000 L15.500,10.250 "/>
-          <path fill-rule="evenodd"  stroke="rgb(92, 92, 92)" stroke-width="1.25px" stroke-linecap="butt" stroke-linejoin="miter" opacity="0.659" fill="none" d="M1.375,14.625 L1.375,10.250 L8.250,10.250 L8.250,14.625 L1.375,14.625 Z"/>
-          <path fill-rule="evenodd"  stroke="rgb(92, 92, 92)" stroke-width="1.25px" stroke-linecap="butt" stroke-linejoin="miter" opacity="0.6" fill="none" d="M12.000,14.625 L12.000,10.250 L18.875,10.250 L18.875,14.625 L12.000,14.625 Z"/>
-          <path fill-rule="evenodd"  stroke="rgb(92, 92, 92)" stroke-width="1.25px" stroke-linecap="butt" stroke-linejoin="miter" opacity="0.902" fill="none" d="M10.750,5.875 L10.750,8.000 "/>
-          <path fill-rule="evenodd"  stroke="rgb(92, 92, 92)" stroke-width="1.25px" stroke-linecap="butt" stroke-linejoin="miter" fill="none" d="M7.625,5.875 L7.625,1.500 L14.500,1.500 L14.500,5.875 L7.625,5.875 Z"/>
-        </svg>
+        <add-new-group></add-new-group>
         <div class="buttonBoxText">
           嵌套图层
         </div>
       </div>
       <div class="buttonBox">
-        <svg :copyright="this.$root.Copyright"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          width="19px" height="15px">
-          <path fill-rule="evenodd"  fill="rgb(114, 114, 114)" d="M0.750,7.500 C0.750,3.494 5.430,0.500 9.500,0.500 C13.570,0.500 18.250,3.494 18.250,7.500 C18.250,11.506 13.570,14.500 9.500,14.500 C5.430,14.500 0.750,11.506 0.750,7.500 Z"/>
-          <path fill-rule="evenodd"  fill="rgb(255, 255, 255)" d="M9.500,3.750 C11.571,3.750 13.250,5.429 13.250,7.500 C13.250,9.571 11.571,11.250 9.500,11.250 C7.429,11.250 5.750,9.571 5.750,7.500 C5.750,5.429 7.429,3.750 9.500,3.750 Z"/>
-          <path fill-rule="evenodd"  fill="rgb(114, 114, 114)" d="M9.500,5.500 C10.536,5.500 11.375,6.339 11.375,7.375 C11.375,8.411 10.536,9.250 9.500,9.250 C8.464,9.250 7.625,8.411 7.625,7.375 C7.625,6.339 8.464,5.500 9.500,5.500 Z"/>
-        </svg>
+        <preview-eye></preview-eye>
         <div class="buttonBoxText">
           预览
         </div>
@@ -86,13 +66,15 @@
 </template>
 
 <script>
+import AddNewLayer from "../svgValidIcons/addNewLayer";
+import AddNewGroup from "../svgValidIcons/addNewGroup";
+import PreviewEye from "../svgValidIcons/previewEye";
+import More from "../svgValidIcons/more";
 export default {
   name: "temp",
+  components: {More,AddNewLayer,AddNewGroup,PreviewEye},
   data(){
     return{
-      components:{
-        svgValidIcons
-      },
       ordinaryLayers:{
         layerName:'layerName',
         data:[
