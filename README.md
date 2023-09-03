@@ -1,11 +1,27 @@
-# map
+#instructions
 
-> online map editor
+> online map editor Front-end web development installation and export
+##1.download the latest release on github
 
+##2.add config.js
+```
+cd src/js
+touch config.js
+vim config.js
+
+#vim
+#add the following code
+export default {
+bottomAnchorTextA:'Filing number',
+bottomAnchorTextB:'Filing number',
+bottomAnchorTextC:'Filing number',
+}
+
+```
+##3.install and build
 ```
 ## Build Setup
 
-``` bash
 # install dependencies
 npm install
 
