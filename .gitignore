@@ -13,4 +13,4 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
-config.js
+/src/js/config.js
