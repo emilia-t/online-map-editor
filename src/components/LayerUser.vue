@@ -215,14 +215,15 @@ export default {
   height: 100%;
   display: flex;
   justify-content: left;
-  align-content: space-around;
+  align-content: center;
   align-items: center;
   flex-wrap: wrap;
   overflow: hidden;
 }
 .userName{
+  margin:2px 0px;
   width: calc(100% - 2px);
-  height: 20px;
+  height: 18px;
   font-weight: 800;
   font-size: 16px;
   color: #181818;
@@ -231,8 +232,9 @@ export default {
   align-items: center;
 }
 .userEmail{
+  margin:0px 0px 2px 0px;
   width: calc(100% - 2px);
-  height: 20px;
+  height: 14px;
   font-weight: 400;
   font-size: 12px;
   color: #3590ff;
@@ -240,7 +242,7 @@ export default {
   align-items: center;
 }
 .userPanelBottom{
-  height: 20px;
+  height: 14px;
   width: 100%;
   display: flex;
   justify-content: space-between;

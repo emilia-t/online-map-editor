@@ -24,9 +24,6 @@ export default {
     PageLayerBackground,PageLayerHomePage,PageLayerMenuPanel,PageLayerConnectionInterface,
     LayerBottomAnchor
   },
-  mounted() {
-
-  },
   computed:{
     homeSeparateState(){
       return this.$store.state.pageConfig.homeSeparateState;

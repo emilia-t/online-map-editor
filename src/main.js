@@ -4,11 +4,11 @@ import App from "./App";
 import general_script from './js/general_script_v1.1';
 import CONFIG from './js/config';
 import store from './store';
-import '@/icons';
 Vue.config.productionTip = false;//允许生产环境输入错误信息
 new Vue({
   el:'#app',
   data(){return{
+    Copyright:'Minxi Wan',
     lastTime:0,
     fps:0,
     CONFIG,
