@@ -1,0 +1,34 @@
+Online map editor
+Copyright 2023 Minxi Wan<emilia-t@qq.com>
+
+This project uses Vue under "MIT" License.
+For details, see 
+https://github.com/vuejs/vue/blob/main/LICENSE.
+
+This project uses axios under "MIT" License.
+For details, see 
+https://github.com/axios/axios/blob/v1.x/LICENSE.
+
+This project uses jsencrypt under "MIT" License.
+For details, see 
+https://github.com/travist/jsencrypt/blob/master/LICENSE.txt.
+
+This project uses lodash under "MIT" License.
+For details, see 
+https://github.com/lodash/lodash/blob/master/LICENSE.
+
+This project uses scss under "MIT" License.
+For details, see 
+https://github.com/sass/sass/blob/main/LICENSE.
+
+This project uses vuex under "MIT" License.
+For details, see 
+https://github.com/vuejs/vuex/blob/main/LICENSE.
+
+This project uses vue-router under "MIT" License.
+For details, see 
+https://github.com/vuejs/vue-router/blob/dev/LICENSE.
+
+This project uses webpack under "MIT" License.
+For details, see 
+https://github.com/webpack/webpack/blob/main/LICENSE.
