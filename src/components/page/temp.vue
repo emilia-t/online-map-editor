@@ -2,7 +2,7 @@
   <div class="elementPanelLayer">
     <div class="panelHead">
       <div class="headTitle">
-        <span>坪山区测试地图</span>
+        <span>坪山区测试地图-</span>
         <more custom="cursor:pointer"></more>
       </div>
       <div class="headText">
