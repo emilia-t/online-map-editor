@@ -1,6 +1,7 @@
 #instructions
 
 > online map editor Front-end web development installation and export
+
 ##1.download the latest release on github
 
 ##2.add config.js
