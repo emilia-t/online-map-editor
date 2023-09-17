@@ -122,7 +122,7 @@ export default {
                   points:this.dataSourcePoints
                 },
               }));
-              this.$store.state.recorderData.initialIntent.push(recordObj);
+              this.$store.state.recorderConfig.initialIntent.push(recordObj);
               sourcePoints.splice(delOrder,1);
               if(delOrder===0){
                 sendObj['point']={x:sourcePoints[0].x,y:sourcePoints[0].y};
@@ -617,6 +617,9 @@ export default {
     reinitializeSourcePoint(){
       return this.$store.state.serverData.socket.reinitializeSourcePoint;
     },
+    allReinitialize(){
+      return this.$store.state.commits.allReinitialize;
+    },
   },
   watch:{
     // browserX:{//仅限于canvas不支持动态视图才开启
@@ -637,6 +640,11 @@ export default {
     //   },
     //   deep:true
     // },
+    allReinitialize:{
+      handler(){
+        this.initializePosition();
+      }
+    },
     pickConfig:{
       handler(newValue){
         let lock=newValue.id;
@@ -767,7 +775,7 @@ export default {
               points:this.dataSourcePoints
             },
           }));
-          this.$store.state.recorderData.initialIntent.push(recordObj);
+          this.$store.state.recorderConfig.initialIntent.push(recordObj);
           this.$store.state.serverData.socket.broadcastUpdateElementNode(data);
           this.shiftVirtualStatus=false;
           this.shiftVirtualNodeOrder=null;
@@ -809,7 +817,7 @@ export default {
                     points:this.dataSourcePoints
                   },
                 }));
-                this.$store.state.recorderData.initialIntent.push(recordObj);
+                this.$store.state.recorderConfig.initialIntent.push(recordObj);
                 this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);//上传服务器
                 this.shiftStartPoint.x=null;
                 this.shiftStartPoint.y=null;
@@ -833,7 +841,7 @@ export default {
               points:this.dataSourcePoints
             },
           }));
-          this.$store.state.recorderData.initialIntent.push(recordObj);
+          this.$store.state.recorderConfig.initialIntent.push(recordObj);
           let newAccPos=this.$root.computeMouseActualPos(newValue);//1.计算新的位置
           if(newAccPos!==false && this.shiftAllStartPoint!==false){
             let axOffset=newAccPos.x-this.shiftAllStartPoint.x;//计算实际偏移量

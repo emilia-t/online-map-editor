@@ -5,31 +5,40 @@ import general_script from './js/general_script_v1.1';
 import CONFIG from './js/config';
 import store from './store';
 Vue.config.productionTip = false;//允许生产环境输入错误信息
+Array.prototype.remove = function (val) {
+  const index = this.indexOf(val);
+  if (index > -1) {
+    return this.splice(index, 1);
+  }
+  return this;
+}
 new Vue({
   el:'#app',
-  data(){return{
-    Copyright:'Minxi Wan',
-    lastTime:0,
-    fps:0,
-    CONFIG,
-    general_script,
-    commitsConfig:{
-      disabledList:['createTestLine'],
-      anonymousInstruct:{pass:0,intercept:0},
-      createTestLine:{pass:0,intercept:0},
-      openF4DebugBord:{pass:0,intercept:0},
-      openDetailsPanel:{pass:0,intercept:0},
-      reloadAccounts:{pass:0,intercept:0},
-      reloadServers:{pass:0,intercept:0},
-      addNewPointEnd:{pass:0,intercept:0},
-      setMenuPanelDisplay:{pass:0,intercept:0},
-      previewLine:{pass:0,intercept:0},
-      addNewLineEnd:{pass:0,intercept:0},
-      disableZoomAndMove:{pass:0,intercept:0},
-      disableMove:{pass:0,intercept:0},
-      addNewAreaEnd:{pass:0,intercept:0},
+  data(){
+    return{
+      Copyright:'Minxi Wan',
+      lastTime:0,
+      fps:0,
+      CONFIG,
+      general_script,
+      commitsConfig:{
+        disabledList:['createTestLine'],
+        createTestLine:{pass:0,intercept:0},
+        openF4DebugBord:{pass:0,intercept:0},
+        openDetailsPanel:{pass:0,intercept:0},
+        reloadAccounts:{pass:0,intercept:0},
+        reloadServers:{pass:0,intercept:0},
+        addNewPointEnd:{pass:0,intercept:0},
+        setMenuPanelDisplay:{pass:0,intercept:0},
+        previewLine:{pass:0,intercept:0},
+        addNewLineEnd:{pass:0,intercept:0},
+        disableZoomAndMove:{pass:0,intercept:0},
+        disableMove:{pass:0,intercept:0},
+        addNewAreaEnd:{pass:0,intercept:0},
+        allReinitialize:{pass:0,intercept:0},
+      }
     }
-  }},
+  },
   router,
   store,
   components:{App},
@@ -37,7 +46,7 @@ new Vue({
   created(){
     if(this.$store.state.userSettingConfig.openFpsMonitor){
       setTimeout(()=>this.monitorFPS(),1000);
-      setInterval(()=>this.$store.state.monitorData.fps=this.fps,1000);
+      setInterval(()=>this.$store.state.monitorConfig.fps=this.fps,1000);
     }
   },
   methods:{
@@ -59,20 +68,6 @@ new Vue({
         //或者应该修改某一state的状态
      }
     **/
-    sendDataInstruct(name,price){//发送一条带有数据的命令
-      switch (name) {
-        case 'anonymousInstruct':{
-          if(this.filter(name)){
-            this.$store.state.anonymousInstruct.name=name;
-            this.$store.state.anonymousInstruct.data=price;
-            this.commitsConfig.anonymousInstruct.pass++;
-          }else {
-            this.commitsConfig.anonymousInstruct.intercept++;
-          }
-          break;
-        }
-      }
-    },
     sendSwitchInstruct(name,status){//发送一个带有单一状态的命令
       switch (name) {
         case 'previewLine':{//用于显示或关闭预览线段
@@ -106,6 +101,15 @@ new Vue({
     },
     sendInstruct(name){//命令状态更新
       switch (name){
+        case  'allReinitialize':{
+          if(this.filter(name)){
+            this.$store.state.commits.allReinitialize=!this.$store.state.commits.allReinitialize;
+            this.commitsConfig.allReinitialize.pass++;
+          }else {
+            this.commitsConfig.allReinitialize.intercept++;
+          }
+          break;
+        }
         case 'addNewAreaEnd':{
           if(this.filter(name)){
             this.$store.state.commits.addNewAreaEnd=!this.$store.state.commits.addNewAreaEnd;

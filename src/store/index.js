@@ -1,7 +1,12 @@
+/**
+ * 将在0.4.9版本后将更新vuex state 除Data数据以外更改为正常的修改state模式
+ * 尤其是 commits
+ * 同样的 将取消匿名的指令 anonymousInstruct
+ * type:config\data\storage
+ * **/
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from "axios";
-
 Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
@@ -365,10 +370,12 @@ export default new Vuex.Store({
           this.pickElements=[];
           this.publickey='';
           this.userData=null;
-          this.mapData={points:[],lines:[],areas:[]};
+          this.mapData={points:[],lines:[],areas:[],curves:[]};
+          this.mapLayer=[];
           this.config={};
+          this.lastEdit='很久以前';
           this.otherA1=[];
-          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct'];//指令类型合集
+          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
           this.Instruct={//指令合集
             login(email,password) {//登录指令
               this.email=email || '';
@@ -386,6 +393,9 @@ export default new Vuex.Store({
             },
             get_mapData(){//获取地图数据指令
               return {type:'get_mapData'}
+            },
+            get_mapLayer(){//获取地图数据指令
+              return {type:'get_mapLayer'}
             },
             get_serverConfig(){//获取服务器配置
               return {type:'get_serverConfig'}
@@ -773,6 +783,9 @@ export default new Vuex.Store({
         getMapData(){//获取地图数据
           this.send(this.Instruct.get_mapData());
         }
+        getMapLayer(){
+          this.send(this.Instruct.get_mapLayer());
+        }
         getServerConfig(){//获取服务器配置信息
           this.send(this.Instruct.get_serverConfig());
         }
@@ -859,6 +872,9 @@ export default new Vuex.Store({
               break;
             }
             case 'send_activeData':{//活动的数据
+              if(jsonData.data.length===0){
+                return false;
+              }
               let pickElements=[];
               let selectElements=[];
               for (let key in jsonData.data) {
@@ -938,6 +954,10 @@ export default new Vuex.Store({
               }
               break;
             }
+            case 'send_mapLayer':{
+              this.mapLayer=jsonData.data;
+              break;
+            }
             case 'broadcast':{//服务器发来的广播
               let classIs=jsonData.class;//获取广播类型
               switch (classIs){
@@ -998,6 +1018,7 @@ export default new Vuex.Store({
                   let NewMessageObj={'type':'broadcast','class':'line','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.lines.push(jsonData.data);//添加到mapData
+                  this.lastEdit=jsonData.time;
                   break;
                 }
                 case 'area':{//新增线段数据广播
@@ -1038,6 +1059,7 @@ export default new Vuex.Store({
                   let NewMessageObj={'type':'broadcast','class':'area','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.areas.push(jsonData.data);//添加到mapData
+                  this.lastEdit=jsonData.time;
                   break;
                 }
                 case 'point':{//新增点数据广播
@@ -1091,6 +1113,7 @@ export default new Vuex.Store({
                   let NewMessageObj={'type':'broadcast','class':'point','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);
                   this.mapData.points.push(jsonData.data);
+                  this.lastEdit=jsonData.time;
                   break;
                 }
                 case 'deleteElement':{//删除某一元素的广播
@@ -1115,6 +1138,7 @@ export default new Vuex.Store({
                       }
                     });
                     this.messages.push(jsonData);//更新消息
+                    this.lastEdit=jsonData.time;
                   }
                   catch (e) {}
                   break;
@@ -1137,6 +1161,7 @@ export default new Vuex.Store({
                       if(eId==this.mapData.points[i].id){
                         Object.assign(this.mapData.points[i],jsonData.data);
                         this.messages.push(jsonData);//更新message
+                        this.lastEdit=jsonData.time;
                         break;
                       }
                     }
@@ -1144,6 +1169,7 @@ export default new Vuex.Store({
                       if(eId==this.mapData.lines[i].id){
                         Object.assign(this.mapData.lines[i],jsonData.data);
                         this.messages.push(jsonData);//更新message
+                        this.lastEdit=jsonData.time;
                         break;
                       }
                     }
@@ -1151,6 +1177,7 @@ export default new Vuex.Store({
                       if(eId==this.mapData.areas[i].id){
                         Object.assign(this.mapData.areas[i],jsonData.data);
                         this.messages.push(jsonData);//更新message
+                        this.lastEdit=jsonData.time;
                         break;
                       }
                     }
@@ -1188,6 +1215,7 @@ export default new Vuex.Store({
                           }
                           this.reinitializeElement++;//更改初始化
                           this.reinitializeId=copyObj.id;
+                          this.lastEdit=jsonData.time;
                           break;
                         }
                       }
@@ -1248,6 +1276,7 @@ export default new Vuex.Store({
                       }
                     };
                     this.messages.push(MesObj);//3.消息通知
+                    this.lastEdit=jsonData.time;
                     break;
                   }catch (e) {
 
@@ -1340,13 +1369,9 @@ export default new Vuex.Store({
         }
       }
     },
-    anonymousInstruct:{//匿名命令的临时缓存
-      name:null,
-      data:null
-    },
     /**
      * 命令的缓存,各组件根据需求监听这里的数据变化，也可以监听整个commits
-     * 命令是用于个体组件与外界进行通讯的手段之一，请在main.js的sendInstruct进行注册
+     * 命令是用于个体组件与外界进行通讯的手段之一，请在mutations、actions注册相关功能
     **/
     commits:{
       disableMove:false,
@@ -1359,42 +1384,13 @@ export default new Vuex.Store({
       addNewPointEnd:false,
       previewLine:false,
       addNewLineEnd:false,
-      addNewAreaEnd:false
+      addNewAreaEnd:false,
+      allReinitialize:false,
     },
-    cameraConfig:{//相机配置
-      windowChange:false,//窗口变化
-      doNeedMoveMap:false,//是否需要移动地图
-      frameTime:8,//帧时间
-      maxZoom:5,//最大缩放
-      minZoom:-10,//最小缩放
-      unit1X:1,//横轴单位1
-      unit1Y:1,//纵轴单位1
-      offsetX:0,//x偏移补偿
-      offsetY:0,//y偏移补偿
-      wheelInterval:50,//每次缩放间隔
-      zoomIng:false,//缩放中否
-    },
-    baseMapConfig:{//底图配置
-      enableBaseMap:false,
-      baseMapType:'unknown',
-      baseMap:null,
-      resolution:{
-        width:null,
-        height:null
-      },
-      options:{
-        minZoom:3,
-        maxZoom:18,
-        center:[0,0],
-        zoom:13,
-        zoomControl:false,
-        scrollWheelZoom:false,
-        attributionControl:false,
-        inertia:false,
-        scaling:null
-      },
-      baseLayer:'',
-    },
+    /**
+     * Config:可读可写 read write
+     * Data:可读 read
+    **/
     mapConfig:{//地图配置
       A1Layer:0,
       layer:0,
@@ -1521,7 +1517,7 @@ export default new Vuex.Store({
         y:null
       },
       operated:{//元素被右键选择
-        id:null,//被操作元素id
+        id:-1,//被操作元素id
         data:null//被操作元素的元素数据
       },
       cursor:'default',//SVG鼠标指针类型
@@ -1529,55 +1525,50 @@ export default new Vuex.Store({
       reinitializeId:-1,//重新初始化的id
       inputFocusStatus:false//input聚焦状态
     },
-    detailsPanelConfig:{//左侧元素信息面板显示的数据
-      data:{
-
-      },
-      sourcePoint:{
-        x:null,
-        y:null
-      },
-      target:null,
-      targetNode:null,
-    },
-    operationBoardConfig:{//元素右键操作面板的配置
-      posX:null,
-      posY:null,
-      display:false
-    },
     pageConfig:{//页面配置
       homeSeparateState:true,
       mapSeparateState:false
     },
-    userSettingConfig:{//用户设置
-      UpdateServerStatus:false,//1.是否在服务器列表中开启每隔60秒自动更新服务器在线状态
-      UpdateServerStatusTime:60000,
-      startUpdateServerStatus:true,//2.是否启用启动时自动搜索服务器状态
-      elementPanelLayerShow:false,//是否开启元素面板
-      openFpsMonitor:false,//fps监控开启
-      openStepRecorder:false,//步骤记录器
+    cameraConfig:{//相机配置
+      windowChange:false,//窗口变化
+      doNeedMoveMap:false,//是否需要移动地图
+      frameTime:16,//帧时间
+      maxZoom:5,//最大缩放
+      minZoom:-10,//最小缩放
+      unit1X:1,//横轴单位1
+      unit1Y:1,//纵轴单位1
+      offsetX:0,//x偏移补偿
+      offsetY:0,//y偏移补偿
+      wheelInterval:50,//每次缩放间隔
+      zoomIng:false,//缩放中否
     },
-    serverData:{//服务器相关数据
-      socket:undefined,//1.服务器连接会话
-      underlay:undefined,//2.底图背景数据
-      userName:'点击头像登录',
-      userEmail:'Anyone@Any.com',
-      userQq:1077365277,
-      userHeadColor:'ffffff',
-      default:{
-        'user_email': '神秘用户',
-        'user_name': '神秘用户',
-        'map_layer': '0',
-        'default_a1': '{x:0,y:0}',
-        'save_point': null,
-        'user_qq': '1077365277',
-        'head_color': 'ffffff'
-      }
+    monitorConfig:{
+      fps:0,
+      tryErrorTarget:[],
+      tryErrorException:[],
     },
-    monitorData:{
-      fps:0
+    baseMapConfig:{//底图配置
+      enableBaseMap:false,
+      baseMapType:'unknown',
+      baseMap:null,
+      resolution:{
+        width:null,
+        height:null
+      },
+      options:{
+        minZoom:3,
+        maxZoom:18,
+        center:[0,0],
+        zoom:13,
+        zoomControl:false,
+        scrollWheelZoom:false,
+        attributionControl:false,
+        inertia:false,
+        scaling:null
+      },
+      baseLayer:'',
     },
-    recorderData:{
+    recorderConfig:{
       initialIntent:[
 
       ],
@@ -1587,6 +1578,51 @@ export default new Vuex.Store({
       failIntent:[
 
       ]
+    },
+    userSettingConfig:{//用户设置
+      UpdateServerStatus:false,//1.是否在服务器列表中开启每隔60秒自动更新服务器在线状态
+      UpdateServerStatusTime:60000,
+      startUpdateServerStatus:true,//2.是否启用启动时自动搜索服务器状态
+      elementPanelLayerShow:false,//是否开启元素面板
+      openFpsMonitor:false,//fps监控开启
+      openStepRecorder:false,//步骤记录器
+      mouseSamplingRate:'medium',
+    },
+    detailsPanelConfig:{//左侧元素信息面板显示的数据
+      data:{
+
+      },
+      sourcePoint:{
+        x:null,
+        y:null
+      },
+      target:-1,
+      targetNode:null,
+    },
+    elementPanelConfig:{
+      hiddenElements:[],
+    },
+    operationBoardConfig:{//元素右键操作面板的配置
+      posX:null,
+      posY:null,
+      display:false
+    },
+    serverData:{//仅读
+      socket:undefined,
+      underlay:undefined,//2.底图背景数据
+      userName:'点击头像登录',
+      userEmail:'Anyone@Any.com',
+      userQq:1077365277,
+      userHeadColor:'ffffff',
+      default:{
+        'user_email': '未登录',
+        'user_name': '未登录',
+        'map_layer': '0',
+        'default_a1': '{x:0,y:0}',
+        'save_point': null,
+        'user_qq': '1077365277',
+        'head_color': 'ffffff'
+      }
     },
   },
   getters: {
@@ -1646,53 +1682,212 @@ export default new Vuex.Store({
     },
     restoreMapConfig(state){//恢复默认地图配置
       state.mapConfig={
-        A1Layer:0,layer:0,oldLayer:null,zoomAdd:1,zoomSub:(Math.pow(1+1,-1))-1,
-        browser:{width:null,height:null},
-        mapSize:{width:{x1:0,x2:0},height:{y1:0,y2:0}},
-        A1:{x:0,y:0},
-        centerPoint:{x:0,y:0},
-        p0:{id:'p0',type:'point',points:[{x:0,y:0}],point:{x:0,y:0},color:'#000000',width:0},
-        tempPoint:{id:'tempPoint',type:'point',points:[{x:0,y:0}],point:{x:0,y:0},color:'000000',width:0,defaultWidth:5},
-        tempLine:{id:'tempLine',type:'line',points:[],point:{x:0,y:0},color:'000000',length:null,width:2,size:null,child_relations:null,father_relation:null,child_nodes:null,father_node:null,
-          details:[{key:'名称',value:''},{key:'类型',value:''},{key:'备注',value:''},{key:'区域',value:''}],defaultWidth:2,showPos:[]},
-        tempArea:{id:'tempArea',type:'area',points:[],point:{x:0,y:0},color:'000000',length:null,width:2,size:null,child_relations:null,father_relation:null,child_nodes:null,father_node:null,
-          details:[{key:'名称',value:''},{key:'类型',value:''},{key:'备注',value:''},{key:'区域',value:''}],defaultWidth:2,showPos:[]},
-        mousePoint:{x:0,y:0},
-        mouseClick:{x:0,y:0},
-        svgClick:{x:0,y:0},
-        svgDbClick:{x:0,y:0},
-        svgMouseUp:{x:0,y:0},
-        svgMouseDown:{x:0,y:0},
-        clearClick:{x:0,y:0},
-        operated:{id:null,data:null},
-        cursor:'default',cursorLock:false,reinitializeId:-1,inputFocusStatus:false
+        A1Layer:0,
+        layer:0,
+        oldLayer:null,
+        zoomAdd:1,
+        zoomSub:-1/(1+1),
+        browser:{
+          width:null,
+          height:null
+        },
+        mapSize:{
+          width: {
+            max:null,
+            min:null
+          },
+          height:{
+            max:null,
+            min:null
+          }
+        },
+        A1:{
+          x:0,
+          y:0
+        },
+        centerPoint:{
+          x:0,
+          y:0
+        },
+        p0:{
+          id:'p0',
+          type:'point',
+          points:[{x:0,y:0}],
+          point:{x:0,y:0},
+          color:'#000000',
+          width:5
+        },
+        tempPoint:{
+          id:'tempPoint',
+          type:'point',
+          points:[{x:0,y:0}],
+          point:{x:0,y:0},
+          color:'000000',
+          width:0,
+          defaultWidth:5
+        },
+        tempLine:{
+          id:'tempLine',
+          type:'line',
+          points:[],
+          point:{x:0,y:0},
+          color: '000000',
+          length: null,
+          width: 2,
+          size: null,
+          child_relations: null,
+          father_relation: null,
+          child_nodes: null,
+          father_node: null,
+          details:[
+            {key: '名称', value: ''},
+            {key: '类型', value: ''},
+            {key: '备注', value: ''},
+            {key: '区域', value: ''}
+          ],
+          defaultWidth:2,
+          showPos:[]
+        },
+        tempArea:{
+          id:'tempArea',
+          type:'area',
+          points:[],
+          point:{x:0,y:0},
+          color: '000000',
+          length: null,
+          width: 2,
+          size: null,
+          child_relations: null,
+          father_relation: null,
+          child_nodes: null,
+          father_node: null,
+          details:[
+            {key: '名称', value: ''},
+            {key: '类型', value: ''},
+            {key: '备注', value: ''},
+            {key: '区域', value: ''}
+          ],
+          defaultWidth:2,
+          showPos:[]
+        },
+        mousePoint:{
+          x:0,
+          y:0
+        },
+        mouseClick:{
+          x:0,
+          y:0
+        },
+        svgClick:{
+          x:0,
+          y:0
+        },
+        svgDbClick:{
+          x:0,
+          y:0
+        },
+        svgMouseUp:{
+          x:0,
+          y:0
+        },
+        svgMouseDown:{
+          x:0,
+          y:0
+        },
+        clearClick:{
+          x:0,
+          y:0
+        },
+        mouseWheelPos:{
+          x:0,
+          y:0
+        },
+        mouseClickLatLng:{
+          x:null,
+          y:null
+        },
+        operated:{
+          id:null,
+          data:null
+        },
+        cursor:'default',
+        cursorLock:false,
+        reinitializeId:-1,
+        inputFocusStatus:false
       }
     },
     restoreBaseMapConfig(state){//恢复默认底图配置
       state.baseMapConfig={
         enableBaseMap:false,
+        baseMapType:'unknown',
+        baseMap:null,
+        resolution:{
+          width:null,
+          height:null
+        },
         options:{
           minZoom:3,
           maxZoom:18,
           center:[0,0],
           zoom:13,
           zoomControl:false,
+          scrollWheelZoom:false,
           attributionControl:false,
-          crs:L.CRS.EPSG3857,
-          inertia:false
+          inertia:false,
+          scaling:null
         },
         baseLayer:'',
       }
     },
     restoreCameraConfig(state){//恢复默认相机配置
       state.cameraConfig={
+        windowChange:false,
         doNeedMoveMap:false,
-          frameTime:11,
-          maxZoom:5,
-          minZoom:-10,
-          unit1X:1,
-          unit1Y:1,
+        frameTime:16,
+        maxZoom:5,
+        minZoom:-10,
+        unit1X:1,
+        unit1Y:1,
+        offsetX:0,
+        offsetY:0,
+        wheelInterval:50,
+        zoomIng:false,
+      };
+    },
+    /**
+     * type(set/res/cha/arr)+StateType(Co/Da)+(NameProperty)
+     * product:{type:'str',data:any}
+     * */
+    arrCoElementPanelHiddenElements(state,product){
+      switch (product.type) {
+        case 'push':{
+          state.elementPanelConfig.hiddenElements.push(product.data);
+          break;
+        }
+        case 'pop':{
+          state.elementPanelConfig.hiddenElements.pop();
+          break;
+        }
+        case 'unshift':{
+          state.elementPanelConfig.hiddenElements.unshift(product.data);
+          break;
+        }
+        case 'shift':{
+          state.elementPanelConfig.hiddenElements.shift();
+          break;
+        }
+        case 'remove':{
+          let index=state.elementPanelConfig.hiddenElements.findIndex((item)=>{return item.id===product.data.id});
+          if (index>-1) {
+            state.elementPanelConfig.hiddenElements.splice(index, 1);
+          }
+          break;
+        }
       }
+    },
+    resCoMapOperated(state){
+      state.mapConfig.operated.id=-1;
+      state.mapConfig.operated.data=null;
     }
   },
   actions: {

@@ -230,7 +230,7 @@ export default {
         {"key":"区域","value":""},
         {"key":"备注","value":""}
       ];
-      this.$store.state.recorderData.initialIntent.push(recordObj);
+      this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastSendLine(obj);
       this.$store.commit('clearTempLineCache');
       this.show=false;

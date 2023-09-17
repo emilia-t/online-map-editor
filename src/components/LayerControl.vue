@@ -2,16 +2,16 @@
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
     <div class="controlButtonBox"><!--添加按钮-->
       <div @click="addInterestPointStart()" class="ButtonOut">
-        <banana-control-button :color="Url1Color" :button-img-prop="Url1"></banana-control-button>
+        <point :custom="'fill:'+Url1Color"></point>
       </div>
       <div @click="addRouteLineStart()" class="ButtonOut">
-        <banana-control-button :color="Url2Color" :button-img-prop="Url2"></banana-control-button>
+        <segment-line :custom="'fill:'+Url2Color"></segment-line>
       </div>
       <div @click="addAreaStart()" class="ButtonOut">
-        <banana-control-button :color="Url3Color" :button-img-prop="Url3"></banana-control-button>
+        <region :custom="'fill:'+Url3Color"></region>
       </div>
       <div @click="addCurveStart()" class="ButtonOut">
-        <banana-control-button :color="Url4Color" :button-img-prop="Url4"></banana-control-button>
+        <segment-curve :custom="'fill:'+Url4Color"></segment-curve>
       </div>
     </div>
     <banana-element-operation-board></banana-element-operation-board><!--元素右键编辑面板-->
@@ -29,24 +29,20 @@ import BananaAreaAttributeBoard from "./BananaAreaAttributeBoard";
 import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
 import BananaLineAttributeBoard from "./BananaLineAttributeBoard";
 import BananaRecorderPanel from "./BananaRecorderPanel";
-import interestPoint from '../../static/point.png';
-import lineImg from '../../static/route.png';
-import regionImg from '../../static/area.png';
-import curveImg from '../../static/curve.png';
+import Point from "./svgValidIcons/40X/point";
+import SegmentLine from "./svgValidIcons/40X/segmentLine";
+import Region from "./svgValidIcons/40X/region";
+import SegmentCurve from './svgValidIcons/40X/segmentCurve';
 export default {
   name: "LayerControl",
-  components:{BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaRecorderPanel,BananaLineAttributeBoard,BananaAreaAttributeBoard},
+  components:{Point,SegmentLine,Region,SegmentCurve,BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaRecorderPanel,BananaLineAttributeBoard,BananaAreaAttributeBoard},
   data(){
     return {
       MY_NAME:"LayerControl",
-      Url1:interestPoint,
-      Url1Color:'#ffffff',
-      Url2:lineImg,
-      Url2Color:'#ffffff',
-      Url3:regionImg,
-      Url3Color:'#ffffff',
-      Url4:curveImg,
-      Url4Color:'#ffffff',
+      Url1Color:'#000000',
+      Url2Color:'#000000',
+      Url3Color:'#000000',
+      Url4Color:'#000000',
       nodeSuppressor:false,//节点抑制器，此项为true则会抑制节点更新，会对添加点、线段、面造成影响
       isAddPoint:false,
       isAddLine:false,
@@ -103,7 +99,7 @@ export default {
         this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
       }else {
         this.isAddArea=false;//更改添加状态为“不可用”
-        this.Url3Color='#ffffff';//更改背景色e72323
+        this.Url3Color='#000000';//更改背景色e72323
         this.theConfig.buttonC=false;//更改按钮状态
         if(this.$store.state.mapConfig.cursorLock===false){
           this.$store.state.mapConfig.cursor='default';
@@ -162,7 +158,7 @@ export default {
         this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
       }else {
         this.isAddLine=false;//更改添加点状态为“不可用”
-        this.Url2Color='#ffffff';//更改背景色e72323
+        this.Url2Color='#000000';//更改背景色e72323
         this.theConfig.buttonB=false;//更改按钮状态
         if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='default';
@@ -295,7 +291,7 @@ export default {
         }
       }else {
         this.isAddPoint=false;//更改添加点状态
-        this.Url1Color='#ffffff';
+        this.Url1Color='#000000';
         this.theConfig.buttonA=false;//更改按钮状态
         if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='default';
@@ -350,7 +346,7 @@ export default {
                   class:this.$store.state.detailsPanelConfig.data.type,
                   id:id,
                 }));
-                this.$store.state.recorderData.initialIntent.push(recordObj);
+                this.$store.state.recorderConfig.initialIntent.push(recordObj);
                 this.$store.state.serverData.socket.broadcastDeleteElement(id);
               }
             }
@@ -395,8 +391,8 @@ export default {
                 this.$store.state.mapConfig.tempArea.showPos.pop();
                 return true;
               }
-              if(this.$store.state.recorderData.reachIntent.length!==0){
-                this.restoreOldIntent(this.$store.state.recorderData.reachIntent.shift());
+              if(this.$store.state.recorderConfig.reachIntent.length!==0){
+                this.restoreOldIntent(this.$store.state.recorderConfig.reachIntent.shift());
               }
               break;
             }
@@ -681,6 +677,8 @@ export default {
   height: auto;
 }
 .ButtonOut{
+  width: 50px;
+  height: 50px;
   display: flex;
   justify-content: center;
   flex-direction: column;

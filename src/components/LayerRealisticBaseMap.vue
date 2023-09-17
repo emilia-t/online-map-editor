@@ -10,7 +10,6 @@ export default {
   data(){
     return {
       moveStatus:false,
-      offsetCache:{x:0,y:0},
       A1Cache:{x:0,y:0},
     }
   },
@@ -35,7 +34,6 @@ export default {
           this.A1Cache.y=this.A1.y;
           this.$store.state.baseMapConfig.baseMap=new this.$store.state.classList.realisticBaseMap(this.$refs.baseMap,option);
           this.moveStart();
-          this.moveIng();
           this.moveEnd();
         }
       ,10);
@@ -53,24 +51,10 @@ export default {
           e.target.tagName==='path'
         ){
           this.moveStatus=true;
-          this.A1Cache.x=this.A1.x;
-          this.A1Cache.y=this.A1.y;
-          this.offsetCache.x=this.baseMap.view.offsetX;
-          this.offsetCache.y=this.baseMap.view.offsetY;
+          this.A1Cache=JSON.parse(JSON.stringify({x:this.A1.x,y:this.A1.y}));
         }
       }
       );
-    },
-    moveIng(){//移动中
-      document.addEventListener('mousemove',(e)=>{
-        if(this.moveStatus && this.doNeedMoveMap){
-          let moveX=this.A1Cache.x-this.A1.x;
-          let moveY=this.A1Cache.y-this.A1.y;
-          this.baseMap.view.offsetX=this.offsetCache.x+moveX;
-          this.baseMap.view.offsetY=this.offsetCache.y-moveY;
-          this.baseMap.render();
-        }
-      });
     },
     moveEnd(){
       document.addEventListener('mouseup',(e)=>{
@@ -79,10 +63,7 @@ export default {
         }
         if(e.target.tagName==='svg' || e.target.tagName==='circle' || e.target.tagName==='polyline'){
           this.moveStatus=false;
-          this.A1Cache.x=this.A1.x;
-          this.A1Cache.y=this.A1.y;
-          this.offsetCache.x=this.baseMap.view.offsetX;
-          this.offsetCache.y=this.baseMap.view.offsetY;
+          this.A1Cache=JSON.parse(JSON.stringify({x:this.A1.x,y:this.A1.y}));
         }
       });
     },
@@ -108,6 +89,21 @@ export default {
     }
   },
   watch:{
+    A1:{
+      handler(newValue){
+        if(this.moveStatus===true && this.doNeedMoveMap===true){
+          let Value=JSON.parse(JSON.stringify({x:newValue.x,y:newValue.y}));
+          let moveX=this.A1Cache.x-Value.x;
+          let moveY=this.A1Cache.y-Value.y;
+          this.A1Cache.x=Value.x;
+          this.A1Cache.y=Value.y;
+          this.baseMap.view.offsetX+=moveX;
+          this.baseMap.view.offsetY-=moveY;
+          this.baseMap.render();
+        }
+      },
+      deep:true
+    },
     layer:{
       handler(newValue,oldValue){
         const dzl = this.baseMap.options.scaling;

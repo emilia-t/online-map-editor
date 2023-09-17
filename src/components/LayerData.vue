@@ -19,9 +19,9 @@
           </feMerge>
         </filter>
       </defs>
-      <svg-area v-for="area in MyAreaData" :key="area.id" :pick-config="pickElement(area.id)" :select-config="selectElement(area.id)" :area-config="area"></svg-area><!--区域数据-->
-      <svg-line v-for="line in MyPolyLineData" :key="line.id" :pick-config="pickElement(line.id)" :select-config="selectElement(line.id)" :poly-line-config="line"></svg-line><!--线段数据-->
-      <svg-point v-for="point in MyPointData" :key="point.id" :pick-config="pickElement(point.id)" :select-config="selectElement(point.id)" :point-config="point"></svg-point><!--点位数据-->
+      <svg-area v-for="area in MyAreaData" :key="area.id" :pick-config="pickElement(area.id)" :select-config="selectElement(area.id)" :area-config="area" v-show="!hiddenElements.some((member)=>{return member.id===area.id})"></svg-area><!--区域数据-->
+      <svg-line v-for="line in MyPolyLineData" :key="line.id" :pick-config="pickElement(line.id)" :select-config="selectElement(line.id)" :poly-line-config="line" v-show="!hiddenElements.some((member)=>{return member.id===line.id})"></svg-line><!--线段数据-->
+      <svg-point v-for="point in MyPointData" :key="point.id" :pick-config="pickElement(point.id)" :select-config="selectElement(point.id)" :point-config="point" v-show="!hiddenElements.some((member)=>{return member.id===point.id})"></svg-point><!--点位数据-->
       <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"></svg-point-p0><!--p0-->
       <svg-point-temp></svg-point-temp><!--临时点数据-->
       <svg-line-temp></svg-line-temp><!--临时线数据-->
@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import {mapState} from 'vuex';
 import SvgLine from "./svgLine";
 import SvgArea from "./svgArea";
 import SvgPoint from "./svgPoint";
@@ -70,7 +71,7 @@ export default {
       this.getBrowserConfig();//获取浏览器配置
       this.getScreenCenter();//获取屏幕中心点
       this.getMousePos();//实时获取鼠标位置
-      //this.mapMoveOut();
+      //this.mapMoveOut();//has bug
       this.mapMoveStart();//添加移动侦听
       this.mapMoveIng();
       this.mapMoveEnd();
@@ -320,7 +321,7 @@ export default {
               }
             }
           }
-          ,this.frameTime)
+          ,this.frameTime);
       }
     },
     removeMoveObServer(){//移除移动侦测器
@@ -376,6 +377,9 @@ export default {
     }
   },
   computed:{
+    ...mapState({
+      hiddenElements:state=>state.elementPanelConfig.hiddenElements
+    }),
     pickElements(){
       return this.$store.state.serverData.socket.pickElements;
     },
@@ -390,9 +394,6 @@ export default {
     },
     commitsCreateTestLine() {
       return this.$store.state.commits.createTestLine;
-    },
-    anonymousInstruct() {
-      return this.$store.state.anonymousInstruct;
     },
     A1() {
       return this.$store.state.mapConfig.A1;
@@ -420,18 +421,7 @@ export default {
     }
   },
   watch:{
-    commitsCreateTestLine:{
-      handler(newValue,oldValue){
-        this.createTestLine();
-      },
-      deep:true
-    },
-    anonymousInstruct:{
-      handler(newValue,oldValue){
-        this.instruction(newValue,oldValue);
-      },
-      deep:true
-    }
+
   },
   destroyed(){
 

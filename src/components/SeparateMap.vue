@@ -9,7 +9,6 @@
 <!--  <layer-ruler></layer-ruler>--><!--标尺层-->
 <!--  <layer-create></layer-create>--><!--新建层-->
   <layer-control></layer-control><!--控制层-->
-  <temp></temp>
   <layer-element-panel></layer-element-panel><!--元素面板层-->
   <layer-details-panel></layer-details-panel><!--属性面板层-->
   <layer-console></layer-console><!--调试面板-->
@@ -29,13 +28,11 @@ import LayerConsole from "./LayerConsole";
 import LayerUser from "./LayerUser";
 import LayerDetailsPanel from "./LayerDetailsPanel";
 import LayerMessage from "./LayerMessage";
-import Temp from "./page/temp.vue";
 export default {
   name: "SeparateMap",
   components:{
     LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerConsole,
     LayerUser,LayerDetailsPanel,LayerMessage,LayerRealisticBaseMap,LayerFictitiousBaseMap,
-    Temp
   },
   props:{
     serverKey:{

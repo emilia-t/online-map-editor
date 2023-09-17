@@ -2,19 +2,19 @@
   <div class="consoleLayer" ref="consoleLayer" v-if="view">
     <h4 class="consoleTitle">F8 监控面板</h4>
     <div ref="consoleMap" class="consoleMap">
+      运行参数
+      <hr/>
       浏览器尺寸：{{$store.state.mapConfig.browser.width}} x {{$store.state.mapConfig.browser.height}}
       <br>
-      地图X轴大小：{{$store.state.mapConfig.mapSize.width.max}} ~ {{$store.state.mapConfig.mapSize.width.min}}
-      <br>
-      地图Y轴大小：{{$store.state.mapConfig.mapSize.height.max}} ~ {{$store.state.mapConfig.mapSize.height.min}}
-      <br>
-      X轴单位1：{{$store.state.cameraConfig.unit1X}}
-      <br>
-      Y轴单位1：{{$store.state.cameraConfig.unit1Y}}
-      <br>
+<!--      地图X轴大小：{{$store.state.mapConfig.mapSize.width.max}} ~ {{$store.state.mapConfig.mapSize.width.min}}-->
+<!--      <br>-->
+<!--      地图Y轴大小：{{$store.state.mapConfig.mapSize.height.max}} ~ {{$store.state.mapConfig.mapSize.height.min}}-->
+<!--      <br>-->
       A1相对坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
       <br>
-      P0相对坐标：{{$store.state.mapConfig.p0.point.x}} , {{$store.state.mapConfig.p0.point.y}}
+      P0相对坐标：
+      <br>
+      {{$store.state.mapConfig.p0.point.x}} , {{$store.state.mapConfig.p0.point.y}}
       <br>
       鼠标位置：{{$store.state.mapConfig.mousePoint.x}} , {{$store.state.mapConfig.mousePoint.y}}
       <br>
@@ -44,7 +44,27 @@
       <br>
       底图类型：{{$store.state.baseMapConfig.baseMapType}}
       <br>
-      FPS：{{$store.state.monitorData.fps}}
+      启用FPS监控：{{$store.state.userSettingConfig.openFpsMonitor}}
+      <br>
+      FPS：{{$store.state.monitorConfig.fps}}
+      <hr/>
+      指令状态
+      <br>
+      disableMove：{{$store.state.commits.disableMove}}
+      <br>
+      disableZoomAndMove：{{$store.state.commits.disableZoomAndMove}}
+      <br>
+      openF4DebugBord：{{$store.state.commits.openF4DebugBord}}
+      <br>
+      reloadAccounts：{{$store.state.commits.reloadAccounts}}
+      <br>
+      reloadServers：{{$store.state.commits.reloadServers}}
+      <br>
+      previewLine：{{$store.state.commits.previewLine}}
+      <hr/>
+      相机状态
+      <br>
+      采样率：{{$store.state.cameraConfig.frameTime}}
     </div>
   </div>
 </template>
@@ -79,8 +99,7 @@ export default {
       deep:true
     },
   },
-  destroyed(){
-    //最后被销毁的地图组件，销毁地图主体
+  destroyed(){//最后被销毁的地图组件，销毁地图主体
     setTimeout(()=>this.$store.commit('destroyComprehensive'),10)
   }
 }

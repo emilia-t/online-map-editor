@@ -246,7 +246,7 @@ export default {
         {"key":"区域","value":""},
         {"key":"备注","value":""}
       ];
-      this.$store.state.recorderData.initialIntent.push(recordObj);
+      this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
       this.show=false;
       this.$root.sendInstruct('addNewPointEnd');

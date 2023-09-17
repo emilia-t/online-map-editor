@@ -1,5 +1,5 @@
 <template>
-  <g :elementId="this.myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)" ref="svgElement">
+  <g :elementId="myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)" ref="svgElement">
     <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom.icon===null">
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
@@ -316,7 +316,10 @@ export default {
     },
     reinitializeId(){
       return this.$store.state.serverData.socket.reinitializeId;
-    }
+    },
+    allReinitialize(){
+      return this.$store.state.commits.allReinitialize;
+    },
   },
   watch:{
     // browserX:{//仅限于canvas不支持动态视图才开启
@@ -333,6 +336,11 @@ export default {
     //   },
     //   deep:true
     // },
+    allReinitialize:{
+      handler(){
+        this.initializePosition();
+      }
+    },
     pickConfig:{
       handler(newValue){
         let lock=newValue.id;
@@ -419,7 +427,7 @@ export default {
                   },
                 }
               ));
-              this.$store.state.recorderData.initialIntent.push(recordObj);
+              this.$store.state.recorderConfig.initialIntent.push(recordObj);
               this.$store.state.serverData.socket.broadcastUpdateElementNode(uObj);
               if(this.$refs.svgElement.classList.contains('graduallyEmergingFirst')){
                 this.$refs.svgElement.classList.remove('graduallyEmergingFirst');

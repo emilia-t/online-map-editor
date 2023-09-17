@@ -22,10 +22,10 @@
       <div class="stepPile" v-for="step in reachIntent" :key="step.reachIntentSerial">
         <div class="stepContent" v-if="step.type==='updateElement'">
           <div class="stepContentImg">
-            <img src="/static/point.png" alt="点图标" title="点图标" v-if="step.class==='point'">
-            <img src="/static/route.png" alt="线段图标" title="线段图标" v-if="step.class==='line'">
-            <img src="/static/area.png" alt="区域图标" title="区域图标" v-if="step.class==='area'">
-            <img src="/static/curve.png" alt="曲线图标" title="曲线图标" v-if="step.class==='curve'">
+            <point v-if="step.class==='point'"></point>
+            <segment-line v-if="step.class==='line'"></segment-line>
+            <region v-if="step.class==='area'"></region>
+            <segment-curve v-if="step.class==='curve'"></segment-curve>
           </div>
           <div class="stepContentText">
             <span class="stepUpdate">已更新</span>
@@ -37,10 +37,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='updateNode'">
           <div class="stepContentImg">
-            <img src="/static/point.png" alt="点图标" title="点图标" v-if="step.class==='point'">
-            <img src="/static/route.png" alt="线段图标" title="线段图标" v-if="step.class==='line'">
-            <img src="/static/area.png" alt="区域图标" title="区域图标" v-if="step.class==='area'">
-            <img src="/static/curve.png" alt="曲线图标" title="曲线图标" v-if="step.class==='curve'">
+            <point v-if="step.class==='point'"></point>
+            <segment-line v-if="step.class==='line'"></segment-line>
+            <region v-if="step.class==='area'"></region>
+            <segment-curve v-if="step.class==='curve'"></segment-curve>
           </div>
           <div class="stepContentText">
             <span class="stepUpdate">已更新</span>
@@ -50,10 +50,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='upload'">
           <div class="stepContentImg">
-            <img src="/static/point.png" alt="点图标" title="点图标" v-if="step.class==='point'">
-            <img src="/static/route.png" alt="线段图标" title="线段图标" v-if="step.class==='line'">
-            <img src="/static/area.png" alt="区域图标" title="区域图标" v-if="step.class==='area'">
-            <img src="/static/curve.png" alt="曲线图标" title="曲线图标" v-if="step.class==='curve'">
+            <point v-if="step.class==='point'"></point>
+            <segment-line v-if="step.class==='line'"></segment-line>
+            <region v-if="step.class==='area'"></region>
+            <segment-curve v-if="step.class==='curve'"></segment-curve>
           </div>
           <div class="stepContentText">
             <span class="stepCreated">已创建</span>
@@ -62,10 +62,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='delete'">
           <div class="stepContentImg">
-            <img src="/static/point.png" alt="点图标" title="点图标" v-if="step.class==='point'">
-            <img src="/static/route.png" alt="线段图标" title="线段图标" v-if="step.class==='line'">
-            <img src="/static/area.png" alt="区域图标" title="区域图标" v-if="step.class==='area'">
-            <img src="/static/curve.png" alt="曲线图标" title="曲线图标" v-if="step.class==='curve'">
+            <point v-if="step.class==='point'"></point>
+            <segment-line v-if="step.class==='line'"></segment-line>
+            <region v-if="step.class==='area'"></region>
+            <segment-curve v-if="step.class==='curve'"></segment-curve>
           </div>
           <div class="stepContentText">
             <span class="stepDelete">已删除</span>
@@ -78,10 +78,10 @@
       <div class="stepPile InvalidText" v-for="step in failIntent">
         <div class="stepContent" v-if="step.type==='updateElement'">
           <div class="stepContentImg">
-            <img src="/static/point.png" alt="点图标" title="点图标" v-if="step.class==='point'">
-            <img src="/static/route.png" alt="线段图标" title="线段图标" v-if="step.class==='line'">
-            <img src="/static/area.png" alt="区域图标" title="区域图标" v-if="step.class==='area'">
-            <img src="/static/curve.png" alt="曲线图标" title="曲线图标" v-if="step.class==='curve'">
+            <point v-if="step.class==='point'"></point>
+            <segment-line v-if="step.class==='line'"></segment-line>
+            <region v-if="step.class==='area'"></region>
+            <segment-curve v-if="step.class==='curve'"></segment-curve>
           </div>
           <div class="stepContentText">
             <span class="stepUpdate">更新</span>
@@ -93,10 +93,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='updateNode'">
           <div class="stepContentImg">
-            <img src="/static/point.png" alt="点图标" title="点图标" v-if="step.class==='point'">
-            <img src="/static/route.png" alt="线段图标" title="线段图标" v-if="step.class==='line'">
-            <img src="/static/area.png" alt="区域图标" title="区域图标" v-if="step.class==='area'">
-            <img src="/static/curve.png" alt="曲线图标" title="曲线图标" v-if="step.class==='curve'">
+            <point v-if="step.class==='point'"></point>
+            <segment-line v-if="step.class==='line'"></segment-line>
+            <region v-if="step.class==='area'"></region>
+            <segment-curve v-if="step.class==='curve'"></segment-curve>
           </div>
           <div class="stepContentText">
             <span class="stepUpdate">更新</span>
@@ -106,10 +106,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='upload'">
           <div class="stepContentImg">
-            <img src="/static/point.png" alt="点图标" title="点图标" v-if="step.class==='point'">
-            <img src="/static/route.png" alt="线段图标" title="线段图标" v-if="step.class==='line'">
-            <img src="/static/area.png" alt="区域图标" title="区域图标" v-if="step.class==='area'">
-            <img src="/static/curve.png" alt="曲线图标" title="曲线图标" v-if="step.class==='curve'">
+            <point v-if="step.class==='point'"></point>
+            <segment-line v-if="step.class==='line'"></segment-line>
+            <region v-if="step.class==='area'"></region>
+            <segment-curve v-if="step.class==='curve'"></segment-curve>
           </div>
           <div class="stepContentText">
             <span class="stepCreated">创建</span>
@@ -118,10 +118,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='delete'">
           <div class="stepContentImg">
-            <img src="/static/point.png" alt="点图标" title="点图标" v-if="step.class==='point'">
-            <img src="/static/route.png" alt="线段图标" title="线段图标" v-if="step.class==='line'">
-            <img src="/static/area.png" alt="区域图标" title="区域图标" v-if="step.class==='area'">
-            <img src="/static/curve.png" alt="曲线图标" title="曲线图标" v-if="step.class==='curve'">
+            <point v-if="step.class==='point'"></point>
+            <segment-line v-if="step.class==='line'"></segment-line>
+            <region v-if="step.class==='area'"></region>
+            <segment-curve v-if="step.class==='curve'"></segment-curve>
           </div>
           <div class="stepContentText">
             <span class="stepDelete">删除</span>
@@ -138,8 +138,13 @@
 </template>
 
 <script>
+import Point from "./svgValidIcons/point";
+import SegmentLine from "./svgValidIcons/segmentLine";
+import Region from "./svgValidIcons/region";
+import SegmentCurve from "./svgValidIcons/segmentCurve";
 export default {
   name: 'BananaRecorderPanel',
+  components:{Point,SegmentLine,Region,SegmentCurve},
   data(){
     return {
       stepPileShow:true,
@@ -223,10 +228,10 @@ export default {
     },
     hidden(){//隐藏面板
       this.$refs.BananaRecorderPanel.style.top='-340px';
-      this.$store.state.recorderData.display=false;
+      this.$store.state.recorderConfig.display=false;
     },
     show(){//隐藏面板
-      this.$refs.BananaRecorderPanel.style.top='2px';
+      this.$refs.BananaRecorderPanel.style.top='10px';
     },
     waterDroplet(){
       if(!this.translucent){
@@ -281,13 +286,13 @@ export default {
       return this.$store.state.userSettingConfig.openStepRecorder;
     },
     failIntent(){
-      return this.$store.state.recorderData.failIntent;
+      return this.$store.state.recorderConfig.failIntent;
     },
     reachIntent(){
-      return this.$store.state.recorderData.reachIntent;
+      return this.$store.state.recorderConfig.reachIntent;
     },
     initialIntent(){
-      return this.$store.state.recorderData.initialIntent;
+      return this.$store.state.recorderConfig.initialIntent;
     },
     corrects(){
       return this.$store.state.serverData.socket.corrects;
@@ -309,7 +314,7 @@ export default {
               let rid=pickItem.data.rid;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===vid){
-                  this.$store.state.recorderData.reachIntent.unshift(//添入成功执行的更改列表中
+                  this.$store.state.recorderConfig.reachIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,
                       type:'upload',
@@ -317,7 +322,7 @@ export default {
                       reachIntentSerial:this.reachIntentSerial++,
                     }
                   );
-                  this.$store.state.recorderData.initialIntent.splice(ii,1);
+                  this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
               break;
@@ -327,7 +332,7 @@ export default {
               let rid=pickItem.data.rid;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===upId){
-                  this.$store.state.recorderData.reachIntent.unshift(//添入成功执行的更改列表中
+                  this.$store.state.recorderConfig.reachIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,
                       type:'updateElement',//更新类型
@@ -337,7 +342,7 @@ export default {
                       reachIntentSerial:this.reachIntentSerial++,
                     }
                   );
-                  this.$store.state.recorderData.initialIntent.splice(ii,1);
+                  this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
               break;
@@ -347,7 +352,7 @@ export default {
               let rid=pickItem.data.rid;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===upId){
-                  this.$store.state.recorderData.reachIntent.unshift(//添入成功执行的更改列表中
+                  this.$store.state.recorderConfig.reachIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,
                       type:'updateNode',//更新类型
@@ -357,7 +362,7 @@ export default {
                       reachIntentSerial:this.reachIntentSerial++,
                     }
                   );
-                  this.$store.state.recorderData.initialIntent.splice(ii,1);
+                  this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
               break;
@@ -366,14 +371,14 @@ export default {
               let rid=pickItem.data.rid;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===rid){
-                  this.$store.state.recorderData.reachIntent.unshift(//添入成功执行的更改列表中
+                  this.$store.state.recorderConfig.reachIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,
                       type:'delete',
                       class:this.initialIntent[ii].class,
                     }
                   );
-                  this.$store.state.recorderData.initialIntent.splice(ii,1);
+                  this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
               break;
@@ -394,7 +399,7 @@ export default {
               let vid=pickItem.data.source.id;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===vid){
-                  this.$store.state.recorderData.failIntent.unshift(//添入成功执行的更改列表中
+                  this.$store.state.recorderConfig.failIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:vid,
                       type:'upload',
@@ -403,7 +408,7 @@ export default {
                       message:pickItem.data.message
                     }
                   );
-                  this.$store.state.recorderData.initialIntent.splice(ii,1);
+                  this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
               break;
@@ -413,7 +418,7 @@ export default {
               let rid=pickItem.data.source.id;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===upId){
-                  this.$store.state.recorderData.failIntent.unshift(
+                  this.$store.state.recorderConfig.failIntent.unshift(
                     {
                       id:rid,
                       type:'updateElement',
@@ -422,7 +427,7 @@ export default {
                       oldValue:this.initialIntent[ii].oldValue,
                     }
                   );
-                  this.$store.state.recorderData.initialIntent.splice(ii,1);
+                  this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
               break;
@@ -432,7 +437,7 @@ export default {
               let rid=pickItem.data.source.id;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===upId){
-                  this.$store.state.recorderData.failIntent.unshift(
+                  this.$store.state.recorderConfig.failIntent.unshift(
                     {
                       id:rid,
                       type:'updateNode',
@@ -441,7 +446,7 @@ export default {
                       oldValue:this.initialIntent[ii].oldValue,
                     }
                   );
-                  this.$store.state.recorderData.initialIntent.splice(ii,1);
+                  this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
               break;
@@ -450,7 +455,7 @@ export default {
               let rid=pickItem.data.source.id;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===rid){
-                  this.$store.state.recorderData.failIntent.unshift(//添入成功执行的更改列表中
+                  this.$store.state.recorderConfig.failIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,
                       type:'delete',
@@ -459,7 +464,7 @@ export default {
                       message:pickItem.data.message
                     }
                   );
-                  this.$store.state.recorderData.initialIntent.splice(ii,1);
+                  this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
               break;
@@ -564,6 +569,8 @@ export default {
   width: 20px;
   height: 20px;
   margin: 0px 3px;
+  display: flex;
+  justify-content: center;
 }
 .stepContentImg img{
   width: 20px;
@@ -604,7 +611,7 @@ export default {
   transition: 0.3s;
   z-index: 550;
   top:-340px;
-  left: 90px;
+  left: 325px;
   border-radius: 5px 5px 6px 6px;
   box-shadow: #b1b1b1 2px 2px 10px;
 }

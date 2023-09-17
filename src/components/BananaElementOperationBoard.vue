@@ -1,14 +1,14 @@
 <template>
   <div class="BananaElementOperationBoard" v-show="this.$store.state.operationBoardConfig.display" :style="style">
     <div class="panel"><!--右键菜单-->
-      <div class="ButtonBox" ref="deleteButtonBox">
-        <img title="删除元素" @click="deleteElement()" class="ButtonImg" draggable="false" alt="按钮" src="../../static/delete.png"/>
+      <div @click="deleteElement()" class="ButtonBox" ref="deleteButtonBox">
+        <img title="删除元素"  class="ButtonImg" draggable="false" alt="按钮" src="../../static/delete.png"/>
       </div>
-      <div class="ButtonBox" ref="editButtonBox">
-        <img title="编辑元素" @click="editElement()" class="ButtonImg" draggable="false" alt="按钮" src="../../static/edit.png"/>
+      <div @click="editElement()" class="ButtonBox" ref="editButtonBox">
+        <img title="编辑元素" class="ButtonImg" draggable="false" alt="按钮" src="../../static/edit.png"/>
       </div>
-      <div class="ButtonBox" ref="hideElement">
-        <img title="隐藏元素" @click="" class="ButtonImg" draggable="false" alt="按钮" src="../../static/hideElement.png"/>
+      <div @click="hiddenElement(operated.id,operated.type)" class="ButtonBox" ref="hideElement" title="隐藏元素">
+        <eye-not-visible></eye-not-visible>
       </div>
       <div class="ButtonBox" ref="historyRecord">
         <img title="历史记录" @click="" class="ButtonImg" draggable="false" alt="按钮" src="../../static/historyRecord.png"/>
@@ -82,13 +82,15 @@
 </template>
 
 <script>
-import Lodash from 'lodash'
-import OrangeColorPalette from './OrangeColorPalette'
-import OrangeSlideBlock from './OrangeSlideBlock'
-import OrangeIconsCustom from './OrangeIconsCustom'
+import EyeNotVisible from "./svgValidIcons/eyeNotVisible";
+import Lodash from 'lodash';
+import OrangeColorPalette from './OrangeColorPalette';
+import OrangeSlideBlock from './OrangeSlideBlock';
+import OrangeIconsCustom from './OrangeIconsCustom';
+import {mapState} from "vuex";
 export default {
   name: "BananaElementOperationBoard",
-  components:{OrangeColorPalette,OrangeSlideBlock,OrangeIconsCustom},
+  components:{OrangeColorPalette,OrangeSlideBlock,OrangeIconsCustom,EyeNotVisible},
   data(){
     return {
       editPanelShow:false,
@@ -115,6 +117,17 @@ export default {
   methods:{
     startSetting(){
       this.waterDropletEvent();
+    },
+    hiddenElement(id,type){
+      if(!this.hiddenElements.some((member)=>{return member.id===id})){
+        this.$store.commit('arrCoElementPanelHiddenElements',
+          {type:'push',data:{id,type}});
+        this.$store.commit('resCoMapOperated');
+        this.$store.state.operationBoardConfig.display=false;
+      }else {
+        this.$store.commit('arrCoElementPanelHiddenElements',
+          {type:'remove',data:{id,type}})
+      }
     },
     keyCheck(ev){
         let lock=false;
@@ -265,7 +278,7 @@ export default {
           oldValue:this.oldDetail,
         }
       ));
-      this.$store.state.recorderData.initialIntent.push(recordObj);
+      this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
     },
     beforeChangeWidth(){
@@ -289,7 +302,7 @@ export default {
         oldValue:this.oldWidth,
         }
       ));
-      this.$store.state.recorderData.initialIntent.push(recordObj);
+      this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
     },
     beforeChangeColor(){
@@ -313,7 +326,7 @@ export default {
         oldValue:this.oldColor,
         }
       ));
-      this.$store.state.recorderData.initialIntent.push(recordObj);
+      this.$store.state.recorderConfig.initialIntent.push(recordObj);
       if(this.operated.type==='point'){
         if(this.operated.custom!==null){
           this.operated.custom.color='#'+data;
@@ -346,7 +359,7 @@ export default {
           oldValue:this.oldCustom,
         }
       ));
-      this.$store.state.recorderData.initialIntent.push(recordObj);
+      this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.operated.custom.icon=data;
       this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
     },
@@ -360,12 +373,15 @@ export default {
         class:this.operated.type,
         id:id,
       }));
-      this.$store.state.recorderData.initialIntent.push(recordObj);
+      this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastDeleteElement(id);
       this.$store.state.operationBoardConfig.display=false;
     }
   },
   computed:{
+    ...mapState({
+      hiddenElements:state=>state.elementPanelConfig.hiddenElements
+    }),
     boxOutStyle(){
       let posX=this.$store.state.operationBoardConfig.posX;
       let posY=this.$store.state.operationBoardConfig.posY;
@@ -488,7 +504,7 @@ export default {
   height: 30px;
   display: flex;
   flex-direction: column;
-  justify-items: center;
+  justify-content: center;
   align-items: center;
   margin: 5px 0px;
   cursor: pointer;

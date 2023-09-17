@@ -44,21 +44,6 @@
           <div class="switchOut" ref="GS01" @click="GS01($event)"><div ref="GS01_1" class="circle"></div></div>
         </div>
         <hr/>
-        <div class="SettingList">
-          <div class="spans">
-            <span class="spansA">允许服务器修改本地配置</span>
-            <span class="spansB">当地图服务器向您申请更新配置时，请开启此项</span>
-          </div>
-          <div class="switchOut"><div class="circle"></div></div>
-        </div>
-        <hr/>
-        <div class="SettingList">
-          <div class="spans">
-            <span class="spansA">断开连接时自动删除账号及密码</span>
-            <span class="spansB">如果这不是您的设备请开启此项，以保障您的账户安全</span>
-          </div>
-          <div class="switchOut"><div class="circle"></div></div>
-        </div>
       </div>
       <div class="Setting" v-show="DisplaySettings"><!--显示设置-->
         <div class="SettingTitle">显示设置</div>
@@ -72,26 +57,18 @@
         <hr/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">在上方显示地图标尺</span>
-            <span class="spansB">在浏览器顶部显示标尺</span>
-          </div>
-          <div class="switchOut"><div class="circle"></div></div>
-        </div>
-        <hr/>
-        <div class="SettingList">
-          <div class="spans">
-            <span class="spansA">在左侧显示地图标尺</span>
-            <span class="spansB">在浏览器左侧显示标尺</span>
-          </div>
-          <div class="switchOut"><div class="circle"></div></div>
-        </div>
-        <hr/>
-        <div class="SettingList">
-          <div class="spans">
             <span class="spansA">打开历史记录面板</span>
             <span class="spansB">在浏览器左上角显示历史记录面板</span>
           </div>
           <div class="switchOut" ref="DS04" @click="DS04($event)"><div ref="DS04_1" class="circle"></div></div>
+        </div>
+        <hr/>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">采样率调整</span>
+            <span class="spansB">修改后会影响移动时的每秒采样次数</span>
+          </div>
+          <div class="switchOut" ref="DS05" @click="DS05($event)"><div ref="DS05_1" class="circle"></div></div>
         </div>
       </div>
       <div class="Setting" v-show="AccountSettings"><!--账号设置-->
@@ -132,7 +109,7 @@
         <div class="AboutBox">
           <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png"><!--图标-->
           <p class="Ap2">在线地图编辑器</p>
-          <p class="Ap1">OME版本0.4.5</p>
+          <p class="Ap1">OME版本0.4.5(developing)</p>
           <p class="Ap1"><a href="https://vuejs.org" target="_blank" style="color:blue">Vue版本2.9.6</a></p>
           <p class="Ap1"><a href="https://github.com/emilia-t/online-map-editor" target="_blank" style="color:blue">开放源代码</a></p>
           <p class="Ap1"><a href="https://hitokoto.cn" target="_blank" style="color:blue">一言提供</a></p>
@@ -394,19 +371,52 @@ export default {
       }
     },
     findLocalSetConfig(){//查找本地设置配置
-      let localConfig=null;
       let hasLocalConfig=this.handleLocalStorage('get','setting');
       if(hasLocalConfig=='true'){
         let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));//格式化本地配置设置
+        let hasAutoCheckServerStatus=nowLocalStorage.hasOwnProperty('set_GS_AutoCheckServerStatus');
+        let hasMouseSamplingRate=nowLocalStorage.hasOwnProperty('set_DS_MouseSamplingRate');
+        if(!hasAutoCheckServerStatus){
+          nowLocalStorage.set_GS_AutoCheckServerStatus=true;
+          this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
+        }
+        if(!hasMouseSamplingRate){
+          nowLocalStorage.set_DS_MouseSamplingRate='medium';
+          this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
+        }
         for(let key in nowLocalStorage){
           switch (key) {
+            case 'set_DS_MouseSamplingRate':{
+              let oldStatus=nowLocalStorage[key];
+              switch (oldStatus) {
+                case 'low':{
+                  this.$refs.DS05.classList.add('switchOutLow');
+                  this.$refs.DS05_1.classList.add('circleLow');
+                  this.$store.state.userSettingConfig.mouseSamplingRate='low';
+                  break;
+                }
+                case 'medium':{
+                  this.$refs.DS05.classList.add('switchOutMedium');
+                  this.$refs.DS05_1.classList.add('circleMedium');
+                  this.$store.state.userSettingConfig.mouseSamplingRate='medium';
+                  break;
+                }
+                case 'high':{
+                  this.$refs.DS05.classList.add('switchOutHigh');
+                  this.$refs.DS05_1.classList.add('circleHigh');
+                  this.$store.state.userSettingConfig.mouseSamplingRate='high';
+                  break;
+                }
+              }
+              break;
+            }
             case 'set_GS_AutoCheckServerStatus':{//设置启动时自动检查服务器状态
               if(nowLocalStorage[key]==true){
                 this.$refs.GS01.classList.add('switchOutOn');//更新样式
-                this.$refs.GS01_1.classList.add('circleOn')
+                this.$refs.GS01_1.classList.add('circleOn');
               }else if(nowLocalStorage[key]==false){
                 this.$refs.GS01.classList.remove('switchOutOn');
-                this.$refs.GS01_1.classList.remove('circleOn')
+                this.$refs.GS01_1.classList.remove('circleOn');
               }
               break;
             }
@@ -436,9 +446,11 @@ export default {
             }
           }
         }
-      }else {
+      }
+      else {
         let SetObj={//创建设置对象
-          'set_GS_AutoCheckServerStatus':true
+          'set_GS_AutoCheckServerStatus':true,
+          'set_DS_MouseSamplingRate':'medium',
         };
         let SetStr=JSON.stringify(SetObj);//格式化对象
         this.handleLocalStorage('set','setting','true');//添加默认配置
@@ -541,6 +553,48 @@ export default {
         this.$store.state.userSettingConfig.openStepRecorder=true;
       }
     },
+    DS05(ev){//采样率
+      ev.stopPropagation();
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+      let oldStatus=null;
+      if(settingsObj.hasOwnProperty('set_DS_MouseSamplingRate')){
+        oldStatus=settingsObj.set_DS_MouseSamplingRate;
+      }else{
+        oldStatus='medium';
+      }
+      switch (oldStatus) {
+        case 'low':{
+          settingsObj.set_DS_MouseSamplingRate='medium';
+          this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+          this.$refs.DS05.classList.remove('switchOutLow');//更改样式
+          this.$refs.DS05.classList.add('switchOutMedium');
+          this.$refs.DS05_1.classList.remove('circleLow');
+          this.$refs.DS05_1.classList.add('circleMedium');
+          this.$store.state.userSettingConfig.mouseSamplingRate='medium';
+          break;
+        }
+        case 'medium':{
+          settingsObj.set_DS_MouseSamplingRate='high';
+          this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+          this.$refs.DS05.classList.remove('switchOutMedium');//更改样式
+          this.$refs.DS05.classList.add('switchOutHigh');
+          this.$refs.DS05_1.classList.remove('circleMedium');
+          this.$refs.DS05_1.classList.add('circleHigh');
+          this.$store.state.userSettingConfig.mouseSamplingRate='high';
+          break;
+        }
+        case 'high':{
+          settingsObj.set_DS_MouseSamplingRate='low';
+          this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+          this.$refs.DS05.classList.remove('switchOutHigh');//更改样式
+          this.$refs.DS05.classList.add('switchOutLow');
+          this.$refs.DS05_1.classList.remove('circleHigh');
+          this.$refs.DS05_1.classList.add('circleLow');
+          this.$store.state.userSettingConfig.mouseSamplingRate='low';
+          break;
+        }
+      }
+    },
     GS01(ev){//常规设置（GS）下的功能开关
       ev.stopPropagation();
       let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
@@ -563,7 +617,7 @@ export default {
           case 'settings':{//设置变动
             let newObj=JSON.parse(e.newValue);//格式化
             let oldObj=JSON.parse(e.oldValue);
-            if(this.storageCheck(newObj)){//检查格式后的数据是否正常,不正常则删除settings以此重置配置
+            if(this.storageCheck(newObj)){
               for(let key1 in newObj){//检查被改动的项
                 let isNewO=true;//当前key是否为新增
                 for(let key2 in oldObj){//判断是否在old中存在
@@ -589,6 +643,35 @@ export default {
     },
     settingSwitch(key,value){//处理设置项(来自其他页面的设置)
       switch (key){
+        case 'set_DS_MouseSamplingRate':{
+          switch (value) {
+            case 'low':{
+              this.$refs.DS05.classList.remove('switchOutHigh');//更改样式
+              this.$refs.DS05.classList.add('switchOutLow');
+              this.$refs.DS05_1.classList.remove('circleHigh');
+              this.$refs.DS05_1.classList.add('circleLow');
+              this.$store.state.userSettingConfig.mouseSamplingRate='low';
+              break;
+            }
+            case 'medium':{
+              this.$refs.DS05.classList.remove('switchOutLow');//更改样式
+              this.$refs.DS05.classList.add('switchOutMedium');
+              this.$refs.DS05_1.classList.remove('circleLow');
+              this.$refs.DS05_1.classList.add('circleMedium');
+              this.$store.state.userSettingConfig.mouseSamplingRate='medium';
+              break;
+            }
+            case 'high':{
+              this.$refs.DS05.classList.remove('switchOutMedium');//更改样式
+              this.$refs.DS05.classList.add('switchOutHigh');
+              this.$refs.DS05_1.classList.remove('circleMedium');
+              this.$refs.DS05_1.classList.add('circleHigh');
+              this.$store.state.userSettingConfig.mouseSamplingRate='high';
+              break;
+            }
+          }
+          break;
+        }
         case 'set_GS_AutoCheckServerStatus':{
           if(value==true){
             this.$refs.GS01.classList.add('switchOutOn');//更新样式
@@ -625,24 +708,8 @@ export default {
         }
       }
     },
-    storageCheck(Obj){//用于检测本地存储是否正常的，如果不正常则返回false，否则返回true
-      if(isObject(Obj)){//1.检测Obj是否为对象
-        let sLock=true;
-        for(let key in Obj){//2.检测各项属性的值是否为布尔
-          if(!isBoolean(Obj[key])){
-            sLock=false;
-          }
-        }
-        return sLock;
-      }else {
-        return false;
-      }
-      function isBoolean(val) {
-        return typeof val === 'boolean';
-      }
-      function isObject(obj) {
-        return obj != null && typeof obj === 'object' && Array.isArray(obj) === false;
-      }
+    storageCheck(obj){
+      return obj != null && typeof obj === 'object' && Array.isArray(obj) === false;
     },
     watchWindowSize(){//监听窗口变化
       window.addEventListener('resize',()=>{
@@ -733,7 +800,10 @@ export default {
     },
     openStepRecorder(){
       return this.$store.state.userSettingConfig.openStepRecorder;
-    }
+    },
+    mouseSamplingRate(){
+      return this.$store.state.userSettingConfig.mouseSamplingRate;
+    },
   },
   watch:{
     '$route'(to,from){
@@ -772,6 +842,24 @@ export default {
         if(!newValue){
           this.$refs.DS04.classList.remove('switchOutOn');
           this.$refs.DS04_1.classList.remove('circleOn');
+        }
+      }
+    },
+    mouseSamplingRate:{
+      handler(newValue){
+        switch (newValue){
+          case 'low':{
+            this.$store.state.cameraConfig.frameTime=32;
+            break;
+          }
+          case 'medium':{
+            this.$store.state.cameraConfig.frameTime=16;
+            break;
+          }
+          case 'high':{
+            this.$store.state.cameraConfig.frameTime=8;
+            break;
+          }
         }
       }
     }
@@ -977,6 +1065,24 @@ a:hover, a:active {
 .circleOn{
   transform: translateX(22px) translateY(1px) !important;
 }
+.switchOutLow{
+  background: #13c08e !important;
+}
+.circleLow{
+  transform: translateX(0px) translateY(1px) !important;
+}
+.switchOutMedium{
+  background: #3590ff !important;
+}
+.circleMedium{
+  transform: translateX(11px) translateY(1px) !important;
+}
+.switchOutHigh{
+  background: #a324ff !important;
+}
+.circleHigh{
+  transform: translateX(22px) translateY(1px) !important;
+}
 .SettingsBox{
   position: absolute;
   top: 0px;
@@ -1037,7 +1143,7 @@ a:hover, a:active {
   padding:0px 2px;
 }
 .Settings{
-  box-shadow:2px 2px 5px rgb(220, 220, 220);
+  box-shadow:#c5c5c5 0px 0px 6px;
   z-index: 550;
   position: absolute;
   top: 50px;
@@ -1058,7 +1164,7 @@ a:hover, a:active {
   width: 85px;
   height: 100%;
   background: rgb(255,255,255);
-  box-shadow: 2px 2px 5px rgb(220, 220, 220);
+  box-shadow: #c5c5c5 0px 0px 6px;
   position: fixed;
   left: 0px;
   top:0px;
