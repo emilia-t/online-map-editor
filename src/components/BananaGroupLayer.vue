@@ -24,7 +24,7 @@
       </div>
     </div>
     <div class="content">
-      <orange-group-structure :layer="layer" :all-expand="allExpand" :level="1" :structure="layer.structure"></orange-group-structure>
+      <orange-group-structure :layer="layer" :all-expand="allExpand" :level="1" :route="layer.structure[0]" :structure="layer.structure"></orange-group-structure>
     </div>
   </div>
 </template>

@@ -20,7 +20,7 @@
       </div>
     </div>
     <div class="memberTeamBox" v-for="(item,index) in extractLatter()" :key="index" v-show="groupExpand">
-      <div class="memberKeyInfo" v-if="!isArray(item)" @contextmenu.stop.prevent="contextmenuItemOpen($event)">
+      <div class="memberKeyInfo" v-if="!isArray(item)" @contextmenu.stop.prevent="contextmenuItemOpen($event,layer.members[item],item)">
         <div class="memberLeft" @click="locateToElement(layer.members[item])">
           <point v-if="layer.members[item].type==='point'" :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'"></point>
           <segment-line v-if="layer.members[item].type==='line'" :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"></segment-line>
@@ -42,7 +42,7 @@
           <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑属性中</span>
         </div>
       </div>
-      <orange-group-structure v-if="isArray(item)" :layer="layer" :level="level+1" :all-expand="allExpand" :structure="item"></orange-group-structure>
+      <orange-group-structure v-if="isArray(item)" :layer="layer" :level="level+1" :all-expand="allExpand" :route="route+'⇉'+item[0]" :structure="item"></orange-group-structure>
     </div>
     <div class="memberMenuClose" @contextmenu.prevent="void 1" @click.stop="contextmenuHeadClose()" v-show="memberHeadMenu.show"></div>
     <div class="memberMenu" :style="headContextmenuPos" v-show="memberHeadMenu.show">
@@ -64,7 +64,7 @@
         <div class="menuList">
           移动到其他分组
         </div>
-        <div class="menuList" @click="">
+        <div class="menuList" @click="removeLayerMember()">
           移除出此图层
         </div>
       </div>
@@ -96,6 +96,8 @@ export default {
         show:false,
       },
       memberItemMenu:{
+        target:null,
+        index:null,
         x:0,
         y:0,
         show:false,
@@ -113,6 +115,11 @@ export default {
       default:1,
       required:true,
     },
+    route:{
+      type:String,
+      default:'',
+      required:true,
+    },
     structure:{//组织结构
       type:Array,
       default:[],
@@ -128,6 +135,49 @@ export default {
 
   },
   methods:{
+    removeLayerMember(){
+      let layerId=this.layer.id;
+      let targetId=this.memberItemMenu.target.id;
+      let oldStructure=JSON.parse(JSON.stringify(this.layer.structure));
+      let oldMembers=JSON.parse(JSON.stringify(this.layer.members));
+      let newMembers=oldMembers.filter(item=>{return item.id!=targetId});
+      const typeMapping={point:'1',line:'2',area:'3',curve:'4'};
+      newMembers=newMembers.map(item=>`${typeMapping[item.type]}_${item.id}`);
+      let route=this.route;
+      let routeArr=route.split('⇉');
+      routeArr=routeArr.filter((item)=>{return item!==''});
+      let removeIndex=this.memberItemMenu.index;
+      let newStructure=this.structureRemoveByItem(oldStructure,routeArr,removeIndex);
+      this.$store.state.serverData.socket.broadcastUpdateLayerData({
+        id:layerId,
+        members:newMembers,
+        structure:newStructure
+      });
+      this.contextmenuItemClose();
+    },
+    /**依据图层路由和图层结构删除值
+     * @return false|mixed
+     * @param structure
+     * @param route
+     * @param value
+     */
+    structureRemoveByItem(structure,route,value){
+      if (route.length===1){//路由的尽头
+        structure.remove(value);
+        return structure;
+      }else{//存在下一跳
+        const nextRoute=route.slice(1);//下一跳
+        for (let i=0;i<structure.length;i++){//遍历此层结构数组
+          if(Array.isArray(structure[i])){//查询此层子层
+            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
+              structure[i]=this.structureRemoveByItem(structure[i],nextRoute,value);//递归此子层及下一跳
+              break;
+            }
+          }
+        }
+      }
+      return structure;
+    },
     contextmenuHeadOpen(ev){//头部右键菜单
       this.memberHeadMenu.show=true;
       this.memberHeadMenu.x=ev.x;
@@ -136,19 +186,28 @@ export default {
     contextmenuHeadClose(){
       this.memberHeadMenu.show=false;
     },
-    contextmenuItemOpen(ev){//成员右键菜单
+    contextmenuItemOpen(ev,item,index){//成员右键菜单
+      this.memberItemMenu.target=item;
+      this.memberItemMenu.index=index;
       this.memberItemMenu.show=true;
       this.memberItemMenu.x=ev.x;
       this.memberItemMenu.y=ev.y;
     },
     contextmenuItemClose(){
       this.memberItemMenu.show=false;
+      this.memberItemMenu.target=null;
+      this.memberItemMenu.index=null;
+      this.memberItemMenu.x=0;
+      this.memberItemMenu.y=0;
     },
     expandGroup(){//展开或收起分组
       this.groupExpand=!this.groupExpand;
     },
     isArray(any){
-      return Array.isArray(any);
+      let isArray=Array.isArray(any);
+      if(isArray===true){
+        return any.length !== 0;
+      }
     },
     extractLatter(){//提取除第1-2位
       return this.structure.slice(2);

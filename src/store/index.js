@@ -825,7 +825,6 @@ export default new Vuex.Store({
           if(this.isLink){
             if(this.instructObjCheck(instructObj)){//1.数据检查
               let json=JSON.stringify(instructObj);
-              console.log(json);
               this.socket.send(json);
             }
           }

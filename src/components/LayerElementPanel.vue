@@ -309,9 +309,7 @@ export default {
       let newMembers=oldMembers.map(item=>`${typeMapping[item.type]}_${item.id}`);
       let newMemberIndex=oldMembers.length;
       newMembers.push(`${typeMapping[this.itemMenuConfig.target.type]}_${addId}`);
-      let newStructure=this.StructureInsertByItem(oldStructure,routeArr,newMemberIndex);
-      console.log(newStructure);
-      console.log(newMembers);
+      let newStructure=this.structureInsertByItem(oldStructure,routeArr,newMemberIndex);
       this.$store.state.serverData.socket.broadcastUpdateLayerData(
         {
           id:groupLayerId,
@@ -327,7 +325,7 @@ export default {
      * @param route
      * @param value
      */
-     StructureInsertByItem(structure,route,value){
+    structureInsertByItem(structure,route,value){
       if (route.length===1){//路由的尽头
         structure.push(value);
         return structure;
@@ -336,7 +334,7 @@ export default {
         for (let i=0;i<structure.length;i++){//遍历此层结构数组
           if(Array.isArray(structure[i])){//查询此层子层
             if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.StructureInsertByItem(structure[i],nextRoute,value);//递归此子层及下一跳
+              structure[i]=this.structureInsertByItem(structure[i],nextRoute,value);//递归此子层及下一跳
               break;
             }
           }
@@ -350,7 +348,7 @@ export default {
      * @param route
      * @param value
      */
-     StructureRemoveByItem(structure,route,value){
+    structureRemoveByItem(structure,route,value){
       if (route.length===1){//路由的尽头
         structure.remove(value);
         return structure;
@@ -359,7 +357,7 @@ export default {
         for (let i=0;i<structure.length;i++){//遍历此层结构数组
           if(Array.isArray(structure[i])){//查询此层子层
             if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.StructureRemoveByItem(structure[i],nextRoute,value);//递归此子层及下一跳
+              structure[i]=this.structureRemoveByItem(structure[i],nextRoute,value);//递归此子层及下一跳
               break;
             }
           }
