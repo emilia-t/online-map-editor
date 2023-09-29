@@ -2,7 +2,7 @@
   <svg :copyright="this.$root.Copyright" :style="custom"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"
-    width="13px" height="19px">
+    width="14px" height="19px">
     <path fill-rule="evenodd"
           d="M6.500,10.000 C5.119,10.000 4.000,8.881 4.000,7.500 C4.000,6.119 5.119,5.000 6.500,5.000 C7.881,5.000 9.000,6.119 9.000,7.500 C9.000,8.881 7.881,10.000 6.500,10.000 ZM6.500,6.250 C5.810,6.250 5.250,6.810 5.250,7.500 C5.250,8.190 5.810,8.750 6.500,8.750 C7.190,8.750 7.750,8.190 7.750,7.500 C7.750,6.810 7.190,6.250 6.500,6.250 Z"/>
     <path fill-rule="evenodd"

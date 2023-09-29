@@ -43,32 +43,56 @@
           </div>
           <div class="switchOut" ref="GS01" @click="GS01($event)"><div ref="GS01_1" class="circle"></div></div>
         </div>
-        <hr/>
+        <hr class="style-one"/>
       </div>
       <div class="Setting" v-show="DisplaySettings"><!--显示设置-->
         <div class="SettingTitle">显示设置</div>
+        <div class="settingGroupTitle">
+          面板
+        </div>
+        <hr class="style-one"/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">显示地图元素列表</span>
-            <span class="spansB">开启后将会在左侧悬浮一个地图元素列表</span>
+            <span class="spansA">显示元素与图层面板</span>
+            <span class="spansB">开启后将会在左侧显示图层元素列表</span>
           </div>
           <div class="switchOut" ref="DS01" @click="DS01($event)"><div ref="DS01_1" class="circle"></div></div>
         </div>
-        <hr/>
+        <hr class="style-one"/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">打开历史记录面板</span>
+            <span class="spansA">总是隐藏折叠默认分组图层</span>
+            <span class="spansB">修改此项后将隐藏默认分组图层</span>
+          </div>
+          <div class="switchOut" ref="DS06" @click="DS06($event)"><div ref="DS06_1" class="circle"></div></div>
+        </div>
+        <hr class="style-one"/>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">显示历史编辑记录面板</span>
             <span class="spansB">在浏览器左上角显示历史记录面板</span>
           </div>
           <div class="switchOut" ref="DS04" @click="DS04($event)"><div ref="DS04_1" class="circle"></div></div>
         </div>
-        <hr/>
+        <hr class="style-one"/>
+        <div class="settingGroupTitle">
+          性能
+        </div>
+        <hr class="style-one"/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">采样率调整</span>
+            <span class="spansA">调整移动采样率</span>
             <span class="spansB">修改后会影响移动时的每秒采样次数</span>
           </div>
           <div class="switchOut" ref="DS05" @click="DS05($event)"><div ref="DS05_1" class="circle"></div></div>
+        </div>
+        <hr class="style-one"/>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">区块加载范围</span>
+            <span class="spansB">修改后会影响元素加载的范围</span>
+          </div>
+          <div class="switchOut" ref="DS08" @click=""><div ref="DS08_1" class="circle"></div></div>
         </div>
       </div>
       <div class="Setting" v-show="AccountSettings"><!--账号设置-->
@@ -88,7 +112,7 @@
             操作
           </li>
         </ul>
-        <hr/>
+        <hr class="style-one"/>
         <ol class="AccountSetOl" v-for="value in accounts"><!--单个账号-->
           <li class="AccountSetLiC">
             <ol>
@@ -96,7 +120,7 @@
                 {{value.A}}
               </li>
               <li class="">
-                {{value.P}}
+                ************
               </li>
             </ol>
           </li>
@@ -109,15 +133,14 @@
         <div class="AboutBox">
           <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png"><!--图标-->
           <p class="Ap2">在线地图编辑器</p>
-          <p class="Ap1">OME版本0.4.5(developing)</p>
-          <p class="Ap1"><a href="https://vuejs.org" target="_blank" style="color:blue">Vue版本2.9.6</a></p>
+          <p class="Ap1">OME版本{{$root.Version}}</p>
           <p class="Ap1"><a href="https://github.com/emilia-t/online-map-editor" target="_blank" style="color:blue">开放源代码</a></p>
           <p class="Ap1"><a href="https://hitokoto.cn" target="_blank" style="color:blue">一言提供</a></p>
           <p class="Ap3" style="letter-spacing:1px">Power by</p>
           <p class="Ap1">Online map editor</p>
+          <p class="Ap3" style="letter-spacing:1px">Copyright {{$root.Copyright}}</p>
           <p class="Ap3">鸣谢</p>
           <p class="Ap1">ALIMU（测试）</p>
-          <p class="Ap1">Emilia（测试）</p>
           <p class="Ap3">一言</p>
           <p class="Ap1" v-cloak v-text="'『 '+classicQuote+' 』'"></p>
         </div>
@@ -868,6 +891,26 @@ export default {
 </script>
 
 <style scoped>
+hr.style-one{
+  width:270px;
+  margin:0 auto;
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, #d5d3d3, #bfbebe, #b4b4d1);
+}
+.settingGroupTitle{
+  width: auto;
+  height: 25px;
+  font-size: 18px;
+  font-weight: 200;
+  margin: 20px 5px 5px 5px;
+  color: rgba(0,0,0,0.20);
+  text-shadow: 0px 0px 1px #000000;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  flex-direction: column;
+}
 .doubtContent{
   width: calc(100% - 10px);
   padding: 4px;
@@ -1092,7 +1135,7 @@ a:hover, a:active {
 .SettingTitle{
   font-weight: 600;
   font-size: 19px;
-  margin: 10px;
+  margin: 10px 5px;
 }
 .SettingList{
   width: calc(100% - 10px);
@@ -1113,7 +1156,7 @@ a:hover, a:active {
   width: calc(100% - 70px);
 }
 .spansA{
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 200;
   color: rgba(5,5,5,0.9);
 }
@@ -1140,7 +1183,7 @@ a:hover, a:active {
   transform: translateX(0px) translateY(1px);
 }
 .Setting{
-  padding:0px 2px;
+  padding:0px 10px;
 }
 .Settings{
   box-shadow:#c5c5c5 0px 0px 6px;

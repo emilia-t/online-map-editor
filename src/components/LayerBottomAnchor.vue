@@ -1,10 +1,12 @@
 <template>
   <div class="bottomAnchorLayer">
     <div class="bottomAnchorLayerBox">
-      Power by&nbsp;<a target="_blank" href="https://map.atsw.top">Online map editor</a>&nbsp;&nbsp;
-      <img alt="图标" :src="batb" class="batb-d0289dc0"/>
-      <a target="_blank" :href="'http://www.beian.gov.cn/portal/registerSystemInfo?recordcode='+this.$root.CONFIG.bottomAnchorTextC">{{this.$root.CONFIG.bottomAnchorTextA}}</a>&nbsp;&nbsp;
-      <a target="_blank" href="https://beian.miit.gov.cn/">{{this.$root.CONFIG.bottomAnchorTextB}}</a>&nbsp;&nbsp;
+      PowerBy&nbsp;<a target="_blank">Online map editor</a>&nbsp;&nbsp;
+      ©&nbsp;<a target="_blank">{{$root.Copyright}}</a>&nbsp;&nbsp;
+      V&nbsp;<a target="_blank">{{$root.Version}}</a>&nbsp;&nbsp;
+<!--      <img alt="图标" :src="batb" class="batb-d0289dc0"/>-->
+<!--      <a target="_blank" :href="'http://www.beian.gov.cn/portal/registerSystemInfo?recordcode='+this.$root.CONFIG.bottomAnchorTextC">{{this.$root.CONFIG.bottomAnchorTextA}}</a>&nbsp;&nbsp;-->
+<!--      <a target="_blank" href="https://beian.miit.gov.cn/">{{this.$root.CONFIG.bottomAnchorTextB}}</a>&nbsp;&nbsp;-->
     </div>
   </div>
 </template>

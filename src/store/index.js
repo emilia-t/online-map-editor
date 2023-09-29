@@ -375,7 +375,7 @@ export default new Vuex.Store({
           this.config={};
           this.lastEdit='很久以前';
           this.otherA1=[];
-          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
+          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer','updateLayerData'];//指令类型合集
           this.Instruct={//指令合集
             login(email,password) {//登录指令
               this.email=email || '';
@@ -441,6 +441,9 @@ export default new Vuex.Store({
             },
             broadcast_restoreElement(data){
               return {type:'broadcast',class:'restoreElement',data}
+            },
+            broadcast_updateLayerData(data){
+              return {type:'broadcast',class:'updateLayerData',data}
             },
           };
           this.QIR={//检测间
@@ -550,6 +553,9 @@ export default new Vuex.Store({
           this.mapData.points=[];//3.清除地图数据
           this.mapData.lines=[];
           this.mapData.areas=[];
+        }
+        broadcastUpdateLayerData(data){//id,structure,members
+          this.send(this.Instruct.broadcast_updateLayerData(data));
         }
         broadcastSelectIngElement(id){
           this.send(this.Instruct.broadcast_selectIngElement(id));
@@ -819,6 +825,7 @@ export default new Vuex.Store({
           if(this.isLink){
             if(this.instructObjCheck(instructObj)){//1.数据检查
               let json=JSON.stringify(instructObj);
+              console.log(json);
               this.socket.send(json);
             }
           }
@@ -955,7 +962,18 @@ export default new Vuex.Store({
               break;
             }
             case 'send_mapLayer':{
-              this.mapLayer=jsonData.data;
+              try{
+                let res=[];
+                let layerNumber=jsonData.data.length;
+                for(let i=0;i<layerNumber;i++){
+                  jsonData.data[i].members=JSON.parse(window.atob(jsonData.data[i].members));
+                  jsonData.data[i].structure=JSON.parse(window.atob(jsonData.data[i].structure));
+                  res.push(jsonData.data[i]);
+                }
+                this.mapLayer=res;
+              }catch (e) {
+                console.log(e);
+              }
               break;
             }
             case 'broadcast':{//服务器发来的广播
@@ -1334,6 +1352,32 @@ export default new Vuex.Store({
                       this.presence.splice(i,1);
                       break;
                     }
+                  }
+                  break;
+                }
+                case 'updateLayerData':{
+                  if(this.QIR.hasProperty(jsonData,'data')){
+                  if(this.QIR.hasProperty(jsonData.data,'id')){
+                    let ID=jsonData.data.id;
+                    let newMembers=undefined;
+                    if(this.QIR.hasProperty(jsonData.data,'members')){
+                      newMembers=JSON.parse(window.atob(jsonData.data.members))
+                    }
+                    let newStructure=undefined;
+                    if(this.QIR.hasProperty(jsonData.data,'structure')){
+                      newStructure=JSON.parse(window.atob(jsonData.data.structure))
+                    }
+                    for(let i=0;i<this.mapLayer.length;i++){
+                      if(ID==this.mapLayer[i].id){
+                        if(newMembers!==undefined){
+                          this.mapLayer[i].members=newMembers;
+                        }
+                        if(newStructure!==undefined){
+                          this.mapLayer[i].structure=newStructure;
+                        }
+                      }
+                    }
+                  }
                   }
                   break;
                 }
