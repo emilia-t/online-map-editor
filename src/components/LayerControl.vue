@@ -96,6 +96,7 @@ export default {
           this.addRouteLineStart();
         }
         this.$store.state.mapConfig.cursorLock=true;//禁用更新指针
+        this.$store.commit('suppressPickSelect',true);
         this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
       }else {
         this.isAddArea=false;//更改添加状态为“不可用”
@@ -104,6 +105,7 @@ export default {
         if(this.$store.state.mapConfig.cursorLock===false){
           this.$store.state.mapConfig.cursor='default';
         }
+        this.$store.commit('suppressPickSelect',false);
         this.$root.sendSwitchInstruct('previewLine',false);//通知预览停用
       }
     },
@@ -114,7 +116,7 @@ export default {
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddArea===true && this.addAreaClock===false && this.nodeSuppressor!==true){
               let tag=ev.target.nodeName;//判断target
-              if(tag==="svg" || tag==="polyline" || tag==="circle"){
+              if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 let Pos=this.computeMouseActualPos(ev)//计算新增点位置
                 this.theConfig.addAreaPos.push(Pos);
               }
@@ -155,6 +157,7 @@ export default {
           this.addAreaStart();
         }
         this.$store.state.mapConfig.cursorLock=true;//禁用更新指针
+        this.$store.commit('suppressPickSelect',true);
         this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
       }else {
         this.isAddLine=false;//更改添加点状态为“不可用”
@@ -163,6 +166,7 @@ export default {
         if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='default';
         }
+        this.$store.commit('suppressPickSelect',false);
         this.$root.sendSwitchInstruct('previewLine',false);//通知预览停用
       }
     },
@@ -186,7 +190,7 @@ export default {
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false && this.nodeSuppressor!==true){
               let tag=ev.target.nodeName;//判断target
-              if(tag==="svg" || tag==="polyline" || tag==="circle"){
+              if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 let Pos=this.computeMouseActualPos(ev);//计算新增点位置
                 this.theConfig.addLinePos.push(Pos);
               }
@@ -221,12 +225,11 @@ export default {
     addPoint(){//添加点
       if(this.theConfig.obServe===false){//监听下一次的鼠标点击位置
         this.theConfig.obServe=true;//启用观察者
-
         if(this.pointListener===false){//避免重复
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddPoint===true && this.nodeSuppressor!==true){
               let tag=ev.target.nodeName;//判断target
-              if(tag=="svg" || tag=="polyline" || tag=="circle"){
+              if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 let Pos=this.computeMouseActualPos(ev)//计算新增点位置
                 this.theConfig.addPointPos.x=Pos.x;
                 this.theConfig.addPointPos.y=Pos.y;
@@ -286,10 +289,15 @@ export default {
           this.$store.state.mapConfig.cursor='crosshair';
         }
         this.$store.state.mapConfig.cursorLock=true;//禁用更新指针
+        this.$store.commit('suppressPickSelect',true);
         if(this.isAddLine){//更改其他按钮状态
           this.addRouteLineStart();
         }
+        if(this.isAddArea){
+          this.addAreaStart();
+        }
       }else {
+        this.$store.commit('suppressPickSelect',false);
         this.isAddPoint=false;//更改添加点状态
         this.Url1Color='#000000';
         this.theConfig.buttonA=false;//更改按钮状态
@@ -406,7 +414,7 @@ export default {
       let kind=intent.class;
       switch (type){
         case 'upload':{
-          this.$root.general_script.alert_tips('撤回操作不可逆，且无法保证执行成功');
+          this.$root.general_script.alert_tips('已撤回上传，但无法保证成功');
           this.$store.state.serverData.socket.broadcastDeleteElement(id);
           break;
         }

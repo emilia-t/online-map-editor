@@ -61,7 +61,7 @@
         <hr class="style-one"/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">总是隐藏折叠默认分组图层</span>
+            <span class="spansA">总是隐藏默认分组图层</span>
             <span class="spansB">修改此项后将隐藏默认分组图层</span>
           </div>
           <div class="switchOut" ref="DS06" @click="DS06($event)"><div ref="DS06_1" class="circle"></div></div>
@@ -133,12 +133,13 @@
         <div class="AboutBox">
           <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png"><!--图标-->
           <p class="Ap2">在线地图编辑器</p>
-          <p class="Ap1">OME版本{{$root.Version}}</p>
-          <p class="Ap1"><a href="https://github.com/emilia-t/online-map-editor" target="_blank" style="color:blue">开放源代码</a></p>
+          <p class="Ap1">version{{$root.Version}}</p>
+<!--          <p class="Ap1"><a href="https://github.com/emilia-t/online-map-editor" target="_blank" style="color:blue">开放源代码</a></p>-->
           <p class="Ap1"><a href="https://hitokoto.cn" target="_blank" style="color:blue">一言提供</a></p>
           <p class="Ap3" style="letter-spacing:1px">Power by</p>
           <p class="Ap1">Online map editor</p>
-          <p class="Ap3" style="letter-spacing:1px">Copyright {{$root.Copyright}}</p>
+          <p class="Ap3" style="letter-spacing:1px">Copyright </p>
+          <p class="Ap1">{{$root.Copyright}}</p>
           <p class="Ap3">鸣谢</p>
           <p class="Ap1">ALIMU（测试）</p>
           <p class="Ap3">一言</p>

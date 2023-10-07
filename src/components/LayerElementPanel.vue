@@ -22,7 +22,7 @@
             导出地图数据为 KML
           </div>
           <div class="mapMoreAction" title="隐藏或显示默认图层" @click.stop="switchShowDefaultLayer()">
-            <span v-show="showDefaultLayer">隐藏</span><span v-show="!showDefaultLayer">显示</span><span>默认分组图层</span>
+            <span v-show="showDefaultLayer">隐藏</span><span v-show="!showDefaultLayer">显示</span><span>默认图层</span>
           </div>
         </div>
       </div>
@@ -36,7 +36,7 @@
     <div class="panelButton">
       <div class="buttonBox">
         <add-new-group></add-new-group>
-        <div class="buttonBoxText">
+        <div class="buttonBoxText" @click="addNewGroupLayer()">
           新建分组图层
         </div>
       </div>
@@ -47,14 +47,14 @@
         </div>
       </div>
     </div>
-    <div class="panelContent" @contextmenu.prevent="void 1">
-      <div class="defaultLayer selectedLayer" v-show="showDefaultLayer"><!--默认图层-->
+    <div class="panelContent" ref="panelContent" @contextmenu.prevent="void 1">
+      <div class="defaultLayer" v-show="showDefaultLayer"><!--默认图层-->
         <div class="eyebrow">
           <div class="eyebrowLeft">
             <div class="previewEyeL">
               <preview-eye></preview-eye>
             </div>
-            <span class="cursorDefault">默认分组图层</span>
+            <span class="cursorDefault">默认图层-只读</span>
           </div>
           <div class="eyebrowRight" @click.stop="switchDefaultLayerActions()">
             <more custom="cursor:pointer;transform:translate(3px,1px)"></more>
@@ -193,9 +193,7 @@
           </div>
         </div>
       </div>
-      <div class="groupLayersBox" v-for="layer in groupLayers" :key="layer.id">
-        <banana-group-layer :layer="layer"></banana-group-layer>
-      </div>
+      <banana-group-layer v-for="layerId in mapLayerOrder" :key="layerId" :layer="groupLayers[layerId]" :group-layers="groupLayers" :adjust-order-response="adjustOrderTemplate" :adjust-item-order-response="adjustItemOrderTemplate" :pick-layer-response="pickLayerTemplate" @pickLayerRequest="pickLayerApproval" @adjustOrderRequest="adjustOrderApproval" @adjustItemOrderRequest="adjustItemOrderApproval"></banana-group-layer>
     </div>
     <div class="panelSearch">
       <div class="searchContent" contenteditable="true">
@@ -207,7 +205,7 @@
     <div class="rightClickMenu" :style="itemContextmenuPos" v-show="itemMenuConfig.show">
       <div class="menuListBox">
         <div class="menuList">
-          添加到分组
+          添加到图层
         </div>
       </div>
       <div class="menuGroupListBox">
@@ -232,6 +230,7 @@ import SegmentCurve from "./svgValidIcons/segmentCurve";
 import BananaGroupLayer from "./BananaGroupLayer";
 import OrangeGroupList from "./OrangeGroupList";
 import {mapState} from "vuex";
+
 export default {
   name: "temp",
   components: {
@@ -241,9 +240,7 @@ export default {
   },
   data(){
     return{
-      groupLayers:[
-
-      ],
+      groupLayers:{},
       allPointHideState:false,//所有point元素均隐藏状态
       allLineHideState:false,
       allAreaHideState:false,
@@ -260,6 +257,27 @@ export default {
         x:null,
         y:null,
       },
+      adjustOrderTemplate:{
+        agree:false,
+        code:null,
+        id:-1,
+      },
+      adjustItemOrderTemplate:{
+        agree:false,//通过与否
+        code:null,//校验码
+        stage:null,//提交阶段
+        type:null,//插入元素的类型
+        pattern:null,//插入的模式 up | down | join
+        idA:-1,//活动id
+        layerA:-1,//活动图层
+        idB:-1,//被动id | join -> group route
+        layerB:-1,//被动图层
+      },
+      pickLayerTemplate:{
+        agree:false,
+        code:null,
+        id:-1,
+      },
     }
   },
   mounted() {
@@ -269,27 +287,87 @@ export default {
     startSetting(){
 
     },
+    adjustItemOrderApproval(template){//审批成员排序
+      let stage=template.stage;
+      switch (stage) {
+        case 'ready':{
+          this.adjustItemOrderTemplate.agree=false;
+          this.adjustItemOrderTemplate.code=template.code;
+          this.adjustItemOrderTemplate.type=template.type;
+          this.adjustItemOrderTemplate.stage=template.stage;
+          this.adjustItemOrderTemplate.idA=template.idA;
+          this.adjustItemOrderTemplate.layerA=template.layerA;
+          break;
+        }
+        case 'confirm':{
+          this.adjustItemOrderTemplate.agree=true;
+          this.adjustItemOrderTemplate.code=template.code;
+          this.adjustItemOrderTemplate.stage=template.stage;
+          this.adjustItemOrderTemplate.type=template.type;
+          this.adjustItemOrderTemplate.pattern=template.pattern;
+          this.adjustItemOrderTemplate.idA=template.idA;
+          this.adjustItemOrderTemplate.layerA=template.layerA;
+          this.adjustItemOrderTemplate.idB=template.idB;
+          this.adjustItemOrderTemplate.layerB=template.layerB;
+          break;
+        }
+        case 'cancel':{
+          this.adjustItemOrderTemplate.agree=false;
+          this.adjustItemOrderTemplate.code=template.code;
+          this.adjustItemOrderTemplate.type=template.type;
+          this.adjustItemOrderTemplate.stage=template.stage;
+          this.adjustItemOrderTemplate.idA=-1;
+          this.adjustItemOrderTemplate.layerA=-1;
+          this.adjustItemOrderTemplate.idB=-1;
+          this.adjustItemOrderTemplate.layerB=-1;
+          break;
+        }
+      }
+    },
+    pickLayerApproval(template){
+      this.pickLayerTemplate.agree=true;
+      this.pickLayerTemplate.code=template.code;
+      this.pickLayerTemplate.id=template.id;
+    },
+    adjustOrderApproval(template){//审批图层排序
+      this.adjustOrderTemplate.agree=true;
+      this.adjustOrderTemplate.code=template.code;
+      this.adjustOrderTemplate.id=template.id;
+    },
+    addNewGroupLayer(){//添加新的分组图层：1.构建基础结构，2：上传
+      function randomNumber() {
+        const min = 100000;
+        const max = 999999;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+      let newLayerName='layer-'+randomNumber();
+      let defaultGroupLayer={
+        members:{'0':0},//不能为空对象
+        structure:[
+          newLayerName,
+          {template:null}
+        ]
+      };
+      this.$store.state.serverData.socket.broadcastCreateGroupLayer(defaultGroupLayer);
+    },
     addToGroupLayer(data){//从默认图层上添加元素到自定义图层中
-      let addId=this.itemMenuConfig.target.id;
+      let addId=parseInt(this.itemMenuConfig.target.id);
       let routeArr=data.split('⇉');//要添加到具体哪个图层的路径
       routeArr=routeArr.filter((item)=>{return item!==''});
       routeArr.reverse();
-      let groupLayerLength=this.groupLayers.length;
       let groupLayerId=null;
       let oldStructure=null;
-      let oldMembers=null;
-      for(let i=0;i<groupLayerLength;i++){
-        if(this.groupLayers[i].structure[0]===routeArr[0]){
-          groupLayerId=this.groupLayers[i].id;
-          let membersLen=this.groupLayers[i].members.length;
-          for(let k=0;k<membersLen;k++){
-            if(this.groupLayers[i].members[k].id==addId){
-              this.$root.general_script.alert_tips('此图层已存在此元素');
-              return false;
-            }
+      let mixMembers=null;
+      for(let key in this.groupLayers){
+        if(this.groupLayers[key].structure[0]===routeArr[0]){
+          if(this.groupLayers[key].members[addId]!==undefined){
+            this.$root.general_script.alert_tips('此图层已存在此元素');
+            return false;
+          }else {
+            groupLayerId=this.groupLayers[key].id;
+            oldStructure=JSON.parse(JSON.stringify(this.groupLayers[key].structure));
+            mixMembers=JSON.parse(JSON.stringify(this.groupLayers[key].members));
           }
-          oldStructure=JSON.parse(JSON.stringify(this.groupLayers[i].structure));
-          oldMembers=JSON.parse(JSON.stringify(this.groupLayers[i].members));
           break;
         }
       }
@@ -301,29 +379,31 @@ export default {
         this.$root.general_script.alert_tips('图层结构解析错误');
         return false;
       }
-      if(oldMembers===undefined || oldMembers===null){
+      if(mixMembers===undefined || mixMembers===null){
         this.$root.general_script.alert_tips('图层成员解析错误');
         return false;
       }
-      const typeMapping={point:'1',line:'2',area:'3',curve:'4'};
-      let newMembers=oldMembers.map(item=>`${typeMapping[item.type]}_${item.id}`);
-      let newMemberIndex=oldMembers.length;
-      newMembers.push(`${typeMapping[this.itemMenuConfig.target.type]}_${addId}`);
-      let newStructure=this.structureInsertByItem(oldStructure,routeArr,newMemberIndex);
+      const typeMapping={point:1,line:2,area:3,curve:4};
+      Object.keys(mixMembers).forEach(item=>{
+          mixMembers[item]=typeMapping[mixMembers[item].type]
+        }
+      );
+      mixMembers[addId]=typeMapping[this.itemMenuConfig.target.type];
+      let newStructure=this.structureInsertByItem(oldStructure,routeArr,addId);
       this.$store.state.serverData.socket.broadcastUpdateLayerData(
         {
           id:groupLayerId,
           structure:newStructure,
-          members:newMembers
+          members:mixMembers
         }
       );
       this.itemMenuConfig.show=false;
     },
     /**依据图层路由和图层结构插入值
      * @return false|mixed
-     * @param structure
-     * @param route
-     * @param value
+     * @param structure | array
+     * @param route | array
+     * @param value | int
      */
     structureInsertByItem(structure,route,value){
       if (route.length===1){//路由的尽头
@@ -365,6 +445,29 @@ export default {
       }
       return structure;
     },
+    /**依据图层路由和图层结构在头部加入值
+     * @return false|mixed
+     * @param structure | array
+     * @param route | array
+     * @param value | int
+     */
+    structureJoinByItem(structure,route,value){
+      if (route.length===1){//路由的尽头
+        structure.splice(2,0,value);
+        return structure;
+      }else{//存在下一跳
+        const nextRoute=route.slice(1);//下一跳
+        for (let i=0;i<structure.length;i++){//遍历此层结构数组
+          if(Array.isArray(structure[i])){//查询此层子层
+            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
+              structure[i]=this.structureJoinByItem(structure[i],nextRoute,value);//递归此子层及下一跳
+              break;
+            }
+          }
+        }
+      }
+      return structure;
+    },
     itemContextmenuClose(){//关闭元素右键添加至自定义图层菜单
       this.itemMenuConfig.show=false;
       this.itemMenuConfig.target=null;
@@ -378,6 +481,7 @@ export default {
       this.itemMenuConfig.y=ev.y;
     },
     expandAllDefaultGroup(){//展开或关闭所有分组
+      this.switchDefaultLayerActions();
       if(this.expandAllDefaultState){
         this.defaultLayerPoint=false;
         this.defaultLayerLine=false;
@@ -541,14 +645,14 @@ export default {
       this.$store.state.serverData.socket.getMapLayer();
     },
     deconstructMembers(members){
-      let ref=[];
-      members.forEach(item=>{
-          let element=item.split('_',2);
+      let ref={};
+      Object.keys(members).forEach(item=>{
+          let element=[members[item]+'',item];
           switch (element[0]) {
             case '1':{
               for(let i=0;i<this.PointData.length;i++){
                 if(this.PointData[i].id==element[1]){
-                  ref.push(this.PointData[i]);
+                  ref[item]=this.PointData[i];
                   break;
                 }
               }
@@ -557,7 +661,7 @@ export default {
             case '2':{
               for(let i=0;i<this.PolyLineData.length;i++){
                 if(this.PolyLineData[i].id==element[1]){
-                  ref.push(this.PolyLineData[i]);
+                  ref[item]=this.PolyLineData[i];
                   break;
                 }
               }
@@ -566,7 +670,7 @@ export default {
             case '3':{
               for(let i=0;i<this.AreaData.length;i++){
                 if(this.AreaData[i].id==element[1]){
-                  ref.push(this.AreaData[i]);
+                  ref[item]=this.AreaData[i];
                   break;
                 }
               }
@@ -583,11 +687,9 @@ export default {
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
     groupLayerStructure(){//提取分组图层的每层的名称
-      const Layers=this.groupLayers;
-      const Length=Layers.length;
       let ref=[];
-      for(let i=0;i<Length;i++){
-        ref.push(extractFirstName(Layers[i].structure));
+      for(let key in this.groupLayers){
+        ref.push(extractFirstName(this.groupLayers[key].structure));
       }
       function extractFirstName(arr){//提取每个分组的名字
         return arr.map(item=>{
@@ -728,10 +830,23 @@ export default {
       return this.$store.state.serverData.socket.isLogin;
     },
     mapLayerData(){
-      return this.$store.state.serverData.socket.mapLayer;
+      return this.$store.state.serverData.socket.mapLayerData;
+    },
+    mapLayerOrder(){
+      return this.$store.state.serverData.socket.mapLayerOrder;
+    },
+    deleteLayerId(){
+      return this.$store.state.serverData.socket.deleteLayerId;
     }
   },
   watch:{
+    deleteLayerId:{
+      handler(deleteId){
+        if(this.groupLayers.hasOwnProperty(deleteId)){
+          delete this.groupLayers[deleteId];
+        }
+      }
+    },
     mapLayerData:{
       handler(newValue){
         let num=newValue.length;
@@ -739,24 +854,21 @@ export default {
           let type=newValue[i].type;
           switch (type) {
             case 'group':{
-              let lock=true;
-              for(let i=0;i<this.groupLayers.length;i++){
-                if(newValue[i].id==this.groupLayers[i].id){//重复则更新
-                  this.groupLayers[i].members=this.deconstructMembers(newValue[i].members);
-                  this.groupLayers[i].structure=newValue[i].structure;
-                  lock=false;
-                }
-              }
-              if(lock){//新增则加入
+              if(this.groupLayers.hasOwnProperty(newValue[i].id)){//重复则更新
+                this.groupLayers[newValue[i].id].members=this.deconstructMembers(newValue[i].members);
+                this.groupLayers[newValue[i].id].structure=newValue[i].structure;
+              }else {//新增则加入
                 let members=this.deconstructMembers(newValue[i].members);
+                let layerId=newValue[i].id;
                 let layerDataObj={
-                  id:newValue[i].id,
+                  id:layerId,
                   type:newValue[i].type,
                   members:members,
                   structure:newValue[i].structure
                 };
-                this.groupLayers.push(layerDataObj);
+                this.$set(this.groupLayers,layerId,layerDataObj);
               }
+              break;
             }
           }
         }
@@ -841,31 +953,6 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-}
-.groupLayersBox{
-  min-height: 105px;
-  font-size: 14px;
-  font-weight: 400;
-  padding: 10px 14px;
-  border-bottom: 1px solid #e5e5e5;
-  position: relative;
-}
-.groupLayerNameBox{
-  width: calc(100% - 30px);
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-}
-.groupLayerName{
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 15px;
-  outline: none;
 }
 .layerMoreActions{
   width: 180px;
@@ -1110,9 +1197,6 @@ export default {
   border-bottom: 1px solid #e5e5e5;
   position: relative;
 }
-.selectedLayer{
-  border-left:2px solid #4d90fe;
-}
 .eyebrow{
   width: 100%;
   height: 30px;
@@ -1179,12 +1263,15 @@ export default {
   position: relative;
 }
 .panelSearch{
+  position: absolute;
+  z-index: 550;
+  left: 1px;
+  bottom: 1px;
   width: calc(100% - 2px);
   height: 33px;
   background: #4d90fe;
   border: 1px solid #4d90fe;
   border-radius: 3px;
-  overflow: hidden;
   overflow: hidden;
   display: flex;
   justify-content: space-between;

@@ -76,7 +76,7 @@ export default {
 .listUL{
   width: 180px;
   height: auto;
-  min-height: 100px;
+  min-height: 360px;
   position: absolute;
   left: 180px;
   top: 0px;

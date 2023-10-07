@@ -355,6 +355,8 @@ export default new Vuex.Store({
           this.isLogin=false;
           this.localId=-1;//元素创建后的本地虚拟id
           this.updateId=1;//提交给服务器的本次变更id前缀为"up"为提交变更,前缀为"re"为撤销变更
+          this.localLayerId=1;//图层创建后的本地虚拟id
+          this.deleteLayerId=-1;//图层创建后的本地虚拟id
           this.numberOfLoginAttempts=0;//登录成功次数
           this.numberOfLoginFailed=0;//登录失败次数
           this.reinitializeElement=0;//重新初始化元素
@@ -371,11 +373,12 @@ export default new Vuex.Store({
           this.publickey='';
           this.userData=null;
           this.mapData={points:[],lines:[],areas:[],curves:[]};
-          this.mapLayer=[];
+          this.mapLayerData=[];
+          this.mapLayerOrder=[];
           this.config={};
           this.lastEdit='很久以前';
           this.otherA1=[];
-          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer','updateLayerData'];//指令类型合集
+          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
           this.Instruct={//指令合集
             login(email,password) {//登录指令
               this.email=email || '';
@@ -444,6 +447,15 @@ export default new Vuex.Store({
             },
             broadcast_updateLayerData(data){
               return {type:'broadcast',class:'updateLayerData',data}
+            },
+            broadcast_createGroupLayer(data){
+              return {type:'broadcast',class:'createGroupLayer',data}
+            },
+            broadcast_deleteLayer(id){
+              return {type:'broadcast',class:'deleteLayer',data:{id}}
+            },
+            broadcast_updateLayerOrder(passive,active,type){
+              return {type:'broadcast',class:'updateLayerOrder',data:{passive,active,type}}
             },
           };
           this.QIR={//检测间
@@ -556,6 +568,15 @@ export default new Vuex.Store({
         }
         broadcastUpdateLayerData(data){//id,structure,members
           this.send(this.Instruct.broadcast_updateLayerData(data));
+        }
+        broadcastCreateGroupLayer(data){
+          this.send(this.Instruct.broadcast_createGroupLayer(data));
+        }
+        broadcastDeleteLayer(id){
+          this.send(this.Instruct.broadcast_deleteLayer(id));
+        }
+        broadcastUpdateLayerOrder(passiveId,activeId,type){
+          this.send(this.Instruct.broadcast_updateLayerOrder(passiveId,activeId,type));
         }
         broadcastSelectIngElement(id){
           this.send(this.Instruct.broadcast_selectIngElement(id));
@@ -963,13 +984,19 @@ export default new Vuex.Store({
             case 'send_mapLayer':{
               try{
                 let res=[];
+                let ord=[];
                 let layerNumber=jsonData.data.length;
                 for(let i=0;i<layerNumber;i++){
-                  jsonData.data[i].members=JSON.parse(window.atob(jsonData.data[i].members));
-                  jsonData.data[i].structure=JSON.parse(window.atob(jsonData.data[i].structure));
-                  res.push(jsonData.data[i]);
+                  if(jsonData.data[i].type==='order'){
+                    ord=JSON.parse(jsonData.data[i].members);
+                  }else {
+                    jsonData.data[i].members=JSON.parse(window.atob(jsonData.data[i].members));
+                    jsonData.data[i].structure=JSON.parse(window.atob(jsonData.data[i].structure))
+                    res.push(jsonData.data[i]);
+                  }
                 }
-                this.mapLayer=res;
+                this.mapLayerData=res;
+                this.mapLayerOrder=ord;
               }catch (e) {
                 console.log(e);
               }
@@ -1354,6 +1381,34 @@ export default new Vuex.Store({
                   }
                   break;
                 }
+                case 'createGroupLayer':{
+                  if(this.QIR.hasProperty(jsonData,'data')){
+                    if(this.QIR.hasProperty(jsonData.data,'id') &&
+                      this.QIR.hasProperty(jsonData.data,'type') &&
+                      this.QIR.hasProperty(jsonData.data,'members') &&
+                      this.QIR.hasProperty(jsonData.data,'structure')
+                    ){
+                      let newMembers=JSON.parse(window.atob(jsonData.data.members));
+                      let newStructure=JSON.parse(window.atob(jsonData.data.structure));
+                      this.mapLayerData.push({
+                        id:jsonData.data.id,
+                        type:jsonData.data.type,
+                        members:newMembers,
+                        structure:newStructure,
+                      });
+                    }
+                  }
+                  break;
+                }
+                case 'deleteLayer':{
+                  for(let i=0;i<this.mapLayerData.length;i++){
+                    if(this.mapLayerData[i].id==jsonData.data.id){
+                      this.mapLayerData.splice(i,1);
+                      this.deleteLayerId=jsonData.data.id;
+                    }
+                  }
+                  break;
+                }
                 case 'updateLayerData':{
                   if(this.QIR.hasProperty(jsonData,'data')){
                   if(this.QIR.hasProperty(jsonData.data,'id')){
@@ -1366,18 +1421,22 @@ export default new Vuex.Store({
                     if(this.QIR.hasProperty(jsonData.data,'structure')){
                       newStructure=JSON.parse(window.atob(jsonData.data.structure))
                     }
-                    for(let i=0;i<this.mapLayer.length;i++){
-                      if(ID==this.mapLayer[i].id){
+                    for(let i=0;i<this.mapLayerData.length;i++){
+                      if(ID==this.mapLayerData[i].id){
                         if(newMembers!==undefined){
-                          this.mapLayer[i].members=newMembers;
+                          this.mapLayerData[i].members=newMembers;
                         }
                         if(newStructure!==undefined){
-                          this.mapLayer[i].structure=newStructure;
+                          this.mapLayerData[i].structure=newStructure;
                         }
                       }
                     }
                   }
                   }
+                  break;
+                }
+                case 'updateLayerOrder':{
+                  this.mapLayerOrder=JSON.parse(jsonData.data.members);
                   break;
                 }
               }
@@ -1429,6 +1488,7 @@ export default new Vuex.Store({
       addNewLineEnd:false,
       addNewAreaEnd:false,
       allReinitialize:false,
+      suppressPickSelect:false,
     },
     /**
      * Config:可读可写 read write
@@ -1612,6 +1672,9 @@ export default new Vuex.Store({
       baseLayer:'',
     },
     recorderConfig:{
+      lastUploadId:-1,
+      lastUploadClass:null,
+      lastDeleteId:-1,
       initialIntent:[
 
       ],
@@ -1672,6 +1735,9 @@ export default new Vuex.Store({
 
   },
   mutations: {
+    suppressPickSelect(state,product){//禁用全体元素选中
+      state.commits.suppressPickSelect=product;
+    },
     clearTempAreaCache(state){//清空临时区域的缓存
       state.mapConfig.tempArea={
         id:'tempArea',

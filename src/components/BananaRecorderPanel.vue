@@ -322,6 +322,8 @@ export default {
                       reachIntentSerial:this.reachIntentSerial++,
                     }
                   );
+                  this.$store.state.recorderConfig.lastUploadId=rid;
+                  this.$store.state.recorderConfig.lastUploadClass=this.initialIntent[ii].class;
                   this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }
@@ -378,6 +380,7 @@ export default {
                       class:this.initialIntent[ii].class,
                     }
                   );
+                  this.$store.state.recorderConfig.lastDeleteId=rid;
                   this.$store.state.recorderConfig.initialIntent.splice(ii,1);
                 }
               }

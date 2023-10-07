@@ -262,6 +262,9 @@ export default {
       this.$root.sendSwitchInstruct('disableZoomAndMove',false);
     },
     rightClickOperation(mouseEvent){//右键选中
+      if(this.suppressPickSelect===true){
+        return false;
+      }
       if(this.rightLock){
         if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$root.general_script.alert_tips(this.selectConfig.user+'正在编辑属性，请稍等');
@@ -277,6 +280,9 @@ export default {
       return mouseEvent;
     },
     showDetails(){//显示详情
+      if(this.suppressPickSelect===true){
+        return false;
+      }
       if(this.mouseDownPosition.x!==this.mouseUpPosition.x || this.mouseDownPosition.y!==this.mouseUpPosition.y){
         return false;
       }
@@ -412,6 +418,9 @@ export default {
     },
   },
   computed:{
+    suppressPickSelect(){
+      return this.$store.state.commits.suppressPickSelect;
+    },
     svgTextFill(){
       if(this.pickConfig.user!==undefined){
         return '#'+this.pickConfig.color;

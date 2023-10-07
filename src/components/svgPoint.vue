@@ -92,6 +92,9 @@ export default {
       this.shiftStatus=false;
     },
     showDetails(){//展示自身details
+      if(this.suppressPickSelect===true){
+        return false;
+      }
       if(this.shiftStartMouse.x!==this.shiftEndMouse.x || this.shiftStartMouse.y!==this.shiftEndMouse.y){
         return false;
       }
@@ -200,6 +203,9 @@ export default {
       }
     },
     rightClickOperation(mouseEvent){
+      if(this.suppressPickSelect===true){
+        return false;
+      }
       if(this.rightLock){
         if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$root.general_script.alert_tips(this.selectConfig.user+'正在编辑属性，请稍等');
@@ -216,6 +222,9 @@ export default {
     }
   },
   computed:{
+    suppressPickSelect(){
+      return this.$store.state.commits.suppressPickSelect;
+    },
     pickFill(){
       if(this.pickConfig.user!==undefined){
         return{
