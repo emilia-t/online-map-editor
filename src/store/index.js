@@ -1693,6 +1693,7 @@ export default new Vuex.Store({
       openFpsMonitor:false,//fps监控开启
       openStepRecorder:false,//步骤记录器
       mouseSamplingRate:'medium',
+      closeDefaultLayer:false,
     },
     detailsPanelConfig:{//左侧元素信息面板显示的数据
       data:{

@@ -285,7 +285,11 @@ export default {
   },
   methods:{
     startSetting(){
-
+      if(this.closeDefaultLayer===true){
+        this.showDefaultLayer=false;
+      }else {
+        this.showDefaultLayer=true;
+      }
     },
     adjustItemOrderApproval(template){//审批成员排序
       let stage=template.stage;
@@ -837,9 +841,18 @@ export default {
     },
     deleteLayerId(){
       return this.$store.state.serverData.socket.deleteLayerId;
+    },
+    closeDefaultLayer(){
+      return this.$store.state.userSettingConfig.closeDefaultLayer;
     }
   },
   watch:{
+    closeDefaultLayer:{
+      handler(newValue){
+        console.log(newValue);
+        this.showDefaultLayer=!newValue;
+      }
+    },
     deleteLayerId:{
       handler(deleteId){
         if(this.groupLayers.hasOwnProperty(deleteId)){
