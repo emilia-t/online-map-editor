@@ -180,7 +180,7 @@ export default {
       let Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));//1.查询本地存储
       delete Config[this.MyConfig.serverAddress];
       this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(Config));//2.重写localstorage
-      this.$root.general_script.alert_tips('已删除服务器');
+      this.$store.commit('setCoLogMessage',{text:'已删除服务器',from:'internal:BananaConnectionBox',type:'tip'});
       this.$emit('ancBoxChange','reload');//传告Interface
     },
     appendDeleteServer(){//给删除按钮添加事件

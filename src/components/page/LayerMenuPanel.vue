@@ -192,6 +192,9 @@
           <div class="shortcut">
             <span class="cutA">Del</span><span class="cutB">删除节点或元素</span>
           </div>
+          <div class="shortcut">
+            <span class="cutA">L</span><span class="cutB">打开历史日志面板</span>
+          </div>
           <div class="shortcutTypeB">
             <div class="shortcutText">
               <span class="cutA">Ctrl+Z</span><span class="cutC">撤回</span><span @click="doubtRevoke=!doubtRevoke" class="doubtIcon" title="点击显示更多信息">?</span>
@@ -306,7 +309,7 @@ export default {
       AccountSettings:false,
       AboutSettings:false,
       HelpSettings:false,
-      classicQuote:null,
+      classicQuote:'Fly me to the moon',
       offsetY:-31,
       accounts:{},
       deleteButton,

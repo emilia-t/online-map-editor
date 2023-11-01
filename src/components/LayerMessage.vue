@@ -140,7 +140,7 @@ export default {
     },
     checkMessage(message) {
       if (message.length === 0 || /^[\n\r]+$/.test(message)) {// 如果仅包含空格或者换行符，则视为非法字符
-        this.$root.general_script.alert_tips('消息内容不能为空或仅包含空格或换行符');
+        this.$store.commit('setCoLogMessage',{text:'消息内容不能为空或仅包含空格或换行符',from:'internal:LayerMessage',type:'tip'});
         return false;
       }
       const illegalCharPositions = [];
@@ -150,9 +150,9 @@ export default {
         illegalCharPositions.push(match.index);
       }
       if (illegalCharPositions.length > 0) {
-        this.$root.general_script.alert_tips(`此消息中包含 ${illegalCharPositions.length} 个非法字符：`);
+        this.$store.commit('setCoLogMessage',{text:`此消息中包含 ${illegalCharPositions.length} 个非法字符：`,from:'internal:LayerMessage',type:'tip'});
         illegalCharPositions.forEach(position => {
-          this.$root.general_script.alert_tips(`第 ${position+1} 个字符是非法字符：${message.charAt(position)}`);
+          this.$store.commit('setCoLogMessage',{text:`第 ${position+1} 个字符是非法字符：${message.charAt(position)}`,from:'internal:LayerMessage',type:'tip'});
         });
         return false;
       } else {

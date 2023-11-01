@@ -369,6 +369,9 @@ export default {
             }
             break;
           }
+          case 'l':{
+            this.$store.commit('setCoLogShowHistoryPanel',!this.$store.state.logConfig.showHistoryPanel);
+          }
         }
       });
       document.body.addEventListener('keydown',(e)=>{
@@ -414,7 +417,7 @@ export default {
       let kind=intent.class;
       switch (type){
         case 'upload':{
-          this.$root.general_script.alert_tips('已撤回上传，但无法保证成功');
+          this.$store.commit('setCoLogMessage',{text:'已撤回上传，但无法保证成功',from:'internal:LayerControl',type:'tip'});
           this.$store.state.serverData.socket.broadcastDeleteElement(id);
           break;
         }

@@ -7,7 +7,6 @@
   <layer-data></layer-data><!--数据层-->
   <layer-message></layer-message><!--消息层-->
 <!--  <layer-ruler></layer-ruler>--><!--标尺层-->
-<!--  <layer-create></layer-create>--><!--新建层-->
   <layer-control></layer-control><!--控制层-->
   <layer-element-panel></layer-element-panel><!--元素面板层-->
   <layer-details-panel></layer-details-panel><!--属性面板层-->
@@ -21,7 +20,6 @@ import LayerRuler from "./LayerRuler";
 import LayerBackground from "./LayerBackground";
 import LayerRealisticBaseMap from "./LayerRealisticBaseMap";
 import LayerFictitiousBaseMap from "./LayerFictitiousBaseMap";
-import LayerCreate from "./LayerCreate";
 import LayerControl from "./LayerControl";
 import LayerElementPanel from "./LayerElementPanel";
 import LayerConsole from "./LayerConsole";
@@ -31,7 +29,7 @@ import LayerMessage from "./LayerMessage";
 export default {
   name: "SeparateMap",
   components:{
-    LayerData,LayerRuler,LayerBackground,LayerCreate,LayerControl,LayerElementPanel,LayerConsole,
+    LayerData,LayerRuler,LayerBackground,LayerControl,LayerElementPanel,LayerConsole,
     LayerUser,LayerDetailsPanel,LayerMessage,LayerRealisticBaseMap,LayerFictitiousBaseMap,
   },
   props:{
@@ -56,7 +54,7 @@ export default {
       let find=false;
       let Address='';
       if(serverLocalConfig===false){
-        this.$root.general_script.alert_tips('本地服务器配置为空');
+        this.$store.commit('setCoLogMessage',{text:'本地服务器配置为空',from:'internal:SeparateMap',type:'warn'});
         return false;
       }else {
         let allServerList=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));////获取所有配置
@@ -72,15 +70,15 @@ export default {
           }
         }
         if(!find){
-          this.$root.general_script.alert_tips('找不到此服务器配置信息');
+          this.$store.commit('setCoLogMessage',{text:'找不到此服务器配置信息',from:'internal:SeparateMap',type:'warn'});
           return false;
         }
       }
       if(find){//找到了配置信息
-        this.$root.general_script.alert_tips('正在连接服务器，请稍后...');
+        this.$store.commit('setCoLogMessage',{text:'正在连接服务器，请稍后...',from:'internal:SeparateMap',type:'tip'});
         let tempLink=new WebSocket(Address);//尝试连接
         tempLink.onopen=()=>{
-          this.$root.general_script.alert_tips('连接成功');//显示提示信息
+          this.$store.commit('setCoLogMessage',{text:'连接成功',from:'internal:SeparateMap',type:'tip'});
           this.tempLinked=true;
           tempLink.close();//断开连接
           this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(Address);//正式连接
@@ -89,12 +87,12 @@ export default {
         }
         tempLink.onerror=()=>{
           if(!this.tempLinked){
-            this.$root.general_script.alert_tips('连接服务器失败');
+            this.$store.commit('setCoLogMessage',{text:'连接服务器失败',from:'internal:SeparateMap',type:'warn'});
           }
         }
         tempLink.onclose=()=>{
           if(!this.tempLinked){
-            this.$root.general_script.alert_tips('服务器已关闭连接');
+            this.$store.commit('setCoLogMessage',{text:'服务器已关闭连接',from:'internal:SeparateMap',type:'warn'});
           }
         }
       }

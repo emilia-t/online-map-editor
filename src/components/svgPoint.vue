@@ -100,7 +100,7 @@ export default {
       }
       if(this.leftLock){
         if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
-          this.$root.general_script.alert_tips(this.pickConfig.user+'正在更新坐标，请稍等');
+          this.$store.commit('setCoLogMessage',{text:this.pickConfig.user+'正在更新坐标，请稍等',from:'internal:svgPoint',type:'tip'});
         }
         return false;
       }
@@ -208,7 +208,7 @@ export default {
       }
       if(this.rightLock){
         if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
-          this.$root.general_script.alert_tips(this.selectConfig.user+'正在编辑属性，请稍等');
+          this.$store.commit('setCoLogMessage',{text:this.selectConfig.user+'正在编辑属性，请稍等',from:'internal:svgPoint',type:'tip'});
         }
         return false;
       }

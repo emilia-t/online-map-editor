@@ -389,13 +389,13 @@ export default {
       let nowGroupName=ev.target.innerText;
       if(nowGroupName===''){
         this.$refs.groupListName.innerText=this.oldGroupName;
-        this.$root.general_script.alert_tips('名称不能为空');
+        this.$store.commit('setCoLogMessage',{text:'名称不能为空',from:'internal:OrangeGroupStructure',type:'tip'});
         return false;
       }
       this.noFocusMode();
       if(this.groupNameIllegal(nowGroupName)===true){
         this.$refs.groupListName.innerText=this.oldGroupName;
-        this.$root.general_script.alert_tips('名称不能含有⇉符号');
+        this.$store.commit('setCoLogMessage',{text:'名称不能含有⇉符号',from:'internal:OrangeGroupStructure',type:'tip'});
         return false;
       }
       if(nowGroupName!==this.oldGroupName){
@@ -791,7 +791,7 @@ export default {
             );
           }else{
             this.$refs.groupListName.innerText=this.oldGroupName;
-            this.$root.general_script.alert_tips('同组同级分组中不能存在同名分组');
+            this.$store.commit('setCoLogMessage',{text:'同组同级分组中不能存在同名分组',from:'internal:OrangeGroupStructure',type:'tip'});
           }
         }
       },

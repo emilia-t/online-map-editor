@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <layer-log></layer-log>
     <page-layer-menu-panel></page-layer-menu-panel><!--左侧的菜单面板-->
     <div id="SeparateHomePage" v-show="homeSeparateState"><!--初始界面-选择服务器+配置服务器-->
       <!--<page-layer-background></page-layer-background>--><!--背景层-->
@@ -17,12 +18,13 @@ import PageLayerBackground from "./components/page/LayerBackground";
 import PageLayerHomePage from "./components/page/LayerHomePage"
 import PageLayerMenuPanel from "./components/page/LayerMenuPanel";
 import PageLayerConnectionInterface from "./components/page/LayerConnectionInterface";
+import LayerLog from "./components/LayerLog";
 export default {
   name: 'App',
   components: {
     SeparateMap,
     PageLayerBackground,PageLayerHomePage,PageLayerMenuPanel,PageLayerConnectionInterface,
-    LayerBottomAnchor
+    LayerBottomAnchor,LayerLog
   },
   computed:{
     homeSeparateState(){

@@ -47,7 +47,7 @@
 
 <script>
 export default {
-  name: "BananaDetailsPanel",
+  name: "LayerDetailsPanel",
   data(){
     return {
       exampleConfig:{
@@ -265,7 +265,7 @@ export default {
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 15px;
 }
 .iOtherText{

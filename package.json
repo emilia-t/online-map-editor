@@ -1,8 +1,8 @@
 {
   "name": "map",
-  "version": "0.3.9",
+  "version": "0.4.9",
   "description": "online map editor",
-  "author": "emilia-t <sophietwilight@qq.com>",
+  "author": "Minxi Wan<emilia-t@qq.com>",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",

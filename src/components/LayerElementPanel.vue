@@ -232,7 +232,7 @@ import OrangeGroupList from "./OrangeGroupList";
 import {mapState} from "vuex";
 
 export default {
-  name: "temp",
+  name: "LayerElementPanel",
   components: {
     SegmentCurve,
     More,AddNewLayer,AddNewGroup,PreviewEye,Point,SegmentLine,Region,ExpandMore,Search,
@@ -365,7 +365,7 @@ export default {
       for(let key in this.groupLayers){
         if(this.groupLayers[key].structure[0]===routeArr[0]){
           if(this.groupLayers[key].members[addId]!==undefined){
-            this.$root.general_script.alert_tips('此图层已存在此元素');
+            this.$store.commit('setCoLogMessage',{text:'此图层已存在此元素',from:'internal:LayerElementPanel',type:'tip'});
             return false;
           }else {
             groupLayerId=this.groupLayers[key].id;
@@ -376,15 +376,15 @@ export default {
         }
       }
       if(groupLayerId===null){
-        this.$root.general_script.alert_tips('无法找到对应图层');
+        this.$store.commit('setCoLogMessage',{text:'无法找到对应图层',from:'internal:LayerElementPanel',type:'tip'});
         return false;
       }
       if(oldStructure===undefined || oldStructure===null){
-        this.$root.general_script.alert_tips('图层结构解析错误');
+        this.$store.commit('setCoLogMessage',{text:'图层结构解析错误',from:'internal:LayerElementPanel',type:'tip'});
         return false;
       }
       if(mixMembers===undefined || mixMembers===null){
-        this.$root.general_script.alert_tips('图层成员解析错误');
+        this.$store.commit('setCoLogMessage',{text:'图层成员解析错误',from:'internal:LayerElementPanel',type:'tip'});
         return false;
       }
       const typeMapping={point:1,line:2,area:3,curve:4};
@@ -526,12 +526,12 @@ export default {
           a.href = URL.createObjectURL(file);
           a.download = serverName+'.omd';
           a.click();
-          this.$root.general_script.alert_tips('导出成功');
+          this.$store.commit('setCoLogMessage',{text:'导出成功',from:'internal:LayerElementPanel',type:'tip'});
         }
       }
     },
     importData(){//导入数据
-      this.$root.general_script.alert_tips('权限不足');
+      this.$store.commit('setCoLogMessage',{text:'权限不足',from:'internal:LayerElementPanel',type:'tip'});
     },
     switchMapMoreActions(){
       this.mapMoreActionsOpen=!this.mapMoreActionsOpen;

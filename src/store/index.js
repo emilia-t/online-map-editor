@@ -481,7 +481,13 @@ export default new Vuex.Store({
             color16Check(str){
               if(Object.prototype.toString.call(str)!=='[object String]'){return false;}
               let Exp=/^[0-9A-F]{6}$/i;
-              if(Exp.test(str)===false){alert('请输入正确的16进制颜色格式例如#123456');return false;}
+              if(Exp.test(str)===false){
+                window.logConfig.message.code-=1;
+                window.logConfig.message.text='请输入正确的16进制颜色格式例如#123456';
+                window.logConfig.message.from='external:comprehensive';
+                window.logConfig.message.type='warn';
+                return false;
+              }
               return true;
             },
             /**检测是否为数字,是则返回该数字的整数部分,否则返回false
@@ -496,11 +502,17 @@ export default new Vuex.Store({
                 return typeof value === 'number' && !isNaN(value);
               }
               if(!isNumber(number)){
-                alert('宽度为数字，范围为2~64');
+                window.logConfig.message.code-=1;
+                window.logConfig.message.text='宽度为数字，范围为2~64';
+                window.logConfig.message.from='external:comprehensive';
+                window.logConfig.message.type='warn';
                 return false;
               }else {
                 if(number>64 || number<2){
-                  alert('宽度范围为2~64');
+                  window.logConfig.message.code-=1;
+                  window.logConfig.message.text='宽度范围为2~64';
+                  window.logConfig.message.from='external:comprehensive';
+                  window.logConfig.message.type='warn';
                   return false;
                 }else {
                   return number=~~number;
@@ -519,15 +531,24 @@ export default new Vuex.Store({
                   if(Object.prototype.toString.call(details[i])!=='[object object]'){//3检查是否为对象
                     if(details[i].hasOwnProperty('key') && details[i].hasOwnProperty('value')){//4检查是否包含key，value属性
                       if(details[i].key==''){
-                        alert('属性名不能为空');
+                        window.logConfig.message.code-=1;
+                        window.logConfig.message.text='属性名不能为空';
+                        window.logConfig.message.from='external:comprehensive';
+                        window.logConfig.message.type='warn';
                         return false;
                       }
                       if(KeyExp.test(details[i].key)){//5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
-                        alert('列名错误，仅允许使用字母、数字、汉字、下划线');
+                        window.logConfig.message.code-=1;
+                        window.logConfig.message.text='列名错误，仅允许使用字母、数字、汉字、下划线';
+                        window.logConfig.message.from='external:comprehensive';
+                        window.logConfig.message.type='warn';
                         return false;
                       }
                       if(ValueExp.test(details[i].value)){
-                        alert("列值错误，不允许使用如下字符[]、{}、#、`、'、\"、--、//、%%、/*");
+                        window.logConfig.message.code-=1;
+                        window.logConfig.message.text="列值错误，不允许使用如下字符[]、{}、#、`、\'、\"、--、//、%%、/*";
+                        window.logConfig.message.from='external:comprehensive';
+                        window.logConfig.message.type='warn';
                         return false;
                       }
                     }else {
@@ -829,7 +850,10 @@ export default new Vuex.Store({
           function check(text){
             let pat=new RegExp('[^a-zA-Z0-9\_@.+/=-]','i');
             if(pat.test(text)===true) {
-              alert('邮箱及密码只能是：字母，数字，下划线 @ . - ，如果您的邮箱包含除此之外的字符，请联系站长');
+              window.logConfig.message.code-=1;
+              window.logConfig.message.text='邮箱及密码只能是：字母，数字，下划线 @ . - ，如果您的邮箱包含除此之外的字符，请联系站长';
+              window.logConfig.message.from='external:comprehensive';
+              window.logConfig.message.type='warn';
               return false;
             }else {return true}
           }
@@ -1494,6 +1518,17 @@ export default new Vuex.Store({
      * Config:可读可写 read write
      * Data:可读 read
     **/
+    logConfig:{
+      message:{
+        code:1,
+        time:'',
+        text:'',
+        from:'',//from:'[internal:name ] | [external:name]'
+        type:'',//warn | error
+        data:undefined,//异常处理数据
+      },
+      showHistoryPanel:false
+    },
     mapConfig:{//地图配置
       A1Layer:0,
       layer:0,
@@ -1761,7 +1796,7 @@ export default new Vuex.Store({
         ],
         defaultWidth:2,
         showPos:[]
-      }
+      };
     },
     clearTempLineCache(state){//清空临时线段的缓存
       state.mapConfig.tempLine={
@@ -1785,7 +1820,7 @@ export default new Vuex.Store({
         ],
         defaultWidth:2,
         showPos:[]
-      }
+      };
     },
     destroyComprehensive(state){//销毁综合对象
       state.serverData.socket=undefined;
@@ -1924,7 +1959,7 @@ export default new Vuex.Store({
         cursorLock:false,
         reinitializeId:-1,
         inputFocusStatus:false
-      }
+      };
     },
     restoreBaseMapConfig(state){//恢复默认底图配置
       state.baseMapConfig={
@@ -1947,7 +1982,7 @@ export default new Vuex.Store({
           scaling:null
         },
         baseLayer:'',
-      }
+      };
     },
     restoreCameraConfig(state){//恢复默认相机配置
       state.cameraConfig={
@@ -1998,7 +2033,27 @@ export default new Vuex.Store({
     resCoMapOperated(state){
       state.mapConfig.operated.id=-1;
       state.mapConfig.operated.data=null;
-    }
+    },
+    setCoLogMessage(state,product){//product:{text:'text',from:'[internal:name ] | [external:name]',type:'warn | error'}
+      function formatDate(date) {
+        let y=date.getFullYear();
+        let m=date.getMonth()+1;
+        let d=date.getDate();
+        let h=date.getHours();
+        let u=date.getMinutes();
+        let s=date.getSeconds();
+        return `${y}-${m}-${d} ${h}:${u}:${s}`;
+      }
+      state.logConfig.message.text=product.text;
+      state.logConfig.message.from=product.from;
+      state.logConfig.message.type=product.type;
+      state.logConfig.message.data=product.data;
+      state.logConfig.message.time=formatDate(new Date());
+      state.logConfig.message.code+=1;//code更新应在末尾
+    },
+    setCoLogShowHistoryPanel(state,product){//product:true/false
+      state.logConfig.showHistoryPanel=product;
+    },
   },
   actions: {
 

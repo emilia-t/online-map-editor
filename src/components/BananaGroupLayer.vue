@@ -324,60 +324,60 @@ export default {
       }else {
         errorCount++;
       }
-      this.$root.general_script.alert_tips('已完成'+(errorCount+normalCount)+'项检测，通过 '+normalCount+' 项');
-      this.$root.general_script.alert_tips('已自动对齐成员结构');
+      this.$store.commit('setCoLogMessage',{text:'已完成'+(errorCount+normalCount)+'项检测，通过 '+normalCount+' 项',from:'internal:BananaGroupLayer',type:'tip'});
+      this.$store.commit('setCoLogMessage',{text:'已自动对齐成员结构',from:'internal:BananaGroupLayer',type:'tip'});
       this.redundantAndUndefinedMemberCheck();
       this.switchLayerActions();
     },
     layerBasicCheck(){//图层属性基础检测
       try {
         if(!this.layer.hasOwnProperty('id')){
-          this.$root.general_script.alert_tips('此图层缺失关键属性');
+          this.$store.commit('setCoLogMessage',{text:'此图层缺失关键属性',from:'internal:BananaGroupLayer',type:'tip'});
           return false;
         }
         if(!this.layer.hasOwnProperty('type')){
-          this.$root.general_script.alert_tips('此图层缺失类型属性');
+          this.$store.commit('setCoLogMessage',{text:'此图层缺失类型属性',from:'internal:BananaGroupLayer',type:'tip'});
           return false;
         }
         if(!this.layer.hasOwnProperty('members')){
-          this.$root.general_script.alert_tips('此图层缺失成员属性');
+          this.$store.commit('setCoLogMessage',{text:'此图层缺失成员属性',from:'internal:BananaGroupLayer',type:'tip'});
           return false;
         }
         if(!this.layer.hasOwnProperty('structure')){
-          this.$root.general_script.alert_tips('此图层缺失结构属性');
+          this.$store.commit('setCoLogMessage',{text:'此图层缺失结构属性',from:'internal:BananaGroupLayer',type:'tip'});
           return false;
         }
         return true;
       }catch (e) {
-        this.$root.general_script.alert_tips('检测图层结构时异常退出');
+        this.$store.commit('setCoLogMessage',{text:'检测图层结构时异常退出',from:'internal:BananaGroupLayer',type:'error',data:e});
         return false;//检测异常
       }
     },
     structureBasicCheck(arr){//图层结构检测
       try{
         if (arr.length<2){//检查数组长度
-          this.$root.general_script.alert_tips('结构中存在异常长度的图层结构');
+          this.$store.commit('setCoLogMessage',{text:'结构中存在异常长度的图层结构',from:'internal:BananaGroupLayer',type:'tip'});
           return false;
         }
         if (typeof arr[0]!=='string' || arr[0]===''){//检查第一位是否为非空字符串
-          this.$root.general_script.alert_tips('结构中存在无效的图层名称');
+          this.$store.commit('setCoLogMessage',{text:'结构中存在无效的图层名称',from:'internal:BananaGroupLayer',type:'tip'});
           return false;
         }
         if (typeof arr[1]!=='object' || arr[1]===null || !arr[1].hasOwnProperty('template')){//检查第二位是否为包含template属性的对象
-          this.$root.general_script.alert_tips('结构中缺失模板属性');
+          this.$store.commit('setCoLogMessage',{text:'结构中缺失模板属性',from:'internal:BananaGroupLayer',type:'tip'});
           return false;
         }
         for(let i=2;i<arr.length;i++){//检查剩余元素
           if(Array.isArray(arr[i])){
             if(!this.structureBasicCheck(arr[i]))return false;
           }else if(!Number.isInteger(arr[i])){
-            this.$root.general_script.alert_tips('结构中存在错误引用的成员');
+            this.$store.commit('setCoLogMessage',{text:'结构中存在错误引用的成员',from:'internal:BananaGroupLayer',type:'tip'});
             return false;
           }
         }
         return true;//全部检查通过
       }catch(e){
-        this.$root.general_script.alert_tips('检测结构时异常退出');
+        this.$store.commit('setCoLogMessage',{text:'检测结构时异常退出',from:'internal:BananaGroupLayer',type:'error',data:e});
         return false;//检测异常
       }
     },
@@ -461,7 +461,7 @@ export default {
           );
         }
       }catch (e) {
-        this.$root.general_script.alert_tips('检测重复和未定义成员时异常退出');
+        this.$store.commit('setCoLogMessage',{text:'检测重复和未定义成员时异常退出',from:'internal:BananaGroupLayer',type:'error',data:e});
         return false;//检测异常
       }
     },
@@ -655,7 +655,7 @@ export default {
                     });
                   }
                 }else {//未通过检测
-                  this.$root.general_script.alert_tips('对方图层已存在此元素');
+                  this.$store.commit('setCoLogMessage',{text:'对方图层已存在此元素',from:'internal:BananaGroupLayer',type:'tip'});
                 }
               }
             }else if(type==='join'){//join idB = group route
@@ -715,7 +715,7 @@ export default {
                       });
                     }
                   }else {
-                    this.$root.general_script.alert_tips('对方图层已存在此元素');
+                    this.$store.commit('setCoLogMessage',{text:'对方图层已存在此元素',from:'internal:BananaGroupLayer',type:'tip'});
                   }
                 }
               }

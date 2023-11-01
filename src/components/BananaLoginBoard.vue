@@ -115,14 +115,14 @@ export default {
                 let encrypt=new JSEncrypt();//加密
                 encrypt.setPublicKey(this.$store.state.serverData.socket.publickey);
                 if(this.$store.state.serverData.socket.publickey===''){
-                  this.$root.general_script.alert_tips('获取公钥失败，请尝试刷新浏览器')
+                  this.$store.commit('setCoLogMessage',{text:'获取公钥失败，请尝试刷新浏览器',from:'internal:BananaLoginBoard',type:'tip'});
                   return false;
                 }
                 let newPwd=encrypt.encrypt(pd);
                 this.$store.state.serverData.socket.login(em,newPwd);
               },100)
             }else {
-              this.$root.general_script.alert_tips('自动登录失败，无法连接服务器');
+              this.$store.commit('setCoLogMessage',{text:'自动登录失败，无法连接服务器',from:'internal:BananaLoginBoard',type:'tip'});
             }
           }catch (e){
 
@@ -144,14 +144,14 @@ export default {
           this.$store.state.serverData.socket.login(this.email,newPwd);//尝试进行登录
         },60);
       }else {
-        this.$root.general_script.alert_tips('无法连接服务器，请检查网络连接');
+        this.$store.commit('setCoLogMessage',{text:'无法连接服务器，请检查网络连接',from:'internal:BananaLoginBoard',type:'tip'});
       }
     },
     loginEd(){//登录成功后
       this.$store.state.serverData.socket.getUserData();
       this.$store.state.serverData.socket.getMapData();
       this.$store.state.serverData.socket.getActiveData();
-      this.$root.general_script.alert_tips('登录成功');
+      this.$store.commit('setCoLogMessage',{text:'登录成功',from:'internal:BananaLoginBoard',type:'tip'});
     },
     logout(){//注销账号
       try {
@@ -163,7 +163,7 @@ export default {
       }
     },
     loginFail(){//连接失败
-      this.$root.general_script.alert_tips('登录失效，或账号密码错误')
+      this.$store.commit('setCoLogMessage',{text:'登录失效，或账号密码错误',from:'internal:BananaLoginBoard',type:'tip'});
       this.logout();
     },
     closeLink(){//关闭连接

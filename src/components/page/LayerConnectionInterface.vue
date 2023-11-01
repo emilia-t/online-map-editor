@@ -237,18 +237,18 @@ export default {
       let account=this.$refs.AccountInput.value;
       let password=this.$refs.PasswordInput.value;
       if(!this.isValidUrl(url)){//2.检测URL合理性
-        this.$root.general_script.alert_tips('Url格式错误，请参照帮助界面');
+        this.$store.commit('setCoLogMessage',{text:'Url格式错误，请参照帮助界面',from:'internal:LayerConnectionInterface',type:'tip'});
         return false;
       }
       if(account!==''){//3.检测账号（电子邮箱）合理性
         if(!this.isValidEmail(account)){
-          this.$root.general_script.alert_tips('账号格式错误，请参照帮助界面');
+          this.$store.commit('setCoLogMessage',{text:'账号格式错误，请参照帮助界面',from:'internal:LayerConnectionInterface',type:'tip'});
           return false;
         }
       }
       if(password!==''){//4.检测密码合理性
         if(!this.isValidPassword(password)){
-          this.$root.general_script.alert_tips('密码含有非法字符，请参照帮助界面');
+          this.$store.commit('setCoLogMessage',{text:'密码含有非法字符，请参照帮助界面',from:'internal:LayerConnectionInterface',type:'tip'});
           return false;
         }
       }
@@ -259,18 +259,18 @@ export default {
       let account=OMS.account;
       let password=OMS.password;
       if(!this.isValidUrl(url)){//2.检测URL合理性
-        this.$root.general_script.alert_tips('Url格式错误，请参照帮助界面');
+        this.$store.commit('setCoLogMessage',{text:'Url格式错误，请参照帮助界面',from:'internal:LayerConnectionInterface',type:'tip'});
         return false;
       }
       if(account!==''){//3.检测账号（电子邮箱）合理性
         if(!this.isValidEmail(account)){
-          this.$root.general_script.alert_tips('账号格式错误，请参照帮助界面');
+          this.$store.commit('setCoLogMessage',{text:'账号格式错误，请参照帮助界面',from:'internal:LayerConnectionInterface',type:'tip'});
           return false;
         }
       }
       if(password!==''){//4.检测密码合理性
         if(!this.isValidPassword(password)){
-          this.$root.general_script.alert_tips('密码含有非法字符，请参照帮助界面');
+          this.$store.commit('setCoLogMessage',{text:'密码含有非法字符，请参照帮助界面',from:'internal:LayerConnectionInterface',type:'tip'});
           return false;
         }
       }
@@ -328,7 +328,7 @@ export default {
       }
       if(localConfig.hasOwnProperty(obj.url)){//2.在本地配置中查找
         isAdd=false;
-        this.$root.general_script.alert_tips('已经存在同样的服务器');
+        this.$store.commit('setCoLogMessage',{text:'已经存在同样的服务器',from:'internal:LayerConnectionInterface',type:'tip'});
         return false;
       }
       configObj.account=obj.account;//3.添加配置(预)
@@ -387,7 +387,7 @@ export default {
             if(this.storageCheck(newObj)){//检查格式后的数据是否正常,如果不正常则删除配置（防篡改）
               this.getLocalServerConfig();//更新localConfig
             }else {
-              this.$root.general_script.alert_tips('本地服务器配置已失效');
+              this.$store.commit('setCoLogMessage',{text:'本地服务器配置已失效',from:'internal:LayerConnectionInterface',type:'warn'});
               window.localStorage.removeItem('servers');
             }
           }
