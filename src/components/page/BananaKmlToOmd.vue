@@ -134,7 +134,7 @@ export default {
             let A = document.getElementById('KmlToOmdResult');
             A.style.display='flex';
             A.href = URL.createObjectURL(file);
-            A.download = 'KmlToOmd_result'+'.oms';
+            A.download = 'KmlToOmd_result'+'.omd';
             function transformKmlToOmd(kmlDataObj) {
               let dataItemObj = class dataItemObj {
                 constructor() {
