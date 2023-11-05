@@ -157,7 +157,7 @@ export default {
           break;
         }
         case 'chrome':{
-          this.$refs.dataLayer.addEventListener('mousewheel',e=>Callback(e,'chrome'));
+          this.$refs.dataLayer.addEventListener('mousewheel',e=>Callback(e,'chrome'),{passive:true});
           break;
         }
         default:{

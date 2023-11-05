@@ -15,12 +15,6 @@
           <div class="mapMoreAction" @click.stop="exportData()" title="可以导出此地图数据至本地">
             导出地图数据为 OMD
           </div>
-          <div class="mapMoreAction prohibit" title="暂不支持导入KML">
-            导入 KML 地图数据
-          </div>
-          <div class="mapMoreAction prohibit" title="暂不支持导出KML">
-            导出地图数据为 KML
-          </div>
           <div class="mapMoreAction" title="隐藏或显示默认图层" @click.stop="switchShowDefaultLayer()">
             <span v-show="showDefaultLayer">隐藏</span><span v-show="!showDefaultLayer">显示</span><span>默认图层</span>
           </div>
@@ -511,7 +505,7 @@ export default {
           let serverName=this.$store.state.serverData.socket.config.name;
           let serverAddress=this.$store.state.serverData.socket.url;
           let layerData=this.mapLayerData;
-          let mapData={point:this.PointData,line:this.PolyLineData,area:this.AreaData,curve:this.CurveData};
+          let mapData={points:this.PointData,lines:this.PolyLineData,areas:this.AreaData,curves:this.CurveData};
           let OMD={
             omd:'omd',
             type:'All',

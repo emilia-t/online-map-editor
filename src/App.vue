@@ -1,5 +1,7 @@
 <template>
   <div id="app">
+    <layer-notification-popup></layer-notification-popup>
+    <layer-toolbox></layer-toolbox>
     <layer-log></layer-log>
     <page-layer-menu-panel></page-layer-menu-panel><!--左侧的菜单面板-->
     <div id="SeparateHomePage" v-show="homeSeparateState"><!--初始界面-选择服务器+配置服务器-->
@@ -12,19 +14,22 @@
 </template>
 
 <script>
+import LayerNotificationPopup from "./components/page/LayerNotificationPopup";
+import LayerToolbox from "./components/page/LayerToolbox";
 import SeparateMap from "./components/SeparateMap";
 import LayerBottomAnchor from "./components/LayerBottomAnchor";
 import PageLayerBackground from "./components/page/LayerBackground";
 import PageLayerHomePage from "./components/page/LayerHomePage"
 import PageLayerMenuPanel from "./components/page/LayerMenuPanel";
 import PageLayerConnectionInterface from "./components/page/LayerConnectionInterface";
-import LayerLog from "./components/LayerLog";
+import LayerLog from "./components/page/LayerLog";
 export default {
   name: 'App',
   components: {
     SeparateMap,
     PageLayerBackground,PageLayerHomePage,PageLayerMenuPanel,PageLayerConnectionInterface,
-    LayerBottomAnchor,LayerLog
+    LayerBottomAnchor,LayerLog,LayerToolbox,
+    LayerNotificationPopup,
   },
   computed:{
     homeSeparateState(){

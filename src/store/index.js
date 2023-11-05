@@ -1518,6 +1518,13 @@ export default new Vuex.Store({
      * Config:可读可写 read write
      * Data:可读 read
     **/
+    toolboxConfig:{
+      position:{
+        x:null,
+        y:null,
+      },
+      showPanel:false,
+    },
     logConfig:{
       message:{
         code:1,
@@ -1527,7 +1534,7 @@ export default new Vuex.Store({
         type:'',//warn | error
         data:undefined,//异常处理数据
       },
-      showHistoryPanel:false
+      showPanel:false,
     },
     mapConfig:{//地图配置
       A1Layer:0,
@@ -2051,8 +2058,15 @@ export default new Vuex.Store({
       state.logConfig.message.time=formatDate(new Date());
       state.logConfig.message.code+=1;//code更新应在末尾
     },
-    setCoLogShowHistoryPanel(state,product){//product:true/false
-      state.logConfig.showHistoryPanel=product;
+    setCoLogShowPanel(state,product){//product:true/false
+      state.logConfig.showPanel=product;
+    },
+    setCoToolboxShowPanel(state,product){//product:true/false
+      state.toolboxConfig.showPanel=product;
+    },
+    setCoToolboxPosition(state,product){//product:{x,y}
+      state.toolboxConfig.position.x=product.x;
+      state.toolboxConfig.position.y=product.y;
     },
   },
   actions: {

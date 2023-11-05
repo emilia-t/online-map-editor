@@ -21,7 +21,7 @@
         </div>
       </div>
     </div>
-    <div class="logHistoryBox" ref="logHistoryBox" @click.stop="closeHistoryPanel()" v-show="this.$store.state.logConfig.showHistoryPanel">
+    <div class="logHistoryBox" ref="logHistoryBox" @click.stop="closeHistoryPanel()" v-show="this.$store.state.logConfig.showPanel">
       <div class="logHistory" @click.stop="void 0">
         <div class="logHistoryFilter"><!--顶部筛选区域-->
           <div class="logHistoryButton">
@@ -145,14 +145,14 @@
 
 <script>
 import Vue from 'vue';
-import logNotice from "./svgValidIcons/logNotice";
-import logError from "./svgValidIcons/logError";
-import logWarn from "./svgValidIcons/logWarn";
-import logTip from "./svgValidIcons/logTip";
-import logTipX120 from "./svgValidIcons/120X/logTip";
-import logWarnX120 from "./svgValidIcons/120X/logWarn";
-import logErrorX120 from "./svgValidIcons/120X/logError";
-import logNoticeX120 from "./svgValidIcons/120X/logNotice";
+import logNotice from "../svgValidIcons/logNotice";
+import logError from "../svgValidIcons/logError";
+import logWarn from "../svgValidIcons/logWarn";
+import logTip from "../svgValidIcons/logTip";
+import logTipX120 from "../svgValidIcons/120X/logTip";
+import logWarnX120 from "../svgValidIcons/120X/logWarn";
+import logErrorX120 from "../svgValidIcons/120X/logError";
+import logNoticeX120 from "../svgValidIcons/120X/logNotice";
 window.logConfig={
   message:{
     code:-1,
@@ -216,6 +216,7 @@ export default {
     }
   },
   mounted(){
+    this.keyboardListen();
     this.startSetting();
     this.findLocalLogFilter();
   },
@@ -333,6 +334,20 @@ export default {
       }catch (e){
         this.$store.commit('setCoLogMessage',{text:'获取本地存储失败',from:'internal:LayerLog',type:'error',data:e});
       }
+    },
+    keyboardListen(){
+      document.body.addEventListener('keyup',(e)=>{
+        if(this.$store.state.mapConfig.inputFocusStatus){//在聚焦模式下拒绝操作
+          return false;
+        }
+        let KEY=e.key;
+        switch (KEY){
+          case 'l':{
+            this.$store.commit('setCoLogShowPanel',!this.$store.state.logConfig.showPanel);
+            break;
+          }
+        }
+      });
     },
     saveFilter(){//保存除次要来源位置的过滤器
       let Filter={
@@ -452,7 +467,7 @@ export default {
       this.filterByAll();
     },
     closeHistoryPanel(){//关闭面板
-      this.$store.commit('setCoLogShowHistoryPanel',false);
+      this.$store.commit('setCoLogShowPanel',false);
     },
     closeAllShowLog(){//清空弹窗
       this.logShowList=[];
@@ -587,7 +602,7 @@ export default {
       return window.logConfig.message;
     },
     showHistoryPanel(){
-      return this.$store.state.logConfig.showHistoryPanel;
+      return this.$store.state.logConfig.showPanel;
     }
   },
   watch:{

@@ -369,9 +369,6 @@ export default {
             }
             break;
           }
-          case 'l':{
-            this.$store.commit('setCoLogShowHistoryPanel',!this.$store.state.logConfig.showHistoryPanel);
-          }
         }
       });
       document.body.addEventListener('keydown',(e)=>{
