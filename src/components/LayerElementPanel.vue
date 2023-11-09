@@ -629,6 +629,9 @@ export default {
       if(!item.hasOwnProperty('details')){
         return unknown;
       }
+      if(!Array.isArray(item.details)){
+        return unknown;
+      }
       for(let i=0;i<item.details.length;i++){
         if(item.details[i].key==='名称' || item.details[i].key==='name'){
           if(item.details[i].value===''){
@@ -843,7 +846,6 @@ export default {
   watch:{
     closeDefaultLayer:{
       handler(newValue){
-        console.log(newValue);
         this.showDefaultLayer=!newValue;
       }
     },

@@ -196,7 +196,7 @@ export default {
                   newDataItem.points=coordTransformOmdType(kmlDataObj.mapFolders[i].placeMark[j].coord);
                   newDataItem.point=newDataItem.points[0];
                   newDataItem.phase=1;
-                  newDataItem.details={key:'name',value:kmlDataObj.mapFolders[i].placeMark[j].name};
+                  newDataItem.details=[{key:'name',value:kmlDataObj.mapFolders[i].placeMark[j].name}];
                   if(newDataItem.type==='point'){
                     OMD.mapData.points.push(newDataItem);
                   }else if(newDataItem.type==='line'){

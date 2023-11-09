@@ -787,8 +787,10 @@ export default new Vuex.Store({
         }
         heartbeat(){//心跳
           setInterval(()=>{
-            if(this.socket!==undefined){
-              this.socket.send('');
+            if(this.isLink===true){
+              if(this.socket!==undefined){
+                this.socket.send('');
+              }
             }
           },55000)
         }
@@ -872,6 +874,11 @@ export default new Vuex.Store({
               let json=JSON.stringify(instructObj);
               this.socket.send(json);
             }
+          }else {
+            window.logConfig.message.code-=1;
+            window.logConfig.message.text='服务器连接中断';
+            window.logConfig.message.from='external:comprehensive';
+            window.logConfig.message.type='warn';
           }
         }
         instructObjCheck(instructObj){//指令检查
@@ -1481,10 +1488,18 @@ export default new Vuex.Store({
         }
         onClose(ev){//断开连接事件
           this.isLink=false;
+          window.logConfig.message.code-=1;
+          window.logConfig.message.text='服务器连接中断';
+          window.logConfig.message.from='external:comprehensive';
+          window.logConfig.message.type='warn';
           return true;
         }
         onError(ev){//连接失败事件
           this.isLink=false;
+          window.logConfig.message.code-=1;
+          window.logConfig.message.text='服务器连接失败';
+          window.logConfig.message.from='external:comprehensive';
+          window.logConfig.message.type='warn';
           return true;
         }
         onOpen(ev){//连接成功事件

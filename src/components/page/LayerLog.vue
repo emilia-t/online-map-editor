@@ -216,7 +216,7 @@ export default {
     }
   },
   mounted(){
-    this.keyboardListen();
+    setTimeout(()=>this.keyboardListen(),10);
     this.startSetting();
     this.findLocalLogFilter();
   },
@@ -343,7 +343,8 @@ export default {
         let KEY=e.key;
         switch (KEY){
           case 'l':{
-            this.$store.commit('setCoLogShowPanel',!this.$store.state.logConfig.showPanel);
+            let status=this.$store.state.logConfig.showPanel;
+            this.$store.commit('setCoLogShowPanel',!status);
             break;
           }
         }

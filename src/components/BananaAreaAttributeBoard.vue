@@ -199,6 +199,10 @@ export default {
       this.width=data;
     },
     submitEdit(ev){//提交-更新缓存-同时上传数据
+      if(this.tempArea.points.length<3){
+        this.$store.commit('setCoLogMessage',{text:'上传失败，区域至少需要三个点',from:'internal:BananaAreaAttributeBoard',type:'warn'});
+        return false;
+      }
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));

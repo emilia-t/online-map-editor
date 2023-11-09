@@ -199,6 +199,10 @@ export default {
       this.width=data;
     },
     submitEdit(ev){//提交-更新缓存-同时上传数据
+      if(this.tempLine.points.length<2){
+        this.$store.commit('setCoLogMessage',{text:'上传失败，线段至少需要两个点',from:'internal:BananaLineAttributeBoard',type:'warn'});
+        return false;
+      }
       this.cache.name=this.name;
       this.cache.color=this.color;
       this.cache.details=JSON.parse(JSON.stringify(this.details));

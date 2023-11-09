@@ -1,18 +1,25 @@
 <template>
   <g :elementId="myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)" ref="svgElement">
-    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom.icon===null">
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="Object.prototype.toString.call(this.pointConfig.custom)!=='[object Object]'">
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
       <text :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :style="pickFill" class="svgPointSelectText" v-text="svgText"></text>
     </g>
-    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom.icon!==null">
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="Object.prototype.toString.call(this.pointConfig.custom)==='[object Object]' && this.pointConfig.custom.icon!==null">
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="13px" :fill="this.pointConfig.custom.color"/>
       <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26px" height="26px" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
+      <text :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :style="pickFill" class="svgPointSelectText" v-text="svgText"></text>
+    </g>
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="Object.prototype.toString.call(this.pointConfig.custom)==='[object Object]' && this.pointConfig.custom.icon===null">
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
+      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
       <text :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :style="pickFill" class="svgPointSelectText" v-text="svgText"></text>
     </g>
   </g>

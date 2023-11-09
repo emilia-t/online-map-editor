@@ -70,6 +70,8 @@ export default {
         areaBoardTop:0,//区域属性面板的位置
         areaBoardLeft:-400,
         obServe:false,//观察者
+        lineAddNodeLastPos:{x:null,y:null},
+        areaAddNodeLastPos:{x:null,y:null},
       },
     }
   },
@@ -118,7 +120,12 @@ export default {
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 let Pos=this.computeMouseActualPos(ev)//计算新增点位置
-                this.theConfig.addAreaPos.push(Pos);
+                if(Pos.x===this.theConfig.areaAddNodeLastPos.x && Pos.y===this.theConfig.areaAddNodeLastPos.y){
+                  return false;
+                }else{
+                  this.theConfig.areaAddNodeLastPos=Pos;
+                  this.theConfig.addAreaPos.push(Pos);
+                }
               }
             }
           });
@@ -192,7 +199,12 @@ export default {
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 let Pos=this.computeMouseActualPos(ev);//计算新增点位置
-                this.theConfig.addLinePos.push(Pos);
+                if(Pos.x===this.theConfig.lineAddNodeLastPos.x && Pos.y===this.theConfig.lineAddNodeLastPos.y){
+                  return false;
+                }else {
+                  this.theConfig.lineAddNodeLastPos=Pos;
+                  this.theConfig.addLinePos.push(Pos);
+                }
               }
             }
           });
