@@ -284,17 +284,16 @@ export default {
             let normalStyle = structure.getElementById(normalStyleId);
             let arrayColor = normalStyle.getElementsByTagName('color');
             if (arrayColor.length !== 0) {
-              let color = arrayColor[0].textContent.substring(0, 6);
-              let colorMutated = arrayColor[0].textContent.substring(2, 8);
+              let color = arrayColor[0].textContent.substring(0, 8);
+              let rr=color.substr(6,2);
+              let gg=color.substr(4,2);
+              let bb=color.substr(2,2);
+              color=rr+gg+bb;
               let Exp = /^[0-9A-F]{6}$/i;
               if (Exp.test(color) === false) {//错误的格式
                 return '000000';
               } else {
-                if(elementType!=='point'){
-                  return colorMutated;
-                }else{
-                  return color;
-                }
+                return color;
               }
             } else {
               return '000000';
