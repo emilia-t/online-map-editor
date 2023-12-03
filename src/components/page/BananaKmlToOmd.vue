@@ -181,10 +181,10 @@ export default {
               };
               let itemId=1;
               let folderLength=kmlDataObj.mapFolders.length;
-              let newOrderLayer=new orderLayerObj(0);
+              let newOrderLayer=new orderLayerObj(1);//order图层默认为1
               const TypeMapping={point:1,line:2,area:3,curve:4};
               for(let i=0;i<folderLength;i++){
-                let newLayer=new groupLayerObj(i+1,kmlDataObj.mapFolders[i].name);//图层
+                let newLayer=new groupLayerObj(i+2,kmlDataObj.mapFolders[i].name);//第一个非order图层id为2
                 newOrderLayer.members.push(newLayer.id);
                 let placeMarkLength=kmlDataObj.mapFolders[i].placeMark.length;
                 for(let j=0;j<placeMarkLength;j++){
