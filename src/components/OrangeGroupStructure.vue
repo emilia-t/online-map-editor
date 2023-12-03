@@ -27,11 +27,13 @@
           <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='area'"></region>
           <span class="memberName" v-text="getItemName(layer.members[item])"></span>
         </div>
-        <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(layer.members[item].id,layer.members[item].type)" v-show="!showTeamEyeA(item)">
-          <eye-visible custom="cursor:pointer"></eye-visible>
-        </div>
-        <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(layer.members[item].id,layer.members[item].type)" v-show="showTeamEyeA(item)">
-          <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+        <div :ref="'memberRightEye'+layer.members[item].id">
+          <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
+            <eye-visible custom="cursor:pointer"></eye-visible>
+          </div>
+          <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
+            <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+          </div>
         </div>
       </div>
       <div class="memberActivityInfo" v-if="!isArray(item)">
@@ -42,7 +44,14 @@
           <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑属性中</span>
         </div>
       </div>
-      <orange-group-structure :layer="layer" :level="level+1" :all-expand="allExpand" :route="route+'⇉'+item[0]" :structure="item" :rename-response="renameApprovalResult" :adjust-item-order-response="adjustItemOrderResponse" @renameRequest="renameApproval" @adjustItemOrderRequest="adjustItemOrderApproval" v-if="isArray(item)"></orange-group-structure>
+      <orange-group-structure :layer="layer" :level="level+1"
+                              :all-expand="allExpand" :route="route+'⇉'+item[0]"
+                              :structure="item" :rename-response="renameApprovalResult"
+                              :adjust-item-order-response="adjustItemOrderResponse"
+                              @renameRequest="renameApproval"
+                              @adjustItemOrderRequest="adjustItemOrderApproval"
+                              v-if="isArray(item)">
+      </orange-group-structure>
     </div>
     <div class="memberMenuClose" @contextmenu.prevent="void 1" @click.stop="contextmenuHeadClose()" v-show="memberHeadMenu.show"></div>
     <div class="memberMenu" :style="headContextmenuPos" v-show="memberHeadMenu.show">
@@ -606,34 +615,43 @@ export default {
       if(isArray===true){
         return any.length !== 0;
       }
+      return false;
     },
     extractLatter(){//提取除第1-2位,并去除未定义的引用id
       let member=this.structure.slice(2);
+      let refMember=[];
       let length=member.length;
       for(let i=0;i<length;i++){
         if(typeof member[i]==='number'){
-          if(!this.layer.members.hasOwnProperty(member[i])){
-            member.splice(i,1);
+          if(this.layer.members.hasOwnProperty(member[i])){
+            refMember.push(member[i]);
+          }
+        }
+        if(Array.isArray(member[i])){
+          if(member[i].length>=2){
+            refMember.push(member[i])
           }
         }
       }
-      return member;
+      return refMember;
     },
     extractNumber(){//提取除第1-2位外过滤子分组,并去除未定义的引用id
       let latter=this.structure.slice(2);
+      let refLatter=[];
       let length=latter.length;
       for(let i=0;i<length;i++){
         if(typeof latter[i]==='number'){
-          if(!this.layer.members.hasOwnProperty(latter[i])){
-            latter.splice(i,1);
+          if(this.layer.members.hasOwnProperty(latter[i])){
+            refLatter.push(latter[i]);
           }
         }
       }
-      return latter.filter(
+      refLatter.filter(
         item=>{
           return !Array.isArray(item);
         }
       );
+      return refLatter;
     },
     getCenterPoint(points){//获取元素中心点
       let x=0;
@@ -681,8 +699,8 @@ export default {
     allReinitialize(){//触发全局定位重置
       this.$root.sendInstruct('allReinitialize');
     },
-    hiddenElement(id,type){//隐藏某元素
-      if(!this.hiddenElements.some((member)=>{return member.id===id})){
+    hiddenUnhiddenElement(id,type){//隐藏某元素
+      if(!this.inHiddenElements(id)){
         this.$store.commit('arrCoElementPanelHiddenElements',
           {type:'push',data:{id,type}});
       }else {
@@ -693,35 +711,43 @@ export default {
     hiddenAllElements(){
       const member=this.extractNumber();
       const length=member.length;
+      let joinArray=[];
       for(let i=0;i<length;i++){
         let id=this.layer.members[member[i]].id;
         let type=this.layer.members[member[i]].type;
-        if(!this.hiddenElements.some((member)=>{return member.id===id})){
-          this.$store.commit('arrCoElementPanelHiddenElements',
-            {type:'push',data:{id,type}});
-        }
+        joinArray.push({id,type});
       }
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'join',data:joinArray});
     },
     unHiddenAllElements(){
       const member=this.extractNumber();
       const length=member.length;
+      let quitArray=[];
       for(let i=0;i<length;i++){
         let id=this.layer.members[member[i]].id;
         let type=this.layer.members[member[i]].type;
-        if(this.hiddenElements.some((member)=>{return member.id===id})){
-          this.$store.commit('arrCoElementPanelHiddenElements',
-            {type:'remove',data:{id,type}});
-        }
+        quitArray.push({id,type});
       }
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'quit',data:quitArray});
     },
-    showTeamEyeA(item){
-      return this.hiddenElements.some((member)=>{return member.id===this.layer.members[item].id});
+    showTeamEyeA(id){
+      return this.inHiddenElements(id);
     },
+    inHiddenElements(id){
+      return this.mapHiddenElements.has(id);
+    }
   },
   computed:{
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    mapHiddenElements(){
+      let map=new Map();
+      this.hiddenElements.forEach(value=>map.set(value.id,true));
+      return map;
+    },
     hasElementMember(){
       if(this.structure.length<3){
         return false;
@@ -756,10 +782,12 @@ export default {
       }
       let hideNum=0;
       const map=new Map(this.hiddenElements.map(item=>[item.id,item]));
-      const member=this.extractNumber();
-      const length=member.length;
+      const Member=this.extractNumber();
+      const length=Member.length;
       for(let i=0;i<length;i++){
-        if(map.has(this.layer.members[member[i]].id)){
+        let member=this.layer.members[Member[i]]
+        if(member===undefined){continue;}
+        if(map.has(member.id)){
           hideNum++;
         }
       }
@@ -796,7 +824,35 @@ export default {
         }
       },
       deep:true
-    }
+    },
+    mapHiddenElements:{
+      handler(newValue,oldValue){
+        function compareMaps(newValue,oldValue) {
+          let newKeys=Array.from(newValue.keys());
+          let oldKeys=Array.from(oldValue.keys());
+          let addedKeys=newKeys.filter(key=>!oldValue.has(key));
+          let removedKeys=oldKeys.filter(key=>!newValue.has(key));
+          return {addedKeys,removedKeys}
+        }
+        let difference=compareMaps(newValue,oldValue);
+        let addLength=difference.addedKeys.length;
+        let removeLength=difference.removedKeys.length;
+        for(let i=0;i<addLength;i++){
+          let member=this.$refs['memberRightEye'+difference.addedKeys[i]];
+          if(member===undefined){continue;}
+          let Member=member[0];
+          Member.firstChild.style.display='none';
+          Member.lastChild.style.display='flex';
+        }
+        for(let j=0;j<removeLength;j++){
+          let member=this.$refs['memberRightEye'+difference.removedKeys[j]];
+          if(member===undefined){continue;}
+          let Member=member[0];
+          Member.firstChild.style.display='flex';
+          Member.lastChild.style.display='none';
+        }
+      }
+    },
   }
 }
 </script>
@@ -966,9 +1022,7 @@ export default {
 .memberRightEyeB{
   width: 25px;
   height: 100%;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
+  display: none;
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;

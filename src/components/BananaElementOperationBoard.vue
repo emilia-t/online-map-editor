@@ -119,7 +119,7 @@ export default {
       this.waterDropletEvent();
     },
     hiddenElement(id,type){
-      if(!this.hiddenElements.some((member)=>{return member.id===id})){
+      if(!this.mapHiddenElements.has(id)){
         this.$store.commit('arrCoElementPanelHiddenElements',
           {type:'push',data:{id,type}});
         this.$store.commit('resCoMapOperated');
@@ -273,7 +273,8 @@ export default {
         {
           type:'updateElement',
           class:this.operated.type,
-          id:updateId,
+          id:this.operated.id,
+          updateId:updateId,
           changes:['details'],
           oldValue:this.oldDetail,
         }
@@ -295,11 +296,12 @@ export default {
         changes:{width:data}
       };
       let recordObj=JSON.parse(JSON.stringify({
-        type:'updateElement',
-        class:this.operated.type,
-        id:updateId,
-        changes:['width'],
-        oldValue:this.oldWidth,
+          type:'updateElement',
+          class:this.operated.type,
+          id:this.operated.id,
+          updateId:updateId,
+          changes:['width'],
+          oldValue:this.oldWidth,
         }
       ));
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
@@ -319,11 +321,12 @@ export default {
         changes:{custom:this.operated.custom,color:data}
       };
       let recordObj=JSON.parse(JSON.stringify({
-        type:'updateElement',
-        class:this.operated.type,
-        id:updateId,
-        changes:['color'],
-        oldValue:this.oldColor,
+          type:'updateElement',
+          class:this.operated.type,
+          id:this.operated.id,
+          updateId:updateId,
+          changes:['color'],
+          oldValue:this.oldColor,
         }
       ));
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
@@ -342,8 +345,17 @@ export default {
       this.oldCustom=JSON.parse(JSON.stringify(this.operated.custom));
     },
     instantChangeCustom(data){
-      if(data===this.oldCustom.icon){
-        return false;
+      if(this.operated.custom===null){
+        this.operated.custom={
+          width:null,
+          icon:data,
+          color:null,
+        };
+      }
+      if(this.oldCustom!==null && typeof this.oldCustom==='object'){
+        if(data===this.oldCustom.icon){
+          return false;
+        }
       }
       let updateId='up'+this.$store.state.serverData.socket.updateId++;
       let sendDataObj={
@@ -354,7 +366,8 @@ export default {
       let recordObj=JSON.parse(JSON.stringify({
           type:'updateElement',
           class:this.operated.type,
-          id:updateId,
+          id:this.operated.id,
+          updateId:updateId,
           changes:['custom'],
           oldValue:this.oldCustom,
         }
@@ -382,6 +395,11 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    mapHiddenElements(){
+      let map=new Map();
+      this.hiddenElements.forEach(value=>map.set(value.id,true));
+      return map;
+    },
     boxOutStyle(){
       let posX=this.$store.state.operationBoardConfig.posX;
       let posY=this.$store.state.operationBoardConfig.posY;

@@ -437,6 +437,7 @@ export default {
               case 'color':{
                 let sendDataObj={
                   id:id,
+                  updateId:intent.updateId,
                   changes:{color:intent.oldValue}
                 };
                 this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
@@ -445,6 +446,7 @@ export default {
               case 'width':{
                 let sendDataObj={
                   id:id,
+                  updateId:intent.updateId,
                   changes:{width:intent.oldValue}
                 };
                 this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
@@ -453,6 +455,7 @@ export default {
               case 'custom':{
                 let sendDataObj={
                   id:id,
+                  updateId:intent.updateId,
                   changes:{custom:intent.oldValue}
                 };
                 this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
@@ -461,6 +464,7 @@ export default {
               case 'details':{
                 let sendDataObj={
                   id:id,
+                  updateId:intent.updateId,
                   changes:{details:intent.oldValue}
                 };
                 this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);

@@ -232,8 +232,11 @@ export default {
         color:this.color,
         width:this.width,
         details:this.details,
-        custom:this.custom,
+        custom:null,
       };
+      if(this.custom.icon!==null){
+        obj.custom=this.custom;
+      }
       let recordObj={
         type:'upload',
         class:'point',

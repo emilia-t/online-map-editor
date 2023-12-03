@@ -42,7 +42,7 @@
       </div>
     </div>
     <div class="panelContent" ref="panelContent" @contextmenu.prevent="void 1">
-      <div class="defaultLayer" v-show="showDefaultLayer"><!--默认图层-->
+      <div class="defaultLayer" v-if="showDefaultLayer"><!--默认图层-->
         <div class="eyebrow">
           <div class="eyebrowLeft">
             <div class="previewEyeL">
@@ -76,30 +76,32 @@
               <div class="memberRightEyeA" @click.stop="hiddenAllPoint()" v-show="!allPointHideState">
                 <eye-visible custom="cursor:pointer"></eye-visible>
               </div>
-              <div class="memberRightEyeB" @click.stop="unhiddenAllPoint()" v-show="allPointHideState">
+              <div class="memberRightEyeC" @click.stop="unhiddenAllPoint()" v-show="allPointHideState">
                 <eye-not-visible custom="cursor:pointer"></eye-not-visible>
               </div>
             </div>
           </div>
           <div class="memberTeamBox" v-for="item in PointData" :key="item.id" v-show="defaultLayerPoint">
-            <div class="memberKeyInfo" @contextmenu.prevent="itemContextmenuOpen($event,item)">
+            <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
               <div class="memberLeft" @click="locateToElement(item)">
                 <point :custom="'fill:#'+item.color+';transform:translate(-2px,0px)'"></point>
                 <span class="memberName" v-text="getItemName(item)"></span>
               </div>
-              <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)" v-show="!hiddenElements.some((member)=>{return member.id===item.id})">
-                <eye-visible custom="cursor:pointer"></eye-visible>
-              </div>
-              <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)" v-show="hiddenElements.some((member)=>{return member.id===item.id})">
-                <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+              <div :ref="'memberRightEye'+item.id">
+                <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
+                  <eye-visible custom="cursor:pointer"></eye-visible>
+                </div>
+                <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
+                  <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                </div>
               </div>
             </div>
-            <div class="memberActivityInfo">
-              <div class="memberPick" v-if="pickElements.has(item.id)">
-                <span class="memberSpanA" v-text="pickElements.get(item.id).user"></span><span>正在编辑形状</span>
+            <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
+              <div class="memberPick">
+                <span class="memberSpanA"></span><span>正在编辑形状</span>
               </div>
-              <div class="memberSelect" v-if="selectElements.has(item.id)">
-                <span class="memberSpanA" v-text="selectElements.get(item.id).user"></span><span>正在编辑属性</span>
+              <div class="memberSelect">
+                <span class="memberSpanA"></span><span>正在编辑属性</span>
               </div>
             </div>
           </div>
@@ -117,30 +119,32 @@
               <div class="memberRightEyeA" @click.stop="hiddenAllLine()" v-show="!allLineHideState">
                 <eye-visible custom="cursor:pointer"></eye-visible>
               </div>
-              <div class="memberRightEyeB" @click.stop="unhiddenAllLine()" v-show="allLineHideState">
+              <div class="memberRightEyeC" @click.stop="unhiddenAllLine()" v-show="allLineHideState">
                 <eye-not-visible custom="cursor:pointer"></eye-not-visible>
               </div>
             </div>
           </div>
           <div class="memberTeamBox" v-for="item in PolyLineData" :key="item.id" v-show="defaultLayerLine">
-            <div class="memberKeyInfo" @contextmenu.prevent="itemContextmenuOpen($event,item)">
+            <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
               <div class="memberLeft" @click="locateToElement(item)">
                 <segment-line :custom="'fill:#'+item.color+';transform:translateX(-5px);'"></segment-line>
                 <span class="memberName" v-text="getItemName(item)"></span>
               </div>
-              <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)" v-show="!hiddenElements.some((member)=>{return member.id===item.id})">
-                <eye-visible custom="cursor:pointer"></eye-visible>
-              </div>
-              <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)" v-show="hiddenElements.some((member)=>{return member.id===item.id})">
-                <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+              <div :ref="'memberRightEye'+item.id">
+                <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
+                  <eye-visible custom="cursor:pointer"></eye-visible>
+                </div>
+                <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
+                  <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                </div>
               </div>
             </div>
-            <div class="memberActivityInfo">
-              <div class="memberPick" v-if="pickElements.has(item.id)">
-                <span class="memberSpanA" v-text="pickElements.get(item.id).user"></span><span>正在编辑形状</span>
+            <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
+              <div class="memberPick">
+                <span class="memberSpanA"></span><span>正在编辑形状</span>
               </div>
-              <div class="memberSelect" v-if="selectElements.has(item.id)">
-                <span class="memberSpanA" v-text="selectElements.get(item.id).user"></span><span>正在编辑属性</span>
+              <div class="memberSelect">
+                <span class="memberSpanA"></span><span>正在编辑属性</span>
               </div>
             </div>
           </div>
@@ -158,36 +162,46 @@
               <div class="memberRightEyeA" @click.stop="hiddenAllArea()" v-show="!allAreaHideState">
                 <eye-visible custom="cursor:pointer"></eye-visible>
               </div>
-              <div class="memberRightEyeB" @click.stop="unhiddenAllArea()" v-show="allAreaHideState">
+              <div class="memberRightEyeC" @click.stop="unhiddenAllArea()" v-show="allAreaHideState">
                 <eye-not-visible custom="cursor:pointer"></eye-not-visible>
               </div>
             </div>
           </div>
           <div class="memberTeamBox" v-for="item in AreaData" :key="item.id" v-show="defaultLayerArea">
-            <div class="memberKeyInfo" @contextmenu.prevent="itemContextmenuOpen($event,item)">
+            <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
               <div class="memberLeft" @click="locateToElement(item)">
                 <region :custom="'fill:#'+item.color+';transform:translateX(-5px);'"></region>
                 <span class="memberName" v-text="getItemName(item)"></span>
               </div>
-              <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)" v-show="!hiddenElements.some((member)=>{return member.id===item.id})">
-                <eye-visible custom="cursor:pointer"></eye-visible>
-              </div>
-              <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)" v-show="hiddenElements.some((member)=>{return member.id===item.id})">
-                <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+              <div :ref="'memberRightEye'+item.id">
+                <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
+                  <eye-visible custom="cursor:pointer"></eye-visible>
+                </div>
+                <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
+                  <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                </div>
               </div>
             </div>
-            <div class="memberActivityInfo">
-              <div class="memberPick" v-if="pickElements.has(item.id)">
-                <span class="memberSpanA" v-text="pickElements.get(item.id).user"></span><span>编辑形状中</span>
+            <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
+              <div class="memberPick">
+                <span class="memberSpanA"></span><span>编辑形状中</span>
               </div>
-              <div class="memberSelect" v-if="selectElements.has(item.id)">
-                <span class="memberSpanA" v-text="selectElements.get(item.id).user"></span><span>编辑属性中</span>
+              <div class="memberSelect">
+                <span class="memberSpanA"></span><span>编辑属性中</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <banana-group-layer v-for="layerId in mapLayerOrder" :key="layerId" :layer="groupLayers[layerId]" :group-layers="groupLayers" :adjust-order-response="adjustOrderTemplate" :adjust-item-order-response="adjustItemOrderTemplate" :pick-layer-response="pickLayerTemplate" @pickLayerRequest="pickLayerApproval" @adjustOrderRequest="adjustOrderApproval" @adjustItemOrderRequest="adjustItemOrderApproval"></banana-group-layer>
+      <banana-group-layer v-for="layerId in mapLayerOrder" :key="layerId"
+        :layer="groupLayers[layerId]" :group-layers="groupLayers"
+        :adjust-order-response="adjustOrderTemplate"
+        :adjust-item-order-response="adjustItemOrderTemplate"
+        :pick-layer-response="pickLayerTemplate"
+        @pickLayerRequest="pickLayerApproval"
+        @adjustOrderRequest="adjustOrderApproval"
+        @adjustItemOrderRequest="adjustItemOrderApproval">
+      </banana-group-layer>
     </div>
     <div class="panelSearch">
       <div class="searchContent" contenteditable="true">
@@ -203,12 +217,15 @@
         </div>
       </div>
       <div class="menuGroupListBox">
-        <orange-group-list :level="1" :structure="groupLayerStructure" @OrangeGroupListCall="addToGroupLayer"></orange-group-list>
+        <orange-group-list :level="1" :structure="groupLayerStructure"
+                           @OrangeGroupListCall="addToGroupLayer">
+        </orange-group-list>
       </div>
     </div>
   </div>
 </template>
 <script>
+window.tempId=1;
 import ExpandMore from "./svgValidIcons/expandMore";
 import Region from "./svgValidIcons/region";
 import SegmentLine from "./svgValidIcons/segmentLine";
@@ -274,7 +291,17 @@ export default {
       },
     }
   },
-  mounted() {
+  created(){
+    this.unwatch=this.$watch('mapLayerOrder',(newValue)=>{
+      if(this.closeDefaultLayer===true){
+        if(newValue.length>0){//当默认图层关闭的时候自动选中第一个图层
+          setTimeout(()=>{this.pickLayerTemplate.id=newValue[0]},0);
+        }
+        this.unwatch();
+      }
+    });
+  },
+  mounted(){
     this.startSetting();
   },
   methods:{
@@ -537,55 +564,59 @@ export default {
       this.showDefaultLayer=!this.showDefaultLayer;
     },
     hiddenAllPoint(){//隐藏所有点
-      this.unhiddenAllPoint();
-      this.PointData.map(member=>{
-        this.$store.state.elementPanelConfig.hiddenElements.push
-        ({id:member.id,type:'point',});
-        }
-      );
+      let length=this.PointData.length;
+      let Arr=[];
+      for(let i=0;i<length;i++){
+        Arr.push({id:this.PointData[i].id,type:'point'});
+      }
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'byTypeJoin',by:'point',data:Arr});
     },
     unhiddenAllPoint(){//取消隐藏所有点
-      this.$store.state.elementPanelConfig.hiddenElements=
-        this.$store.state.elementPanelConfig.hiddenElements.filter(item=>item.type!=='point');
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'byTypeQuit',by:'point'});
     },
     hiddenAllLine(){
-      this.unhiddenAllLine();
-      this.PolyLineData.map(member=>{
-          this.$store.state.elementPanelConfig.hiddenElements.push
-          ({id:member.id,type:'line',});
-        }
-      );
+      let length=this.PolyLineData.length;
+      let Arr=[];
+      for(let i=0;i<length;i++){
+        Arr.push({id:this.PolyLineData[i].id,type:'line'});
+      }
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'byTypeJoin',by:'line',data:Arr});
     },
     unhiddenAllLine(){
-      this.$store.state.elementPanelConfig.hiddenElements=
-        this.$store.state.elementPanelConfig.hiddenElements.filter(item=>item.type!=='line');
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'byTypeQuit',by:'line'});
     },
     hiddenAllArea(){
-      this.unhiddenAllArea();
-      this.AreaData.map(member=>{
-          this.$store.state.elementPanelConfig.hiddenElements.push
-          ({id:member.id,type:'area',});
-        }
-      );
+      let length=this.AreaData.length;
+      let Arr=[];
+      for(let i=0;i<length;i++){
+        Arr.push({id:this.AreaData[i].id,type:'area'});
+      }
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'byTypeJoin',by:'area',data:Arr});
     },
     unhiddenAllArea(){
-      this.$store.state.elementPanelConfig.hiddenElements=
-        this.$store.state.elementPanelConfig.hiddenElements.filter(item=>item.type!=='area');
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'byTypeQuit',by:'area'});
     },
     hiddenAllCurve(){
-      this.unhiddenAllCurve();
-      this.CurveData.map(member=>{
-          this.$store.state.elementPanelConfig.hiddenElements.push
-          ({id:member.id,type:'curve',});
-        }
-      );
+      let length=this.CurveData.length;
+      let Arr=[];
+      for(let i=0;i<length;i++){
+        Arr.push({id:this.CurveData[i].id,type:'curve'});
+      }
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'byTypeJoin',by:'curve',data:Arr});
     },
     unhiddenAllCurve(){
-      this.$store.state.elementPanelConfig.hiddenElements=
-        this.$store.state.elementPanelConfig.hiddenElements.filter(item=>item.type!=='curve');
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'byTypeQuit',by:'curve'});
     },
     hiddenElement(id,type){//隐藏某元素
-      if(!this.hiddenElements.some((member)=>{return member.id===id})){
+      if(!this.mapHiddenElements.has(id)){
         this.$store.commit('arrCoElementPanelHiddenElements',
           {type:'push',data:{id,type}});
       }else {
@@ -648,10 +679,11 @@ export default {
     deconstructMembers(members){
       let ref={};
       Object.keys(members).forEach(item=>{
-          let element=[members[item]+'',item];
+          let element=[members[item]+'',item];//转化为[类型,ID]
           switch (element[0]) {
             case '1':{
-              for(let i=0;i<this.PointData.length;i++){
+              let len=this.PointData.length;
+              for(let i=0;i<len;i++){
                 if(this.PointData[i].id==element[1]){
                   ref[item]=this.PointData[i];
                   break;
@@ -660,7 +692,8 @@ export default {
               break;
             }
             case '2':{
-              for(let i=0;i<this.PolyLineData.length;i++){
+              let len=this.PolyLineData.length;
+              for(let i=0;i<len;i++){
                 if(this.PolyLineData[i].id==element[1]){
                   ref[item]=this.PolyLineData[i];
                   break;
@@ -669,7 +702,8 @@ export default {
               break;
             }
             case '3':{
-              for(let i=0;i<this.AreaData.length;i++){
+              let len=this.AreaData.length;
+              for(let i=0;i<len;i++){
                 if(this.AreaData[i].id==element[1]){
                   ref[item]=this.AreaData[i];
                   break;
@@ -687,6 +721,11 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    mapHiddenElements(){
+      let map=new Map();
+      this.hiddenElements.forEach(value=>map.set(value.id,true));
+      return map;
+    },
     groupLayerStructure(){//提取分组图层的每层的名称
       let ref=[];
       for(let key in this.groupLayers){
@@ -779,8 +818,7 @@ export default {
             }
           }
         }catch (Exception) {
-          this.$store.state.monitorConfig.tryErrorTarget.push('LayerElementPanel->computed->hideTypeNumbers');
-          this.$store.state.monitorConfig.tryErrorException.push(Exception);
+
         }
       }
       return {point,line,area,curve};
@@ -844,6 +882,81 @@ export default {
     }
   },
   watch:{
+    pickElements:{
+      handler(newValue,oldValue){
+        if(!this.showDefaultLayer){return false;}
+        function compareMaps(newValue,oldValue) {
+          let newKeys=Array.from(newValue.keys());
+          let oldKeys=Array.from(oldValue.keys());
+          let addedKeys=newKeys.filter(key=>!oldValue.has(key));
+          let removedKeys=oldKeys.filter(key=>!newValue.has(key));
+          return {addedKeys,removedKeys}
+        }
+        let difference=compareMaps(newValue,oldValue);
+        let addLength=difference.addedKeys.length;
+        let removeLength=difference.removedKeys.length;
+        for(let i=0;i<addLength;i++){
+          let pickMember=this.$refs['memberActivity'+difference.addedKeys[i]][0];
+          pickMember.firstChild.style.display='flex';
+          pickMember.firstChild.firstChild.innerText=newValue.get(difference.addedKeys[i]).user;
+        }
+        for(let j=0;j<removeLength;j++){
+          let pickMember=this.$refs['memberActivity'+difference.removedKeys[j]][0];
+          pickMember.firstChild.style.display='none';
+          pickMember.firstChild.firstChild.innerText='';
+        }
+      }
+    },
+    selectElements:{
+      handler(newValue,oldValue){
+        if(!this.showDefaultLayer){return false;}
+        function compareMaps(newValue,oldValue) {
+          let newKeys=Array.from(newValue.keys());
+          let oldKeys=Array.from(oldValue.keys());
+          let addedKeys=newKeys.filter(key=>!oldValue.has(key));
+          let removedKeys=oldKeys.filter(key=>!newValue.has(key));
+          return {addedKeys,removedKeys}
+        }
+        let difference=compareMaps(newValue,oldValue);
+        let addLength=difference.addedKeys.length;
+        let removeLength=difference.removedKeys.length;
+        for(let i=0;i<addLength;i++){
+          let pickMember=this.$refs['memberActivity'+difference.addedKeys[i]][0];
+          pickMember.lastChild.style.display='flex';
+          pickMember.lastChild.firstChild.innerText=newValue.get(difference.addedKeys[i]).user;
+        }
+        for(let j=0;j<removeLength;j++){
+          let pickMember=this.$refs['memberActivity'+difference.removedKeys[j]][0];
+          pickMember.lastChild.style.display='none';
+          pickMember.lastChild.firstChild.innerText='';
+        }
+      }
+    },
+    mapHiddenElements:{
+      handler(newValue,oldValue){
+        if(!this.showDefaultLayer){return false;}
+        function compareMaps(newValue,oldValue) {
+          let newKeys=Array.from(newValue.keys());
+          let oldKeys=Array.from(oldValue.keys());
+          let addedKeys=newKeys.filter(key=>!oldValue.has(key));
+          let removedKeys=oldKeys.filter(key=>!newValue.has(key));
+          return {addedKeys,removedKeys}
+        }
+        let difference=compareMaps(newValue,oldValue);
+        let addLength=difference.addedKeys.length;
+        let removeLength=difference.removedKeys.length;
+        for(let i=0;i<addLength;i++){
+          let Member=this.$refs['memberRightEye'+difference.addedKeys[i]][0];
+          Member.firstChild.style.display='none';
+          Member.lastChild.style.display='flex';
+        }
+        for(let j=0;j<removeLength;j++){
+          let Member=this.$refs['memberRightEye'+difference.removedKeys[j]][0];
+          Member.firstChild.style.display='flex';
+          Member.lastChild.style.display='none';
+        }
+      }
+    },
     closeDefaultLayer:{
       handler(newValue){
         this.showDefaultLayer=!newValue;
@@ -887,7 +1000,7 @@ export default {
     isLogin:{
       handler(newValue){
         if(newValue===true){
-          setTimeout(()=>this.getMapLayer(),1000);
+          setTimeout(()=>this.getMapLayer(),500);
         }
       }
     },
@@ -1071,7 +1184,7 @@ export default {
 .memberPick{
   width: 100%;
   height: 25px;
-  display: flex;
+  display: none;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
@@ -1079,7 +1192,7 @@ export default {
 .memberSelect{
   width: 100%;
   height: 25px;
-  display: flex;
+  display: none;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
@@ -1182,6 +1295,15 @@ export default {
   opacity: 0;
 }
 .memberRightEyeB{
+  width: 25px;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+  opacity: 1;
+}
+.memberRightEyeC{
   width: 25px;
   height: 100%;
   display: flex;

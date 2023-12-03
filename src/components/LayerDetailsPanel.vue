@@ -146,7 +146,7 @@ export default {
     },
     dragEnd(){
       document.addEventListener('mouseup',(ev)=>{
-        this.$refs.LayerDetailsPanel.style.transition='0.3s';
+        // this.$refs.LayerDetailsPanel.style.transition='0.3s';
         this.dragStatus=false;
         this.dragStartPt={x:null,y:null};
         this.dragOffset={x:null,y:null};
@@ -193,20 +193,18 @@ export default {
   watch:{
     targetId:{
       handler(newValue){
-        if(newValue===-1){//设置-1等同于隐藏
+        if(this.$store.state.commits.disableZoomAndMove){//如果有移动节点的操作会抑制更新
+          return false;
+        }
+        if(newValue!==-1){
+          this.show();
+          this.setSelectionOn();
+        }else {
           this.hidden();
           this.setSelectionOff();
         }
-        if(this.$store.state.commits.disableZoomAndMove===false){//如果有移动节点的操作会抑制更新
-          if(newValue===-1){
-            this.hidden();
-          }else {
-            this.show();
-            this.setSelectionOn();
-          }
-          this.exampleConfig=this.$store.state.detailsPanelConfig.data;
-          this.sourcePoint=this.$store.state.detailsPanelConfig.sourcePoint;
-        }
+        this.exampleConfig=this.$store.state.detailsPanelConfig.data;
+        this.sourcePoint=this.$store.state.detailsPanelConfig.sourcePoint;
       }
     }
   },
@@ -306,7 +304,7 @@ export default {
   transform: rotate(25deg);
 }
 .detailsPanelLayer{
-  transition: 0.3s;
+  /*transition: 0.3s;*/
   position: fixed;
   z-index: 585;
   top:370px;

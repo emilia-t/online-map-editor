@@ -12,6 +12,8 @@
 <!--      <br>-->
       A1相对坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
       <br>
+      移动距离：{{$store.state.mapConfig.movingDistance.x}} , {{$store.state.mapConfig.movingDistance.y}}
+      <br>
       P0相对坐标：
       <br>
       {{$store.state.mapConfig.p0.point.x}} , {{$store.state.mapConfig.p0.point.y}}

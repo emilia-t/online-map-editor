@@ -121,9 +121,9 @@ export default {
                 newKmlItemObj.styleUrl = placeMarks[i].querySelector('styleUrl').textContent;
                 newKmlItemObj.normalStyleId = getNormalStyleId(newKmlItemObj.styleUrl, structure);
                 newKmlItemObj.width = getNormalStyleWidth(newKmlItemObj.normalStyleId, structure);
-                newKmlItemObj.color = getNormalStyleColor(newKmlItemObj.normalStyleId, structure);
                 newKmlItemObj.coord = parseLocations(newKmlItemObj.coord);
                 newKmlItemObj.type = transformType(newKmlItemObj.styleUrl);
+                newKmlItemObj.color = getNormalStyleColor(newKmlItemObj.normalStyleId, structure ,newKmlItemObj.type);
                 newKmlFolderObj.placeMark.push(newKmlItemObj);
               }
               kmlDataObj.mapName = kmlMapName;
@@ -212,7 +212,7 @@ export default {
               OMD.layerData.unshift(newOrderLayer);
               return OMD;
             }
-            function coordTransformOmdType(coords){
+          function coordTransformOmdType(coords){
               const length=coords.length;
               let ref=[];
               for(let i=0;i<length;i++){
@@ -223,7 +223,7 @@ export default {
               }
               return ref;
             }
-            function parseLocations(str) {//解析行字符串的经纬度和高度
+          function parseLocations(str) {//解析行字符串的经纬度和高度
             let locations = [];
             let rows = str.trim().split('\n');//按行分割
             for (let row of rows) {
@@ -239,7 +239,7 @@ export default {
             }
             return locations;
           }
-            function transformType(styleUrl) {//转化kml的元素type为omd类型,失败返回unknown
+          function transformType(styleUrl) {//转化kml的元素type为omd类型,失败返回unknown
             const match = styleUrl.match(/#(\w+)-/);
             if (match) {
               let kmlType = match[1];
@@ -261,12 +261,12 @@ export default {
               return 'unknown';
             }
           }
-            function getNormalStyleId(styleUrl, structure) {
+          function getNormalStyleId(styleUrl, structure) {
             let styleMap = structure.getElementById(styleUrl.substring(1));
             let normalStyle = styleMap.getElementsByTagName('styleUrl')[0];
             return normalStyle.textContent.substring(1);
           }
-            function getNormalStyleWidth(normalStyleId, structure) {
+          function getNormalStyleWidth(normalStyleId, structure) {
             let normalStyle = structure.getElementById(normalStyleId);
             let arrayWidth = normalStyle.getElementsByTagName('width');
             if (arrayWidth.length !== 0) {
@@ -280,16 +280,21 @@ export default {
               return 5;
             }
           }
-            function getNormalStyleColor(normalStyleId, structure) {
+          function getNormalStyleColor(normalStyleId, structure,elementType) {
             let normalStyle = structure.getElementById(normalStyleId);
             let arrayColor = normalStyle.getElementsByTagName('color');
             if (arrayColor.length !== 0) {
               let color = arrayColor[0].textContent.substring(0, 6);
+              let colorMutated = arrayColor[0].textContent.substring(2, 8);
               let Exp = /^[0-9A-F]{6}$/i;
               if (Exp.test(color) === false) {//错误的格式
                 return '000000';
               } else {
-                return color;
+                if(elementType!=='point'){
+                  return colorMutated;
+                }else{
+                  return color;
+                }
               }
             } else {
               return '000000';

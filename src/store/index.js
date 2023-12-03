@@ -163,13 +163,11 @@ export default new Vuex.Store({
           const found = this.network.tileCache.find(e => (e.z === z && e.x=== x && e.y === y));
           if (found === undefined) {//缓存中没有
             const downloadManageObj = this.network.downloadManage.find(e => (e.z === z && e.x === x && e.y === y));
-            //console.log(dmObj);
-            //console.log(this.network.downloadManage);
             if (downloadManageObj === undefined) {
               return this.xhrDownloadImg(z, x, y);
             }
             else {
-              return Promise.reject('需要等待下载完成');
+              return Promise.reject();
             }
           } else {
             return found.img;
@@ -190,12 +188,12 @@ export default new Vuex.Store({
                 this.network.tileCache.push({ img: img, z: z, x: x, y: y });
                 this.network.downTileCount += 1;
                 this.removeArrayValue(this.network.downloadManage,downloadObj);//下载完成后移除
-                //console.log('dm下载完成减少');
+                //('dm下载完成减少');
                 resolve(img);
               } else {
                 reject('下载似乎失败了');
                 this.removeArrayValue(this.network.downloadManage,downloadObj);
-                //console.log('dm下载失败减少');
+                //('dm下载失败减少');
               }
             };
             this.network.downloadManage.push(downloadObj);//保存xhr对象 和xyz索引
@@ -364,8 +362,10 @@ export default new Vuex.Store({
           this.reinitializeSourcePoints=[];//初始化源
           this.reinitializeSourcePoint=null;//初始化源
           this.socket=undefined;//会话
-          this.errors=[];//错误数据
-          this.corrects=[];
+          this.errors=[];//执行错误的指令返回数据
+          this.errorsROnly=[];//只读的
+          this.corrects=[];//执行正确的指令返回数据
+          this.correctsROnly=[];//只读的
           this.messages=[];
           this.presence=[];
           this.selectElements=[];
@@ -456,6 +456,9 @@ export default new Vuex.Store({
             },
             broadcast_updateLayerOrder(passive,active,type){
               return {type:'broadcast',class:'updateLayerOrder',data:{passive,active,type}}
+            },
+            broadcast_deleteLayerAndMembers(id){
+              return {type:'broadcast',class:'deleteLayerAndMembers',data:{id}}
             },
           };
           this.QIR={//检测间
@@ -595,6 +598,9 @@ export default new Vuex.Store({
         }
         broadcastDeleteLayer(id){
           this.send(this.Instruct.broadcast_deleteLayer(id));
+        }
+        broadcastDeleteLayerAndMembers(id){
+          this.send(this.Instruct.broadcast_deleteLayerAndMembers(id));
         }
         broadcastUpdateLayerOrder(passiveId,activeId,type){
           this.send(this.Instruct.broadcast_updateLayerOrder(passiveId,activeId,type));
@@ -993,6 +999,7 @@ export default new Vuex.Store({
                     jsonData.data[i].custom=ref;
                   }
                   let NowType=jsonData.data[i].type;//分组
+                  jsonData.data[i].id=parseInt(jsonData.data[i].id);//hack
                   switch (NowType) {
                     case 'line':{
                       this.mapData.lines.push(jsonData.data[i]);
@@ -1021,6 +1028,7 @@ export default new Vuex.Store({
                   if(jsonData.data[i].type==='order'){
                     ord=JSON.parse(jsonData.data[i].members);
                   }else {
+                    jsonData.data[i].id=parseInt(jsonData.data[i].id);//hack
                     jsonData.data[i].members=JSON.parse(window.atob(jsonData.data[i].members));
                     jsonData.data[i].structure=JSON.parse(window.atob(jsonData.data[i].structure))
                     res.push(jsonData.data[i]);
@@ -1090,6 +1098,7 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
+                  jsonData.data.id=parseInt(jsonData.data.id);//hack
                   let NewMessageObj={'type':'broadcast','class':'line','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.lines.push(jsonData.data);//添加到mapData
@@ -1131,6 +1140,7 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
+                  jsonData.data.id=parseInt(jsonData.data.id);//hack
                   let NewMessageObj={'type':'broadcast','class':'area','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.areas.push(jsonData.data);//添加到mapData
@@ -1185,6 +1195,7 @@ export default new Vuex.Store({
                       jsonData.data.custom=ref;
                     }
                   }catch(e){}
+                  jsonData.data.id=parseInt(jsonData.data.id);//hack
                   let NewMessageObj={'type':'broadcast','class':'point','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);
                   this.mapData.points.push(jsonData.data);
@@ -1193,27 +1204,38 @@ export default new Vuex.Store({
                 }
                 case 'deleteElement':{//删除某一元素的广播
                   try{
-                    let ID=jsonData.data.id;
+                    let find=false;
+                    let ID=parseInt(jsonData.data.id);//hack
+                    if(isNaN(ID)){return false;}
                     this.mapData.points.some((item, index)=>{//查找并删除该id
                       if (item.id==ID){
                         this.mapData.points.splice(index,1);
+                        find=true;
                         return true;
                       }
                     });
-                    this.mapData.lines.some((item, index)=>{
-                      if (item.id==ID){
-                        this.mapData.lines.splice(index,1);
-                        return true;
-                      }
-                    });
-                    this.mapData.areas.some((item, index)=>{
-                      if (item.id==ID){
-                        this.mapData.areas.splice(index,1);
-                        return true;
-                      }
-                    });
-                    this.messages.push(jsonData);//更新消息
-                    this.lastEdit=jsonData.time;
+                    if(!find){
+                      this.mapData.lines.some((item, index)=>{
+                        if (item.id==ID){
+                          this.mapData.lines.splice(index,1);
+                          find=true;
+                          return true;
+                        }
+                      });
+                    }
+                    if(!find){
+                      this.mapData.areas.some((item, index)=>{
+                        if (item.id==ID){
+                          this.mapData.areas.splice(index,1);
+                          find=true;
+                          return true;
+                        }
+                      });
+                    }
+                    if(find){
+                      this.messages.push(jsonData);//更新消息
+                      this.lastEdit=jsonData.time;
+                    }
                   }
                   catch (e) {}
                   break;
@@ -1370,7 +1392,7 @@ export default new Vuex.Store({
                 case 'selectEndElement':{
                   for(let i=0;i<this.selectElements.length;i++){
                     if(this.selectElements[i].id===jsonData.data){
-                      this.selectElements.splice(i,1,0);
+                      this.selectElements.splice(i,1);
                       break;
                     }
                   }
@@ -1388,7 +1410,7 @@ export default new Vuex.Store({
                 case 'pickEndElement':{
                   for(let i=0;i<this.pickElements.length;i++){
                     if(this.pickElements[i].id===jsonData.data){
-                      this.pickElements.splice(i,1,0);
+                      this.pickElements.splice(i,1);
                       break;
                     }
                   }
@@ -1421,6 +1443,7 @@ export default new Vuex.Store({
                     ){
                       let newMembers=JSON.parse(window.atob(jsonData.data.members));
                       let newStructure=JSON.parse(window.atob(jsonData.data.structure));
+                      jsonData.data.id=parseInt(jsonData.data.id);//hack
                       this.mapLayerData.push({
                         id:jsonData.data.id,
                         type:jsonData.data.type,
@@ -1438,6 +1461,27 @@ export default new Vuex.Store({
                       this.deleteLayerId=jsonData.data.id;
                     }
                   }
+                  break;
+                }
+                case 'deleteLayerAndMembers':{
+                  for(let i=0;i<this.mapLayerData.length;i++){
+                    if(this.mapLayerData[i].id==jsonData.data.id){
+                      this.mapLayerData.splice(i,1);
+                      this.deleteLayerId=jsonData.data.id;
+                    }
+                  }
+                  this.mapData.points=this.mapData.points.filter(
+                    (element)=>{
+                     return !jsonData.data.members.hasOwnProperty(element.id)
+                    });
+                  this.mapData.lines=this.mapData.lines.filter(
+                    (element)=>{
+                      return !jsonData.data.members.hasOwnProperty(element.id)
+                    });
+                  this.mapData.areas=this.mapData.areas.filter(
+                    (element)=>{
+                      return !jsonData.data.members.hasOwnProperty(element.id)
+                    });
                   break;
                 }
                 case 'updateLayerData':{
@@ -1475,10 +1519,12 @@ export default new Vuex.Store({
             }
             case 'send_error':{
               this.errors.push(jsonData);
+              this.errorsROnly.push(jsonData);
               break;
             }
             case 'send_correct':{
               this.corrects.push(jsonData);
+              this.correctsROnly.push(jsonData);
               break;
             }
             default:{
@@ -1572,6 +1618,10 @@ export default new Vuex.Store({
         }
       },
       A1:{
+        x:0,
+        y:0
+      },
+      movingDistance:{
         x:0,
         y:0
       },
@@ -1704,8 +1754,6 @@ export default new Vuex.Store({
     },
     monitorConfig:{
       fps:0,
-      tryErrorTarget:[],
-      tryErrorException:[],
     },
     baseMapConfig:{//底图配置
       enableBaseMap:false,
@@ -2024,30 +2072,49 @@ export default new Vuex.Store({
     /**
      * type(set/res/cha/arr)+StateType(Co/Da)+(NameProperty)
      * product:{type:'str',data:any}
+     * data:{id,type} or data:[{id,type},{id,type}]
      * */
     arrCoElementPanelHiddenElements(state,product){
       switch (product.type) {
-        case 'push':{
+        case 'push':{//单一添加
           state.elementPanelConfig.hiddenElements.push(product.data);
           break;
         }
-        case 'pop':{
-          state.elementPanelConfig.hiddenElements.pop();
-          break;
-        }
-        case 'unshift':{
-          state.elementPanelConfig.hiddenElements.unshift(product.data);
-          break;
-        }
-        case 'shift':{
-          state.elementPanelConfig.hiddenElements.shift();
-          break;
-        }
-        case 'remove':{
+        case 'remove':{//单一删除
           let index=state.elementPanelConfig.hiddenElements.findIndex((item)=>{return item.id===product.data.id});
           if (index>-1) {
             state.elementPanelConfig.hiddenElements.splice(index, 1);
           }
+          break;
+        }
+        case 'join':{//集体加入
+          let arr1=state.elementPanelConfig.hiddenElements;
+          let arr2=product.data;
+          let merged=arr1.concat(arr2);
+          let result=merged.filter((value,index,self)=>
+            self.findIndex(item=>item.id===value.id)===index
+          );
+          state.elementPanelConfig.hiddenElements=result;
+          break;
+        }
+        case 'quit':{//集体退出
+          let arr1=state.elementPanelConfig.hiddenElements;
+          let arr2=product.data;
+          let set=new Set(arr2.map(value=>value.id));
+          let result=arr1.filter(value=>!set.has(value.id));
+          state.elementPanelConfig.hiddenElements=result;
+          break;
+        }
+        case 'byTypeJoin':{//按类型集体加入
+          let arr1=state.elementPanelConfig.hiddenElements.filter(item=>item.type!==product.by);
+          let arr2=product.data;
+          let result=arr1.concat(arr2);
+          state.elementPanelConfig.hiddenElements=result;
+          break;
+        }
+        case 'byTypeQuit':{//按类型集体退出
+          state.elementPanelConfig.hiddenElements=
+            state.elementPanelConfig.hiddenElements.filter(item=>item.type!==product.by);
           break;
         }
       }

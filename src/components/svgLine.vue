@@ -1,18 +1,21 @@
 <template>
-  <g :elementId="polyLineConfig.id" style="pointer-events: all" ref="svgElement">
+  <g v-if="rendering" ref="svgElement">
     <g v-show="selectConfig.id===myId || pickConfig.id===myId">
       <path :id="'textPath'+polyLineConfig.id" :d="dynamicPointsString" :style="highlightStyle" filter="url(#svgFilterShadow)" class="svgLineTextPath"/><!--文字路径-->
     </g>
     <g v-for="(str,index) in dynamicPointsStr">
-      <path :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d" :key="index+'main'" :style="pathLineStyle" @mouseenter="showNode()" @mouseleave="hideNode()" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--路径主体-->
-      <circle :cx="str.a" :cy="str.b" :key="index+'fillNode'" :style="fillNodeStyle"/><!--填充节点-->
-      <circle :cx="str.c" :cy="str.d" :key="'endFillNode'" :style="fillNodeStyle" v-if="index===dynamicPointsStr.length-1"/>
-      <circle :cx="str.a" :cy="str.b" :key="index+'node'" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" @contextmenu="" v-show="nodeDisplay"/><!--节点-->
-      <circle :cx="str.c" :cy="str.d" :key="'endNode'" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
-      <circle :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :key="index+'virtualNode'" :style="virtualNodeStyle(index)" @mousedown="virtualNodeDown(index,$event)" @mouseup="virtualNodeUp($event)" v-show="selectId===myId"/><!--虚拟节点-->
+      <path :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d" :style="pathLineStyle" @mouseenter="showNode()" @mouseleave="hideNode()" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--路径主体-->
+
+      <circle class="svgLineFillNode" :cx="str.a" :cy="str.b" :style="fillNodeStyle"/><!--填充节点-->
+      <circle class="svgLineFillNode" :cx="str.c" :cy="str.d" :style="fillNodeStyle" v-if="index===dynamicPointsStr.length-1"/>
+
+      <circle class="svgLineNodeEffect" :cx="str.a" :cy="str.b" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" @contextmenu="" v-show="nodeDisplay"/><!--节点-->
+      <circle class="svgLineNodeEffect" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
+
+      <circle class="svgLineVirtualNode" :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :style="virtualNodeStyle(index)" @mousedown="virtualNodeDown(index,$event)" @mouseup="virtualNodeUp($event)" v-show="selectId===myId"/><!--虚拟节点-->
     </g>
     <g v-show="selectConfig.id===myId || pickConfig.id===myId">
-      <text :style="textPathPos" :fill="svgTextFill" class="svgLineSelectText">
+      <text class="svgLineSelectText" :style="textPathPos" :fill="svgTextFill">
         <textPath v-bind:xlink:href="'#textPath'+polyLineConfig.id" v-text="svgText"></textPath>
       </text>
     </g>
@@ -25,9 +28,7 @@ export default {
     return {
       dataSourcePoint: {},//数据源
       dataSourcePoints: [],//数据源
-      occurredMoveMap:false,//移动状态
       A1Cache:{x:0,y:0},//a1的缓存
-      highlightShow:false,
       myId:null,
       selectId:-1,
       shiftStatus:false,
@@ -40,13 +41,13 @@ export default {
       shiftAllStartPoint:{x:null,y:null},
       shiftAllMoveCache:[],
       NodeDisplay:false,
-      virtualPoint:[],
       shiftVirtualStatus:false,
       shiftVirtualNodeOrder:null,
       rightLock:false,
       leftLock:false,
       mouseDownPosition:{x:null,y:null},
       mouseUpPosition:{x:null,y:null},
+      rendering:true,
     }
   },
   props:{
@@ -75,19 +76,48 @@ export default {
       }
     },
   },
-  mounted:function (){
+  mounted(){
     this.startSetting();
   },
   methods:{
     startSetting(){//初始化配置
+      this.A1Cache.x=this.A1.x;
+      this.A1Cache.y=this.A1.y;
       this.myId=this.polyLineConfig.id;//拷贝id
       this.dataSourcePoint=JSON.parse(JSON.stringify(this.polyLineConfig.point));//拷贝源点数据
       this.dataSourcePoints=JSON.parse(JSON.stringify(this.polyLineConfig.points));//拷贝源点s数据
-      this.mouseEvent();
       this.initializePosition();//不要提前
-      this.A1Cache.x=this.A1.x;
-      this.A1Cache.y=this.A1.y;
       this.KeyListen();
+    },
+    isElementInViewport(){//检测元素是否在可视范围内如果在范围内返回true否则返回false
+      try {
+        let points=JSON.parse(JSON.stringify(this.polyLineConfig.points));
+        let len=points.length;
+        let ofs=1;//采样间隔
+        let num=0;//采样点总数
+        let out=0;//范围的外采样点数
+        if(len<=5){
+          ofs=1;
+        }else if(len>5 && len<=25){
+          ofs=2;
+        }else if(len>25 && len<=50){
+          ofs=4;
+        }else if(len>50 && len<=100){
+          ofs=8;
+        }else if(len>100){
+          ofs=16;
+        }
+        for(let i=0;i<len;i+=ofs){
+          num++;
+          if((points[i].y>50 || points[i].y<-(this.browserY+50))
+          || (points[i].x<-50 || points[i].x>(this.browserX+50))){
+            out++;
+          }
+        }
+        return num !== out;
+      }catch (e) {
+        return false;
+      }
     },
     KeyListen(){//监听单个按键
       document.body.addEventListener('keyup',(e)=>{
@@ -137,12 +167,12 @@ export default {
         }
       });
     },
-    virtualNodeDown(index,event){//更改虚拟节点样式
+    virtualNodeDown(index){//更改虚拟节点样式
       this.shiftVirtualStatus=true;
       this.shiftVirtualNodeOrder=index;
       this.$root.sendSwitchInstruct('disableZoomAndMove',true);
     },
-    virtualNodeUp(event){//松开即创建节点
+    virtualNodeUp(){//松开即创建节点
       this.shiftVirtualStatus=false;
       this.shiftVirtualNodeOrder=null;
       this.$root.sendSwitchInstruct('disableZoomAndMove',false);
@@ -160,28 +190,19 @@ export default {
             cx:this.mouse.x,
             cy:this.mouse.y,
             r:(parseInt(this.polyLineConfig.width)/2)+4+'px',
-            strokeWidth:1,
             stroke:'#000000',
-            pointerEvents:'fill',
-            fill:'#ffffff',
           }
         }else {
           return {
             r:(parseInt(this.polyLineConfig.width)/2)+4+'px',
-            strokeWidth:1,
             stroke:'#000000',
-            pointerEvents:'fill',
-            fill:'#ffffff'
           }
         }
       }else {
         return {
           r:(parseInt(this.polyLineConfig.width)/2)+2+'px',
-          strokeWidth:1,
           stroke:'#8e8b86',
-          pointerEvents:'fill',
           fillOpacity:0.8,
-          fill:'#ffffff'
         }
       }
     },
@@ -346,7 +367,7 @@ export default {
     },
     move(){//移动
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
-        if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
+        if(this.doNeedMoveMap===false){
           let A1mvX=this.A1.x-this.A1Cache.x;
           let A1mvY=this.A1Cache.y-this.A1.y;
           let newArr=this.polyLineConfig.points;
@@ -356,10 +377,9 @@ export default {
           }
           this.A1Cache.x=this.A1.x;
           this.A1Cache.y=this.A1.y;
-          this.occurredMoveMap=false;//告知已经处理本次移动过程
         }
       }
-      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+      else if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
         this.initializePosition();
@@ -387,37 +407,30 @@ export default {
         }
         this.polyLineConfig.points=newPosArr;
       }
-      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+      else if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         this.initializePosition();
       }
-    },
-    mouseEvent(){//监听鼠标移动
-      document.body.addEventListener('mousemove',(e)=>{
-        this.occurredMoveMap=true;
-      })
     },
     nodeEffectStyle(order){
       if(this.shiftNodeOrder===order){
         return {
           r:(parseInt(this.polyLineConfig.width)/2)+6+'px',
-          strokeWidth:2,
-          stroke:'#010101',
-          pointerEvents:'fill',
-          fill:'#ffffff',
           fillOpacity:0.95
         }
       }else {
         return {
           r:(parseInt(this.polyLineConfig.width)/2)+4+'px',
-          strokeWidth:1,
-          stroke:'#000000',
-          pointerEvents:'fill',
-          fill:'#ffffff'
         }
       }
     },
   },
   computed:{
+    browserX(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    browserY(){
+      return this.$store.state.mapConfig.browser.height;
+    },
     suppressPickSelect(){
       return this.$store.state.commits.suppressPickSelect;
     },
@@ -471,34 +484,19 @@ export default {
     nodeDisplay(){
       return this.NodeDisplay === true || this.selectId === this.myId;
     },
-    browserX(){
-      return this.$store.state.mapConfig.browser.width;
-    },
-    browserY(){
-      return this.$store.state.mapConfig.browser.height;
-    },
     unit1X(){
       return this.$store.state.cameraConfig.unit1X;
     },
     unit1Y(){
       return this.$store.state.cameraConfig.unit1Y;
     },
-    offsetX(){
-      return this.$store.state.cameraConfig.offsetX;
-    },
-    offsetY(){
-      return this.$store.state.cameraConfig.offsetY;
-    },
     clearClick(){
       return this.$store.state.mapConfig.clearClick;
     },
     fillNodeStyle(){
       return {
-        r:parseInt(this.polyLineConfig.width)/2+'px',
-        strokeWidth:1,
-        pointerEvents:'fill',
-        fillOpacity:1,
-        fill:'#'+this.polyLineConfig.color
+        r:(parseInt(this.polyLineConfig.width)/2)+'px',
+        fill:'#'+this.polyLineConfig.color,
       }
     },
     svgMouseUp(){
@@ -511,15 +509,17 @@ export default {
       }
     },
     highlightStyle(){
-      let color='ff4f4f';
+      let color;
       if(this.pickConfig.user!==undefined){
-        color=this.pickConfig.color;
+        color='#'+this.pickConfig.color;
       }else if(this.selectConfig.user!==undefined){
-        color=this.selectConfig.color;
+        color='#'+this.selectConfig.color;
+      }else{
+        color='#ff4f4f';
       }
       return {
         strokeWidth:parseInt(this.polyLineConfig.width)+8,
-        stroke:'#'+color,
+        stroke:color,
       }
     },
     doNeedMoveMap(){
@@ -538,78 +538,38 @@ export default {
       return {x:this.$store.state.mapConfig.mousePoint.x,y:this.$store.state.mapConfig.mousePoint.y};
     },
     dynamicPointsString(){
-      if(this.doNeedMoveMap && this.occurredMoveMap===true){
-        let newArr = [];
-        let refArr = '';
-        let A1mvX=this.A1.x-this.A1Cache.x;
-        let A1mvY=this.A1Cache.y-this.A1.y;
-        newArr = this.polyLineConfig.points;
-        for (let i = 0; i < newArr.length; i++) {
-          if(i===0){
-            let x = newArr[i].x/this.unit1X - A1mvX;
-            let y = -(newArr[i].y/this.unit1Y + A1mvY);
-            refArr+='M'+x+','+y+' ';
-          }else {
-            let x = newArr[i].x/this.unit1X - A1mvX;
-            let y = -(newArr[i].y/this.unit1Y + A1mvY);
-            refArr+='L'+x+','+y+' ';
-          }
-        }
-        return refArr
-      }else {
-        let newArr = [];
-        let refArr = '';
-        newArr = this.polyLineConfig.points;
-        for (let i = 0; i < newArr.length; i++) {
-          if(i===0){
-            let x = newArr[i].x/this.unit1X;
-            let y = -newArr[i].y/this.unit1Y;
-            refArr+='M'+x+','+y+' ';
-          }else {
-            let x = newArr[i].x/this.unit1X;
-            let y = -newArr[i].y/this.unit1Y;
-            refArr+='L'+x+','+y+' ';
-          }
-        }
-        return refArr;
-      }
-    },
-    dynamicPointsStr(){
-      if(this.doNeedMoveMap && this.occurredMoveMap===true){
-        let newArr = [];
-        let refArr = [];
-        let tempA = null;
-        let tempB = null;
-        let A1mvX=this.A1.x-this.A1Cache.x;
-        let A1mvY=this.A1Cache.y-this.A1.y;
-        newArr = this.polyLineConfig.points;
-        for (let i = 0; i < newArr.length; i++) {
-          let x = newArr[i].x/this.unit1X - A1mvX;
-          let y = -(newArr[i].y/this.unit1Y + A1mvY);
-          if(tempA!==null){
-            refArr.push({a:tempA,b:tempB,c:x,d:y})
-          }
-          tempA=x;
-          tempB=y;
-        }
-        return refArr
-      }else {
-        let newArr = [];
-        let refArr = [];
-        let tempA = null;
-        let tempB = null;
-        newArr = this.polyLineConfig.points;
-        for (let i = 0; i < newArr.length; i++) {
+      let newArr = [];
+      let refArr = '';
+      newArr = this.polyLineConfig.points;
+      for (let i = 0; i < newArr.length; i++) {
+        if(i===0){
           let x = newArr[i].x/this.unit1X;
           let y = -newArr[i].y/this.unit1Y;
-          if(tempA!==null){
-            refArr.push({a:tempA,b:tempB,c:x,d:y})
-          }
-          tempA=x;
-          tempB=y;
+          refArr+='M'+x+','+y+' ';
+        }else {
+          let x = newArr[i].x/this.unit1X;
+          let y = -newArr[i].y/this.unit1Y;
+          refArr+='L'+x+','+y+' ';
         }
-        return refArr;
       }
+      return refArr;
+    },
+    dynamicPointsStr(){
+      let newArr = [];
+      let refArr = [];
+      let tempA = null;
+      let tempB = null;
+      newArr = this.polyLineConfig.points;
+      for (let i = 0; i < newArr.length; i++) {
+        let x = newArr[i].x/this.unit1X;
+        let y = -newArr[i].y/this.unit1Y;
+        if(tempA!==null){
+          refArr.push({a:tempA,b:tempB,c:x,d:y})
+        }
+        tempA=x;
+        tempB=y;
+      }
+      return refArr;
     },
     targetId(){
       return this.$store.state.detailsPanelConfig.target;
@@ -649,6 +609,15 @@ export default {
     //   },
     //   deep:true
     // },
+    dynamicPointsStr:{
+      handler(){
+        if(this.isElementInViewport()===false){
+          this.rendering=false;
+        }else {
+          this.rendering=true;
+        }
+      }
+    },
     allReinitialize:{
       handler(){
         this.initializePosition();

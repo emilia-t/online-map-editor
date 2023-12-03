@@ -333,7 +333,7 @@ export default {
               let upId=pickItem.data.vid;
               let rid=pickItem.data.rid;
               for(let ii=0;ii<this.initialIntent.length;ii++){
-                if(this.initialIntent[ii].id===upId){
+                if(this.initialIntent[ii].updateId===upId){
                   this.$store.state.recorderConfig.reachIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,

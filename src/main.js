@@ -17,7 +17,7 @@ new Vue({
   data(){
     return{
       Copyright:'Minxi Wan',
-      Version:'0.4.9.5(Develop)',
+      Version:'0.4.9.8(Develop)',
       lastTime:0,
       fps:0,
       CONFIG,

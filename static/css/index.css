@@ -41,5 +41,68 @@
   user-select:none;
   pointer-events:none;
 }
+.svgCircleHighlight{
+  stroke-width: 2;
+  fill: rgba(255,255,255,0.75);
+  pointer-events: fill;
+}
+.svgCircleInner{
+  pointer-events: fill;
+  fill-opacity: 0.8;
+}
+.svgLineFillNode{
+  stroke-width:1;
+  pointer-events:fill;
+}
+.svgLineNodeEffect{
+  pointer-events:fill;
+  fill:#ffffff;
+  stroke:#000000;
+  stroke-width:1;
+}
+.svgLineVirtualNode{
+  stroke-width:1;
+  pointer-events:fill;
+  fill:#ffffff;
+}
+.svgPointTempCircle{
+  pointer-events: fill;
+  fill-opacity: 0.8;
+  stroke-width: 1;
+}
+.svgLineTempPreview{
+  fill:rgba(10,10,10,0.2);
+  stroke-width:3px;
+  stroke:rgba(10,10,10,0.2);
+}
+.svgLineTempCircle{
+  stroke-width:1;
+  stroke:#010101;
+  pointer-events:fill;
+  fill:#ffffff;
+}
+.svgLineTempMain{
+  fill: rgba(255,255,255,0);
+}
+.svgAreaTempPreviewA{
+  stroke: #dedede;
+  stroke-width: 3;
+  opacity: 0.5;
+  stroke-linecap: round;
+}
+.svgAreaTempPreviewB{
+  pointer-events:fill;
+  fill-opacity:0.8;
+  fill:#bbb
+}
+.svgAreaTempMain{
+  fill:rgba(255,255,255,0);
+}
+.svgAreaTempCircle{
+  pointer-events:fill;
+  fill-opacity:0.8;
+  fill:#bbb;
+  stroke-width: 1;
+}
 .graduallyEmergingFirst{animation:graduallyEmergingFirst 1s forwards;}
 .graduallyEmergingAfter{animation:graduallyEmergingAfter 1s forwards;}

@@ -19,13 +19,25 @@
           </feMerge>
         </filter>
       </defs>
-      <svg-area v-for="area in MyAreaData" :key="area.id" :pick-config="pickElement(area.id)" :select-config="selectElement(area.id)" :area-config="area" v-show="!hiddenElements.some((member)=>{return member.id===area.id})"></svg-area><!--区域数据-->
-      <svg-line v-for="line in MyPolyLineData" :key="line.id" :pick-config="pickElement(line.id)" :select-config="selectElement(line.id)" :poly-line-config="line" v-show="!hiddenElements.some((member)=>{return member.id===line.id})"></svg-line><!--线段数据-->
-      <svg-point v-for="point in MyPointData" :key="point.id" :pick-config="pickElement(point.id)" :select-config="selectElement(point.id)" :point-config="point" v-show="!hiddenElements.some((member)=>{return member.id===point.id})"></svg-point><!--点位数据-->
-      <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"></svg-point-p0><!--p0-->
-      <svg-point-temp></svg-point-temp><!--临时点数据-->
-      <svg-line-temp></svg-line-temp><!--临时线数据-->
-      <svg-area-temp></svg-area-temp><!--临时区域数据-->
+      <g ref="svgAllElement">
+        <svg-point-temp></svg-point-temp><!--临时点数据-->
+        <svg-line-temp></svg-line-temp><!--临时线数据-->
+        <svg-area-temp></svg-area-temp><!--临时区域数据-->
+        <svg-area v-for="area in MyAreaData" :key="area.id"
+          :pick-config="pickElement(area.id)" :select-config="selectElement(area.id)"
+          :area-config="area" v-show="!mapHiddenElements.has(area.id)">
+        </svg-area><!--区域数据-->
+        <svg-line v-for="line in MyPolyLineData" :key="line.id"
+          :pick-config="pickElement(line.id)" :select-config="selectElement(line.id)"
+          :poly-line-config="line" v-show="!mapHiddenElements.has(line.id)">
+        </svg-line><!--线段数据-->
+        <svg-point v-for="point in MyPointData" :key="point.id"
+          :pick-config="pickElement(point.id)" :select-config="selectElement(point.id)"
+          :point-config="point" v-show="!mapHiddenElements.has(point.id)">
+        </svg-point><!--点位数据-->
+        <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0">
+        </svg-point-p0><!--p0-->
+      </g>
     </svg>
   </div>
 </template>
@@ -94,7 +106,7 @@ export default {
     pickElement(id){
       let select=this.pickElements.find(num=>num.id===id);
       if(this.pickElements.find(num=>num.id===id)===undefined){
-        return {}
+        return {};
       }else {
         return select;
       }
@@ -287,7 +299,9 @@ export default {
                     let A2=this.theData.moveObServerDt[1];
                     let xc3=-(A2.x-A1.x);
                     let yc4=A2.y-A1.y;
+                    this.$store.state.mapConfig.movingDistance.x+=xc3;
                     this.$store.state.mapConfig.A1.x+=xc3;
+                    this.$store.state.mapConfig.movingDistance.y+=yc4;
                     this.$store.state.mapConfig.A1.y+=yc4;
                     break;
                   }
@@ -297,7 +311,9 @@ export default {
                     let xc,yc;
                     xc=-(pt.x-Apt.x);
                     yc=pt.y-Apt.y;
+                    this.$store.state.mapConfig.movingDistance.x+=xc;
                     this.$store.state.mapConfig.A1.x+=xc;
+                    this.$store.state.mapConfig.movingDistance.y+=yc;
                     this.$store.state.mapConfig.A1.y+=yc;
                     break;
                   }
@@ -307,7 +323,9 @@ export default {
                     let xc2,yc2;
                     xc2=-(pt.x-Bpt.x);
                     yc2=pt.y-Bpt.y;
+                    this.$store.state.mapConfig.movingDistance.x+=xc2;
                     this.$store.state.mapConfig.A1.x+=xc2;
+                    this.$store.state.mapConfig.movingDistance.y+=yc2;
                     this.$store.state.mapConfig.A1.y+=yc2;
                     break;
                   }
@@ -338,21 +356,8 @@ export default {
       this.theData.moveEndPt.x=null;
       this.theData.moveEndPt.y=null;
       this.theData.moveObServerDt.length=0;
-    },
-    instruction(newValue){//命令接收器
-      let instructName=[];//1获取命令名
-      for (let key in newValue) {
-        instructName.push(key)
-      }
-      for(let i=0;i<instructName.length;i++){
-        let name = instructName[i];
-        switch (name){
-          case 'createTestLine':{
-            this.createTestLine();
-            break;
-          }
-        }
-      }
+      this.$store.state.mapConfig.movingDistance.x=0;
+      this.$store.state.mapConfig.movingDistance.y=0;
     },
     clearSelect(){//清除选中要素及选中要素数据
       this.$refs.elementData.addEventListener('click',(ev)=>{
@@ -380,6 +385,14 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    mapHiddenElements(){
+      let map=new Map();
+      this.hiddenElements.forEach(value=>map.set(value.id,true));
+      return map;
+    },
+    movingDistance(){
+      return this.$store.state.mapConfig.movingDistance;
+    },
     pickElements(){
       return this.$store.state.serverData.socket.pickElements;
     },
@@ -421,7 +434,12 @@ export default {
     }
   },
   watch:{
-
+    movingDistance:{
+      handler(newValue){
+        this.$refs.svgAllElement.style.transform='translate('+-newValue.x+'px,'+newValue.y+'px)';
+      },
+      deep:true
+    },
   },
   destroyed(){
 

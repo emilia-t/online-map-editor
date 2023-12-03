@@ -1,26 +1,15 @@
 <template>
-  <g :elementId="myId" @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)" ref="svgElement">
-    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="Object.prototype.toString.call(this.pointConfig.custom)!=='[object Object]'">
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
-      <text :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :style="pickFill" class="svgPointSelectText" v-text="svgText"></text>
+  <g @mousedown="shiftStart($event)" @mouseup="shiftEnd($event)" v-if="rendering" ref="svgElement">
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom===null">
+      <circle class="svgCircleHighlight" r="22px" :cx="dynamicPointsX" :cy="dynamicPointsY" :stroke="pickStroke" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
+      <circle class="svgCircleInner" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :fill="'#'+pointConfig.color"/>
+      <text :x="dynamicPointsX" :y="textCy" v-show="selectConfig.id===myId || pickConfig.id===myId" :fill="pickFill" class="svgPointSelectText" v-text="svgText"></text>
     </g>
-    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="Object.prototype.toString.call(this.pointConfig.custom)==='[object Object]' && this.pointConfig.custom.icon!==null">
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
+    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="this.pointConfig.custom!==null">
+      <circle class="svgCircleHighlight" r="22px" :cx="dynamicPointsX" :cy="dynamicPointsY" :stroke="pickStroke" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="13px" :fill="this.pointConfig.custom.color"/>
-      <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26px" height="26px" :href="'../../static/icons/'+this.pointConfig.custom.icon"></image>
-      <text :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :style="pickFill" class="svgPointSelectText" v-text="svgText"></text>
-    </g>
-    <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="Object.prototype.toString.call(this.pointConfig.custom)==='[object Object]' && this.pointConfig.custom.icon===null">
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" stroke="#ffffff" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="22px" :stroke="pickStroke" stroke-width="2" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectConfig.id===myId || pickConfig.id===myId"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="1px" stroke="#ffffff70" stroke-width="45" style="pointer-events:fill;fill-opacity:0.8;fill:none" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
-      <circle :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" stroke-width="1" :style="'pointer-events:fill;fill-opacity:0.8;fill:'+'#'+pointConfig.color"/>
-      <text :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :style="pickFill" class="svgPointSelectText" v-text="svgText"></text>
+      <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26px" height="26px" :href="iconHref"></image>
+      <text class="svgPointSelectText"  :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :fill="pickFill" v-text="svgText"></text>
     </g>
   </g>
 </template>
@@ -31,7 +20,6 @@ export default {
   data(){
     return {
       dataSourcePoint:{},//源点
-      occurredMoveMap:false,//移动状态
       A1Cache:{x:0,y:0},
       myId:null,
       selectId:-1,//被选中的id
@@ -42,6 +30,7 @@ export default {
       mouseover:false,
       rightLock:false,
       leftLock:false,
+      rendering:true,
     }
   },
   props:{
@@ -77,12 +66,11 @@ export default {
   },
   methods:{
     startSetting(){//初始化配置
-      this.myId=this.pointConfig.id;//拷贝
-      this.dataSourcePoint=JSON.parse(JSON.stringify(this.pointConfig.point));
-      this.mouseEvent();//监听鼠标移动
-      this.initializePosition();//初始化
       this.A1Cache.x=this.A1.x;//初始化A1cache
       this.A1Cache.y=this.A1.y;
+      this.myId=this.pointConfig.id;
+      this.dataSourcePoint=JSON.parse(JSON.stringify(this.pointConfig.point));
+      this.initializePosition();//初始化位置
     },
     shiftStart(ev){//挪动节点
       this.shiftStartMouse.x=ev.x;
@@ -117,11 +105,6 @@ export default {
         this.$store.state.detailsPanelConfig.target=this.myId;//广播被选中id（myId）
       },0);//异步
     },
-    mouseEvent(){//监听鼠标移动
-      document.body.addEventListener('mousemove',(e)=>{
-        this.occurredMoveMap=true;
-      })
-    },
     initializePosition(){//初始化定位
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
@@ -130,9 +113,10 @@ export default {
       }
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
         try{
-          let [layer,pointPos,p0Pos,refPos,tempPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null},{x:null,y:null}];
+          let [layer,pointPos,p0Pos,refPos]=[null,{x:null,y:null},{x:null,y:null},{x:null,y:null}];
           layer=this.$store.state.mapConfig.layer;
-          pointPos.x=this.pointConfig.point.x;pointPos.y=this.pointConfig.point.y;
+          pointPos.x=this.pointConfig.point.x;
+          pointPos.y=this.pointConfig.point.y;
           p0Pos.x=-this.$store.state.mapConfig.p0.point.x;
           p0Pos.y=-this.$store.state.mapConfig.p0.point.y;
           if(layer===0){
@@ -171,7 +155,7 @@ export default {
     },
     move(){//移动
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
-        if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
+        if(this.doNeedMoveMap===false){
           let A1mvX=this.A1Cache.x-this.A1.x;
           let A1mvY=this.A1Cache.y-this.A1.y;
           let newArr=this.pointConfig.point;
@@ -179,15 +163,13 @@ export default {
           this.pointConfig.point.y=newArr.y+(A1mvY*this.unit1Y);
           this.A1Cache.x=this.A1.x;
           this.A1Cache.y=this.A1.y;
-          this.occurredMoveMap=false;
         }
       }
-      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+      else if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
         this.initializePosition();
       }
-      return true;
     },
     scale(){//缩放
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
@@ -205,7 +187,7 @@ export default {
         this.pointConfig.point.x=(TRX-((zoom*axSize)))*this.unit1X;
         this.pointConfig.point.y=-(TRY-((zoom*aySize)))*this.unit1Y;
       }
-      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+      else if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         this.initializePosition();
       }
     },
@@ -229,22 +211,29 @@ export default {
     }
   },
   computed:{
+    browserX(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    browserY(){
+      return this.$store.state.mapConfig.browser.height;
+    },
+    iconHref(){
+      if(this.pointConfig.custom.icon!==null){
+        return '../../static/icons/'+this.pointConfig.custom.icon;
+      }else {
+        return '../../static/icons/usualIcon000.png';
+      }
+    },
     suppressPickSelect(){
       return this.$store.state.commits.suppressPickSelect;
     },
     pickFill(){
       if(this.pickConfig.user!==undefined){
-        return{
-          fill:'#'+this.pickConfig.color
-        }
+        return '#'+this.pickConfig.color;
       }else if(this.selectConfig.user!==undefined){
-        return{
-          fill:'#'+this.selectConfig.color
-        }
+        return '#'+this.selectConfig.color;
       }else {
-        return{
-          fill:'#ff5e5e'
-        }
+        return '#ff5e5e'
       }
     },
     pickStroke(){
@@ -253,7 +242,7 @@ export default {
       }else if(this.selectConfig.user!==undefined){
         return '#'+this.selectConfig.color;
       }else {
-        return '#ff5e5e';
+        return '#ffffff';
       }
     },
     svgText(){
@@ -266,42 +255,23 @@ export default {
         return `${this.pickConfig.user}、${this.selectConfig.user}`
       }
     },
-    browserX(){
-      return this.$store.state.mapConfig.browser.width;
-    },
-    browserY(){
-      return this.$store.state.mapConfig.browser.height;
-    },
     unit1X(){
       return this.$store.state.cameraConfig.unit1X;
     },
     unit1Y(){
       return this.$store.state.cameraConfig.unit1Y;
     },
-    offsetX(){
-      return this.$store.state.cameraConfig.offsetX;
-    },
-    offsetY(){
-      return this.$store.state.cameraConfig.offsetY;
-    },
     svgMouseUp(){
       return this.$store.state.mapConfig.svgMouseUp;
     },
+    textCy(){
+      return isNaN(this.dynamicPointsY-13) ? null : this.dynamicPointsY-13;
+    },
     dynamicPointsX(){
-      if(this.doNeedMoveMap && this.occurredMoveMap===true){
-        let A1mvX=this.A1Cache.x-this.A1.x;
-        return (this.pointConfig.point.x/this.unit1X) + A1mvX;//先转化为单位量，再相减
-      }else {
-        return this.pointConfig.point.x/this.unit1X;//等于自生的坐标除以单位1
-      }
+      return this.pointConfig.point.x/this.unit1X;//等于自生的坐标除以单位1
     },
     dynamicPointsY(){
-      if(this.doNeedMoveMap && this.occurredMoveMap===true){
-        let A1mvY=this.A1Cache.y-this.A1.y;
-        return -((this.pointConfig.point.y/this.unit1Y) + A1mvY);
-      }else {
-        return -this.pointConfig.point.y/this.unit1Y;
-      }
+      return -this.pointConfig.point.y/this.unit1Y;
     },
     doNeedMoveMap(){
       return this.$store.state.cameraConfig.doNeedMoveMap;
@@ -352,6 +322,24 @@ export default {
     //   },
     //   deep:true
     // },
+    dynamicPointsX:{
+      handler(newValue){
+        if(newValue>this.browserX+50 || newValue<-50){
+          this.rendering=false;
+        }else {
+          this.rendering=true;
+        }
+      }
+    },
+    dynamicPointsY:{
+      handler(newValue){
+        if((newValue>this.browserY+50 || newValue<-50) || (this.dynamicPointsX>this.browserX+50 || this.dynamicPointsX<-50)){
+          this.rendering=false;
+        }else {
+          this.rendering=true;
+        }
+      }
+    },
     allReinitialize:{
       handler(){
         this.initializePosition();
@@ -390,11 +378,12 @@ export default {
     },
     mouse:{
       handler(newValue){
-        if(this.shiftStatus===true){
+        if(this.shiftStatus!==true){
+          return false;
+        }
         if(this.myId===this.selectId){
           this.pointConfig.point.x=newValue.x;//移动自身的视图(跟随鼠标)
           this.pointConfig.point.y=-newValue.y;
-        }
         }
       }
     },

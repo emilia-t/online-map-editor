@@ -1,5 +1,5 @@
 <template>
-  <g :elementId="areaConfig.id" ref="svgElement">
+  <g v-if="rendering" ref="svgElement">
     <polygon ref="Polygon"
              :points="dynamicPointsString"
              :fill="pathLineFill"
@@ -13,14 +13,13 @@
              class="svgAreaPathLine"/><!--区域主体-->
     <g v-for="(str,index) in dynamicPointsStr">
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d"
-                :key="index+'main'" :fill="pathLineFill"
+                :fill="pathLineFill"
                 @contextmenu="rightClickOperation($event)"
                 @click="showDetails()"
                 @mousedown="shiftAllStart($event)"
                 @mouseup="shiftAllEnd($event)"
                 class="svgAreaPathLine"/><!--区域外边框-->
       <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b"
-                :key="index+'endMain'"
                 :fill="pathLineFill"
                 @contextmenu="rightClickOperation($event)"
                 @click="showDetails()"
@@ -28,25 +27,25 @@
                 @mouseup="shiftAllEnd($event)"
                 v-if="index===dynamicPointsStr.length-1"
                 class="svgAreaPathLine"/>
+
       <polyline :points="str.a+','+str.b+' '+str.c+','+str.d"
-                :key="index+'border'"
                 :stroke="highlightStroke"
                 v-show="selectConfig.id===myId || pickConfig.id===myId"
                 class="svgAreaHighlight"/><!--区域选中边框-->
       <polyline :points="str.c+','+str.d+' '+dynamicPointsStr[0].a+','+dynamicPointsStr[0].b"
-                :key="index+'endBorder'"
                 :stroke="highlightStroke"
                 v-if="index===dynamicPointsStr.length-1"
                 v-show="selectConfig.id===myId || pickConfig.id===myId"
                 class="svgAreaHighlight"/>
-      <circle :cx="str.a" :cy="str.b" :key="index+'node'"
+
+      <circle :cx="str.a" :cy="str.b"
               :style="nodeEffectStyle(index)"
               v-bind:data-node-order="index"
               @click="selectNode(index,$event)"
               @mousedown="shiftStart(index,$event)"
               @mouseup="shiftEnd($event)"
               v-show="nodeDisplay"/><!--区域节点-->
-      <circle :cx="str.c" :cy="str.d" :key="'endNode'"
+      <circle :cx="str.c" :cy="str.d"
               :style="nodeEffectStyle(index+1)"
               v-bind:data-node-order="index+1"
               @click="selectNode(index+1,$event)"
@@ -54,19 +53,20 @@
               @mouseup="shiftEnd($event)"
               v-if="index===dynamicPointsStr.length-1"
               v-show="nodeDisplay"/>
+
       <circle :cx="getVirtualCenterX(str.a,str.c)"
               :cy="getVirtualCenterY(str.b,str.d)"
               :style="virtualNodeStyle(index)"
-              :key="index+'virtualNode'"
               @mousedown="virtualNodeDown(index,$event)"
               @mouseup="virtualNodeUp($event)"
               v-show="selectId===myId"/><!--虚拟节点-->
-      <text :x="areaCenterX" :y="areaCenterY" :style="pickFill"
+
+      <text :x="areaCenter.x" :y="areaCenter.y" :style="pickFill"
             v-if="index===0"
             v-show="selectConfig.id===myId || pickConfig.id===myId"
             v-text="svgText"
             text-anchor="middle"
-            class="svgAreaSelectText"></text>
+            class="svgAreaSelectText"></text><!--活动文字-->
     </g>
   </g>
 </template>
@@ -77,16 +77,14 @@ export default {
     return {
       dataSourcePoint: {},//数据源保存
       dataSourcePoints: [],//数据源s保存
-      occurredMoveMap:false,//移动状态
       A1Cache:{x:0,y:0},//a1的缓存
-      highlightShow:false,
       myId:null,
       selectId:-1,
+      shiftStatus:false,
       shiftNodeOrder:null,
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
       shiftEndMouse:{x:null,y:null},
-      shiftStatus:false,
       shiftAllStatus:false,
       shiftAllStartMouse:{x:null,y:null},
       shiftAllStartPoint:{x:null,y:null},
@@ -96,10 +94,9 @@ export default {
       leftLock:false,
       shiftVirtualStatus:false,
       shiftVirtualNodeOrder:null,
-      areaCenterX:0,
-      areaCenterY:0,
       mouseDownPosition:{x:null,y:null},
       mouseUpPosition:{x:null,y:null},
+      rendering:true,
     }
   },
   props:{
@@ -133,15 +130,43 @@ export default {
   },
   methods:{
     startSetting(){//初始化配置
+      this.A1Cache.x=this.A1.x;
+      this.A1Cache.y=this.A1.y;
       this.myId=this.areaConfig.id;
       this.dataSourcePoint=JSON.parse(JSON.stringify(this.areaConfig.point));
       this.dataSourcePoints=JSON.parse(JSON.stringify(this.areaConfig.points));
-      this.mouseEvent();//不要提前
       this.initializePosition();
-      this.A1Cache.x=this.A1.x;
-      this.A1Cache.y=this.A1.y;
       this.KeyListen();
-      this.getCenter();
+    },
+    isElementInViewport(){//检测元素是否在可视范围内如果在范围内返回true否则返回false
+      try {
+        let points=JSON.parse(JSON.stringify(this.areaConfig.points));
+        let len=points.length;
+        let ofs=1;//采样间隔
+        let num=0;//采样点总数
+        let out=0;//范围的外采样点数
+        if(len<=5){
+          ofs=1;
+        }else if(len>5 && len<=25){
+          ofs=2;
+        }else if(len>25 && len<=50){
+          ofs=4;
+        }else if(len>50 && len<=100){
+          ofs=8;
+        }else if(len>100){
+          ofs=16;
+        }
+        for(let i=0;i<len;i+=ofs){
+          num++;
+          if((points[i].y>50 || points[i].y<-(this.browserY+50))
+            || (points[i].x<-50 || points[i].x>(this.browserX+50))){
+            out++;
+          }
+        }
+        return num !== out;
+      }catch (e) {
+        return false;
+      }
     },
     KeyListen(){//监听单个按键
       document.body.addEventListener('keyup',(e)=>{
@@ -401,7 +426,7 @@ export default {
     },
     move(){//移动
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
-        if(this.doNeedMoveMap===false && this.occurredMoveMap===true){
+        if(this.doNeedMoveMap===false){
           let A1mvX=this.A1.x-this.A1Cache.x;
           let A1mvY=this.A1Cache.y-this.A1.y;
           let newArr=this.areaConfig.points;
@@ -411,10 +436,9 @@ export default {
           }
           this.A1Cache.x=this.A1.x;
           this.A1Cache.y=this.A1.y;
-          this.occurredMoveMap=false;//告知已经处理本次移动
         }
       }
-      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+      else if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         this.A1Cache.x=this.A1.x;
         this.A1Cache.y=this.A1.y;
         this.initializePosition();
@@ -442,14 +466,9 @@ export default {
         }
         this.areaConfig.points=newPosArr;
       }
-      if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
+      else if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         this.initializePosition();
       }
-    },
-    mouseEvent(){//监听鼠标移动
-      document.body.addEventListener('mousemove',(e)=>{
-        this.occurredMoveMap=true;
-      })
     },
     nodeEffectStyle(order){//path node 的动态样式
       if(this.shiftNodeOrder===order){
@@ -479,29 +498,38 @@ export default {
         display:this.shiftNodeOrder===order?'inherit':'none'
       }
     },
-    getCenter(){//获取元素中心点
-      setTimeout(//异步
-        ()=>{
-          let svgElement=this.$refs.Polygon;
-          const observer = new MutationObserver(mutations => {
-            let svgElement=this.$refs.Polygon;
-            let bbox = svgElement.getBBox();
-            let x = bbox.x + bbox.width/2;
-            let y = bbox.y + bbox.height/2;
-            this.areaCenterX=x;
-            this.areaCenterY=y;
-          });
-          observer.observe(svgElement,{attributes: true});
-          let bbox = svgElement.getBBox();
-          let x = bbox.x + bbox.width/2;
-          let y = bbox.y + bbox.height/2;
-          this.areaCenterX=x;
-          this.areaCenterY=y;
-        }
-      ,0);
-    },
   },
   computed:{
+    areaCenter(){
+      let points=JSON.parse(JSON.stringify(this.areaConfig.points));
+      let len=points.length;
+      let ofs=1;//采样间隔
+      let count=0;//采样点数
+      let polymerize={x:0,y:0};
+      if(len<=5){
+        ofs=1;
+      }else if(len>5 && len<=25){
+        ofs=2;
+      }else if(len>25 && len<=50){
+        ofs=4;
+      }else if(len>50 && len<=100){
+        ofs=8;
+      }else if(len>100){
+        ofs=16;
+      }
+      for(let i=0;i<len;i+=ofs){
+        count++;
+        polymerize.x+=points[i].x;
+        polymerize.y+=points[i].y;
+      }
+      return {x:polymerize.x/count,y:-polymerize.y/count}
+    },
+    browserX(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    browserY(){
+      return this.$store.state.mapConfig.browser.height;
+    },
     suppressPickSelect(){
       return this.$store.state.commits.suppressPickSelect;
     },
@@ -533,23 +561,11 @@ export default {
     nodeDisplay(){
       return this.NodeDisplay === true || this.selectId === this.myId;
     },
-    browserX(){
-      return this.$store.state.mapConfig.browser.width;
-    },
-    browserY(){
-      return this.$store.state.mapConfig.browser.height;
-    },
     unit1X(){
       return this.$store.state.cameraConfig.unit1X;
     },
     unit1Y(){
       return this.$store.state.cameraConfig.unit1Y;
-    },
-    offsetX(){
-      return this.$store.state.cameraConfig.offsetX;
-    },
-    offsetY(){
-      return this.$store.state.cameraConfig.offsetY;
     },
     clearClick(){
       return this.$store.state.mapConfig.clearClick;
@@ -585,66 +601,32 @@ export default {
       return {x:this.$store.state.mapConfig.mousePoint.x,y:this.$store.state.mapConfig.mousePoint.y};
     },
     dynamicPointsStr() {
-      if(this.doNeedMoveMap && this.occurredMoveMap===true){
-        let newArr = [];
-        let refArr = [];
-        let tempA = null;
-        let tempB = null;
-        let A1mvX=this.A1.x-this.A1Cache.x;
-        let A1mvY=this.A1Cache.y-this.A1.y;
-        newArr = this.areaConfig.points;
-        for (let i = 0; i < newArr.length; i++) {
-          let x = newArr[i].x/this.unit1X - A1mvX;
-          let y = -(newArr[i].y/this.unit1Y + A1mvY);
-          if(tempA!==null){
-            refArr.push({a:tempA,b:tempB,c:x,d:y})
-          }
-          tempA=x;
-          tempB=y;
+      let newArr = [];
+      let refArr = [];
+      let tempA = null;
+      let tempB = null;
+      newArr = this.areaConfig.points;
+      for (let i = 0; i < newArr.length; i++) {
+        let x = newArr[i].x/this.unit1X;
+        let y = -newArr[i].y/this.unit1Y;
+        if(tempA!==null){
+          refArr.push({a:tempA,b:tempB,c:x,d:y})
         }
-        return refArr
-      }else {
-        let newArr = [];
-        let refArr = [];
-        let tempA = null;
-        let tempB = null;
-        newArr = this.areaConfig.points;
-        for (let i = 0; i < newArr.length; i++) {
-          let x = newArr[i].x/this.unit1X;
-          let y = -newArr[i].y/this.unit1Y;
-          if(tempA!==null){
-            refArr.push({a:tempA,b:tempB,c:x,d:y})
-          }
-          tempA=x;
-          tempB=y;
-        }
-        return refArr;
+        tempA=x;
+        tempB=y;
       }
+      return refArr;
     },
     dynamicPointsString(){
-      if(this.doNeedMoveMap && this.occurredMoveMap===true){
-        let newArr = [];
-        let refArr = '';
-        let A1mvX=this.A1.x-this.A1Cache.x;
-        let A1mvY=this.A1Cache.y-this.A1.y;
-        newArr = this.areaConfig.points;
-        for (let i = 0; i < newArr.length; i++) {
-          let x = newArr[i].x/this.unit1X - A1mvX;
-          let y = -(newArr[i].y/this.unit1Y + A1mvY);
-          refArr+=x+','+y+' ';
-        }
-        return refArr
-      }else {
-        let newArr = [];
-        let refArr = '';
-        newArr = this.areaConfig.points;
-        for (let i = 0; i < newArr.length; i++) {
-          let x = newArr[i].x/this.unit1X;
-          let y = -newArr[i].y/this.unit1Y;
-          refArr+=x+','+y+' ';
-        }
-        return refArr;
+      let newArr = [];
+      let refArr = '';
+      newArr = this.areaConfig.points;
+      for (let i = 0; i < newArr.length; i++) {
+        let x = newArr[i].x/this.unit1X;
+        let y = -newArr[i].y/this.unit1Y;
+        refArr+=x+','+y+' ';
       }
+      return refArr;
     },
     targetId(){
       return this.$store.state.detailsPanelConfig.target;
@@ -684,6 +666,15 @@ export default {
     //   },
     //   deep:true
     // },
+    dynamicPointsStr:{
+      handler(){
+        if(this.isElementInViewport()===false){
+          this.rendering=false;
+        }else {
+          this.rendering=true;
+        }
+      }
+    },
     allReinitialize:{
       handler(){
         this.initializePosition();

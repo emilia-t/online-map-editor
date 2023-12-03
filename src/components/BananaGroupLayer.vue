@@ -21,13 +21,22 @@
         <div class="layerMoreAction" title="检查并修复图层异常问题" @click.stop="repairLayer()">
           检查并修复此图层
         </div>
+        <div class="layerMoreAction" title="删除图层，并且删除其中的元素" @click.stop="deleteLayerAndElement()">
+          删除图层及元素
+        </div>
         <div class="layerMoreAction" title="删除图层，不会删除其中的元素" @click.stop="deleteLayer()">
-          删除图层
+          仅删除图层
         </div>
       </div>
     </div>
     <div class="content" ref="content">
-      <orange-group-structure :layer="layer" :all-expand="allExpand" :level="1" :route="layer.structure[0]" :structure="layer.structure" :rename-response="renameApprovalResult" :adjust-item-order-response="adjustItemOrderResponse" @renameRequest="renameRequestCheck" @adjustItemOrderRequest="adjustItemOrderApproval"></orange-group-structure>
+      <orange-group-structure :layer="layer" :all-expand="allExpand"
+                              :level="1" :route="layer.structure[0]"
+                              :structure="layer.structure" :rename-response="renameApprovalResult"
+                              :adjust-item-order-response="adjustItemOrderResponse"
+                              @renameRequest="renameRequestCheck"
+                              @adjustItemOrderRequest="adjustItemOrderApproval">
+      </orange-group-structure>
     </div>
   </div>
 </template>
@@ -114,30 +123,33 @@ export default {
     }
   },
   mounted() {
-    this.$refs.eyebrow.addEventListener('mouseup',(ev)=>{
-      if(ev.button!==0){
-        return false;
-      }
-      if(this.adjustOrderResponse.id===-1){
-        return false;
-      }
-      if(this.adjustOrderResponse.id!==this.layer.id){
-        this.$store.state.serverData.socket.broadcastUpdateLayerOrder(this.layer.id,this.adjustOrderResponse.id,'up');
-      }
-    });
-    this.$refs.content.addEventListener('mouseup',(ev)=>{
-      if(ev.button!==0){
-        return false;
-      }
-      if(this.adjustOrderResponse.id===-1){
-        return false;
-      }
-      if(this.adjustOrderResponse.id!==this.layer.id){
-        this.$store.state.serverData.socket.broadcastUpdateLayerOrder(this.layer.id,this.adjustOrderResponse.id,'down');
-      }
-    });
+    this.startSetting();
   },
   methods:{
+    startSetting(){
+      this.$refs.eyebrow.addEventListener('mouseup',(ev)=>{
+        if(ev.button!==0){
+          return false;
+        }
+        if(this.adjustOrderResponse.id===-1){
+          return false;
+        }
+        if(this.adjustOrderResponse.id!==this.layer.id){
+          this.$store.state.serverData.socket.broadcastUpdateLayerOrder(this.layer.id,this.adjustOrderResponse.id,'up');
+        }
+      });
+      this.$refs.content.addEventListener('mouseup',(ev)=>{
+        if(ev.button!==0){
+          return false;
+        }
+        if(this.adjustOrderResponse.id===-1){
+          return false;
+        }
+        if(this.adjustOrderResponse.id!==this.layer.id){
+          this.$store.state.serverData.socket.broadcastUpdateLayerOrder(this.layer.id,this.adjustOrderResponse.id,'down');
+        }
+      });
+    },
     /**依据图层路由和图层结构在头部加入值
      * @return false|mixed
      * @param structure | array
@@ -304,8 +316,13 @@ export default {
       this.allExpand=!this.allExpand;
       this.switchLayerActions();
     },
+    deleteLayerAndElement(){
+      this.$store.state.serverData.socket.broadcastDeleteLayerAndMembers(this.layer.id);
+      this.switchLayerActions();
+    },
     deleteLayer(){
       this.$store.state.serverData.socket.broadcastDeleteLayer(this.layer.id);
+      this.switchLayerActions();
     },
     repairLayer(){
       let layerBasicCk=false;//图层基础属性检测
@@ -534,20 +551,79 @@ export default {
       let mixStructure=JSON.parse(JSON.stringify(this.layer.structure));
       mixStructure.splice(2,0,newId);
       return mixStructure;
+    },
+    getElementTypeById(ID){
+      if(this.$store.state.serverData.socket!==undefined){
+        let points=this.$store.state.serverData.socket.mapData.points;
+        let lines=this.$store.state.serverData.socket.mapData.lines;
+        let areas=this.$store.state.serverData.socket.mapData.areas;
+        const LengthP=points.length;
+        const LengthL=lines.length;
+        const LengthA=areas.length;
+        for(let i=0;i<LengthP;i++){
+          if(points[i].id==ID){
+            return 'point';
+          }
+        }
+        for(let j=0;j<LengthL;j++){
+          if(lines[j].id==ID){
+            return 'line';
+          }
+        }
+        for(let x=0;x<LengthA;x++){
+          if(areas[x].id==ID){
+            return 'area';
+          }
+        }
+        return false;
+      }else {
+        return false;
+      }
     }
   },
   computed:{
-    lastDeleteId(){//用于检测删除的元素
-      return this.$store.state.recorderConfig.lastDeleteId;
-    },
-    lastUploadId(){
-      return this.$store.state.recorderConfig.lastUploadId;
-    },
-    lastUploadClass(){
-      return this.$store.state.recorderConfig.lastUploadClass;
-    },
+    correctsROnly(){
+      return this.$store.state.serverData.socket.correctsROnly;
+    }
   },
   watch:{
+    correctsROnly:{
+      handler(newValue){//newValue为send_correct指令集合
+        let type=newValue[newValue.length-1].class;
+        let ID=parseInt(newValue[newValue.length-1].data.rid);
+        if(isNaN(ID)){return false;}
+        if(type==='delete'){//移除已被删除的元素
+          if(this.layer.members.hasOwnProperty(ID)){
+            let newStructure=this.deleteItemInStructure(ID);
+            let newMembers=this.deleteItemInMembers(ID);
+            this.$store.state.serverData.socket.broadcastUpdateLayerData(
+              {id:this.layer.id,
+                members:newMembers,
+                structure:newStructure,
+              }
+            );
+          }
+        }else if(type==='upload'){//在选中状态下附加新增元素
+          if(this.pickLayerResponse.id!==this.layer.id){return false;}
+          if(this.layer.members.hasOwnProperty(ID)){return false;}
+          let newMemberType=this.getElementTypeById(ID);
+          let newMembers=this.appendNewItemToMembers(ID,newMemberType);
+          if(newMemberType===false){
+            return false;
+          }
+          let newStructure=null;
+          newStructure=this.appendNewItemToStructure(ID);
+          if(newStructure===null){
+            return false;
+          }
+          this.$store.state.serverData.socket.broadcastUpdateLayerData({
+            id:this.layer.id,
+            members:newMembers,
+            structure:newStructure,
+          });
+        }
+      }
+    },
     pickLayerResponse:{
       handler(newValue){
         if(newValue.id==this.layer.id){
@@ -557,41 +633,6 @@ export default {
         }
       },
       deep:true
-    },
-    lastDeleteId:{
-      handler(newValue){
-        let ID=parseInt(newValue);
-        if(this.layer.members.hasOwnProperty(ID)){
-          let newStructure=this.deleteItemInStructure(ID);
-          let newMembers=this.deleteItemInMembers(ID);
-          this.$store.state.serverData.socket.broadcastUpdateLayerData(
-            {id:this.layer.id,
-              members:newMembers,
-              structure:newStructure,
-            }
-          );
-        }
-      }
-    },
-    lastUploadId:{
-      handler(newValue){
-        if(this.pickLayerResponse.id!==this.layer.id){//未选中自身不做为
-          return false;
-        }
-        let ID=parseInt(newValue);
-        if(!this.layer.members.hasOwnProperty(ID)){
-          let newMembers=this.appendNewItemToMembers(ID,this.lastUploadClass);
-          let newStructure=null;
-          if(newMembers!==false){
-            newStructure=this.appendNewItemToStructure(ID);
-          }
-          this.$store.state.serverData.socket.broadcastUpdateLayerData({
-            id:this.layer.id,
-            members:newMembers,
-            structure:newStructure,
-          });
-        }
-      }
     },
     adjustItemOrderResponse:{
       handler(newValue){
