@@ -204,10 +204,35 @@
       </banana-group-layer>
     </div>
     <div class="panelSearch">
-      <div class="searchContent" contenteditable="true">
-        丽江古城(搜索功能在0.5.5)
+      <div class="searchViewClose" v-show="searchResult.length!==0" @click.stop="openSearchView()">
+        <img alt="下拉按钮" :src="dropPng" ref="searchViewClose" title="点击隐藏" draggable="false"/>
       </div>
-      <search custom="transform:translate(-4px,2px);cursor:pointer;"></search>
+      <div class="searchViewBox" v-show="searchShowView">
+        <div class="searchView" v-show="searchFind">
+          <div class="searchItem" @click="locateToElement(item)" v-for="item in searchResult" :title="'ID'+item.id">
+            <point :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='point'"></point>
+            <segment-line :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='line'"></segment-line>
+            <region :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='area'"></region>
+            <span class="memberName" v-text="getItemName(item)"></span>
+          </div>
+        </div>
+        <div class="searchView" v-show="!searchFind">
+          <span class="searchItemName">暂无结果</span>
+        </div>
+      </div>
+      <div class="searchContentBox">
+        <div class="searchContent" contenteditable="true" ref="searchInput" @keydown.enter="search()">
+
+        </div>
+        <div class="searchIcon" @click="resetSearch()">
+          <reset-refresh custom="transform:translate(2px,0px);"></reset-refresh>
+        </div>
+        <div class="searchIcon" @click="search()">
+          <search custom="transform:translate(1px,2px);">
+
+          </search>
+        </div>
+      </div>
     </div>
     <div class="rightClickMenuClose" @contextmenu.prevent="void 1" @click.stop="itemContextmenuClose()" v-show="itemMenuConfig.show"></div>
     <div class="rightClickMenu" :style="itemContextmenuPos" v-show="itemMenuConfig.show">
@@ -225,7 +250,8 @@
   </div>
 </template>
 <script>
-window.tempId=1;
+import dropPng from '../../static/dropDown.png';
+import ResetRefresh from "./svgValidIcons/resetRefresh";
 import ExpandMore from "./svgValidIcons/expandMore";
 import Region from "./svgValidIcons/region";
 import SegmentLine from "./svgValidIcons/segmentLine";
@@ -247,10 +273,14 @@ export default {
   components: {
     SegmentCurve,
     More,AddNewLayer,AddNewGroup,PreviewEye,Point,SegmentLine,Region,ExpandMore,Search,
-    EyeVisible,EyeNotVisible,BananaGroupLayer,OrangeGroupList
+    EyeVisible,EyeNotVisible,BananaGroupLayer,OrangeGroupList,ResetRefresh
   },
   data(){
     return{
+      dropPng,
+      searchResult:[],//{element}
+      searchShowView:false,
+      searchFind:false,
       groupLayers:{},
       allPointHideState:false,//所有point元素均隐藏状态
       allLineHideState:false,
@@ -310,6 +340,67 @@ export default {
         this.showDefaultLayer=false;
       }else {
         this.showDefaultLayer=true;
+      }
+    },
+    openSearchView(){
+      let sta=this.searchShowView;
+      this.searchShowView=!sta;
+      if(sta){
+        this.$refs.searchViewClose.style.transform='rotate(180deg)';
+      }else {
+        this.$refs.searchViewClose.style.transform='rotate(0deg)';
+      }
+    },
+    resetSearch(){
+      this.searchShowView=false;
+      this.searchFind=false;
+      this.searchResult.length=0;
+      this.$refs.searchInput.innerText='';
+      this.$refs.searchViewClose.style.transform='rotate(0deg)';
+    },
+    search(){
+      if(this.$store.state.serverData.socket===undefined){
+        return false;
+      }
+      if(this.$store.state.serverData.socket.isLogin===false){
+        this.$store.commit('setCoLogMessage',{text:'请登录后进行搜索',from:'internal:LayerElementPanel',type:'tip'});
+        return false;
+      }
+      let inputValue=this.$refs.searchInput.textContent;
+      if(inputValue.length===0){
+        this.$store.commit('setCoLogMessage',{text:'请输入关键字',from:'internal:LayerElementPanel',type:'tip'});
+        return false;
+      }
+      let ref=[];
+      const Points=this.$store.state.serverData.socket.mapData.points;
+      const Lines=this.$store.state.serverData.socket.mapData.lines;
+      const Areas=this.$store.state.serverData.socket.mapData.areas;
+      const LengthP=Points.length;
+      const LengthL=Lines.length;
+      const LengthA=Areas.length;
+      for(let i=0;i<LengthP;i++){
+        if(this.getItemName(Points[i]).includes(inputValue)){
+          ref.push(Points[i]);
+        }
+      }
+      for(let j=0;j<LengthL;j++){
+        if(this.getItemName(Lines[j]).includes(inputValue)){
+          ref.push(Lines[j]);
+        }
+      }
+      for(let x=0;x<LengthA;x++){
+        if(this.getItemName(Areas[x]).includes(inputValue)){
+          ref.push(Areas[x]);
+        }
+      }
+      if(ref.length===0){
+        this.searchShowView=true;
+        this.searchFind=false;
+        this.searchResult.length=0;
+      }else {
+        this.searchShowView=true;
+        this.searchFind=true;
+        this.searchResult=ref;
       }
     },
     adjustItemOrderApproval(template){//审批成员排序
@@ -1017,6 +1108,72 @@ export default {
 </script>
 
 <style scoped>
+.ButtonImg{
+  width: 25px;
+  height: 25px;
+}
+.searchIcon{
+  width: 33px;
+  height: 33px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #4d90fe;
+  cursor:pointer;
+}
+.searchItemName{
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.searchItem{
+  width: 100%;
+  height: 25px;
+  margin: 4px 0px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  justify-content: flex-start;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.searchItem:hover{
+  -webkit-box-shadow: 0px 0px 2px #2577ff;
+  box-shadow: 0px 0px 2px #2577ff;
+}
+.searchViewClose{
+  width: 60px;
+  height: 18px;
+  background: #f1f1f1;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.searchView{
+  width: calc(100% - 8px - 10px);
+  height: auto;
+  min-height: 40px;
+  background: #fbfbfb;
+  overflow: hidden;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  box-shadow:0px 0px 1px #000000;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .menuGroupListBox{
   width: 180px;
   height: auto;
@@ -1399,16 +1556,22 @@ export default {
   left: 1px;
   bottom: 1px;
   width: calc(100% - 2px);
-  height: 33px;
-  background: #4d90fe;
-  border: 1px solid #4d90fe;
+  height: auto;
   border-radius: 3px;
   overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: nowrap;
+}
+.searchViewBox{
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 .headTitle{
   width:100%;
@@ -1448,8 +1611,18 @@ export default {
 .buttonBox svg{
   margin: 0px 2px;
 }
+.searchContentBox{
+  height: 33px;
+  width: calc(100% - 8px);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin: 2px 4px 4px 4px;
+  box-shadow: 0px 0px 2px #b2b2b2;
+}
 .searchContent{
-  width: calc(100% - 35px - 10px);
+  width: calc(100% - 33px - 33px - 10px);
   height: calc(100% - 10px);
   background: white;
   padding: 5px;
