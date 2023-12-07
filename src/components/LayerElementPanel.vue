@@ -221,16 +221,14 @@
         </div>
       </div>
       <div class="searchContentBox">
-        <div class="searchContent" contenteditable="true" ref="searchInput" @keydown.enter="search()">
+        <div class="searchContent" contenteditable="true" ref="searchInput" @keydown.enter="search()" @focus="onFocusMode()" @blur="noFocusMode()">
 
         </div>
         <div class="searchIcon" @click="resetSearch()">
           <reset-refresh custom="transform:translate(2px,0px);"></reset-refresh>
         </div>
         <div class="searchIcon" @click="search()">
-          <search custom="transform:translate(1px,2px);">
-
-          </search>
+          <search custom="transform:translate(1px,2px);"></search>
         </div>
       </div>
     </div>
@@ -641,9 +639,11 @@ export default {
           this.$store.commit('setCoLogMessage',{text:'导出成功',from:'internal:LayerElementPanel',type:'tip'});
         }
       }
+      this.switchMapMoreActions();
     },
     importData(){//导入数据
-      this.$store.commit('setCoLogMessage',{text:'权限不足',from:'internal:LayerElementPanel',type:'tip'});
+      this.$store.commit('setCoLogMessage',{text:'暂不支持',from:'internal:LayerElementPanel',type:'tip'});
+      this.switchMapMoreActions();
     },
     switchMapMoreActions(){
       this.mapMoreActionsOpen=!this.mapMoreActionsOpen;
@@ -653,6 +653,7 @@ export default {
     },
     switchShowDefaultLayer(){
       this.showDefaultLayer=!this.showDefaultLayer;
+      this.switchMapMoreActions();
     },
     hiddenAllPoint(){//隐藏所有点
       let length=this.PointData.length;
@@ -735,6 +736,21 @@ export default {
       this.$store.state.baseMapConfig.baseMap.view.offsetY+=moveY;
       this.$store.state.baseMapConfig.baseMap.render();
       this.allReinitialize();
+      this.setElementFlicker(element,2000);
+    },
+    setElementFlicker(element,duration){
+      let product={
+        svgType:element.type,
+        svgData:element,
+        duration,
+      };
+      this.$store.commit('setCoEffectsSvgFlicker',product);
+    },
+    onFocusMode(){//聚焦模式
+      this.$store.state.mapConfig.inputFocusStatus=true;
+    },
+    noFocusMode(){//非聚焦模式
+      this.$store.state.mapConfig.inputFocusStatus=false;
     },
     getCenterPoint(points){//获取元素中心点
       let x=0;
@@ -1163,15 +1179,18 @@ export default {
 .searchView{
   width: calc(100% - 8px - 10px);
   height: auto;
+  max-height:calc(100% - 10px);
   min-height: 40px;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #fbfbfb;
-  overflow: hidden;
   border-top-right-radius: 3px;
   border-top-left-radius: 3px;
   box-shadow:0px 0px 1px #000000;
   padding: 5px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
 }
 .menuGroupListBox{
@@ -1557,6 +1576,7 @@ export default {
   bottom: 1px;
   width: calc(100% - 2px);
   height: auto;
+  max-height: 50%;
   border-radius: 3px;
   overflow: hidden;
   display: flex;
@@ -1568,6 +1588,9 @@ export default {
 .searchViewBox{
   width: 100%;
   height: auto;
+  max-height:100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   justify-content: center;
   flex-direction: column;

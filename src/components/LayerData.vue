@@ -20,6 +20,7 @@
         </filter>
       </defs>
       <g ref="svgAllElement">
+        <svg-effects></svg-effects><!--效果层-->
         <svg-point-temp></svg-point-temp><!--临时点数据-->
         <svg-line-temp></svg-line-temp><!--临时线数据-->
         <svg-area-temp></svg-area-temp><!--临时区域数据-->
@@ -44,6 +45,7 @@
 
 <script>
 import {mapState} from 'vuex';
+import SvgEffects from './svgEffects';
 import SvgLine from "./svgLine";
 import SvgArea from "./svgArea";
 import SvgPoint from "./svgPoint";
@@ -53,7 +55,7 @@ import SvgAreaTemp from "./svgAreaTemp";
 import SvgPointTemp from "./svgPointTemp";
 export default {
   name: "LayerData",
-  components: {SvgPoint,SvgLine,SvgPointP0,SvgLineTemp,SvgPointTemp,SvgArea,SvgAreaTemp},
+  components: {SvgPoint,SvgLine,SvgPointP0,SvgLineTemp,SvgPointTemp,SvgArea,SvgAreaTemp,SvgEffects},
   data(){
     return {
       MY_NAME:"LayerData",

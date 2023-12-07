@@ -1586,6 +1586,14 @@ export default new Vuex.Store({
       },
       showPanel:false,
     },
+    effectsConfig:{
+      svgFlicker:{
+        svgType:null,
+        svgData:null,
+        duration:1000,
+        changeCode:1,
+      }
+    },
     logConfig:{
       message:{
         code:1,
@@ -2074,7 +2082,7 @@ export default new Vuex.Store({
      * product:{type:'str',data:any}
      * data:{id,type} or data:[{id,type},{id,type}]
      * */
-    arrCoElementPanelHiddenElements(state,product){
+    arrCoElementPanelHiddenElements(state,product){//product:{type:push|remove|join|quit|byTypeJoin|byTypeQuit,data:Item|Array}
       switch (product.type) {
         case 'push':{//单一添加
           state.elementPanelConfig.hiddenElements.push(product.data);
@@ -2150,6 +2158,12 @@ export default new Vuex.Store({
       state.toolboxConfig.position.x=product.x;
       state.toolboxConfig.position.y=product.y;
     },
+    setCoEffectsSvgFlicker(state,product){//product:{svgType:'point'|'line'|'area',svgData:elementObject,duration:millisecond}
+      state.effectsConfig.svgFlicker.svgType=product.svgType;
+      state.effectsConfig.svgFlicker.svgData=product.svgData;
+      state.effectsConfig.svgFlicker.duration=product.duration;
+      state.effectsConfig.svgFlicker.changeCode+=1;
+    }
   },
   actions: {
 

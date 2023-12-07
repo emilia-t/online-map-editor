@@ -695,6 +695,15 @@ export default {
       this.$store.state.baseMapConfig.baseMap.view.offsetY+=moveY;
       this.$store.state.baseMapConfig.baseMap.render();
       this.allReinitialize();
+      this.setElementFlicker(element,2000);
+    },
+    setElementFlicker(element,duration){
+      let product={
+        svgType:element.type,
+        svgData:element,
+        duration,
+      };
+      this.$store.commit('setCoEffectsSvgFlicker',product);
     },
     allReinitialize(){//触发全局定位重置
       this.$root.sendInstruct('allReinitialize');
