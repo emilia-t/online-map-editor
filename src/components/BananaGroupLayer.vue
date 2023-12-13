@@ -3,7 +3,8 @@
     <div class="eyebrow" ref="eyebrow">
       <div class="eyebrowLeft" @mousedown.stop="grabLayerStart($event)" @mouseup="grabLayerEnd($event)">
         <div class="previewEyeL">
-          <preview-eye></preview-eye>
+          <add-new-group v-show="layer.id!==pickLayerResponse.id"></add-new-group>
+          <sun-active v-show="layer.id===pickLayerResponse.id"></sun-active>
         </div>
         <div class="groupLayerNameBox">
           <span contenteditable="false" class="groupLayerName" v-text="groupLayerHeadText" :title="'layer'+layer.id"></span>
@@ -32,19 +33,23 @@
     <div class="content" ref="content">
       <orange-group-structure :layer="layer" :all-expand="allExpand"
                               :level="1" :route="layer.structure[0]"
-                              :structure="layer.structure" :rename-response="renameApprovalResult"
+                              :structure="layer.structure"
+                              :rename-response="renameApprovalResult"
                               :adjust-item-order-response="adjustItemOrderResponse"
+                              :pick-child-group-response="pickChildGroupResult"
                               @renameRequest="renameRequestCheck"
-                              @adjustItemOrderRequest="adjustItemOrderApproval">
+                              @adjustItemOrderRequest="adjustItemOrderApproval"
+                              @pickChildGroupRequest="pickChildGroupApproval">
       </orange-group-structure>
     </div>
   </div>
 </template>
 
 <script>
-import PreviewEye from "./svgValidIcons/previewEye";
 import More from "./svgValidIcons/more";
 import OrangeGroupStructure from "./OrangeGroupStructure";
+import SunActive from "./svgValidIcons/sunActive";
+import AddNewGroup from "./svgValidIcons/addNewGroup";
 export default {
   name: "BananaGroupLayer",
   data(){
@@ -57,6 +62,11 @@ export default {
         code:1,
         name:'',
       },
+      pickChildGroupResult:{
+        agree:false,
+        code:null,
+        route:'',
+      },
       grabLayerState:false,
       grabLayerPosOffsetY:0,
       grabLayerPosOffsetX:0,
@@ -66,7 +76,7 @@ export default {
       moveObServe:null,
     }
   },
-  components:{PreviewEye,More,OrangeGroupStructure},
+  components:{AddNewGroup, SunActive,More,OrangeGroupStructure},
   props:{
     layer:{
       type:Object,
@@ -150,6 +160,11 @@ export default {
         }
       });
     },
+    randomNumber8() {
+      const min = 10000000;
+      const max = 99999999;
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
     /**依据图层路由和图层结构在头部加入值
      * @return false|mixed
      * @param structure | array
@@ -172,6 +187,12 @@ export default {
         }
       }
       return structure;
+    },
+    pickChildGroupApproval(data){
+      this.pickChildGroupResult.agree=true;
+      this.pickChildGroupResult.code+=1;
+      this.pickChildGroupResult.route=data;
+      this.pickLayer();
     },
     adjustItemOrderApproval(data){
       this.$emit('adjustItemOrderRequest',data);//转发申请
@@ -203,13 +224,8 @@ export default {
       if(this.pickLayerResponse.id==this.layer.id){
         return false;
       }
-      function randomNumber() {
-        const min = 1000000;
-        const max = 9999999;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
       this.$emit('pickLayerRequest',{
-        code:randomNumber(),
+        code:this.randomNumber8(),
         id:this.layer.id,
       });
     },
@@ -228,15 +244,10 @@ export default {
       if(this.moveObServe===null){
         this.moveObServe=true;
         document.addEventListener('mousemove',(event)=>{
-          function randomNumber() {
-            const min = 1000000;
-            const max = 9999999;
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-          }
           if(this.grabLayerState){
             if(this.adjustOrderResponse.id!==this.layer.id){
               this.$emit('adjustOrderRequest',{
-                code:randomNumber(),
+                code:this.randomNumber8(),
                 id:this.layer.id,
               });//申请调序
             }
@@ -263,14 +274,9 @@ export default {
           if(event.button!==0){
             return false;
           }
-          function randomNumber() {
-            const min = 1000000;
-            const max = 9999999;
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-          }
           if(this.grabLayerState){
             this.$emit('adjustOrderRequest',{
-              code:randomNumber(),
+              code:this.randomNumber8(),
               id:-1,
             });//申请调序取消
             this.$refs.layerSeparate.style.pointerEvents='auto';
@@ -507,7 +513,8 @@ export default {
     deleteItemInStructure(deleteId){//删除结构中的元素并返回新结构
       function deleteNumber(arr, deleteNum) {
         let result = [];
-        for (let i = 0; i < arr.length; i++) {
+        let Len=arr.length;
+        for (let i = 0; i < Len; i++) {
           if (Array.isArray(arr[i])) {
             result.push(deleteNumber(arr[i], deleteNum));
           } else if (arr[i] !== deleteNum) {
@@ -526,7 +533,7 @@ export default {
       Object.keys(oldMembers).forEach(item=>{
           newMembers[item]=typeMapping[oldMembers[item].type]
         }
-      );
+      );//格式化为{id:typeNumber}
       return newMembers;
     },
     appendNewItemToMembers(newId,type){//向成员新增新元素
@@ -548,9 +555,25 @@ export default {
       return mixMembers;
     },
     appendNewItemToStructure(newId){//向首层附加新元素
-      let mixStructure=JSON.parse(JSON.stringify(this.layer.structure));
-      mixStructure.splice(2,0,newId);
-      return mixStructure;
+      return this.layer.structure.splice(2,0,newId);
+    },
+    structureUnshiftByItem(structure,route,value){
+      if (route.length===1){//路由的尽头
+        structure.splice(2,0,value);
+        return structure;
+      }else{//存在下一跳
+        const nextRoute=route.slice(1);//下一跳
+        let Len=structure.length;
+        for (let i=0;i<Len;i++){//遍历此层结构数组
+          if(Array.isArray(structure[i])){//查询此层子层
+            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
+              structure[i]=this.structureUnshiftByItem(structure[i],nextRoute,value);//递归此子层及下一跳
+              break;
+            }
+          }
+        }
+      }
+      return structure;
     },
     getElementTypeById(ID){
       if(this.$store.state.serverData.socket!==undefined){
@@ -612,7 +635,12 @@ export default {
             return false;
           }
           let newStructure=null;
-          newStructure=this.appendNewItemToStructure(ID);
+          if(this.pickChildGroupResult.route==='' || this.pickChildGroupResult.route===null){
+            newStructure=this.appendNewItemToStructure(ID);
+          }else {
+            let routeArr=this.pickChildGroupResult.route.split('⇉');
+            newStructure=this.structureUnshiftByItem(this.layer.structure,routeArr,ID);
+          }
           if(newStructure===null){
             return false;
           }
@@ -630,6 +658,8 @@ export default {
           this.$refs.layerSeparate.classList.add('selectedLayer');
         }else {
           this.$refs.layerSeparate.classList.remove('selectedLayer');
+          this.pickChildGroupResult.route='';
+          this.pickChildGroupResult.code+=1;
         }
       },
       deep:true

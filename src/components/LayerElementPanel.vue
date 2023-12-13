@@ -35,7 +35,7 @@
         </div>
       </div>
       <div class="buttonBox">
-        <preview-eye></preview-eye>
+        <sun-active></sun-active>
         <div class="buttonBoxText">
           活动图层
         </div>
@@ -46,7 +46,7 @@
         <div class="eyebrow">
           <div class="eyebrowLeft">
             <div class="previewEyeL">
-              <preview-eye></preview-eye>
+              <sun-active></sun-active>
             </div>
             <span class="cursorDefault">默认图层-只读</span>
           </div>
@@ -256,7 +256,6 @@ import SegmentLine from "./svgValidIcons/segmentLine";
 import Point from "./svgValidIcons/point";
 import AddNewLayer from "./svgValidIcons/addNewLayer";
 import AddNewGroup from "./svgValidIcons/addNewGroup";
-import PreviewEye from "./svgValidIcons/previewEye";
 import More from "./svgValidIcons/more";
 import Search from "./svgValidIcons/search";
 import EyeVisible from "./svgValidIcons/eyeVisible";
@@ -265,12 +264,14 @@ import SegmentCurve from "./svgValidIcons/segmentCurve";
 import BananaGroupLayer from "./BananaGroupLayer";
 import OrangeGroupList from "./OrangeGroupList";
 import {mapState} from "vuex";
+import SunActive from "./svgValidIcons/sunActive";
 
 export default {
   name: "LayerElementPanel",
   components: {
+    SunActive,
     SegmentCurve,
-    More,AddNewLayer,AddNewGroup,PreviewEye,Point,SegmentLine,Region,ExpandMore,Search,
+    More,AddNewLayer,AddNewGroup,Point,SegmentLine,Region,ExpandMore,Search,
     EyeVisible,EyeNotVisible,BananaGroupLayer,OrangeGroupList,ResetRefresh
   },
   data(){
@@ -472,6 +473,7 @@ export default {
       let groupLayerId=null;
       let oldStructure=null;
       let mixMembers=null;
+      const typeMapping={point:1,line:2,area:3,curve:4};
       for(let key in this.groupLayers){
         if(this.groupLayers[key].structure[0]===routeArr[0]){
           if(this.groupLayers[key].members[addId]!==undefined){
@@ -480,7 +482,10 @@ export default {
           }else {
             groupLayerId=this.groupLayers[key].id;
             oldStructure=JSON.parse(JSON.stringify(this.groupLayers[key].structure));
-            mixMembers=JSON.parse(JSON.stringify(this.groupLayers[key].members));
+            mixMembers=Object.keys(this.groupLayers[key].members).reduce((result,KEY)=>{
+              result[KEY]=typeMapping[this.groupLayers[key].members[KEY].type];
+              return result;
+            },{});
           }
           break;
         }
@@ -497,13 +502,8 @@ export default {
         this.$store.commit('setCoLogMessage',{text:'图层成员解析错误',from:'internal:LayerElementPanel',type:'tip'});
         return false;
       }
-      const typeMapping={point:1,line:2,area:3,curve:4};
-      Object.keys(mixMembers).forEach(item=>{
-          mixMembers[item]=typeMapping[mixMembers[item].type]
-        }
-      );
       mixMembers[addId]=typeMapping[this.itemMenuConfig.target.type];
-      let newStructure=this.structureInsertByItem(oldStructure,routeArr,addId);
+      let newStructure=this.structureUnshiftByItem(oldStructure,routeArr,addId);
       this.$store.state.serverData.socket.broadcastUpdateLayerData(
         {
           id:groupLayerId,
@@ -519,16 +519,17 @@ export default {
      * @param route | array
      * @param value | int
      */
-    structureInsertByItem(structure,route,value){
+    structureUnshiftByItem(structure,route,value){
       if (route.length===1){//路由的尽头
-        structure.push(value);
+        structure.splice(2,0,value);
         return structure;
       }else{//存在下一跳
         const nextRoute=route.slice(1);//下一跳
-        for (let i=0;i<structure.length;i++){//遍历此层结构数组
+        let Len=structure.length;
+        for (let i=0;i<Len;i++){//遍历此层结构数组
           if(Array.isArray(structure[i])){//查询此层子层
             if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureInsertByItem(structure[i],nextRoute,value);//递归此子层及下一跳
+              structure[i]=this.structureUnshiftByItem(structure[i],nextRoute,value);//递归此子层及下一跳
               break;
             }
           }

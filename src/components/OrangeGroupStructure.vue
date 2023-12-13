@@ -1,6 +1,6 @@
 <template>
   <div :class="eachLevelClass">
-    <div class="memberTeamName" @contextmenu.stop.prevent="contextmenuHeadOpen($event)" @mouseup="confirmItemJoinGroup($event)">
+    <div class="memberTeamName" @click="pickChildGroupRequest()" @contextmenu.stop.prevent="contextmenuHeadOpen($event)" @mouseup="confirmItemJoinGroup($event)">
       <div class="memberTeamNameL">
         <div class="expandMoreL" @click.stop="expandGroup()" v-show="!groupExpand">
           <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"></expand-more>
@@ -20,8 +20,8 @@
       </div>
     </div>
     <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in extractLatter()" v-show="groupExpand">
-      <div class="memberKeyInfo" :title="'S'+index+' ID'+layer.members[item].id" @contextmenu.stop.prevent="contextmenuItemOpen($event,layer.members[item],item)" @mouseenter="expandOrderCase($event,layer.members[item].id)" @mouseleave="restoreOrderCase($event)" @mouseup="confirmOrderCase($event,layer.members[item].id)" v-if="!isArray(item)">
-        <div class="memberLeft" @click="locateToElement(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].type)">
+      <div class="memberKeyInfo" :title="'S'+index+' ID'+layer.members[item].id" @contextmenu.stop.prevent="contextmenuItemOpen($event,layer.members[item])" @mouseenter="expandOrderCase($event,layer.members[item].id)" @mouseleave="restoreOrderCase($event)" @mouseup="confirmOrderCase($event,layer.members[item].id)" v-if="!isArray(item)">
+        <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].type)">
           <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'" v-if="layer.members[item].type==='point'"></point>
           <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='line'"></segment-line>
           <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='area'"></region>
@@ -44,23 +44,32 @@
           <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑属性中</span>
         </div>
       </div>
-      <orange-group-structure :layer="layer" :level="level+1"
-                              :all-expand="allExpand" :route="route+'⇉'+item[0]"
-                              :structure="item" :rename-response="renameApprovalResult"
+      <orange-group-structure :layer="layer" :all-expand="allExpand"
+                              :level="level+1" :route="route+'⇉'+item[0]"
+                              :structure="item"
+                              :rename-response="renameApprovalResult"
                               :adjust-item-order-response="adjustItemOrderResponse"
+                              :pick-child-group-response="pickChildGroupResponse"
                               @renameRequest="renameApproval"
                               @adjustItemOrderRequest="adjustItemOrderApproval"
+                              @pickChildGroupRequest="pickChildGroupRelay"
                               v-if="isArray(item)">
       </orange-group-structure>
     </div>
     <div class="memberMenuClose" @contextmenu.prevent="void 1" @click.stop="contextmenuHeadClose()" v-show="memberHeadMenu.show"></div>
     <div class="memberMenu" :style="headContextmenuPos" v-show="memberHeadMenu.show">
       <div class="menuListBox">
+        <div class="menuList" @click="createGroupAtTop()">
+          在顶部新建分组
+        </div>
         <div class="menuList" @click="createGroupAtBottom()">
           在底部新建分组
         </div>
         <div class="menuList" @click="deleteGroup()" v-if="this.level!==1">
           删除此分组
+        </div>
+        <div class="menuList">
+          设置模板
         </div>
       </div>
     </div>
@@ -71,6 +80,12 @@
           移除出此分组图层
         </div>
       </div>
+    </div>
+    <div class="templateMenu" v-if="false">
+
+    </div>
+    <div class="templateMenuClose"  v-if="false">
+
     </div>
   </div>
 </template>
@@ -109,7 +124,6 @@ export default {
       },
       memberItemMenu:{
         target:null,
-        index:null,
         x:0,
         y:0,
         show:false,
@@ -181,11 +195,28 @@ export default {
       },
       required:false
     },
+    pickChildGroupResponse:{
+      type:Object,
+      default:function (){
+        return {
+          agree:false,
+          code:null,
+          route:''
+        }
+      },
+      required:true
+    }
   },
   mounted() {
 
   },
   methods:{
+    pickChildGroupRequest(){
+      this.$emit('pickChildGroupRequest',this.route);
+    },
+    pickChildGroupRelay(data){//转发
+      this.$emit('pickChildGroupRequest',data);
+    },
     expandOrderCase(ev,id){
       if(ev.target.className!=='memberKeyInfo'){
         return false;
@@ -200,19 +231,19 @@ export default {
       }
       ev.target.style.height='25px';
     },
+    randomNumber8() {
+      const min = 10000000;
+      const max = 99999999;
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
     confirmItemJoinGroup(ev){
       if(ev.button!==0){
         return false;
       }
-      function randomNumber() {
-        const min = 1000000;
-        const max = 9999999;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
       if(this.adjustItemOrderResponse.idA!==-1){
         let route=this.route;
         this.$emit('adjustItemOrderRequest',{
-          code:randomNumber(),
+          code:this.randomNumber8(),
           stage:'confirm',
           pattern:'join',
           type:this.adjustItemOrderResponse.type,
@@ -224,16 +255,11 @@ export default {
       }
     },
     confirmOrderCase(ev,id){
-      function randomNumber() {
-        const min = 1000000;
-        const max = 9999999;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
       if(this.adjustItemOrderResponse.idA!==-1 && this.adjustItemOrderResponse.idA!==id){
         let offsetY=ev.offsetY;
         if(offsetY<40){
           this.$emit('adjustItemOrderRequest',{
-            code:randomNumber(),
+            code:this.randomNumber8(),
             stage:'confirm',
             pattern:'up',
             type:this.adjustItemOrderResponse.type,
@@ -244,7 +270,7 @@ export default {
           });
         }else if(offsetY>=40 && offsetY<=80){
           this.$emit('adjustItemOrderRequest',{
-            code:randomNumber(),
+            code:this.randomNumber8(),
             stage:'confirm',
             pattern:'down',
             type:this.adjustItemOrderResponse.type,
@@ -290,15 +316,10 @@ export default {
       if(this.moveObServe===null){
         this.moveObServe=true;
         document.addEventListener('mousemove',(event)=>{
-          function randomNumber() {
-            const min = 1000000;
-            const max = 9999999;
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-          }
           if(this.grabItemState){
             if(this.adjustItemOrderResponse.idA!==this.grabItemId){
               this.$emit('adjustItemOrderRequest',{
-                code:randomNumber(),
+                code:this.randomNumber8(),
                 stage:'ready',
                 type:this.grabItemType,
                 idA:this.grabItemId,
@@ -327,14 +348,9 @@ export default {
           if(event.button!==0){
             return false;
           }
-          function randomNumber() {
-            const min = 1000000;
-            const max = 9999999;
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-          }
           if(this.grabItemState){
             this.$emit('adjustItemOrderRequest',{
-              code:randomNumber(),
+              code:this.randomNumber8(),
               stage:'cancel',
             });//申请调序取消
             this.$refs.memberTeamBox[this.grabIndex].style.pointerEvents='auto';
@@ -408,12 +424,7 @@ export default {
         return false;
       }
       if(nowGroupName!==this.oldGroupName){
-        function randomNumber() {
-          const min = 1000000;
-          const max = 9999999;
-          return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-        this.renameApprovalTemplate.code=randomNumber();
+        this.renameApprovalTemplate.code=this.randomNumber8();
         this.renameApprovalTemplate.name=nowGroupName;
         this.groupNameRenameRequest(this.renameApprovalTemplate);
       }
@@ -423,9 +434,30 @@ export default {
     },
     deleteGroup(){//删除此子分组 获取当前图层路由
       let routeArr=this.route.split('⇉');
-      let newStructure=this.structureRemoveByGroup(this.layer.structure,routeArr);
-      newStructure=this.removeUndefined(newStructure);
+      let StructureMembers=this.structureRemoveByGroup(this.layer.structure,routeArr);
+      let newStructure=StructureMembers.structure;
+      let removeMembers=StructureMembers.members;
+      let newMembers=this.removeMembersByArray(removeMembers);
+      newStructure=this.removeUndefined(newStructure);//删除子分组结构同时删除结构内的成员
       let groupLayerId=this.layer.id;
+      this.$store.state.serverData.socket.broadcastUpdateLayerData(
+        {
+          id:groupLayerId,
+          members:newMembers,
+          structure:newStructure,
+        }
+      );
+      this.memberHeadMenu.show=false;
+    },
+    createGroupAtTop(){//在此分组顶部新增子分组
+      let groupLayerId=this.layer.id;
+      let newGroupName='G'+this.randomNumber8();
+      let newGroup=[
+        newGroupName,
+        {template:null}
+      ];
+      let routeArr=this.route.split('⇉');
+      let newStructure=this.structureUnshiftByItem(this.layer.structure,routeArr,newGroup);
       this.$store.state.serverData.socket.broadcastUpdateLayerData(
         {
           id:groupLayerId,
@@ -435,13 +467,8 @@ export default {
       this.memberHeadMenu.show=false;
     },
     createGroupAtBottom(){//在此分组底部新增子分组
-      function randomNumber() {
-        const min = 100000;
-        const max = 999999;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
       let groupLayerId=this.layer.id;
-      let newGroupName='group-'+randomNumber();
+      let newGroupName='G'+this.randomNumber8();
       let newGroup=[
         newGroupName,
         {template:null}
@@ -456,6 +483,22 @@ export default {
       );
       this.memberHeadMenu.show=false;
     },
+    /**依据成员数组删除多个成员
+     * @return false|mixed
+     * @param members
+     */
+    removeMembersByArray(members){
+      const typeMapping={point:1,line:2,area:3,curve:4};
+      let newMembers=Object.keys(this.layer.members).reduce((result,key)=>{
+        result[key]=typeMapping[this.layer.members[key].type];
+        return result;
+      },{});
+      let Len=members.length;
+      for(let i=0;i<Len;i++){
+        delete newMembers[members[i]];
+      }
+      return newMembers;
+    },
     /**依据图层路由和图层结构插入值
      * @return false|mixed
      * @param structure | array
@@ -468,10 +511,29 @@ export default {
         return structure;
       }else{//存在下一跳
         const nextRoute=route.slice(1);//下一跳
-        for (let i=0;i<structure.length;i++){//遍历此层结构数组
+        let Len=structure.length;
+        for (let i=0;i<Len;i++){//遍历此层结构数组
           if(Array.isArray(structure[i])){//查询此层子层
             if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
               structure[i]=this.structureInsertByItem(structure[i],nextRoute,value);//递归此子层及下一跳
+              break;
+            }
+          }
+        }
+      }
+      return structure;
+    },
+    structureUnshiftByItem(structure,route,value){
+      if (route.length===1){//路由的尽头
+        structure.splice(2,0,value);
+        return structure;
+      }else{//存在下一跳
+        const nextRoute=route.slice(1);//下一跳
+        let Len=structure.length;
+        for (let i=0;i<Len;i++){//遍历此层结构数组
+          if(Array.isArray(structure[i])){//查询此层子层
+            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
+              structure[i]=this.structureUnshiftByItem(structure[i],nextRoute,value);//递归此子层及下一跳
               break;
             }
           }
@@ -485,19 +547,17 @@ export default {
     removeLayerMember(){
       let layerId=this.layer.id;
       let targetId=this.memberItemMenu.target.id;
-      let oldStructure=JSON.parse(JSON.stringify(this.layer.structure));
-      let newMembers=JSON.parse(JSON.stringify(this.layer.members));
-      delete newMembers[targetId];
       const typeMapping={point:1,line:2,area:3,curve:4};
-      Object.keys(newMembers).forEach(item=>{
-        newMembers[item]=typeMapping[newMembers[item].type]
-        }
-      );
+      let oldStructure=JSON.parse(JSON.stringify(this.layer.structure));
+      let newMembers=Object.keys(this.layer.members).reduce((result,key)=>{
+        result[key]=typeMapping[this.layer.members[key].type];
+        return result;
+      },{});
+      delete newMembers[targetId];
       let route=this.route;
       let routeArr=route.split('⇉');
       routeArr=routeArr.filter((item)=>{return item!==''});
-      let removeIndex=this.memberItemMenu.index;
-      let newStructure=this.structureRemoveByItem(oldStructure,routeArr,removeIndex);
+      let newStructure=this.structureRemoveByItem(oldStructure,routeArr,targetId);
       this.$store.state.serverData.socket.broadcastUpdateLayerData({
         id:layerId,
         members:newMembers,
@@ -517,7 +577,8 @@ export default {
         return structure;
       }else{//存在下一跳
         const nextRoute=route.slice(1);//下一跳
-        for (let i=0;i<structure.length;i++){//遍历此层结构数组
+        let Len=structure.length;
+        for (let i=0;i<Len;i++){//遍历此层结构数组
           if(Array.isArray(structure[i])){//查询此层子层
             if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
               structure[i]=this.structureRemoveByItem(structure[i],nextRoute,value);//递归此子层及下一跳
@@ -528,27 +589,51 @@ export default {
       }
       return structure;
     },
-    /**依据图层路由和图层结构删除分组
+    /**依据图层路由和图层结构删除子分组并且返回被删除的子分组的成员
      * @return false|mixed
      * @param structure | array
      * @param route | array
      */
     structureRemoveByGroup(structure,route){
-      if(route.length===1){//路由的尽头
-        structure=undefined;
+      var members=[];
+      if(route.length===1){//到达路由的尽头
+        members=this.getMembersByStructure(structure);
+        structure=undefined;//删除此分组结构
         return structure;
       }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        for (let i=0;i<structure.length;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
+        const nextRoute=route.slice(1);//下一跳名称
+        let Len=structure.length;//当前层级分组的数组长度
+        for (let i=0;i<Len;i++){//遍历此层分组的成员
+          if(Array.isArray(structure[i])){//查询此层分组的子分组
+            if (structure[i][0]===nextRoute[0]){//此子分组的名称与下一跳名称一致
+              members=this.getMembersByStructure(structure[i]);
               structure[i]=this.structureRemoveByGroup(structure[i],nextRoute);//递归此子层及下一跳
               break;
             }
           }
         }
       }
-      return structure;
+      return {
+        structure,
+        members
+      };
+    },
+    /**获取图层结构内的所有成员ID
+     * @return false|mixed
+     * @param structure | array
+     */
+    getMembersByStructure(structure){
+      function extractNumbers(arr) {
+        return arr.reduce((result, value) => {
+          if (Array.isArray(value)) {
+            result.push(...extractNumbers(value));
+          } else if (typeof value === 'number') {
+            result.push(value);
+          }
+          return result;
+        }, []);
+      }
+      return extractNumbers(JSON.parse(JSON.stringify(structure)));
     },
     /**依据图层路由和图层结构更改分组名
      * @return false|mixed
@@ -593,9 +678,8 @@ export default {
     contextmenuHeadClose(){
       this.memberHeadMenu.show=false;
     },
-    contextmenuItemOpen(ev,item,index){//成员右键菜单
+    contextmenuItemOpen(ev,item){//成员右键菜单
       this.memberItemMenu.target=item;
-      this.memberItemMenu.index=index;
       this.memberItemMenu.show=true;
       this.memberItemMenu.x=ev.x;
       this.memberItemMenu.y=ev.y-15;
@@ -603,7 +687,6 @@ export default {
     contextmenuItemClose(){
       this.memberItemMenu.show=false;
       this.memberItemMenu.target=null;
-      this.memberItemMenu.index=null;
       this.memberItemMenu.x=0;
       this.memberItemMenu.y=0;
     },
@@ -677,6 +760,10 @@ export default {
         }
       }
       return unknown;
+    },
+    clickMemberEvent(element){
+      this.locateToElement(element);
+      this.pickChildGroupRequest();
     },
     locateToElement(element){//移动到目标元素的位置
       let elementPosition=null;
@@ -862,13 +949,44 @@ export default {
         }
       }
     },
+    pickChildGroupResponse:{
+      handler(newValue){
+        if(newValue.route===this.route){
+          this.$refs.groupListName.classList.add('groupPicked');
+        }else {
+          this.$refs.groupListName.classList.remove('groupPicked');
+        }
+      },
+      deep:true
+    }
   }
 }
 </script>
 
 <style scoped>
+.templateMenu{
+  width: 600px;
+  height: 388px;
+  background: #ffffff;
+  position: fixed;
+  z-index: 556;
+  top: calc(50% - 194px);
+  left: calc(50% - 300px);
+}
+.templateMenuClose{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background: rgba(0,0,0,0.2);
+  z-index: 555;
+  top: 0px;
+  left: 0px;
+}
 .groupListName{
   outline: none;
+}
+.groupPicked{
+  color:#4d90fe;
 }
 .menuListBox{
   width: 100%;
@@ -950,7 +1068,7 @@ export default {
   -webkit-box-direction: normal;
   -ms-flex-direction: row;
   flex-direction: row;
-  color: #3a84df;
+  color: #000000;
 }
 .memberTeamName:hover .memberRightEyeA{
   opacity: 1;
