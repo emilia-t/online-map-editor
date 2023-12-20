@@ -1,5 +1,5 @@
 <template>
-  <div :class="eachLevelClass">
+  <div ref="memberTeamOut" :class="eachLevelClass">
     <div class="memberTeamName" @click="pickChildGroupRequest()" @contextmenu.stop.prevent="contextmenuHeadOpen($event)" @mouseup="confirmItemJoinGroup($event)">
       <div class="memberTeamNameL">
         <div class="expandMoreL" @click.stop="expandGroup()" v-show="!groupExpand">
@@ -20,28 +20,34 @@
       </div>
     </div>
     <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in extractLatter()" v-show="groupExpand">
-      <div class="memberKeyInfo" :title="'S'+index+' ID'+layer.members[item].id" @contextmenu.stop.prevent="contextmenuItemOpen($event,layer.members[item])" @mouseenter="expandOrderCase($event,layer.members[item].id)" @mouseleave="restoreOrderCase($event)" @mouseup="confirmOrderCase($event,layer.members[item].id)" v-if="!isArray(item)">
-        <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].type)">
-          <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'" v-if="layer.members[item].type==='point'"></point>
-          <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='line'"></segment-line>
-          <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='area'"></region>
-          <span class="memberName" v-text="getItemName(layer.members[item])"></span>
-        </div>
-        <div :ref="'memberRightEye'+layer.members[item].id">
-          <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
-            <eye-visible custom="cursor:pointer"></eye-visible>
+      <div class="memberTeamContent" v-if="!isArray(item)">
+        <div class="memberKeyInfo" :title="getItemName(layer.members[item])"
+             @contextmenu.stop.prevent="contextmenuItemOpen($event,layer.members[item])"
+             @mouseenter="expandOrderCase($event,layer.members[item].id)"
+             @mouseleave="restoreOrderCase($event)"
+             @mouseup="confirmOrderCase($event,layer.members[item].id)">
+          <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].type)">
+            <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'" v-if="layer.members[item].type==='point'"></point>
+            <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='line'"></segment-line>
+            <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='area'"></region>
+            <span class="memberName" v-text="getItemName(layer.members[item])"></span>
           </div>
-          <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
-            <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+          <div :ref="'memberRightEye'+layer.members[item].id">
+            <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
+              <eye-visible custom="cursor:pointer"></eye-visible>
+            </div>
+            <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
+              <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="memberActivityInfo" v-if="!isArray(item)">
-        <div class="memberPick" v-if="false">
-          <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑形状中</span>
-        </div>
-        <div class="memberSelect" v-if="false">
-          <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑属性中</span>
+        <div class="memberActivityInfo">
+          <div class="memberPick" v-if="false">
+            <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑形状中</span>
+          </div>
+          <div class="memberSelect" v-if="false">
+            <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑属性中</span>
+          </div>
         </div>
       </div>
       <orange-group-structure :layer="layer" :all-expand="allExpand"
@@ -68,6 +74,12 @@
         <div class="menuList" @click="deleteGroup()" v-if="this.level!==1">
           删除此分组
         </div>
+        <div class="menuList" @click="groupByColorType('color')" title="按颜色分组会删除所有子分组" @mouseenter="alertTip('按颜色分组会删除所有子分组')">
+          按颜色分组
+        </div>
+        <div class="menuList" @click="groupByColorType('type')" title="按类型分组会删除所有子分组" @mouseenter="alertTip('按类型分组会删除所有子分组')">
+          按类型分组
+        </div>
         <div class="menuList">
           设置模板
         </div>
@@ -77,7 +89,7 @@
     <div class="memberMenu" :style="itemContextmenuPos" v-show="memberItemMenu.show">
       <div class="menuListBox">
         <div class="menuList" @click="removeLayerMember()">
-          移除出此分组图层
+          移除出图层
         </div>
       </div>
     </div>
@@ -211,6 +223,65 @@ export default {
 
   },
   methods:{
+    alertTip(text){
+      this.$store.commit('setCoLogMessage',{text:text,from:'internal:OrangeGroupStructure',type:'warn'});
+    },
+    groupByColorType(select){
+      function dimensionReduce(arr){//降维数组
+        return arr.reduce((result,value)=>{
+          if (Array.isArray(value)){
+            result.push(...dimensionReduce(value.slice(2)));
+          }else{
+            result.push(value);
+          }
+          return result;
+        },[]);
+      }
+      function convertAndSort(groupObj) {//将图层对象转化为数组结构的图层并排序
+        let colorArray=Object.entries(groupObj).map(([key,value])=>[key,{template:null},...value]);//先
+        colorArray.sort((former,latter)=>{return latter.length-former.length});//前者大于后者则排在前
+        return colorArray;
+      }
+      let oldStructure=JSON.parse(JSON.stringify(this.structure));
+      let structure=dimensionReduce(oldStructure);
+      let Len=structure.length;
+      let groupObj={};//{"color[00ff00]":[id,id,...]} || {"type[point]":[id,id,...]}
+      let newStructure=[];
+      for(let i=2;i<Len;i++){
+        let element=this.layer.members[structure[i]];
+        let Name='all';
+        if(select==='color'){
+          Name='Color'+element.color;
+        }else if(select==='type'){
+          Name=element.type;
+        }
+        if(!groupObj.hasOwnProperty(Name)){
+          groupObj[Name]=[];
+          groupObj[Name].push(structure[i]);
+        }else {
+          groupObj[Name].push(structure[i]);
+        }
+      }
+      newStructure=convertAndSort(groupObj);
+      newStructure.unshift(oldStructure[0],oldStructure[1]);
+      if(this.level===1){//在根节点操作则不用附加旧数据
+        this.$store.state.serverData.socket.broadcastUpdateLayerData(
+          {
+            id:this.layer.id,
+            structure:newStructure,
+          }
+        );
+      }else {//附加旧数据
+        newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),newStructure)
+        this.$store.state.serverData.socket.broadcastUpdateLayerData(
+          {
+            id:this.layer.id,
+            structure:newStructure,
+          }
+        );
+      }
+      this.memberHeadMenu.show=false;
+    },
     pickChildGroupRequest(){
       this.$emit('pickChildGroupRequest',this.route);
     },
@@ -364,9 +435,10 @@ export default {
               this.grabItemPosOffsetX=0;
               this.grabItemPosOffsetY=0;
               this.$refs.memberTeamBox[this.grabIndex].style.userSelect='auto';
-              this.$refs.memberTeamBox[this.grabIndex].style.background='white';
+              this.$refs.memberTeamBox[this.grabIndex].style.background=null;
               this.$refs.memberTeamBox[this.grabIndex].style.zIndex='';
             }
+            //next UI优化
             this.grabItemState=false;
             this.grabIndex=-1;
             this.grabItemId=-1;
@@ -589,6 +661,29 @@ export default {
       }
       return structure;
     },
+    /**依据图层路由和图层结构更改图层数据
+     * @return false|mixed
+     * @param structure | array
+     * @param route | array
+     * @param newStructure | array
+     */
+    structureChangeData(structure,route,newStructure){
+      if (route.length===1){//路由的尽头
+        return newStructure;
+      }else{//存在下一跳
+        const nextRoute=route.slice(1);//下一跳
+        let Len=structure.length;
+        for (let i=0;i<Len;i++){//遍历此层结构数组
+          if(Array.isArray(structure[i])){//查询此层子层
+            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
+              structure[i]=this.structureChangeData(structure[i],nextRoute,newStructure);//递归此子层及下一跳
+              break;
+            }
+          }
+        }
+      }
+      return structure;
+    },
     /**依据图层路由和图层结构删除子分组并且返回被删除的子分组的成员
      * @return false|mixed
      * @param structure | array
@@ -673,7 +768,11 @@ export default {
     contextmenuHeadOpen(ev){//头部右键菜单
       this.memberHeadMenu.show=true;
       this.memberHeadMenu.x=ev.x;
-      this.memberHeadMenu.y=ev.y-15;
+      if(ev.y>=window.innerHeight-190){
+        this.memberHeadMenu.y=window.innerHeight-190;
+      }else {
+        this.memberHeadMenu.y=ev.y-15;
+      }
     },
     contextmenuHeadClose(){
       this.memberHeadMenu.show=false;
@@ -952,9 +1051,9 @@ export default {
     pickChildGroupResponse:{
       handler(newValue){
         if(newValue.route===this.route){
-          this.$refs.groupListName.classList.add('groupPicked');
+          this.$refs.memberTeamOut.classList.add('memberTeamBoxPicking');
         }else {
-          this.$refs.groupListName.classList.remove('groupPicked');
+          this.$refs.memberTeamOut.classList.remove('memberTeamBoxPicking');
         }
       },
       deep:true
@@ -964,6 +1063,15 @@ export default {
 </script>
 
 <style scoped>
+.memberTeamContent{
+  width: calc(100% - 19px);
+  padding-left: 15px;
+  height: auto;
+  margin: 2px 2px;
+}
+.memberTeamContent:hover{
+  box-shadow: 0px 0px 2px #0055ff;
+}
 .templateMenu{
   width: 600px;
   height: 388px;
@@ -1038,16 +1146,18 @@ export default {
   position: fixed;
   z-index: 556;
   display: flex;
+  flex-direction: column;
   justify-content: flex-start;
   align-items: center;
 }
 .OrangeGroupStructure{
-  width: 100%;
+  width: calc(100% - 15px);
+  padding-left: 15px;
   height: auto;
   min-height: 27px;
 }
 .OrangeGroupStructureL1{
-  width: calc(100%);
+  width: 100%;
   height: auto;
   min-height: 27px;
   padding: 5px 0px 5px 0px;
@@ -1076,8 +1186,9 @@ export default {
 .memberKeyInfo:hover .memberRightEyeA{
   opacity: 1;
 }
-.memberTeamBox:hover{
-  box-shadow: 0px 0px 2px #2577ff;
+.memberTeamBoxPicking{
+  border-left: 2px solid #4d90fe;
+  width: calc(100% - 17px);/*17px含2px边框和15px padding*/
 }
 .memberTeamNameL{
   width: auto;
@@ -1161,10 +1272,9 @@ export default {
   opacity: 1;
 }
 .memberTeamBox{
-  width: calc(100% - 15px);
+  width: 100%;
   max-width: 246px;/*246px与拖拽计算点击位置绑定，不可修改*/
   height: auto;
-  padding-left: 15px;
   margin-bottom: 3px;
   overflow: hidden;
   display: -webkit-box;
@@ -1266,6 +1376,7 @@ export default {
   opacity: 1;
 }
 .memberName{
+  max-width: calc(100% - 21px);/*21px为左侧类型图标的宽度*/
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

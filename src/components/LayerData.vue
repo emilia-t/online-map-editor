@@ -1,6 +1,9 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer" style="pointer-events: auto">
-    <svg style="transform: translateZ(0)" class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
+    <canvas class="eleCanvas" id="eleCanvas" ref="eleCanvas">
+
+    </canvas>
+    <svg style="transform: translateZ(0)" :viewBox="viewBox" class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
       <defs><!--滤镜-->
         <filter id="svgFilterShadow">
           <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
@@ -74,7 +77,8 @@ export default {
         },
         moveObServer:null,//移动侦测器
         moveObServerDt:[]
-      }
+      },
+      mixCanvas:null,
     }
   },
   mounted:function(){
@@ -96,6 +100,27 @@ export default {
       this.listenBrowserSize();//检测浏览器窗口大小变化
       this.getMouseUpSvg();//启用鼠标左键松开按下监听
       this.getMouseDownSvg();
+      this.setMixCanvas();
+    },
+    setMixCanvas(){
+      setTimeout(
+        ()=>{
+          this.mixCanvas=new this.$store.state.classList.mixCanvas({
+            el:'eleCanvas',
+            options:{
+              viewWidth:this.browserWidth,
+              viewHeight:this.browserHeight,
+            },
+            elements:{
+              point:this.MyPointData,
+              line:[],
+              area:[]
+            }
+          });
+        },0
+      );
+
+      console.log(this.mixCanvas);
     },
     selectElement(id){
       let select=this.selectElements.find(num=>num.id===id);
@@ -138,19 +163,29 @@ export default {
     getMouseDownSvg(){//获取鼠标左键按下的位置(svg)
       this.$refs.elementData.addEventListener('mousedown',(e)=>{
           if(e.button===0){
-            this.$store.state.mapConfig.svgMouseDown.x=e.x;this.$store.state.mapConfig.svgMouseDown.y=e.y;
+            this.$store.state.mapConfig.svgMouseDown.x=e.x;
+            this.$store.state.mapConfig.svgMouseDown.y=e.y;
           }
         }
       )
     },
     getMouseClick(){//获取鼠标点击位置
-      document.addEventListener("click", (e)=>{this.$store.state.mapConfig.mouseClick.x=e.x;this.$store.state.mapConfig.mouseClick.y=e.y;})
+      document.addEventListener("click", (e)=>{
+        this.$store.state.mapConfig.mouseClick.x=e.x;
+        this.$store.state.mapConfig.mouseClick.y=e.y;
+      });
     },
     getMousePos(){//实时获取鼠标位置
-      document.addEventListener("mousemove", (e)=>{this.$store.state.mapConfig.mousePoint.x=e.x;this.$store.state.mapConfig.mousePoint.y=e.y;})
+      document.addEventListener("mousemove", (e)=>{
+        this.$store.state.mapConfig.mousePoint.x=e.x;
+        this.$store.state.mapConfig.mousePoint.y=e.y;
+      });
     },
     elementDataClick(){//实时获取svg点击位置
-      this.$refs.elementData.addEventListener("click",(e)=>{this.$store.state.mapConfig.svgClick.x=e.x;this.$store.state.mapConfig.svgClick.y=e.y;})
+      this.$refs.elementData.addEventListener("click",(e)=>{
+        this.$store.state.mapConfig.svgClick.x=e.x;
+        this.$store.state.mapConfig.svgClick.y=e.y;
+      });
     },
     elementDataDbClick(e){//双击svg事件
       this.$store.state.mapConfig.svgDbClick.x=e.x;
@@ -264,7 +299,7 @@ export default {
             this.setMoveObServer();
           }
         }
-      })
+      });
     },
     mapMoveEnd(){//dataLayer的鼠标移动监听-松开
       let dataLayer=this.$refs.dataLayer;
@@ -362,7 +397,7 @@ export default {
       this.$store.state.mapConfig.movingDistance.y=0;
     },
     clearSelect(){//清除选中要素及选中要素数据
-      this.$refs.elementData.addEventListener('click',(ev)=>{
+      this.$refs.elementData.addEventListener("click",(ev)=>{
         let downX=this.$store.state.mapConfig.svgMouseDown.x;
         let upX=this.$store.state.mapConfig.svgMouseUp.x;
         let downY=this.$store.state.mapConfig.svgMouseDown.y;
@@ -387,6 +422,9 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    viewBox(){
+      return this.$store.state.mapConfig.browser.width!==null?`0 0 ${this.$store.state.mapConfig.browser.width} ${this.$store.state.mapConfig.browser.height}`:'0 0 0 0';
+    },
     mapHiddenElements(){
       let map=new Map();
       this.hiddenElements.forEach(value=>map.set(value.id,true));
@@ -433,6 +471,12 @@ export default {
       }else {
         return [];
       }
+    },
+    browserWidth(){
+      return this.$store.state.mapConfig.browser.width;
+    },
+    browserHeight(){
+      return this.$store.state.mapConfig.browser.height;
     }
   },
   watch:{

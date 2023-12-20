@@ -394,6 +394,7 @@ export default {
     },
     doNeedMoveMap:{
       handler(){
+        if(this.doNeedMoveMap)return false;
         this.move();
       }
     },

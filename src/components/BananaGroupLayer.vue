@@ -802,7 +802,8 @@ export default {
 
 <style scoped>
 .selectedLayer{
-  border-left:2px solid #4d90fe;
+  background: #f3f3f3;
+  color: #4f4f4f;
 }
 .groupLayersBox{
   min-height: 120px;

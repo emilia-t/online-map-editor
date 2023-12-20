@@ -7,8 +7,6 @@
              @click="showDetails()"
              @mousedown="shiftAllStart($event)"
              @mouseup="shiftAllEnd($event)"
-             @mouseenter="showNode()"
-             @mouseleave="hideNode()"
              filter="url(#svgFilterShadowArea)"
              class="svgAreaPathLine"/><!--区域主体-->
     <g v-for="(str,index) in dynamicPointsStr">
@@ -720,6 +718,7 @@ export default {
     },
     doNeedMoveMap:{
       handler(){
+        if(this.doNeedMoveMap)return false;
         this.move();
       }
     },

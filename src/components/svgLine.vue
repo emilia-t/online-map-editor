@@ -4,7 +4,7 @@
       <path :id="'textPath'+polyLineConfig.id" :d="dynamicPointsString" :style="highlightStyle" filter="url(#svgFilterShadow)" class="svgLineTextPath"/><!--文字路径-->
     </g>
     <g v-for="(str,index) in dynamicPointsStr">
-      <path :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d" :style="pathLineStyle" @mouseenter="showNode()" @mouseleave="hideNode()" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--路径主体-->
+      <path :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--路径主体-->
 
       <circle class="svgLineFillNode" :cx="str.a" :cy="str.b" :style="fillNodeStyle"/><!--填充节点-->
       <circle class="svgLineFillNode" :cx="str.c" :cy="str.d" :style="fillNodeStyle" v-if="index===dynamicPointsStr.length-1"/>
@@ -663,6 +663,7 @@ export default {
     },
     doNeedMoveMap:{
       handler(){
+        if(this.doNeedMoveMap)return false;
         this.move();
       }
     },

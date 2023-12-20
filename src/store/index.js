@@ -1554,6 +1554,155 @@ export default new Vuex.Store({
           this.getServerConfig();//获取服务器配置
           return true;
         }
+      },
+      mixCanvas:class  mixCanvas{
+        $configs={
+          pipelineHealthy:false,
+        };
+        $manage={
+          optionsRule:{//传入options包含的项目及项目的类型\如果required为false则必须包含一个默认值
+            viewWidth:{
+              type:'int',
+              required:true,
+            },
+            viewHeight:{
+              type:'int',
+              required:true,
+            },
+            renderRangeX:{
+              type:'percentage',
+              required:false,
+              default:'100%',
+            },
+            renderRangeY:{
+              type:'percentage',
+              required:false,
+              default:'100%',
+            }
+          },
+          canvas:null,
+          mount:null,
+        };
+        constructor(pipeline){
+          this.pipeline=pipeline;
+          this.startSetting();
+        }
+        startSetting(){
+
+          this.pipelineCheck();
+
+          this.canvasBuild();
+
+          this.elementsDraw();
+
+        }
+        elementsDraw(){
+
+        }
+        canvasBuild(){
+          this.mount=document.getElementById(this.pipeline.el);
+          this.mount.setAttribute('width',this.pipeline.options.viewWidth+'px');
+          this.mount.setAttribute('height',this.pipeline.options.viewHeight+'px')
+          this.canvas=this.mount.getContext('2d');
+        }
+        pipelineCheck(){
+          if(this.QIR('tc',{value:this.pipeline,correct:'object'})){
+            if(!this.pipeline.hasOwnProperty('el')){this.pipelineClose();return false;}
+            if(!this.QIR('tc',{value:this.pipeline.el,correct:'string'})){
+              this.pipelineClose();return false;
+            }
+
+            if(!this.pipeline.hasOwnProperty('options')){this.pipelineClose();return false;}
+            if(!this.QIR('tc',{value:this.pipeline.options,correct:'object'})){
+              this.pipelineClose();return false;
+            }
+            Object.keys(this.$manage.optionsRule).forEach(//检测选项是否正确
+              (key)=>{
+                if(this.$manage.optionsRule[key].required){//是否为必须项
+                  if(!this.pipeline.options.hasOwnProperty(key)){//不包含必须项
+                    this.throwError(`option error:missing ${key}`);
+                    this.pipelineClose();
+                    return false;
+                  }else {//检查类型
+                    if(!this.QIR('tc',{
+                      value:this.pipeline.options[key],
+                      correct:this.$manage.optionsRule[key].type,
+                    })){//类型错误
+                      this.throwError(`option type error:${key} need ${this.$manage.optionsRule[key].type}`);
+                      this.pipelineClose();
+                      return false;
+                    }
+                  }
+                }else{
+                  if(!this.pipeline.options.hasOwnProperty(key)){
+                    this.pipeline.options[key]=this.$manage.optionsRule[key].default;
+                  }else {//检查类型
+                    if(!this.QIR('tc',{
+                      value:this.pipeline.options[key],
+                      correct:this.$manage.optionsRule[key].type,
+                    })){//类型错误
+                      this.throwError(`option type error:${key} need ${this.$manage.optionsRule[key].type}`);
+                      this.pipelineClose();
+                      return false;
+                    }
+                  }
+                }
+              }
+            );
+            if(!this.pipeline.hasOwnProperty('elements')){this.pipelineClose();return false;}
+            this.pipelineOpen();
+          }
+          else {
+           this.pipelineClose();
+          }
+        }
+        QIR(type,data){
+          switch (type) {
+            /**
+            typeCheck data:{
+              value:any,
+              correct:'type string'
+            }
+            **/
+            case 'tc':{
+              const Type=data.correct;
+              const Value=data.value;
+              switch (Type) {
+                case 'int':{
+                  return Number.isInteger(Value);
+                }
+                case 'float':{
+                  return typeof Value === 'number' && !Number.isInteger(Value);
+                }
+                case 'percentage':{
+                  const regex = /^100(\.00?)?%|^\d{1,2}(\.\d{1,2})?%$/;
+                  return regex.test(Value);
+                }
+                case 'string':{
+                  return typeof Value === 'string';
+                }
+                case 'boolean':{
+                  return typeof Value === 'boolean';
+                }
+                case 'object':{
+                  return Value !== null && typeof Value === 'object' && !Array.isArray(Value);
+                }
+                case 'array':{
+                  return Array.isArray(Value);
+                }
+              }
+            }
+          }
+        }
+        throwError(message){
+          console.log(message);
+        }
+        pipelineClose(){
+          this.$configs.pipelineHealthy=false;
+        }
+        pipelineOpen(){
+          this.$configs.pipelineHealthy=true;
+        }
       }
     },
     /**

@@ -4,7 +4,7 @@
       <div class="headTitle">
         <span v-text="this.$store.state.serverData.socket.config.name"></span>
         <div class="headTitleMore" @click.stop="switchMapMoreActions()">
-          <more custom="cursor:pointer"></more>
+          <more></more>
         </div>
         <div class="mapMoreActionsClose" @contextmenu.prevent="void 1" @click.stop="switchMapMoreActions()" v-show="mapMoreActionsOpen">
         </div>
@@ -1306,7 +1306,9 @@ export default {
   align-items: center;
 }
 .headTitleMore{
+  cursor: pointer;
   height:100%;
+  width: 25px;
   display:flex;
   justify-content:center;
   align-items:center
