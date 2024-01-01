@@ -1,6 +1,6 @@
 {
-  "name": "map",
-  "version": "0.4.9",
+  "name": "Online_map_editor",
+  "version": "0.5.5",
   "description": "online map editor",
   "author": "Minxi Wan<emilia-t@qq.com>",
   "private": true,
