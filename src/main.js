@@ -12,12 +12,19 @@ Array.prototype.remove = function (val) {
   }
   return this;
 }
+Array.prototype.removeByElementId = function (id) {//Array must [{id:123,type:'point'},{element}...]
+  const index = this.findIndex(item => item.id === id);
+  if (index !== -1) {
+    this.splice(index, 1);
+  }
+  return this;
+}
 new Vue({
   el:'#app',
   data(){
     return{
       Copyright:'Minxi Wan',
-      Version:'0.4.9.8(Develop)',
+      Version:'0.5.5(Preview)',
       lastTime:0,
       fps:0,
       CONFIG,

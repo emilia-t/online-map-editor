@@ -1,9 +1,9 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer" style="pointer-events: auto">
-    <canvas class="eleCanvas" id="eleCanvas" ref="eleCanvas">
+    <canvas id="mixCanvas">
 
     </canvas>
-    <svg style="transform: translateZ(0)" :viewBox="viewBox" class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
+    <svg style="transform: translateZ(0)" class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
       <defs><!--滤镜-->
         <filter id="svgFilterShadow">
           <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
@@ -27,18 +27,22 @@
         <svg-point-temp></svg-point-temp><!--临时点数据-->
         <svg-line-temp></svg-line-temp><!--临时线数据-->
         <svg-area-temp></svg-area-temp><!--临时区域数据-->
-        <svg-area v-for="area in MyAreaData" :key="area.id"
+
+        <svg-area v-for="area in svgAreaData" :key="area.id"
           :pick-config="pickElement(area.id)" :select-config="selectElement(area.id)"
-          :area-config="area" v-show="!mapHiddenElements.has(area.id)">
+          :area-config="area" :show-details-id="showDetailsId" v-show="!mapHiddenElements.has(area.id)">
         </svg-area><!--区域数据-->
-        <svg-line v-for="line in MyPolyLineData" :key="line.id"
+
+        <svg-line v-for="line in svgLineData" :key="line.id"
           :pick-config="pickElement(line.id)" :select-config="selectElement(line.id)"
-          :poly-line-config="line" v-show="!mapHiddenElements.has(line.id)">
+          :poly-line-config="line" :show-details-id="showDetailsId" v-show="!mapHiddenElements.has(line.id)">
         </svg-line><!--线段数据-->
-        <svg-point v-for="point in MyPointData" :key="point.id"
+
+        <svg-point v-for="point in svgPointData" :key="point.id"
           :pick-config="pickElement(point.id)" :select-config="selectElement(point.id)"
-          :point-config="point" v-show="!mapHiddenElements.has(point.id)">
+          :point-config="point" :show-details-id="showDetailsId" v-show="!mapHiddenElements.has(point.id)">
         </svg-point><!--点位数据-->
+
         <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0">
         </svg-point-p0><!--p0-->
       </g>
@@ -78,7 +82,35 @@ export default {
         moveObServer:null,//移动侦测器
         moveObServerDt:[]
       },
+      oldPickElements:[],
+      oldSelectElements:[],
+      showDetailsId:0,
       mixCanvas:null,
+      mixPipeLine:{
+        el:null,
+        options:{
+          viewWidth:null,
+          viewHeight:null,
+          mapHiddenElements:null,
+          mapEjectElements:null,
+          renderRangeX:'150%',
+          renderRangeY:'150%',
+        },
+        elements:{
+          points:null,
+          lines:null,
+          areas:null
+        }
+      },
+      svgPointData:[
+
+      ],
+      svgLineData:[
+
+      ],
+      svgAreaData:[
+
+      ]
     }
   },
   mounted:function(){
@@ -88,43 +120,78 @@ export default {
     startSetting(){//初始化设置
       this.getBrowserConfig();//获取浏览器配置
       this.getScreenCenter();//获取屏幕中心点
-      this.getMousePos();//实时获取鼠标位置
-      //this.mapMoveOut();//has bug
       this.mapMoveStart();//添加移动侦听
       this.mapMoveIng();
       this.mapMoveEnd();
+      this.mapMoveOut();
       this.visualAngleScale();//启用滚轮监听
-      this.clearSelect();//启用点击空白处清除选中
-      this.getMouseClick();//启用鼠标点击监听
-      this.elementDataClick();//实时获取svg点击位置
+      this.listenMousePos();//实时获取鼠标位置
       this.listenBrowserSize();//检测浏览器窗口大小变化
-      this.getMouseUpSvg();//启用鼠标左键松开按下监听
-      this.getMouseDownSvg();
+      this.listenClearSelect();//启用点击空白处清除选中
+      this.listenMouseClick();//启用鼠标点击监听
+      this.listenMouseUpSvg();//启用鼠标左键松开按下监听
+      this.listenMouseDownSvg();
+      this.listenElementDataClick();//实时获取svg点击位置
+      this.initialMapData();
       this.setMixCanvas();
+    },
+    initialMapData(){
+      this.initialPointData();
+      this.initialLineData();
+      this.initialAreaData();
+    },
+    initialPointData(){//解析点数据
+      let Len=this.MyPointData.length;
+      for(let p=0;p<Len;p++){
+        let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyPointData[p].basePoint.y,this.MyPointData[p].basePoint.x);
+        this.$store.state.serverData.socket.mapData.points[p].point={x:viewPosition.x,y:viewPosition.y};
+        this.$store.state.serverData.socket.mapData.points[p].points=[{x:viewPosition.x,y:viewPosition.y}];
+      }
+    },
+    initialLineData(){//解析线段数据
+      let Len=this.MyPolyLineData.length;
+      for(let p=0;p<Len;p++){
+        let pointPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyPolyLineData[p].basePoint.y,this.MyPolyLineData[p].basePoint.x);
+        this.$store.state.serverData.socket.mapData.lines[p].point={x:pointPosition.x,y:pointPosition.y};
+        const count=this.$store.state.serverData.socket.mapData.lines[p].points.length;
+        this.$store.state.serverData.socket.mapData.lines[p].points=[];
+        for(let i=0;i<count;i++){
+          let pointsPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyPolyLineData[p].basePoints[i].y,this.MyPolyLineData[p].basePoints[i].x);
+          this.$store.state.serverData.socket.mapData.lines[p].points.push({x:pointsPosition.x,y:pointsPosition.y});
+        }
+      }
+    },
+    initialAreaData(){//解析区域数据
+      let Len=this.MyAreaData.length;
+      for(let p=0;p<Len;p++){
+        let pointPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyAreaData[p].basePoint.y,this.MyAreaData[p].basePoint.x);
+        this.$store.state.serverData.socket.mapData.areas[p].point={x:pointPosition.x,y:pointPosition.y};
+        const count=this.$store.state.serverData.socket.mapData.areas[p].points.length;
+        this.$store.state.serverData.socket.mapData.areas[p].points=[];
+        for(let i=0;i<count;i++){
+          let pointsPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyAreaData[p].basePoints[i].y,this.MyAreaData[p].basePoints[i].x);
+          this.$store.state.serverData.socket.mapData.areas[p].points.push({x:pointsPosition.x,y:pointsPosition.y});
+        }
+      }
     },
     setMixCanvas(){
       setTimeout(
         ()=>{
-          this.mixCanvas=new this.$store.state.classList.mixCanvas({
-            el:'eleCanvas',
-            options:{
-              viewWidth:this.browserWidth,
-              viewHeight:this.browserHeight,
-            },
-            elements:{
-              point:this.MyPointData,
-              line:[],
-              area:[]
-            }
-          });
+          this.mixPipeLine.el='mixCanvas';
+          this.mixPipeLine.options.viewWidth=this.browserSize.width;
+          this.mixPipeLine.options.viewHeight=this.browserSize.height;
+          this.mixPipeLine.options.mapHiddenElements=this.mapHiddenElements;
+          this.mixPipeLine.options.mapEjectElements=new Map();
+          this.mixPipeLine.elements.points=this.MyPointData;
+          this.mixPipeLine.elements.lines=this.MyPolyLineData;
+          this.mixPipeLine.elements.areas=this.MyAreaData;
+          this.mixCanvas=new this.$store.state.classList.mixCanvas(this.mixPipeLine);
         },0
       );
-
-      console.log(this.mixCanvas);
     },
     selectElement(id){
       let select=this.selectElements.find(num=>num.id===id);
-      if(this.selectElements.find(num=>num.id===id)===undefined){
+      if(select===undefined){
         return {}
       }else {
         return select;
@@ -132,7 +199,7 @@ export default {
     },
     pickElement(id){
       let select=this.pickElements.find(num=>num.id===id);
-      if(this.pickElements.find(num=>num.id===id)===undefined){
+      if(select===undefined){
         return {};
       }else {
         return select;
@@ -152,40 +219,65 @@ export default {
         this.$store.state.cameraConfig.windowChange=true;
       });
     },
-    getMouseUpSvg(){//获取鼠标左键松开的位置(svg)
+    listenMouseUpSvg(){//获取鼠标左键松开的位置(svg)
       this.$refs.elementData.addEventListener('mouseup',(e)=>{
         if(e.button===0){
           this.$store.state.mapConfig.svgMouseUp.x=e.x;this.$store.state.mapConfig.svgMouseUp.y=e.y;
+        }else if(e.button===2){
+          this.$store.state.mapConfig.svgMouseRUp.x=e.x;this.$store.state.mapConfig.svgMouseRUp.y=e.y;
         }
       }
       )
     },
-    getMouseDownSvg(){//获取鼠标左键按下的位置(svg)
+    listenMouseDownSvg(){//获取鼠标左键按下的位置(svg)
       this.$refs.elementData.addEventListener('mousedown',(e)=>{
           if(e.button===0){
-            this.$store.state.mapConfig.svgMouseDown.x=e.x;
-            this.$store.state.mapConfig.svgMouseDown.y=e.y;
+            this.$store.state.mapConfig.svgMouseDown.x=e.x;this.$store.state.mapConfig.svgMouseDown.y=e.y;
+          }else if(e.button===2){
+            this.$store.state.mapConfig.svgMouseRDown.x=e.x;this.$store.state.mapConfig.svgMouseRDown.y=e.y;
           }
         }
       )
     },
-    getMouseClick(){//获取鼠标点击位置
+    listenMouseClick(){//获取鼠标点击位置
       document.addEventListener("click", (e)=>{
         this.$store.state.mapConfig.mouseClick.x=e.x;
         this.$store.state.mapConfig.mouseClick.y=e.y;
       });
     },
-    getMousePos(){//实时获取鼠标位置
+    listenMousePos(){//实时获取鼠标位置
       document.addEventListener("mousemove", (e)=>{
         this.$store.state.mapConfig.mousePoint.x=e.x;
         this.$store.state.mapConfig.mousePoint.y=e.y;
       });
     },
-    elementDataClick(){//实时获取svg点击位置
+    listenElementDataClick(){//实时获取svg点击位置
       this.$refs.elementData.addEventListener("click",(e)=>{
         this.$store.state.mapConfig.svgClick.x=e.x;
         this.$store.state.mapConfig.svgClick.y=e.y;
       });
+    },
+    listenClearSelect(){//清除选中要素及选中要素数据
+      this.$refs.elementData.addEventListener("click",(ev)=>{
+        let downX=this.$store.state.mapConfig.svgMouseDown.x;
+        let upX=this.$store.state.mapConfig.svgMouseUp.x;
+        let downY=this.$store.state.mapConfig.svgMouseDown.y;
+        let upY=this.$store.state.mapConfig.svgMouseUp.y;
+        if(downX!==upX || downY!==upY){
+          return false;
+        }
+        let nodeNames=['polyline','polygon','circle','path'];//可以被选中的要素nodeName合集
+        if(nodeNames.indexOf(ev.target.nodeName)===-1){
+          this.$store.state.detailsPanelConfig.target=-1;
+          this.$store.state.mapConfig.operated.id=-1;
+          this.$store.state.mapConfig.operated.data=null;
+          this.$store.state.detailsPanelConfig.data={point:{x:null,y:null}};
+          this.$store.state.mapConfig.clearClick.x=ev.x;//更新点击空白处操作位置
+          this.$store.state.mapConfig.clearClick.y=ev.y;
+        }
+        setTimeout(()=>this.showDetailsId=0,0);
+        this.$store.state.operationBoardConfig.display=false;//关闭element operation board
+      })
     },
     elementDataDbClick(e){//双击svg事件
       this.$store.state.mapConfig.svgDbClick.x=e.x;
@@ -251,7 +343,7 @@ export default {
       this.$store.state.mapConfig.centerPoint.y=window.innerHeight/2;
     },
     createTestLine(){//创建一条测试用的Line
-
+      void 0;
     },
     mapMoveOut(){//鼠标移出界面外后停止移动
       let dataLayer=this.$refs.dataLayer;
@@ -376,7 +468,7 @@ export default {
               }
             }
           }
-          ,this.frameTime);
+          ,this.$store.state.cameraConfig.frameTime);
       }
     },
     removeMoveObServer(){//移除移动侦测器
@@ -396,34 +488,34 @@ export default {
       this.$store.state.mapConfig.movingDistance.x=0;
       this.$store.state.mapConfig.movingDistance.y=0;
     },
-    clearSelect(){//清除选中要素及选中要素数据
-      this.$refs.elementData.addEventListener("click",(ev)=>{
-        let downX=this.$store.state.mapConfig.svgMouseDown.x;
-        let upX=this.$store.state.mapConfig.svgMouseUp.x;
-        let downY=this.$store.state.mapConfig.svgMouseDown.y;
-        let upY=this.$store.state.mapConfig.svgMouseUp.y;
-        if(downX!==upX || downY!==upY){
-          return false;
-        }
-        let nodeNames=['polyline','polygon','circle','path'];//可以被选中的要素nodeName合集
-        if(nodeNames.indexOf(ev.target.nodeName)===-1){
-          this.$store.state.detailsPanelConfig.target=-1;
-          this.$store.state.mapConfig.operated.id=-1;
-          this.$store.state.mapConfig.operated.data=null;
-          this.$store.state.detailsPanelConfig.data={point:{x:null,y:null}};
-          this.$store.state.mapConfig.clearClick.x=ev.x;//更新点击空白处操作位置
-          this.$store.state.mapConfig.clearClick.y=ev.y;
-        }
-        this.$store.state.operationBoardConfig.display=false;//关闭element operation board
-      })
-    }
   },
   computed:{
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
-    viewBox(){
-      return this.$store.state.mapConfig.browser.width!==null?`0 0 ${this.$store.state.mapConfig.browser.width} ${this.$store.state.mapConfig.browser.height}`:'0 0 0 0';
+    doNeedMoveMap(){
+      return this.$store.state.cameraConfig.doNeedMoveMap;
+    },
+    mixCanvasFlash(){
+      return this.$store.state.cameraConfig.mixCanvasFlash;
+    },
+    browserSize(){
+      return this.$store.state.mapConfig.browser;
+    },
+    layer(){
+      return this.$store.state.mapConfig.layer;
+    },
+    svgMouseDown(){
+      return this.$store.state.mapConfig.svgMouseDown;
+    },
+    svgMouseUp(){
+      return this.$store.state.mapConfig.svgMouseUp;
+    },
+    svgMouseRDown(){
+      return this.$store.state.mapConfig.svgMouseRDown;
+    },
+    svgMouseRUp(){
+      return this.$store.state.mapConfig.svgMouseRUp;
     },
     mapHiddenElements(){
       let map=new Map();
@@ -441,15 +533,6 @@ export default {
     },
     cursor(){
       return this.$store.state.mapConfig.cursor;
-    },
-    frameTime() {
-      return this.$store.state.cameraConfig.frameTime;
-    },
-    commitsCreateTestLine() {
-      return this.$store.state.commits.createTestLine;
-    },
-    A1() {
-      return this.$store.state.mapConfig.A1;
     },
     MyAreaData(){
       if(this.$store.state.serverData.socket){
@@ -472,20 +555,342 @@ export default {
         return [];
       }
     },
-    browserWidth(){
-      return this.$store.state.mapConfig.browser.width;
+    lastDeleteId(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.lastDeleteId;
+      }else {
+        return -1;
+      }
     },
-    browserHeight(){
-      return this.$store.state.mapConfig.browser.height;
-    }
   },
   watch:{
-    movingDistance:{
+    lastDeleteId:{
       handler(newValue){
-        this.$refs.svgAllElement.style.transform='translate('+-newValue.x+'px,'+newValue.y+'px)';
+        if(newValue!==-1){
+          this.svgPointData.removeByElementId(newValue);
+          this.svgLineData.removeByElementId(newValue);
+          this.svgAreaData.removeByElementId(newValue);
+        }
+      }
+    },
+    svgMouseUp:{
+      handler(newValue){
+        if(newValue.x!==this.svgMouseDown.x || newValue.y!==this.svgMouseDown.y)return false;
+        let element=this.mixCanvas.mixGetElementByXY(newValue.x,newValue.y);
+        if(element!==false){
+          if
+          (element.type==='point'){
+            for(let i=0;i<this.svgPointData.length;i++){
+              if(this.svgPointData[i].id===element.id){
+                return false;
+              }
+            }
+            this.svgPointData.push(element);
+            this.showDetailsId=element.id;
+          }
+          else if
+          (element.type==='line'){
+            for(let i=0;i<this.svgLineData.length;i++){
+              if(this.svgLineData[i].id===element.id){
+                return false;
+              }
+            }
+            this.svgLineData.push(element);
+            this.showDetailsId=element.id;
+          }
+          else if
+          (element.type==='area'){
+            for(let i=0;i<this.svgAreaData.length;i++){
+              if(this.svgAreaData[i].id===element.id){
+                return false;
+              }
+            }
+            this.svgAreaData.push(element)
+            this.showDetailsId=element.id;
+          }
+        }
       },
       deep:true
     },
+    svgMouseRUp:{
+      handler(newValue){
+        if(newValue.x!==this.svgMouseRDown.x || newValue.y!==this.svgMouseRDown.y)return false;
+        let element=this.mixCanvas.mixGetElementByXY(newValue.x,newValue.y);//源
+        if(element!==false){
+          if
+          (element.type==='point'){
+            for(let i=0;i<this.svgPointData.length;i++){
+              if(this.svgPointData[i].id===element.id){
+                return false;
+              }
+            }
+            this.svgPointData.push(element);
+          }
+          else if
+          (element.type==='line'){
+            for(let i=0;i<this.svgLineData.length;i++){
+              if(this.svgLineData[i].id===element.id){
+                return false;
+              }
+            }
+            this.svgLineData.push(element);
+          }
+          else if
+          (element.type==='area'){
+            for(let i=0;i<this.svgAreaData.length;i++){
+              if(this.svgAreaData[i].id===element.id){
+                return false;
+              }
+            }
+            this.svgAreaData.push(element)
+          }
+          this.$store.state.operationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
+          this.$store.state.operationBoardConfig.posX=newValue.x;
+          this.$store.state.operationBoardConfig.posY=newValue.y;
+          this.$store.state.mapConfig.operated.id=element.id;//设置operated
+          this.$store.state.mapConfig.operated.data=element;
+        }
+      },
+      deep:true
+    },
+    browserSize:{
+      handler(){
+        if(this.mixCanvas===null)return false;
+        this.mixPipeLine.options.viewWidth=this.browserSize.width;
+        this.mixPipeLine.options.viewHeight=this.browserSize.height;
+        this.mixPipeLine.options.viewHeight=this.browserSize.height;
+        this.mixCanvas.mixReSize();
+        this.mixCanvas.mixSetRenderRange();
+        this.mixCanvas.mixDraw();
+      },
+      deep:true
+    },
+    MyPointData:{
+      handler(){
+        this.initialPointData();
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      }
+    },
+    MyPolyLineData:{
+      handler(){
+        this.initialLineData();
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      }
+    },
+    MyAreaData:{
+      handler(){
+        this.initialAreaData();
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      }
+    },
+    movingDistance:{
+      handler(newValue){
+        this.$refs.svgAllElement.style.transform='translate('+-newValue.x+'px,'+newValue.y+'px)';
+        this.mixCanvas.mixOffset(-newValue.x,newValue.y);
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      },
+      deep:true
+    },
+    doNeedMoveMap:{
+      handler(newValue){
+        if(newValue)return false;
+        this.initialMapData();
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      }
+    },
+    mixCanvasFlash:{
+      handler(){
+        this.initialMapData();
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      }
+    },
+    layer:{
+      handler(){
+        setTimeout(
+          ()=>{
+            this.initialMapData();
+            this.mixCanvas.mixWash();
+            this.mixCanvas.mixDraw();
+          }
+        ,0)
+      }
+    },
+    mapHiddenElements:{
+      handler(newValue){
+        this.mixPipeLine.options.mapHiddenElements=newValue;
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      }
+    },
+    selectElements:{
+      handler(newValue){
+        function getChanges(newArr, oldArr) {
+          const addedItems = newArr.filter(newItem => !oldArr.some(oldItem => oldItem.id === newItem.id));
+          const removedItems = oldArr.filter(oldItem => !newArr.some(newItem => newItem.id === oldItem.id));
+          return { added: addedItems, removed: removedItems };
+        }
+        let changes=getChanges(newValue,this.oldSelectElements);
+        let len=changes.added.length;
+        for(let i=0;i<len;i++){
+          let addElement = this.MyPointData.find(item => item.id === changes.added[i].id);
+          if(addElement===undefined){
+            addElement = this.MyPolyLineData.find(item => item.id === changes.added[i].id);
+          }
+          if(addElement===undefined){
+            addElement = this.MyAreaData.find(item => item.id === changes.added[i].id);
+          }
+          if(addElement!==undefined){
+            this.mixPipeLine.options.mapEjectElements.set(addElement.id,addElement);
+            switch (addElement.type) {
+              case 'point':{
+                if(this.svgPointData.findIndex(item => item.id === addElement.id)===-1){
+                  this.svgPointData.push(JSON.parse(JSON.stringify(addElement)));
+                }
+                break;
+              }
+              case 'line':{
+                if(this.svgLineData.findIndex(item => item.id === addElement.id)===-1) {
+                  this.svgLineData.push(JSON.parse(JSON.stringify(addElement)));
+                }
+                break;
+              }
+              case 'area':{
+                if(this.svgAreaData.findIndex(item => item.id === addElement.id)===-1) {
+                  this.svgAreaData.push(JSON.parse(JSON.stringify(addElement)));
+                }
+                break;
+              }
+            }
+          }
+        }
+
+        let Len=changes.removed.length;
+        for(let i=0;i<Len;i++){
+          if(this.pickElements.findIndex(item=>item.id===changes.removed[i].id)!==-1){//存在其他人使用此要素时不移除svg
+            continue;
+          }
+          let remElement = this.MyPointData.find(item => item.id === changes.removed[i].id);
+          if(remElement===undefined){
+            remElement = this.MyPolyLineData.find(item => item.id === changes.removed[i].id);
+          }
+          if(remElement===undefined){
+            remElement = this.MyAreaData.find(item => item.id === changes.removed[i].id);
+          }
+          if(remElement!==undefined){
+            this.mixPipeLine.options.mapEjectElements.delete(remElement.id);
+            switch (remElement.type) {
+              case 'point':{
+                this.svgPointData.removeByElementId(remElement.id);
+                this.initialPointData();
+                break;
+              }
+              case 'line':{
+                this.svgLineData.removeByElementId(remElement.id);
+                this.initialLineData();
+                break;
+              }
+              case 'area':{
+                this.svgAreaData.removeByElementId(remElement.id);
+                this.initialAreaData();
+                break;
+              }
+            }
+          }
+        }
+
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+        this.oldSelectElements=JSON.parse(JSON.stringify(newValue));
+      }
+    },
+    pickElements:{
+      handler(newValue){
+        function getChanges(newArr, oldArr) {
+          const addedItems = newArr.filter(newItem => !oldArr.some(oldItem => oldItem.id === newItem.id));
+          const removedItems = oldArr.filter(oldItem => !newArr.some(newItem => newItem.id === oldItem.id));
+          return { added: addedItems, removed: removedItems };
+        }
+        let changes=getChanges(newValue,this.oldPickElements);
+
+        let len=changes.added.length;
+        for(let i=0;i<len;i++){
+          let addElement = this.MyPointData.find(item => item.id === changes.added[i].id);//changes id is string
+          if(addElement===undefined){
+            addElement = this.MyPolyLineData.find(item => item.id === changes.added[i].id);
+          }
+          if(addElement===undefined){
+            addElement = this.MyAreaData.find(item => item.id === changes.added[i].id);
+          }
+          if(addElement!==undefined){
+            this.mixPipeLine.options.mapEjectElements.set(addElement.id,addElement);
+            switch (addElement.type) {
+              case 'point':{
+                if(this.svgPointData.findIndex(item => item.id === addElement.id)===-1){
+                  this.svgPointData.push(JSON.parse(JSON.stringify(addElement)));
+                }
+                break;
+              }
+              case 'line':{
+                if(this.svgLineData.findIndex(item => item.id === addElement.id)===-1) {
+                  this.svgLineData.push(JSON.parse(JSON.stringify(addElement)));
+                }
+                break;
+              }
+              case 'area':{
+                if(this.svgAreaData.findIndex(item => item.id === addElement.id)===-1) {
+                  this.svgAreaData.push(JSON.parse(JSON.stringify(addElement)));
+                }
+                break;
+              }
+            }
+          }
+        }
+
+        let Len=changes.removed.length;
+        for(let i=0;i<Len;i++){
+          if(this.selectElements.findIndex(item=>item.id===changes.removed[i].id)!==-1){//存在其他人使用此要素时不移除svg
+            continue;
+          }
+          let remElement = this.MyPointData.find(item => item.id === changes.removed[i].id);
+          if(remElement===undefined){
+            remElement = this.MyPolyLineData.find(item => item.id === changes.removed[i].id);
+          }
+          if(remElement===undefined){
+            remElement = this.MyAreaData.find(item => item.id === changes.removed[i].id);
+          }
+          if(remElement!==undefined){
+            this.mixPipeLine.options.mapEjectElements.delete(remElement.id);
+            switch (remElement.type) {
+              case 'point':{
+                this.svgPointData.removeByElementId(remElement.id);
+                this.initialPointData();
+                break;
+              }
+              case 'line':{
+                this.svgLineData.removeByElementId(remElement.id);
+                this.initialLineData();
+                break;
+              }
+              case 'area':{
+                this.svgAreaData.removeByElementId(remElement.id);
+                this.initialAreaData();
+                break;
+              }
+            }
+          }
+        }
+
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+        this.oldPickElements=JSON.parse(JSON.stringify(newValue));
+      },
+    }
   },
   destroyed(){
 

@@ -29,7 +29,6 @@ export default {
       shiftEndMouse:{x:null,y:null},
       mouseover:false,
       rightLock:false,
-      leftLock:false,
       rendering:true,
     }
   },
@@ -60,6 +59,10 @@ export default {
         return {}
       }
     },
+    "showDetailsId":{
+      type:Number,
+      default:0
+    },
   },
   mounted() {
     this.startSetting();
@@ -69,8 +72,11 @@ export default {
       this.A1Cache.x=this.A1.x;//初始化A1cache
       this.A1Cache.y=this.A1.y;
       this.myId=this.pointConfig.id;
-      this.dataSourcePoint=JSON.parse(JSON.stringify(this.pointConfig.point));
+      this.dataSourcePoint=JSON.parse(JSON.stringify(this.pointConfig.basePoint));
       this.initializePosition();//初始化位置
+      if(this.showDetailsId===this.myId){
+        this.showDetails();
+      }
     },
     shiftStart(ev){//挪动节点
       this.shiftStartMouse.x=ev.x;
@@ -93,7 +99,7 @@ export default {
       if(this.shiftStartMouse.x!==this.shiftEndMouse.x || this.shiftStartMouse.y!==this.shiftEndMouse.y){
         return false;
       }
-      if(this.leftLock){
+      if(this.pickConfig.id!==undefined){
         if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$store.commit('setCoLogMessage',{text:this.pickConfig.user+'正在更新坐标，请稍等',from:'internal:svgPoint',type:'tip'});
         }
@@ -109,7 +115,7 @@ export default {
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
         this.pointConfig.point.x=viewPosition.x;
-        this.pointConfig.point.y=-viewPosition.y;
+        this.pointConfig.point.y=viewPosition.y;
       }
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
         try{
@@ -195,7 +201,7 @@ export default {
       if(this.suppressPickSelect===true){
         return false;
       }
-      if(this.rightLock){
+      if(this.selectConfig.id!==undefined){
         if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$store.commit('setCoLogMessage',{text:this.selectConfig.user+'正在编辑属性，请稍等',from:'internal:svgPoint',type:'tip'});
         }
@@ -271,7 +277,7 @@ export default {
       return this.pointConfig.point.x/this.unit1X;//等于自生的坐标除以单位1
     },
     dynamicPointsY(){
-      return -this.pointConfig.point.y/this.unit1Y;
+      return this.pointConfig.point.y/this.unit1Y;
     },
     doNeedMoveMap(){
       return this.$store.state.cameraConfig.doNeedMoveMap;
@@ -345,18 +351,6 @@ export default {
         this.initializePosition();
       }
     },
-    pickConfig:{
-      handler(newValue){
-        let lock=newValue.id;
-        this.leftLock = lock !== undefined;
-      }
-    },
-    selectConfig:{
-      handler(newValue){
-        let lock=newValue.id;
-        this.rightLock = lock !== undefined;
-      }
-    },
     reinitializeElement:{
       handler(newValue){
         if(newValue!==0){
@@ -383,7 +377,7 @@ export default {
         }
         if(this.myId===this.selectId){
           this.pointConfig.point.x=newValue.x;//移动自身的视图(跟随鼠标)
-          this.pointConfig.point.y=-newValue.y;
+          this.pointConfig.point.y=newValue.y;
         }
       }
     },

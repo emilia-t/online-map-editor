@@ -109,7 +109,8 @@ export default new Vuex.Store({
             const etSize = this.callTileSize(this.tileSize, this.options.zoom);
             const tileV = this.mapLatToViewport(et.x * etSize, et.y * etSize);
             this.drawRect(tileV.x, tileV.y, etSize, etSize);
-            const text = `${zoom}/${et.x}/${et.y}.png`;
+            //const text = `${zoom}/${et.x}/${et.y}.png`;
+            const text = '加载图片中';
             this.drawText(text, tileV.x + etSize / 2, tileV.y + etSize / 2);
             this.drawTileImg(zoom, et.x, et.y);
           });
@@ -377,6 +378,7 @@ export default new Vuex.Store({
           this.mapLayerOrder=[];
           this.config={};
           this.lastEdit='很久以前';
+          this.lastDeleteId=-1;
           this.otherA1=[];
           this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
           this.Instruct={//指令合集
@@ -947,14 +949,14 @@ export default new Vuex.Store({
                 let selectUser=jsonData.data[key]['select'];
                 if(pickUser!==null){
                   pickElements.push({
-                    id:eId,
+                    id:parseInt(eId),
                     user:pickUser.name,
                     color:pickUser.color,
                   });
                 }
                 if(selectUser!==null){
                   selectElements.push({
-                    id:eId,
+                    id:parseInt(eId),
                     user:selectUser.name,
                     color:selectUser.color,
                   });
@@ -967,11 +969,15 @@ export default new Vuex.Store({
             case 'send_mapData':{//服务器发来的地图数据
               for (let i=0;i<jsonData.data.length;i++){
                 try{
-                  let [Ps,Pt]=[null,null]//point相关
+                  let [Ps,Pt,basePs,basePt]=[null,null,null,null]//point相关
                   Pt=JSON.parse(window.atob(jsonData.data[i].point));
+                  basePt=JSON.parse(window.atob(jsonData.data[i].point));
                   Ps=JSON.parse(window.atob(jsonData.data[i].points));
+                  basePs=JSON.parse(window.atob(jsonData.data[i].points));
                   jsonData.data[i].points=Ps;
+                  jsonData.data[i].basePoints=basePs;
                   jsonData.data[i].point=Pt;
+                  jsonData.data[i].basePoint=basePt;
                   let [loc,baseD,Pu]=[true,null,null];//details
                   let [lock,base64,ref]=[true,null,null];//custom
                   try{
@@ -1065,7 +1071,7 @@ export default new Vuex.Store({
                 }
                 case 'line':{//新增线段数据广播
                   try{
-                    let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
+                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null]
                     try{
                       baseA=window.atob(jsonData.data.points);//将base64转化为普通字符
                       baseB=window.atob(jsonData.data.point);
@@ -1075,12 +1081,16 @@ export default new Vuex.Store({
                       if(lock){
                         Ps=JSON.parse(baseA);
                         Pt=JSON.parse(baseB);
+                        basePs=JSON.parse(baseA);
+                        basePt=JSON.parse(baseB);
                       }
                     }
                     catch(e){lock=false;}
                     if(lock){
                       jsonData.data.points=Ps;
                       jsonData.data.point=Pt;
+                      jsonData.data.basePoints=basePs;
+                      jsonData.data.basePoint=basePt;
                     }
                   }catch(e){}
                   try{
@@ -1107,7 +1117,7 @@ export default new Vuex.Store({
                 }
                 case 'area':{//新增线段数据广播
                   try{//解析坐标
-                    let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
+                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null]
                     try{
                       baseA=window.atob(jsonData.data.points);
                       baseB=window.atob(jsonData.data.point);
@@ -1117,12 +1127,16 @@ export default new Vuex.Store({
                       if(lock){
                         Ps=JSON.parse(baseA);
                         Pt=JSON.parse(baseB);
+                        basePs=JSON.parse(baseA);
+                        basePt=JSON.parse(baseB);
                       }
                     }
                     catch(e){lock=false;}
                     if(lock){
                       jsonData.data.points=Ps;
                       jsonData.data.point=Pt;
+                      jsonData.data.basePoints=basePs;
+                      jsonData.data.basePoint=basePt;
                     }
                   }catch(e){}
                   try{//解析详细描述信息
@@ -1149,7 +1163,7 @@ export default new Vuex.Store({
                 }
                 case 'point':{//新增点数据广播
                   try{//解析坐标
-                    let [lock,baseA,baseB,Ps,Pt]=[true,null,null,null,null]
+                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null]
                     try{
                       baseA=window.atob(jsonData.data.points);
                       baseB=window.atob(jsonData.data.point);
@@ -1159,15 +1173,19 @@ export default new Vuex.Store({
                       if(lock){
                         Ps=JSON.parse(baseA);
                         Pt=JSON.parse(baseB);
+                        basePs=JSON.parse(baseA);
+                        basePt=JSON.parse(baseB);
                       }
                     }
                     catch(e){lock=false;}
                     if(lock){
                       jsonData.data.points=Ps;
                       jsonData.data.point=Pt;
+                      jsonData.data.basePoints=basePs;
+                      jsonData.data.basePoint=basePt;
                     }
                   }catch(e){}
-                  try{
+                  try{//details解析
                     let [lock,baseA,Ps]=[true,null,null];
                     let [lockCustom,baseCustom,ref]=[true,null,null];
                     try{
@@ -1235,6 +1253,7 @@ export default new Vuex.Store({
                     if(find){
                       this.messages.push(jsonData);//更新消息
                       this.lastEdit=jsonData.time;
+                      this.lastDeleteId=ID;
                     }
                   }
                   catch (e) {}
@@ -1286,9 +1305,11 @@ export default new Vuex.Store({
                 case 'updateElementNode':{//更新某一元素的节点的广播
                   try{//解析
                     let pointsObj=JSON.parse(window.atob(jsonData.data.points));
-                    let pointObj=null;
+                    let basePointsObj=JSON.parse(window.atob(jsonData.data.points));
+                    let [pointObj,basePointObj]=[null,null];
                     if(this.QIR.hasProperty(jsonData.data,'point')){
                       pointObj=JSON.parse(window.atob(jsonData.data.point));
+                      basePointObj=JSON.parse(window.atob(jsonData.data.point));
                     }
                     let CgID=jsonData.data.id;
                     let type=null;//查找type类型（如果有的话）
@@ -1302,8 +1323,10 @@ export default new Vuex.Store({
                           let copyObj={};
                           Object.assign(copyObj,this.mapData[type][k]);
                           copyObj.points=pointsObj;
+                          copyObj.basePoints=basePointsObj;
                           if(pointObj!==null){
                             copyObj.point=pointObj;
+                            copyObj.basePoint=basePointObj;
                           }
                           this.mapData[type].splice(k,1,copyObj);//删除旧数据
                           this.reinitializeSourcePoints=copyObj.points;//同步源
@@ -1555,19 +1578,39 @@ export default new Vuex.Store({
           return true;
         }
       },
-      mixCanvas:class  mixCanvas{
-        $configs={
-          pipelineHealthy:false,
+      mixCanvas:class mixCanvas{
+        $configs={//$开头的为私有属性，请通过内部函数修改私有属性
+          pipelineHealthy:true,
+          renderRangeX:1,
+          renderRangeY:1,
+          renderView:{
+            x1:0,
+            x2:0,
+            y1:0,
+            y2:0,
+          },
+          offsetX:0,
+          offsetY:0,
         };
         $manage={
           optionsRule:{//传入options包含的项目及项目的类型\如果required为false则必须包含一个默认值
-            viewWidth:{
+            viewWidth:{//可视宽度
               type:'int',
               required:true,
             },
             viewHeight:{
               type:'int',
               required:true,
+            },
+            mapHiddenElements:{//被主动隐藏的要素
+              type:'map',
+              required:false,
+              default:new Map(),
+            },
+            mapEjectElements:{//临时弹出不显示的要素
+              type:'map',
+              required:false,
+              default:new Map(),
             },
             renderRangeX:{
               type:'percentage',
@@ -1580,40 +1623,363 @@ export default new Vuex.Store({
               default:'100%',
             }
           },
-          canvas:null,
-          mount:null,
+          colorLinks:{//the mapping relationship between color blocks and elements.example'000001':{id:54,type:'point'}
+
+          },
         };
+        $dom=null;
+        $canvas=null;
+        $cBlock=null;
+        $cBlockDom=null;
         constructor(pipeline){
-          this.pipeline=pipeline;
+          this.pipeline=pipeline;//管线允许外部自由修改
           this.startSetting();
         }
+        QIR(type,data){
+          switch (type) {
+            /**
+             typeCheck data:{
+              value:any,
+              correct:'type string'
+             }
+             return true/false
+             true:normal
+            **/
+            case 'tc':{
+              const Type=data.correct;
+              const Value=data.value;
+              switch (Type) {
+                case 'int':{
+                  return Number.isInteger(Value);
+                }
+                case 'float':{
+                  return typeof Value === 'number' && !Number.isInteger(Value);
+                }
+                case 'percentage':{
+                  const regex = /^(100(\.00?)?%|\d{1,3}(\.\d{1,2})?)%$/;
+                  return regex.test(Value);
+                }
+                case 'string':{
+                  return typeof Value === 'string';
+                }
+                case 'boolean':{
+                  return typeof Value === 'boolean';
+                }
+                case 'object':{
+                  return Value !== null && typeof Value === 'object' && !Array.isArray(Value);
+                }
+                case 'map':{
+                  return Object.prototype.toString.call(Value) === '[object Map]';
+                }
+                case 'array':{
+                  return Array.isArray(Value);
+                }
+              }
+              break;
+            }
+            /**
+             RenderRangeCheck data:element
+             return true/false
+             true:normal
+             **/
+            case 'rrc':{
+              let [node,gap,num,out]=[0,1,0,0];
+              if(this.$configs.renderRangeX<=0 || this.$configs.renderRangeY<=0){//当渲染范围为小于等于0时任何都不渲染
+                return false;
+              }
+              let eleType=data.type;
+              switch (eleType) {
+                case 'point':{
+                  if(data.point.x>this.$configs.renderView.x2 || data.point.x<this.$configs.renderView.x1){
+                    return false;
+                  }else if(data.point.y>this.$configs.renderView.y2 || data.point.y<this.$configs.renderView.y1){
+                    return false;
+                  }else {
+                    return true;
+                  }
+                  break;
+                }
+                default:{
+                  node=data.points.length;
+                  if(node>5 && node<=25){
+                    gap=2;
+                  }else if(node>25 && node<=50){
+                    gap=4;
+                  }else if(node>50 && node<=100){
+                    gap=8;
+                  }else if(node>100){
+                    gap=16;
+                  }
+                  for(let i=0;i<node;i+=gap){
+                    num++;
+                    if(data.points[i].y > this.$configs.renderView.y2 || data.points[i].y < this.$configs.renderView.y1 ||
+                       data.points[i].x < this.$configs.renderView.x1 || data.points[i].x > this.$configs.renderView.x2) {
+                      out++;
+                    }
+                  }
+                  return num !== out;
+                }
+              }
+            }
+          }
+        }
         startSetting(){
-
           this.pipelineCheck();
-
           this.canvasBuild();
-
-          this.elementsDraw();
-
+          this.mixSetRenderRange();
+          this.mixDraw();
         }
-        elementsDraw(){
-
+        /**mixWatcher
+         * 内部监听器，若外部有监听则内部不要再次监听
+         * target：object，被监听的对象
+         * operate：对象发生改变时的处理函数
+         *     operate(newValue,oldValue,property);
+         *     newValue：新的值
+         *     oldValue：旧的值
+         *     property：被修改的属性名
+         * 返回值：
+         *    返回一个Proxy对象
+         * 示例：监听offsetX，实现视图移动
+         * this.$configs=this.mixWatcher(this.$configs,(newValue,oldValue,property)=>{
+         *   if(property==='offsetX'){
+         *     this.mixWash();this.mixDraw();
+         *   }
+         * })
+        **/
+        mixWatcher(target,operate){
+          const handler={
+            set(target,property,value) {
+              let oldValue=target[property];
+              if (typeof value==='object') {
+                value=new Proxy(value,handler);
+              }
+              operate(value,oldValue,property);
+              target[property]=value;
+              return true;
+            }
+          };
+          for (let key in target) {
+            if(target.hasOwnProperty(key)){
+              if (typeof target[key] === 'object') {
+                target[key]=new Proxy(target[key],handler);
+              }
+            }
+          }
+          return new Proxy(target, handler);
         }
-        canvasBuild(){
-          this.mount=document.getElementById(this.pipeline.el);
-          this.mount.setAttribute('width',this.pipeline.options.viewWidth+'px');
-          this.mount.setAttribute('height',this.pipeline.options.viewHeight+'px')
-          this.canvas=this.mount.getContext('2d');
+
+        /**
+         *need check pipeline healthy
+        **/
+
+        mixWash(){//清洗canvas和colorBlock
+          if(!this.$configs.pipelineHealthy){return false;}
+          this.$canvas.clearRect(0,0,this.pipeline.options.viewWidth,this.pipeline.options.viewHeight);
+          this.$cBlock.clearRect(0,0,this.pipeline.options.viewWidth,this.pipeline.options.viewHeight);
+          this.$manage.colorLinks={};
+        }
+        mixDraw(){//绘制元素并同时绘制色块并建立色块与元素的映射关系
+          if(!this.$configs.pipelineHealthy){return false;}
+          let pLen=this.pipeline.elements.points.length;
+          let lLen=this.pipeline.elements.lines.length;
+          let aLen=this.pipeline.elements.areas.length;
+          let cBlockNum=2;
+          function transform(number) {
+            return number.toString(16).padStart(6,'0');
+          }
+          for(let i=0;i<aLen;i++){//先后渲染顺序区域->线段->点
+            if(!this.QIR('rrc',this.pipeline.elements.areas[i])){
+              continue;
+            }
+            if(this.pipeline.elements.areas[i].points===undefined){
+              continue;
+            }
+            if(this.pipeline.options.mapHiddenElements.has(this.pipeline.elements.areas[i].id)){
+              continue;
+            }
+            if(this.pipeline.options.mapEjectElements.has(this.pipeline.elements.areas[i].id)){
+              continue;
+            }
+            let colorBlock=transform(cBlockNum);
+            this.addArea(this.pipeline.elements.areas[i],colorBlock);
+            this.addColorLinks(this.pipeline.elements.areas[i],colorBlock);
+            cBlockNum+=4;
+          }
+          for(let i=0;i<lLen;i++){
+            if(!this.QIR('rrc',this.pipeline.elements.lines[i])){
+              continue;
+            }
+            if(this.pipeline.elements.lines[i].points===undefined){
+              continue;
+            }
+            if(this.pipeline.options.mapHiddenElements.has(this.pipeline.elements.lines[i].id)){
+              continue;
+            }
+            if(this.pipeline.options.mapEjectElements.has(this.pipeline.elements.lines[i].id)){
+              continue;
+            }
+            let colorBlock=transform(cBlockNum);
+            this.addLine(this.pipeline.elements.lines[i],colorBlock);
+            this.addColorLinks(this.pipeline.elements.lines[i],colorBlock);
+            cBlockNum+=4;
+          }
+          for(let i=0;i<pLen;i++){
+            /**
+             *渲染前过滤
+            **/
+            if(!this.QIR('rrc',this.pipeline.elements.points[i])){
+              continue;
+            }
+            if(this.pipeline.elements.points[i].points===undefined){
+              continue;
+            }
+            if(this.pipeline.options.mapHiddenElements.has(this.pipeline.elements.points[i].id)){
+              continue;
+            }
+            if(this.pipeline.options.mapEjectElements.has(this.pipeline.elements.points[i].id)){
+              continue;
+            }
+            /**
+             *渲染前过滤结束
+             **/
+            let colorBlock=transform(cBlockNum);
+            this.addPoint(this.pipeline.elements.points[i],colorBlock);
+            this.addColorLinks(this.pipeline.elements.points[i],colorBlock);
+            cBlockNum+=4;
+          }
+        }
+        mixReSize(){
+          if(!this.$configs.pipelineHealthy){return false;}
+          this.$dom.setAttribute('width',this.pipeline.options.viewWidth+'px');
+          this.$dom.setAttribute('height',this.pipeline.options.viewHeight+'px');
+          this.$cBlockDom.setAttribute('width',this.pipeline.options.viewWidth+'px');
+          this.$cBlockDom.setAttribute('height',this.pipeline.options.viewHeight+'px');
+        }
+        mixOffset(x,y){
+          if(!this.$configs.pipelineHealthy){return false;}
+          this.$configs.offsetX=x;
+          this.$configs.offsetY=y;
+        }
+        mixSetRenderRange(){//设置渲染范围
+          if(!this.$configs.pipelineHealthy){return false;}
+          let x=parseFloat(this.pipeline.options.renderRangeX) / 100;
+          let y=parseFloat(this.pipeline.options.renderRangeY) / 100;
+          if(!isNaN(x) && !isNaN(y)){
+            this.$configs.renderRangeX=x;
+            this.$configs.renderRangeY=y;
+            this.$configs.renderView.x1=((1-this.$configs.renderRangeX)*window.innerWidth)/2;//x1为渲染边界最左侧
+            this.$configs.renderView.x2=this.$configs.renderView.x1+(this.$configs.renderRangeX*window.innerWidth);
+            this.$configs.renderView.y1=((1-this.$configs.renderRangeY)*window.innerHeight)/2;//y1为渲染边界最上侧
+            this.$configs.renderView.y2=this.$configs.renderView.y1+(this.$configs.renderRangeY*window.innerHeight);
+          }else {
+            this.throwError('Error in rendering range parameters')
+          }
+        }
+        mixGetElementByXY(x,y){//获取坐标下的元素数据
+          if(!this.$configs.pipelineHealthy){return false;}
+          function rgbToHex(r,g,b){//rgb转化为6 16格式 未填充
+            return ((r<<16)|(g<<8)|b).toString(16);
+          }
+          const pixelData=this.$cBlock.getImageData(x,y,1,1).data;
+          const color=("000000"+rgbToHex(pixelData[0],pixelData[1],pixelData[2])).slice(-6);
+          if(this.$manage.colorLinks.hasOwnProperty(color)){
+            return this.$manage.colorLinks[color];
+          }else {
+            return false;
+          }
+        }
+        canvasBuild(){//创建基本canvas与虚拟canvas
+          if(!this.$configs.pipelineHealthy){return false;}
+          this.$dom=document.getElementById(this.pipeline.el);
+          this.$dom.setAttribute('width',this.pipeline.options.viewWidth+'px');
+          this.$dom.setAttribute('height',this.pipeline.options.viewHeight+'px');
+          this.$canvas=this.$dom.getContext('2d');
+
+          this.$cBlockDom=document.createElement('CANVAS');
+          this.$cBlockDom.setAttribute('width',this.pipeline.options.viewWidth+'px');
+          this.$cBlockDom.setAttribute('height',this.pipeline.options.viewHeight+'px');
+          this.$cBlock=this.$cBlockDom.getContext('2d');
+        }
+
+        /**
+         *no check pipeline healthy
+        **/
+        addPoint(element,colorBlock){//添加点，需要完整的元素数据和色块
+          this.$canvas.fillStyle='#'+element.color;//normal canvas
+          this.$canvas.beginPath();
+          this.$canvas.arc(element.point.x+this.$configs.offsetX,element.point.y+this.$configs.offsetY,element.width,0,Math.PI*2);
+          this.$canvas.fill();
+
+          this.$cBlock.fillStyle='#'+colorBlock;//color block canvas
+          this.$cBlock.beginPath();
+          this.$cBlock.arc(element.point.x+this.$configs.offsetX,element.point.y+this.$configs.offsetY,element.width,0,Math.PI*2);
+          this.$cBlock.fill();
+        }
+        addLine(element,colorBlock){//添加线，需要完整的元素数据和色块
+          let Len=element.points.length-1;
+          for(let i=0;i<Len;i++){
+            this.$canvas.beginPath();//normal canvas
+            this.$canvas.moveTo(element.points[i].x+this.$configs.offsetX, element.points[i].y+this.$configs.offsetY);
+            this.$canvas.lineTo(element.points[i+1].x+this.$configs.offsetX, element.points[i+1].y+this.$configs.offsetY);
+            this.$canvas.lineWidth=element.width;
+            this.$canvas.strokeStyle='#'+element.color;
+            this.$canvas.stroke();
+
+            this.$cBlock.beginPath();//color block canvas
+            this.$cBlock.moveTo(element.points[i].x+this.$configs.offsetX, element.points[i].y+this.$configs.offsetY);
+            this.$cBlock.lineTo(element.points[i+1].x+this.$configs.offsetX, element.points[i+1].y+this.$configs.offsetY);
+            this.$cBlock.lineWidth=element.width;
+            this.$cBlock.strokeStyle='#'+colorBlock;
+            this.$cBlock.stroke();
+          }
+        }
+        addArea(element,colorBlock){//添加区域，需要完整的元素数据和色块
+          this.$canvas.beginPath();//normal canvas
+          let Len=element.points.length;
+          this.$canvas.moveTo(element.points[0].x+this.$configs.offsetX, element.points[0].y+this.$configs.offsetY);
+          for(let i=1;i<Len;i++){
+            this.$canvas.lineTo(element.points[i].x+this.$configs.offsetX, element.points[i].y+this.$configs.offsetY);
+          }
+          this.$canvas.closePath();
+          this.$canvas.fillStyle='#'+element.color+'80';
+          this.$canvas.fill();
+
+          this.$cBlock.beginPath();//color block canvas
+          this.$cBlock.moveTo(element.points[0].x+this.$configs.offsetX, element.points[0].y+this.$configs.offsetY);
+          for(let i=1;i<Len;i++){
+            this.$cBlock.lineTo(element.points[i].x+this.$configs.offsetX, element.points[i].y+this.$configs.offsetY);
+          }
+          this.$cBlock.closePath();
+          this.$cBlock.fillStyle='#'+colorBlock;
+          this.$cBlock.fill();
+        }
+        addColorLinks(element,colorBlock){//添加色块->元素链接
+          if(!this.$manage.colorLinks.hasOwnProperty(colorBlock)){
+            this.$manage.colorLinks[colorBlock]=element;
+          }
+        }
+        throwError(message){
+          window.logConfig.message.code-=1;
+          window.logConfig.message.text=message;
+          window.logConfig.message.from='external:mixCanvas';
+          window.logConfig.message.type='warn';
         }
         pipelineCheck(){
           if(this.QIR('tc',{value:this.pipeline,correct:'object'})){
-            if(!this.pipeline.hasOwnProperty('el')){this.pipelineClose();return false;}
-            if(!this.QIR('tc',{value:this.pipeline.el,correct:'string'})){
+            if(!this.pipeline.hasOwnProperty('el')){
+              this.throwError('Missing attribute: el');
               this.pipelineClose();return false;
             }
-
-            if(!this.pipeline.hasOwnProperty('options')){this.pipelineClose();return false;}
+            if(!this.QIR('tc',{value:this.pipeline.el,correct:'string'})){
+              this.throwError('Property should be an string: el');
+              this.pipelineClose();return false;
+            }
+            if(!this.pipeline.hasOwnProperty('options')){
+              this.throwError('Missing attribute: options');
+              this.pipelineClose();return false;
+            }
             if(!this.QIR('tc',{value:this.pipeline.options,correct:'object'})){
+              this.throwError('Property should be an object: options');
               this.pipelineClose();return false;
             }
             Object.keys(this.$manage.optionsRule).forEach(//检测选项是否正确
@@ -1649,53 +2015,43 @@ export default new Vuex.Store({
                 }
               }
             );
-            if(!this.pipeline.hasOwnProperty('elements')){this.pipelineClose();return false;}
-            this.pipelineOpen();
+
+            if(!this.pipeline.hasOwnProperty('elements')){
+              this.throwError('Missing attribute: elements');
+              this.pipelineClose();return false;
+            }
+            if(!this.QIR('tc',{value:this.pipeline.elements,correct:'object'})){
+              this.throwError('Property should be an object: elements');
+              this.pipelineClose();return false;
+            }
+            if(!this.pipeline.elements.hasOwnProperty('points')){
+              this.throwError('Missing attribute: points');
+              this.pipelineClose();return false;
+            }
+            if(!this.pipeline.elements.hasOwnProperty('lines')){
+              this.throwError('Missing attribute: lines');
+              this.pipelineClose();return false;
+            }
+            if(!this.pipeline.elements.hasOwnProperty('areas')){
+              this.throwError('Missing attribute: areas');
+              this.pipelineClose();return false;
+            }
+            if(!this.QIR('tc',{value:this.pipeline.elements.points,correct:'array'})){
+              this.throwError('Property should be an array: points');
+              this.pipelineClose();return false;
+            }
+            if(!this.QIR('tc',{value:this.pipeline.elements.lines,correct:'array'})){
+              this.throwError('Property should be an array: lines');
+              this.pipelineClose();return false;
+            }
+            if(!this.QIR('tc',{value:this.pipeline.elements.areas,correct:'array'})){
+              this.throwError('Property should be an array: areas');
+              this.pipelineClose();return false;
+            }
           }
           else {
-           this.pipelineClose();
+            this.pipelineClose();
           }
-        }
-        QIR(type,data){
-          switch (type) {
-            /**
-            typeCheck data:{
-              value:any,
-              correct:'type string'
-            }
-            **/
-            case 'tc':{
-              const Type=data.correct;
-              const Value=data.value;
-              switch (Type) {
-                case 'int':{
-                  return Number.isInteger(Value);
-                }
-                case 'float':{
-                  return typeof Value === 'number' && !Number.isInteger(Value);
-                }
-                case 'percentage':{
-                  const regex = /^100(\.00?)?%|^\d{1,2}(\.\d{1,2})?%$/;
-                  return regex.test(Value);
-                }
-                case 'string':{
-                  return typeof Value === 'string';
-                }
-                case 'boolean':{
-                  return typeof Value === 'boolean';
-                }
-                case 'object':{
-                  return Value !== null && typeof Value === 'object' && !Array.isArray(Value);
-                }
-                case 'array':{
-                  return Array.isArray(Value);
-                }
-              }
-            }
-          }
-        }
-        throwError(message){
-          console.log(message);
         }
         pipelineClose(){
           this.$configs.pipelineHealthy=false;
@@ -1755,7 +2111,6 @@ export default new Vuex.Store({
       showPanel:false,
     },
     mapConfig:{//地图配置
-      A1Layer:0,
       layer:0,
       oldLayer:null,
       zoomAdd:1,//k
@@ -1847,7 +2202,7 @@ export default new Vuex.Store({
         defaultWidth:2,
         showPos:[]
       },
-      mousePoint:{
+      mousePoint:{//鼠标位置
         x:0,
         y:0
       },
@@ -1868,6 +2223,14 @@ export default new Vuex.Store({
         y:0
       },
       svgMouseDown:{
+        x:0,
+        y:0
+      },
+      svgMouseRUp:{
+        x:0,
+        y:0
+      },
+      svgMouseRDown:{
         x:0,
         y:0
       },
@@ -1908,6 +2271,7 @@ export default new Vuex.Store({
       offsetY:0,//y偏移补偿
       wheelInterval:50,//每次缩放间隔
       zoomIng:false,//缩放中否
+      mixCanvasFlash:false,//mixCanvas的刷新
     },
     monitorConfig:{
       fps:0,
@@ -2054,7 +2418,6 @@ export default new Vuex.Store({
     },
     restoreMapConfig(state){//恢复默认地图配置
       state.mapConfig={
-        A1Layer:0,
         layer:0,
         oldLayer:null,
         zoomAdd:1,

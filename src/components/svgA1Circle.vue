@@ -66,7 +66,6 @@ export default {
     scale(){
       let layer=this.layer;
       let oldLayer=this.oldLayer;
-      this.$store.state.mapConfig.A1Layer=layer;
       let zoom=(layer>oldLayer)?this.$store.state.mapConfig.zoomSub:this.$store.state.mapConfig.zoomAdd;
       const MOX=this.mouse.x;
       const MOY=this.mouse.y;

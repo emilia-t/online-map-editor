@@ -86,7 +86,7 @@ export default {
       if(svgData===null){
         return 0;
       }
-      let ref=-svgData.point.y/this.unit1X;
+      let ref=svgData.point.y/this.unit1X;
       return isNaN(ref)?0:ref;
     },
     pointsD(type){
@@ -96,11 +96,11 @@ export default {
       for (let i = 0; i < newArr.length; i++) {
         if(i===0){
           let x = newArr[i].x/this.unit1X;
-          let y = -newArr[i].y/this.unit1Y;
+          let y = newArr[i].y/this.unit1Y;
           refArr+='M'+x+','+y+' ';
         }else {
           let x = newArr[i].x/this.unit1X;
-          let y = -newArr[i].y/this.unit1Y;
+          let y = newArr[i].y/this.unit1Y;
           refArr+='L'+x+','+y+' ';
         }
       }

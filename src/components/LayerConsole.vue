@@ -1,72 +1,286 @@
 <template>
   <div class="consoleLayer" ref="consoleLayer" v-if="view">
-    <h4 class="consoleTitle">F8 监控面板</h4>
+    <h4 class="consoleTitle">F8 监控面板 (启用影响性能)</h4>
+    <h5 class="consoleTitle">Online map editor [版本 {{$root.Version}}] (c) {{$root.Copyright}}，保留所有权利。</h5>
     <div ref="consoleMap" class="consoleMap">
-      运行参数
-      <hr/>
-      浏览器尺寸：{{$store.state.mapConfig.browser.width}} x {{$store.state.mapConfig.browser.height}}
-      <br>
-<!--      地图X轴大小：{{$store.state.mapConfig.mapSize.width.max}} ~ {{$store.state.mapConfig.mapSize.width.min}}-->
-<!--      <br>-->
-<!--      地图Y轴大小：{{$store.state.mapConfig.mapSize.height.max}} ~ {{$store.state.mapConfig.mapSize.height.min}}-->
-<!--      <br>-->
-      A1相对坐标：{{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
-      <br>
-      移动距离：{{$store.state.mapConfig.movingDistance.x}} , {{$store.state.mapConfig.movingDistance.y}}
-      <br>
-      P0相对坐标：
-      <br>
-      {{$store.state.mapConfig.p0.point.x}} , {{$store.state.mapConfig.p0.point.y}}
-      <br>
-      鼠标位置：{{$store.state.mapConfig.mousePoint.x}} , {{$store.state.mapConfig.mousePoint.y}}
-      <br>
-      点击位置：{{$store.state.mapConfig.mouseClick.x}} , {{$store.state.mapConfig.mouseClick.y}}
-      <br>
-      双击位置：{{$store.state.mapConfig.svgDbClick.x}} , {{$store.state.mapConfig.svgDbClick.y}}
-      <br>
-      左键按下：{{$store.state.mapConfig.svgMouseDown.x}} , {{$store.state.mapConfig.svgMouseDown.y}}
-      <br>
-      左键松开：{{$store.state.mapConfig.svgMouseUp.x}} , {{$store.state.mapConfig.svgMouseUp.y}}
-      <br>
-      清空点击：{{$store.state.mapConfig.clearClick.x}} , {{$store.state.mapConfig.clearClick.y}}
-      <br>
-      R-Target：{{$store.state.mapConfig.operated.id}}
-      <br>
-      L-Target：{{$store.state.detailsPanelConfig.target}}
-      <br>
-      新旧层级：{{$store.state.mapConfig.oldLayer}}->{{$store.state.mapConfig.layer}}
-      <br>
-      窗口更新：{{$store.state.cameraConfig.windowChange}}
-      <br>
-      Add&Sub：{{$store.state.mapConfig.zoomAdd}} : {{$store.state.mapConfig.zoomSub}}
-      <br>
-      unit1X&Y：{{$store.state.cameraConfig.unit1X}} : {{$store.state.cameraConfig.unit1Y}}
-      <br>
-      启用额外的底图：{{$store.state.baseMapConfig.enableBaseMap}}
-      <br>
-      底图类型：{{$store.state.baseMapConfig.baseMapType}}
-      <br>
-      启用FPS监控：{{$store.state.userSettingConfig.openFpsMonitor}}
-      <br>
-      FPS：{{$store.state.monitorConfig.fps}}
-      <hr/>
-      指令状态
-      <br>
-      disableMove：{{$store.state.commits.disableMove}}
-      <br>
-      disableZoomAndMove：{{$store.state.commits.disableZoomAndMove}}
-      <br>
-      openF4DebugBord：{{$store.state.commits.openF4DebugBord}}
-      <br>
-      reloadAccounts：{{$store.state.commits.reloadAccounts}}
-      <br>
-      reloadServers：{{$store.state.commits.reloadServers}}
-      <br>
-      previewLine：{{$store.state.commits.previewLine}}
-      <hr/>
-      相机状态
-      <br>
-      采样率：{{$store.state.cameraConfig.frameTime}}
+      <div class="consoleMapSplitA">
+        <hr/>
+        运行参数
+        <br>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            浏览器&nbsp;&nbsp;尺寸：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.browser.width}} x {{$store.state.mapConfig.browser.height}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            地图X轴大小：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.mapSize.width.max}} ~ {{$store.state.mapConfig.mapSize.width.min}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            地图Y轴大小：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.mapSize.height.max}} ~ {{$store.state.mapConfig.mapSize.height.min}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            A1相对坐标：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.A1.x}} , {{$store.state.mapConfig.A1.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            移动距离：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.movingDistance.x}} , {{$store.state.mapConfig.movingDistance.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            P0x坐标：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.p0.point.x}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            P0y坐标：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.p0.point.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            鼠标位置：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.mousePoint.x}} , {{$store.state.mapConfig.mousePoint.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            点击位置：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.mouseClick.x}} , {{$store.state.mapConfig.mouseClick.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            双击位置：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.svgDbClick.x}} , {{$store.state.mapConfig.svgDbClick.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+
+          </div>
+          <div class="consoleMapItemR">
+
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            左键按下：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.svgMouseDown.x}} , {{$store.state.mapConfig.svgMouseDown.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            左键松开：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.svgMouseUp.x}} , {{$store.state.mapConfig.svgMouseUp.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            右键按下：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.svgMouseRDown.x}} , {{$store.state.mapConfig.svgMouseRDown.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            右键松开：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.svgMouseRUp.x}} , {{$store.state.mapConfig.svgMouseRUp.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            清空点击：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.clearClick.x}} , {{$store.state.mapConfig.clearClick.y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            R-Target：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.operated.id}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            L-Target：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.detailsPanelConfig.target}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            新旧层级：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.oldLayer}}->{{$store.state.mapConfig.layer}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            窗口更新：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.cameraConfig.windowChange}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            Add Sub：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.mapConfig.zoomAdd}} : {{$store.state.mapConfig.zoomSub}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            unit1X&Y：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.cameraConfig.unit1X}} : {{$store.state.cameraConfig.unit1Y}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            启用底图：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.baseMapConfig.enableBaseMap}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            底图类型：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.baseMapConfig.baseMapType}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            启用FPS：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.userSettingConfig.openFpsMonitor}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL">
+            当前FPS：
+          </div>
+          <div class="consoleMapItemR">
+            {{$store.state.monitorConfig.fps}}
+          </div>
+        </div>
+        <hr/>
+      </div>
+      <div class="consoleMapSplitB">
+        <hr/>
+        指令状态
+        <br>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL1">
+            disableMove：
+          </div>
+          <div class="consoleMapItemR1">
+            {{$store.state.commits.disableMove}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL1">
+            disableZoomAndMove：
+          </div>
+          <div class="consoleMapItemR1">
+            {{$store.state.commits.disableZoomAndMove}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL1">
+            openF4DebugBord：
+          </div>
+          <div class="consoleMapItemR1">
+            {{$store.state.commits.openF4DebugBord}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL1">
+            reloadAccounts：
+          </div>
+          <div class="consoleMapItemR1">
+            {{$store.state.commits.reloadAccounts}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL1">
+            reloadServers：
+          </div>
+          <div class="consoleMapItemR1">
+            {{$store.state.commits.reloadServers}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL1">
+            previewLine：
+          </div>
+          <div class="consoleMapItemR1">
+            {{$store.state.commits.previewLine}}
+          </div>
+        </div>
+        <hr/>
+        相机状态
+        <br>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL1">
+             采样率：
+          </div>
+          <div class="consoleMapItemR1">
+            {{$store.state.cameraConfig.frameTime}}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -108,14 +322,39 @@ export default {
 </script>
 
 <style scoped>
+.consoleMapItemL1{
+  width: 180px;
+}
+.consoleMapItemR1{
+  width: calc(100% - 180px);
+}
+.consoleMapItemL{
+  width: 110px;
+}
+.consoleMapItemR{
+  width: calc(100% - 110px);
+}
+.consoleMapItem{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content:center;
+  align-items: center;
+}
+.consoleMapSplitA{
+  width: 290px;
+}
+.consoleMapSplitB{
+  width: 250px;
+}
 .consoleTitle{
   padding: 0px;
-  margin: 10px 0px;
+  margin: 5px 0px;
 }
 .consoleLayer{
-  width: 350px;
+  width: 540px;
   height: auto;
-  background: rgba(170, 170, 170, 0.9);
+  background: rgba(170, 170, 170, 0.65);
   color: rgba(255, 255, 255, 0.9);
   display: flex;
   flex-direction: column;
@@ -128,7 +367,7 @@ export default {
 }
 .consoleMap{
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   font-size: 16px;
   font-weight: 100;
   line-height: 22px;

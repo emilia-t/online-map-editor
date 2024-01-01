@@ -730,12 +730,13 @@ export default {
       }
       let screenCenter={x:window.innerWidth/2,y:window.innerHeight/2};
       let moveX=screenCenter.x-elementPosition.x;
-      let moveY=elementPosition.y+screenCenter.y;
+      let moveY=screenCenter.y-elementPosition.y;
       this.$store.state.mapConfig.A1.x+=moveX;
       this.$store.state.mapConfig.A1.y+=moveY;
       this.$store.state.baseMapConfig.baseMap.view.offsetX+=moveX;
       this.$store.state.baseMapConfig.baseMap.view.offsetY+=moveY;
       this.$store.state.baseMapConfig.baseMap.render();
+      this.$store.state.cameraConfig.mixCanvasFlash=!this.$store.state.cameraConfig.mixCanvasFlash
       this.allReinitialize();
       this.setElementFlicker(element,2000);
     },
@@ -1000,18 +1001,22 @@ export default {
           let removedKeys=oldKeys.filter(key=>!newValue.has(key));
           return {addedKeys,removedKeys}
         }
-        let difference=compareMaps(newValue,oldValue);
-        let addLength=difference.addedKeys.length;
-        let removeLength=difference.removedKeys.length;
-        for(let i=0;i<addLength;i++){
-          let pickMember=this.$refs['memberActivity'+difference.addedKeys[i]][0];
-          pickMember.firstChild.style.display='flex';
-          pickMember.firstChild.firstChild.innerText=newValue.get(difference.addedKeys[i]).user;
-        }
-        for(let j=0;j<removeLength;j++){
-          let pickMember=this.$refs['memberActivity'+difference.removedKeys[j]][0];
-          pickMember.firstChild.style.display='none';
-          pickMember.firstChild.firstChild.innerText='';
+        try {
+          let difference=compareMaps(newValue,oldValue);
+          let addLength=difference.addedKeys.length;
+          let removeLength=difference.removedKeys.length;
+          for(let i=0;i<addLength;i++){
+            let pickMember=this.$refs['memberActivity'+difference.addedKeys[i]][0];
+            pickMember.firstChild.style.display='flex';
+            pickMember.firstChild.firstChild.innerText=newValue.get(difference.addedKeys[i]).user;
+          }
+          for(let j=0;j<removeLength;j++){
+            let pickMember=this.$refs['memberActivity'+difference.removedKeys[j]][0];
+            pickMember.firstChild.style.display='none';
+            pickMember.firstChild.firstChild.innerText='';
+          }
+        }catch (e) {
+
         }
       }
     },
@@ -1025,18 +1030,22 @@ export default {
           let removedKeys=oldKeys.filter(key=>!newValue.has(key));
           return {addedKeys,removedKeys}
         }
-        let difference=compareMaps(newValue,oldValue);
-        let addLength=difference.addedKeys.length;
-        let removeLength=difference.removedKeys.length;
-        for(let i=0;i<addLength;i++){
-          let pickMember=this.$refs['memberActivity'+difference.addedKeys[i]][0];
-          pickMember.lastChild.style.display='flex';
-          pickMember.lastChild.firstChild.innerText=newValue.get(difference.addedKeys[i]).user;
-        }
-        for(let j=0;j<removeLength;j++){
-          let pickMember=this.$refs['memberActivity'+difference.removedKeys[j]][0];
-          pickMember.lastChild.style.display='none';
-          pickMember.lastChild.firstChild.innerText='';
+        try {
+          let difference=compareMaps(newValue,oldValue);
+          let addLength=difference.addedKeys.length;
+          let removeLength=difference.removedKeys.length;
+          for(let i=0;i<addLength;i++){
+            let pickMember=this.$refs['memberActivity'+difference.addedKeys[i]][0];
+            pickMember.lastChild.style.display='flex';
+            pickMember.lastChild.firstChild.innerText=newValue.get(difference.addedKeys[i]).user;
+          }
+          for(let j=0;j<removeLength;j++){
+            let pickMember=this.$refs['memberActivity'+difference.removedKeys[j]][0];
+            pickMember.lastChild.style.display='none';
+            pickMember.lastChild.firstChild.innerText='';
+          }
+        }catch (e) {
+
         }
       }
     },

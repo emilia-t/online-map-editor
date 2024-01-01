@@ -88,8 +88,6 @@ export default {
       shiftAllStartPoint:{x:null,y:null},
       shiftAllMoveCache:[],
       NodeDisplay:false,
-      rightLock:false,
-      leftLock:false,
       shiftVirtualStatus:false,
       shiftVirtualNodeOrder:null,
       mouseDownPosition:{x:null,y:null},
@@ -121,7 +119,11 @@ export default {
       default:function (){
         return {}
       }
-    }
+    },
+    "showDetailsId":{
+      type:Number,
+      default:0
+    },
   },
   mounted:function (){
     this.startSetting();
@@ -131,10 +133,13 @@ export default {
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
       this.myId=this.areaConfig.id;
-      this.dataSourcePoint=JSON.parse(JSON.stringify(this.areaConfig.point));
-      this.dataSourcePoints=JSON.parse(JSON.stringify(this.areaConfig.points));
+      this.dataSourcePoint=JSON.parse(JSON.stringify(this.areaConfig.basePoint));
+      this.dataSourcePoints=JSON.parse(JSON.stringify(this.areaConfig.basePoints));
       this.initializePosition();
       this.KeyListen();
+      if(this.showDetailsId===this.myId){
+        this.showDetails();
+      }
     },
     isElementInViewport(){//检测元素是否在可视范围内如果在范围内返回true否则返回false
       try {
@@ -342,7 +347,7 @@ export default {
       if(this.suppressPickSelect===true){
         return false;
       }
-      if(this.rightLock){
+      if(this.selectConfig.id!==undefined){
         if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$store.commit('setCoLogMessage',{text:this.selectConfig.user+'正在编辑属性，请稍等',from:'internal:svgArea',type:'tip'});
         }
@@ -363,15 +368,19 @@ export default {
       if(this.mouseDownPosition.x!==this.mouseUpPosition.x || this.mouseDownPosition.y!==this.mouseUpPosition.y){
         return false;
       }
-      if(this.leftLock){
+      if(this.pickConfig.id!==undefined){
         if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$store.commit('setCoLogMessage',{text:this.pickConfig.user+'正在更新形状，请稍等',from:'internal:svgArea',type:'tip'});
         }
         return false;
       }
-      this.$store.state.detailsPanelConfig.target=this.myId;
-      this.$store.state.detailsPanelConfig.data=this.areaConfig;
-      this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
+      setTimeout(
+        ()=>{
+          this.$store.state.detailsPanelConfig.target=this.myId;
+          this.$store.state.detailsPanelConfig.data=this.areaConfig;
+          this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
+        }
+      ,0);
     },
     initializePosition(){//初始化定位
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
@@ -676,18 +685,6 @@ export default {
     allReinitialize:{
       handler(){
         this.initializePosition();
-      }
-    },
-    pickConfig:{
-      handler(newValue){
-        let lock=newValue.id;
-        this.leftLock = lock !== undefined;
-      }
-    },
-    selectConfig:{
-      handler(newValue){
-        let lock=newValue.id;
-        this.rightLock = lock !== undefined;
       }
     },
     clearClick:{

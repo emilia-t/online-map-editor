@@ -1,5 +1,5 @@
 <template>
-  <g v-if="rendering" ref="svgElement">
+  <g v-if="true" ref="svgElement">
     <g v-show="selectConfig.id===myId || pickConfig.id===myId">
       <path :id="'textPath'+polyLineConfig.id" :d="dynamicPointsString" :style="highlightStyle" filter="url(#svgFilterShadow)" class="svgLineTextPath"/><!--文字路径-->
     </g>
@@ -43,8 +43,6 @@ export default {
       NodeDisplay:false,
       shiftVirtualStatus:false,
       shiftVirtualNodeOrder:null,
-      rightLock:false,
-      leftLock:false,
       mouseDownPosition:{x:null,y:null},
       mouseUpPosition:{x:null,y:null},
       rendering:true,
@@ -75,6 +73,10 @@ export default {
         return {}
       }
     },
+    "showDetailsId":{
+      type:Number,
+      default:0
+    },
   },
   mounted(){
     this.startSetting();
@@ -84,10 +86,13 @@ export default {
       this.A1Cache.x=this.A1.x;
       this.A1Cache.y=this.A1.y;
       this.myId=this.polyLineConfig.id;//拷贝id
-      this.dataSourcePoint=JSON.parse(JSON.stringify(this.polyLineConfig.point));//拷贝源点数据
-      this.dataSourcePoints=JSON.parse(JSON.stringify(this.polyLineConfig.points));//拷贝源点s数据
+      this.dataSourcePoint=JSON.parse(JSON.stringify(this.polyLineConfig.basePoint));//拷贝源点数据
+      this.dataSourcePoints=JSON.parse(JSON.stringify(this.polyLineConfig.basePoints));//拷贝源点s数据
       this.initializePosition();//不要提前
       this.KeyListen();
+      if(this.showDetailsId===this.myId){
+        this.showDetails();
+      }
     },
     isElementInViewport(){//检测元素是否在可视范围内如果在范围内返回true否则返回false
       try {
@@ -286,7 +291,7 @@ export default {
       if(this.suppressPickSelect===true){
         return false;
       }
-      if(this.rightLock){
+      if(this.selectConfig.id!==undefined){
         if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$store.commit('setCoLogMessage',{text:this.selectConfig.user+'正在编辑属性，请稍等',from:'internal:svgLine',type:'tip'});
         }
@@ -307,25 +312,29 @@ export default {
       if(this.mouseDownPosition.x!==this.mouseUpPosition.x || this.mouseDownPosition.y!==this.mouseUpPosition.y){
         return false;
       }
-      if(this.leftLock){
+      if(this.pickConfig.id!==undefined){
         if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
           this.$store.commit('setCoLogMessage',{text:this.pickConfig.user+'正在更新形状，请稍等',from:'internal:svgLine',type:'tip'});
         }
         return false;
       }
-      this.$store.state.detailsPanelConfig.target=this.myId;//广播被选中id
-      this.$store.state.detailsPanelConfig.data=this.polyLineConfig;
-      this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
+      setTimeout(
+        ()=>{
+          this.$store.state.detailsPanelConfig.target=this.myId;//广播被选中id
+          this.$store.state.detailsPanelConfig.data=this.polyLineConfig;
+          this.$store.state.detailsPanelConfig.sourcePoint=this.dataSourcePoint;
+        }
+      ,0);
     },
     initializePosition(){//初始化定位
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
         this.polyLineConfig.point.x=viewPosition.x;
-        this.polyLineConfig.point.y=-viewPosition.y;
+        this.polyLineConfig.point.y=viewPosition.y;
         for(let i=0;i<this.dataSourcePoints.length;i++){//循环遍历
           let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x)
           this.polyLineConfig.points[i].x=viewPosition.x;
-          this.polyLineConfig.points[i].y=-viewPosition.y;
+          this.polyLineConfig.points[i].y=viewPosition.y;
         }
       }
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
@@ -544,11 +553,11 @@ export default {
       for (let i = 0; i < newArr.length; i++) {
         if(i===0){
           let x = newArr[i].x/this.unit1X;
-          let y = -newArr[i].y/this.unit1Y;
+          let y = newArr[i].y/this.unit1Y;
           refArr+='M'+x+','+y+' ';
         }else {
           let x = newArr[i].x/this.unit1X;
-          let y = -newArr[i].y/this.unit1Y;
+          let y = newArr[i].y/this.unit1Y;
           refArr+='L'+x+','+y+' ';
         }
       }
@@ -562,7 +571,7 @@ export default {
       newArr = this.polyLineConfig.points;
       for (let i = 0; i < newArr.length; i++) {
         let x = newArr[i].x/this.unit1X;
-        let y = -newArr[i].y/this.unit1Y;
+        let y = newArr[i].y/this.unit1Y;
         if(tempA!==null){
           refArr.push({a:tempA,b:tempB,c:x,d:y})
         }
@@ -621,18 +630,6 @@ export default {
     allReinitialize:{
       handler(){
         this.initializePosition();
-      }
-    },
-    pickConfig:{
-      handler(newValue){
-        let lock=newValue.id;
-        this.leftLock = lock !== undefined;
-      }
-    },
-    selectConfig:{
-      handler(newValue){
-        let lock=newValue.id;
-        this.rightLock = lock !== undefined;
       }
     },
     clearClick:{
@@ -699,7 +696,7 @@ export default {
               return false;
             }
             this.polyLineConfig.points[nowOrder].x=newValue.x*this.unit1X;//移动自身的视图(跟随鼠标)
-            this.polyLineConfig.points[nowOrder].y=-newValue.y*this.unit1Y;
+            this.polyLineConfig.points[nowOrder].y=newValue.y*this.unit1Y;
             return true;
           }
         }
@@ -720,15 +717,15 @@ export default {
             }
             for(let i=0;i<this.polyLineConfig.points.length;i++){//更新每个节点的位置
               this.polyLineConfig.points[i].x=this.polyLineConfig.points[i].x+xOffset;
-              this.polyLineConfig.points[i].y=this.polyLineConfig.points[i].y+yOffset;
+              this.polyLineConfig.points[i].y=this.polyLineConfig.points[i].y-yOffset;
             }
           }
         }
         if(this.shiftVirtualStatus){
           if(this.polyLineConfig.points.length===this.dataSourcePoints.length){
-            this.polyLineConfig.points.splice(this.shiftVirtualNodeOrder+1,0,{x:newValue.x,y:-newValue.y});
+            this.polyLineConfig.points.splice(this.shiftVirtualNodeOrder+1,0,{x:newValue.x,y:newValue.y});
           }else {
-            this.polyLineConfig.points.splice(this.shiftVirtualNodeOrder+1,1,{x:newValue.x,y:-newValue.y});
+            this.polyLineConfig.points.splice(this.shiftVirtualNodeOrder+1,1,{x:newValue.x,y:newValue.y});
           }
         }
       }
