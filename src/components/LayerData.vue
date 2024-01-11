@@ -164,6 +164,9 @@ export default {
     initialAreaData(){//解析区域数据
       let Len=this.MyAreaData.length;
       for(let p=0;p<Len;p++){
+        if(this.pauseInitialSvgId===this.MyAreaData[p].id){
+          continue;
+        }
         let pointPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyAreaData[p].basePoint.y,this.MyAreaData[p].basePoint.x);
         this.$store.state.serverData.socket.mapData.areas[p].point={x:pointPosition.x,y:pointPosition.y};
         const count=this.$store.state.serverData.socket.mapData.areas[p].points.length;
@@ -488,11 +491,19 @@ export default {
       this.$store.state.mapConfig.movingDistance.x=0;
       this.$store.state.mapConfig.movingDistance.y=0;
     },
+    getChangesByArray(newArr, oldArr) {
+      const addedItems = newArr.filter(newItem => !oldArr.some(oldItem => oldItem.id === newItem.id));
+      const removedItems = oldArr.filter(oldItem => !newArr.some(newItem => newItem.id === oldItem.id));
+      return { added: addedItems, removed: removedItems };
+    },
   },
   computed:{
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    pauseInitialSvgId(){
+      return this.$store.state.cameraConfig.pauseInitialSvgId
+    },
     doNeedMoveMap(){
       return this.$store.state.cameraConfig.doNeedMoveMap;
     },
@@ -534,6 +545,13 @@ export default {
     cursor(){
       return this.$store.state.mapConfig.cursor;
     },
+    updateCount(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.updateCount;
+      }else {
+        return 0;
+      }
+    },
     MyAreaData(){
       if(this.$store.state.serverData.socket){
         return this.$store.state.serverData.socket.mapData.areas;
@@ -564,6 +582,27 @@ export default {
     },
   },
   watch:{
+    updateCount:{//用于同步svg与mixCanvas的数据
+      handler(){
+        let pointLen=this.svgPointData.length;
+        let lineLen=this.svgLineData.length;
+        let areaLen=this.svgAreaData.length;
+        let mapPoints=new Map(this.MyPointData.map(item=>[item.id,item]));
+        let mapLines=new Map(this.MyPolyLineData.map(item=>[item.id,item]));
+        let mapAreas=new Map(this.MyAreaData.map(item=>[item.id,item]));
+        for(let i=0;i<pointLen;i++){
+          Object.assign(this.svgPointData[i],mapPoints.get(this.svgPointData[i].id));
+        }
+        for(let i=0;i<lineLen;i++){
+          Object.assign(this.svgLineData[i],mapLines.get(this.svgLineData[i].id));
+        }
+        for(let i=0;i<areaLen;i++){
+          Object.assign(this.svgAreaData[i],mapAreas.get(this.svgAreaData[i].id));
+        }
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      }
+    },
     lastDeleteId:{
       handler(newValue){
         if(newValue!==-1){
@@ -730,12 +769,7 @@ export default {
     },
     selectElements:{
       handler(newValue){
-        function getChanges(newArr, oldArr) {
-          const addedItems = newArr.filter(newItem => !oldArr.some(oldItem => oldItem.id === newItem.id));
-          const removedItems = oldArr.filter(oldItem => !newArr.some(newItem => newItem.id === oldItem.id));
-          return { added: addedItems, removed: removedItems };
-        }
-        let changes=getChanges(newValue,this.oldSelectElements);
+        let changes=this.getChangesByArray(newValue,this.oldSelectElements);
         let len=changes.added.length;
         for(let i=0;i<len;i++){
           let addElement = this.MyPointData.find(item => item.id === changes.added[i].id);
@@ -811,12 +845,7 @@ export default {
     },
     pickElements:{
       handler(newValue){
-        function getChanges(newArr, oldArr) {
-          const addedItems = newArr.filter(newItem => !oldArr.some(oldItem => oldItem.id === newItem.id));
-          const removedItems = oldArr.filter(oldItem => !newArr.some(newItem => newItem.id === oldItem.id));
-          return { added: addedItems, removed: removedItems };
-        }
-        let changes=getChanges(newValue,this.oldPickElements);
+        let changes=this.getChangesByArray(newValue,this.oldPickElements);
 
         let len=changes.added.length;
         for(let i=0;i<len;i++){

@@ -322,12 +322,12 @@ export default {
   },
   created(){
     this.unwatch=this.$watch('mapLayerOrder',(newValue)=>{
-      if(this.closeDefaultLayer===true){
-        if(newValue.length>0){//当默认图层关闭的时候自动选中第一个图层
-          setTimeout(()=>{this.pickLayerTemplate.id=newValue[0]},0);
-        }
-        this.unwatch();
+      if(newValue.length>0){//自动选中第一个图层
+        setTimeout(()=>{
+          this.pickLayerTemplate.id=newValue[0];
+        },0);
       }
+      this.unwatch();//仅执行一次
     });
   },
   mounted(){
@@ -731,7 +731,7 @@ export default {
       let screenCenter={x:window.innerWidth/2,y:window.innerHeight/2};
       let moveX=screenCenter.x-elementPosition.x;
       let moveY=screenCenter.y-elementPosition.y;
-      this.$store.state.mapConfig.A1.x+=moveX;
+      this.$store.state.mapConfig.A1.x-=moveX;
       this.$store.state.mapConfig.A1.y+=moveY;
       this.$store.state.baseMapConfig.baseMap.view.offsetX+=moveX;
       this.$store.state.baseMapConfig.baseMap.view.offsetY+=moveY;

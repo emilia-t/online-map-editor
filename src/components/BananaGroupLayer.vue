@@ -555,7 +555,9 @@ export default {
       return mixMembers;
     },
     appendNewItemToStructure(newId){//向首层附加新元素
-      return this.layer.structure.splice(2,0,newId);
+      const newArr=this.layer.structure.slice();//创建副本
+      newArr.splice(2,0,newId);
+      return newArr;
     },
     structureUnshiftByItem(structure,route,value){
       if (route.length===1){//路由的尽头

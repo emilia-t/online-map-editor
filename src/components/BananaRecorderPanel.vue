@@ -318,6 +318,7 @@ export default {
                     {
                       id:rid,
                       type:'upload',
+                      updateId:'up'+this.$store.state.serverData.socket.updateId++,
                       class:this.initialIntent[ii].class,
                       reachIntentSerial:this.reachIntentSerial++,
                     }
@@ -338,6 +339,7 @@ export default {
                     {
                       id:rid,
                       type:'updateElement',//更新类型
+                      updateId:'up'+this.$store.state.serverData.socket.updateId++,
                       class:this.initialIntent[ii].class,//元素类型
                       changes:this.initialIntent[ii].changes,//修改类型
                       oldValue:this.initialIntent[ii].oldValue,//旧数据
@@ -358,6 +360,7 @@ export default {
                     {
                       id:rid,
                       type:'updateNode',//更新类型
+                      updateId:'up'+this.$store.state.serverData.socket.updateId++,
                       class:this.initialIntent[ii].class,//元素类型
                       changes:this.initialIntent[ii].changes,//修改类型
                       oldValue:this.initialIntent[ii].oldValue,//旧数据

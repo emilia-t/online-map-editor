@@ -12,7 +12,7 @@
       <circle class="svgLineNodeEffect" :cx="str.a" :cy="str.b" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" @contextmenu="" v-show="nodeDisplay"/><!--节点-->
       <circle class="svgLineNodeEffect" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
 
-      <circle class="svgLineVirtualNode" :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :style="virtualNodeStyle(index)" @mousedown="virtualNodeDown(index,$event)" @mouseup="virtualNodeUp($event)" v-show="selectId===myId"/><!--虚拟节点-->
+      <circle class="svgLineVirtualNode" :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :style="virtualNodeStyle(index)" @mousedown="virtualNodeDown(index)" v-show="selectId===myId"/><!--虚拟节点-->
     </g>
     <g v-show="selectConfig.id===myId || pickConfig.id===myId">
       <text class="svgLineSelectText" :style="textPathPos" :fill="svgTextFill">
@@ -46,6 +46,8 @@ export default {
       mouseDownPosition:{x:null,y:null},
       mouseUpPosition:{x:null,y:null},
       rendering:true,
+      dynamicVNodeId:null,
+      dynamicVNodes:null,
     }
   },
   props:{
@@ -114,7 +116,7 @@ export default {
         }
         for(let i=0;i<len;i+=ofs){
           num++;
-          if((points[i].y>50 || points[i].y<-(this.browserY+50))
+          if((points[i].y<-50 || points[i].y>(this.browserY+50))
           || (points[i].x<-50 || points[i].x>(this.browserX+50))){
             out++;
           }
@@ -141,6 +143,10 @@ export default {
             }
             if(this.$store.state.detailsPanelConfig.targetNode!==null){
               let delOrder=this.shiftNodeOrder;
+              let orderBack=false;
+              if(delOrder>=this.polyLineConfig.points.length-1){//最后一个节点节点后移
+                orderBack=true;
+              }
               let sourcePoints=JSON.parse(JSON.stringify(this.dataSourcePoints));
               let sendObj={
                 id:this.myId,
@@ -166,6 +172,9 @@ export default {
                 sendObj['points']=sourcePoints;
               }
               this.$store.state.serverData.socket.broadcastUpdateElementNode(sendObj);
+              if(orderBack){
+                this.shiftNodeOrder--;
+              }
             }
             break;
           }
@@ -176,11 +185,6 @@ export default {
       this.shiftVirtualStatus=true;
       this.shiftVirtualNodeOrder=index;
       this.$root.sendSwitchInstruct('disableZoomAndMove',true);
-    },
-    virtualNodeUp(){//松开即创建节点
-      this.shiftVirtualStatus=false;
-      this.shiftVirtualNodeOrder=null;
-      this.$root.sendSwitchInstruct('disableZoomAndMove',false);
     },
     getVirtualCenterX(pt1x,pt2x){//计算并返回中心的虚拟点
       return (pt1x+pt2x)/2;
@@ -547,10 +551,10 @@ export default {
       return {x:this.$store.state.mapConfig.mousePoint.x,y:this.$store.state.mapConfig.mousePoint.y};
     },
     dynamicPointsString(){
-      let newArr = [];
+      let newArr=this.polyLineConfig.points;
       let refArr = '';
-      newArr = this.polyLineConfig.points;
-      for (let i = 0; i < newArr.length; i++) {
+      let Len=newArr.length;
+      for (let i = 0; i < Len; i++) {
         if(i===0){
           let x = newArr[i].x/this.unit1X;
           let y = newArr[i].y/this.unit1Y;
@@ -564,12 +568,12 @@ export default {
       return refArr;
     },
     dynamicPointsStr(){
-      let newArr = [];
+      let newArr = this.polyLineConfig.points;
       let refArr = [];
       let tempA = null;
       let tempB = null;
-      newArr = this.polyLineConfig.points;
-      for (let i = 0; i < newArr.length; i++) {
+      let Len=newArr.length;
+      for (let i = 0; i < Len; i++) {
         let x = newArr[i].x/this.unit1X;
         let y = newArr[i].y/this.unit1Y;
         if(tempA!==null){
@@ -721,11 +725,16 @@ export default {
             }
           }
         }
-        if(this.shiftVirtualStatus){
-          if(this.polyLineConfig.points.length===this.dataSourcePoints.length){
-            this.polyLineConfig.points.splice(this.shiftVirtualNodeOrder+1,0,{x:newValue.x,y:newValue.y});
-          }else {
-            this.polyLineConfig.points.splice(this.shiftVirtualNodeOrder+1,1,{x:newValue.x,y:newValue.y});
+        if(this.shiftVirtualStatus){//虚拟节点移动
+          if(this.polyLineConfig.points.length===this.dataSourcePoints.length){//当节点数一致时
+            this.$store.state.cameraConfig.pauseInitialSvgId=this.myId;
+            this.dynamicVNodeId=this.shiftVirtualNodeOrder+1;
+            this.polyLineConfig.points.splice(this.dynamicVNodeId,0,{x:newValue.x,y:newValue.y});
+            this.dynamicVNodes=JSON.parse(JSON.stringify(this.polyLineConfig.points));
+          }else {//在虚拟节点上处理
+            this.dynamicVNodes[this.dynamicVNodeId].x=newValue.x;
+            this.dynamicVNodes[this.dynamicVNodeId].y=newValue.y;
+            this.polyLineConfig.points=JSON.parse(JSON.stringify(this.dynamicVNodes));
           }
         }
       }
@@ -739,7 +748,8 @@ export default {
           let data={
             id:this.myId,
             updateId:'up'+this.$store.state.serverData.socket.updateId++,
-            points,type:'line'
+            points,
+            type:'line'
           };
           let recordObj=JSON.parse(JSON.stringify({
             type:'updateNode',
@@ -755,6 +765,10 @@ export default {
           this.$store.state.serverData.socket.broadcastUpdateElementNode(data);
           this.shiftVirtualStatus=false;
           this.shiftVirtualNodeOrder=null;
+          this.dynamicVNodeId=null;
+          this.dynamicVNodes=null;
+          this.$store.state.cameraConfig.pauseInitialSvgId=-1;//解除暂停解析
+          this.$root.sendSwitchInstruct('disableZoomAndMove',false);
           if(this.$refs.svgElement.classList.contains('graduallyEmergingFirst')){
             this.$refs.svgElement.classList.remove('graduallyEmergingFirst');
             this.$refs.svgElement.classList.add('graduallyEmergingAfter');
@@ -763,7 +777,7 @@ export default {
             this.$refs.svgElement.classList.add('graduallyEmergingFirst');
           }
         }
-        this.shiftStatus=false;//节点移动
+        this.shiftStatus=false;//节点移动停止
         if(this.shiftNodeOrder!==null){
           let nowOrder=this.shiftNodeOrder;
           if(this.shiftStartPoint.x!==null && this.shiftStartPoint.y!==null){

@@ -55,8 +55,7 @@
       <circle :cx="getVirtualCenterX(str.a,str.c)"
               :cy="getVirtualCenterY(str.b,str.d)"
               :style="virtualNodeStyle(index)"
-              @mousedown="virtualNodeDown(index,$event)"
-              @mouseup="virtualNodeUp($event)"
+              @mousedown="virtualNodeDown(index)"
               v-show="selectId===myId"/><!--虚拟节点-->
 
       <text :x="areaCenter.x" :y="areaCenter.y" :style="pickFill"
@@ -93,6 +92,8 @@ export default {
       mouseDownPosition:{x:null,y:null},
       mouseUpPosition:{x:null,y:null},
       rendering:true,
+      dynamicVNodeId:null,
+      dynamicVNodes:null,
     }
   },
   props:{
@@ -161,8 +162,8 @@ export default {
         }
         for(let i=0;i<len;i+=ofs){
           num++;
-          if((points[i].y>50 || points[i].y<-(this.browserY+50))
-            || (points[i].x<-50 || points[i].x>(this.browserX+50))){
+          if((points[i].y<-50 || points[i].y>(this.browserY+50))
+          || (points[i].x<-50 || points[i].x>(this.browserX+50))){
             out++;
           }
         }
@@ -188,6 +189,10 @@ export default {
             }
             if(this.$store.state.detailsPanelConfig.targetNode!==null){
               let delOrder=this.shiftNodeOrder;
+              let orderBack=false;
+              if(delOrder>=this.areaConfig.points.length-1){//最后一个节点节点后移
+                orderBack=true;
+              }
               let sourcePoints=JSON.parse(JSON.stringify(this.dataSourcePoints));
               let sendObj={
                 id:this.myId,
@@ -213,21 +218,19 @@ export default {
                 sendObj['points']=sourcePoints;
               }
               this.$store.state.serverData.socket.broadcastUpdateElementNode(sendObj);
+              if(orderBack){
+                this.shiftNodeOrder--;
+              }
             }
             break;
           }
         }
       });
     },
-    virtualNodeDown(index,event){//更改虚拟节点样式
+    virtualNodeDown(index){//更改虚拟节点样式
       this.shiftVirtualStatus=true;
       this.shiftVirtualNodeOrder=index;
       this.$root.sendSwitchInstruct('disableZoomAndMove',true);
-    },
-    virtualNodeUp(event){//松开即创建节点
-      this.shiftVirtualStatus=false;
-      this.shiftVirtualNodeOrder=null;
-      this.$root.sendSwitchInstruct('disableZoomAndMove',false);
     },
     getVirtualCenterX(pt1x,pt2x){//计算并返回中心的虚拟点
       return (pt1x+pt2x)/2;
@@ -386,12 +389,12 @@ export default {
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
         this.areaConfig.point.x=viewPosition.x;
-        this.areaConfig.point.y=-viewPosition.y;
+        this.areaConfig.point.y=viewPosition.y;
         //循环遍历
         for(let i=0;i<this.dataSourcePoints.length;i++){
           let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x)
           this.areaConfig.points[i].x=viewPosition.x;
-          this.areaConfig.points[i].y=-viewPosition.y;
+          this.areaConfig.points[i].y=viewPosition.y;
         }
       }
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
@@ -496,14 +499,6 @@ export default {
           fill:'#ffffff'
         }
       }
-      return {
-        r:8+'px',
-        strokeWidth:1,
-        pointerEvents:'fill',
-        fillOpacity:0.9,
-        fill:this.shiftNodeOrder===order?'#ff9191':'#bbb',
-        display:this.shiftNodeOrder===order?'inherit':'none'
-      }
     },
   },
   computed:{
@@ -529,7 +524,7 @@ export default {
         polymerize.x+=points[i].x;
         polymerize.y+=points[i].y;
       }
-      return {x:polymerize.x/count,y:-polymerize.y/count}
+      return {x:polymerize.x/count,y:polymerize.y/count}
     },
     browserX(){
       return this.$store.state.mapConfig.browser.width;
@@ -607,15 +602,15 @@ export default {
     mouse(){
       return {x:this.$store.state.mapConfig.mousePoint.x,y:this.$store.state.mapConfig.mousePoint.y};
     },
-    dynamicPointsStr() {
-      let newArr = [];
+    dynamicPointsStr(){
+      let newArr = this.areaConfig.points;
       let refArr = [];
       let tempA = null;
       let tempB = null;
-      newArr = this.areaConfig.points;
-      for (let i = 0; i < newArr.length; i++) {
+      let Len=newArr.length;
+      for (let i = 0; i < Len; i++) {
         let x = newArr[i].x/this.unit1X;
-        let y = -newArr[i].y/this.unit1Y;
+        let y = newArr[i].y/this.unit1Y;
         if(tempA!==null){
           refArr.push({a:tempA,b:tempB,c:x,d:y})
         }
@@ -625,12 +620,12 @@ export default {
       return refArr;
     },
     dynamicPointsString(){
-      let newArr = [];
-      let refArr = '';
-      newArr = this.areaConfig.points;
-      for (let i = 0; i < newArr.length; i++) {
+      let newArr=this.areaConfig.points;
+      let refArr='';
+      let Len=newArr.length;
+      for (let i = 0; i < Len; i++) {
         let x = newArr[i].x/this.unit1X;
-        let y = -newArr[i].y/this.unit1Y;
+        let y = newArr[i].y/this.unit1Y;
         refArr+=x+','+y+' ';
       }
       return refArr;
@@ -751,7 +746,7 @@ export default {
               return false;
             }
             this.areaConfig.points[nowOrder].x=newValue.x*this.unit1X;//移动自身的视图(跟随鼠标)
-            this.areaConfig.points[nowOrder].y=-newValue.y*this.unit1Y;
+            this.areaConfig.points[nowOrder].y=newValue.y*this.unit1Y;
             return true;
           }
         }
@@ -772,15 +767,20 @@ export default {
             }
             for(let i=0;i<this.areaConfig.points.length;i++){//更新每个节点的位置
               this.areaConfig.points[i].x=this.areaConfig.points[i].x+xOffset;
-              this.areaConfig.points[i].y=this.areaConfig.points[i].y+yOffset;
+              this.areaConfig.points[i].y=this.areaConfig.points[i].y-yOffset;
             }
           }
         }
-        if(this.shiftVirtualStatus){
-          if(this.areaConfig.points.length===this.dataSourcePoints.length){
-            this.areaConfig.points.splice(this.shiftVirtualNodeOrder+1,0,{x:newValue.x,y:-newValue.y});
-          }else {
-            this.areaConfig.points.splice(this.shiftVirtualNodeOrder+1,1,{x:newValue.x,y:-newValue.y});
+        if(this.shiftVirtualStatus){//虚拟节点移动
+          if(this.areaConfig.points.length===this.dataSourcePoints.length){//当节点数一致时
+            this.$store.state.cameraConfig.pauseInitialSvgId=this.myId;
+            this.dynamicVNodeId=this.shiftVirtualNodeOrder+1;
+            this.areaConfig.points.splice(this.dynamicVNodeId,0,{x:newValue.x,y:newValue.y});
+            this.dynamicVNodes=JSON.parse(JSON.stringify(this.areaConfig.points));
+          }else {//在虚拟节点上处理
+            this.dynamicVNodes[this.dynamicVNodeId].x=newValue.x;
+            this.dynamicVNodes[this.dynamicVNodeId].y=newValue.y;
+            this.areaConfig.points=JSON.parse(JSON.stringify(this.dynamicVNodes));
           }
         }
       }
@@ -794,7 +794,8 @@ export default {
           let data={
             id:this.myId,
             updateId:'up'+this.$store.state.serverData.socket.updateId++,
-            points,type:'area'
+            points,
+            type:'area'
           };
           let recordObj=JSON.parse(JSON.stringify({
             type:'updateNode',
@@ -810,6 +811,10 @@ export default {
           this.$store.state.serverData.socket.broadcastUpdateElementNode(data);
           this.shiftVirtualStatus=false;
           this.shiftVirtualNodeOrder=null;
+          this.dynamicVNodeId=null;
+          this.dynamicVNodes=null;
+          this.$store.state.cameraConfig.pauseInitialSvgId=-1;//解除暂停解析
+          this.$root.sendSwitchInstruct('disableZoomAndMove',false);
           if(this.$refs.svgElement.classList.contains('graduallyEmergingFirst')){
             this.$refs.svgElement.classList.remove('graduallyEmergingFirst');
             this.$refs.svgElement.classList.add('graduallyEmergingAfter');
@@ -818,7 +823,7 @@ export default {
             this.$refs.svgElement.classList.add('graduallyEmergingFirst');
           }
         }
-        this.shiftStatus=false;//节点移动
+        this.shiftStatus=false;//节点移动停止
         if(this.shiftNodeOrder!==null){
           let nowOrder=this.shiftNodeOrder;
           if(this.shiftStartPoint.x!==null && this.shiftStartPoint.y!==null){

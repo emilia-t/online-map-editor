@@ -113,14 +113,15 @@ export default {
     },
     addArea(){
       if(this.theConfig.obServe===false){
-        this.theConfig.obServe=true;//启用观察者
         if(this.areaListener===false){//避免重复
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddArea===true && this.addAreaClock===false && this.nodeSuppressor!==true){
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
+                if(ev.target.classList[0]==='Icon40X'){return;}
                 let Pos=this.computeMouseActualPos(ev)//计算新增点位置
-                if(Pos.x===this.theConfig.areaAddNodeLastPos.x && Pos.y===this.theConfig.areaAddNodeLastPos.y){
+                if(Pos.x===this.theConfig.areaAddNodeLastPos.x &&
+                   Pos.y===this.theConfig.areaAddNodeLastPos.y){
                   return false;
                 }else{
                   this.theConfig.areaAddNodeLastPos=Pos;
@@ -131,6 +132,7 @@ export default {
           });
           this.areaListener=true;
         }
+        this.theConfig.obServe=true;
       }
     },
     addAreaCancel(){
@@ -192,16 +194,17 @@ export default {
     },
     addLine(){//添加线
       if(this.theConfig.obServe===false){
-        this.theConfig.obServe=true;//启用观察者
         if(this.lineListener===false){//避免重复
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddLine===true && this.addLineClock===false && this.nodeSuppressor!==true){
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
+                if(ev.target.classList[0]==='Icon40X'){return;}
                 let Pos=this.computeMouseActualPos(ev);//计算新增点位置
-                if(Pos.x===this.theConfig.lineAddNodeLastPos.x && Pos.y===this.theConfig.lineAddNodeLastPos.y){
+                if(Pos.x===this.theConfig.lineAddNodeLastPos.x &&
+                   Pos.y===this.theConfig.lineAddNodeLastPos.y){//避免在同一个位置添加点
                   return false;
-                }else {
+                }else{
                   this.theConfig.lineAddNodeLastPos=Pos;
                   this.theConfig.addLinePos.push(Pos);
                 }
@@ -210,6 +213,7 @@ export default {
           });
           this.lineListener=true;
         }
+        this.theConfig.obServe=true;
       }
     },
     addAreaEnd(){//双击结束添加区域
@@ -236,12 +240,12 @@ export default {
     },
     addPoint(){//添加点
       if(this.theConfig.obServe===false){//监听下一次的鼠标点击位置
-        this.theConfig.obServe=true;//启用观察者
         if(this.pointListener===false){//避免重复
           document.addEventListener("click",(ev)=>{
             if(this.theConfig.obServe===true && this.isAddPoint===true && this.nodeSuppressor!==true){
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
+                if(ev.target.classList[0]==='Icon40X'){return;}
                 let Pos=this.computeMouseActualPos(ev)//计算新增点位置
                 this.theConfig.addPointPos.x=Pos.x;
                 this.theConfig.addPointPos.y=Pos.y;
@@ -250,6 +254,7 @@ export default {
           });
           this.pointListener=true;
         }
+        this.theConfig.obServe=true;
       }
     },
     computeMouseActualPos(mouseEvent){//计算鼠标点与p0的位置距离并返回鼠标点击位置的坐标
@@ -294,14 +299,15 @@ export default {
     },
     addInterestPointStart(){//添加关注点
       if(!this.isAddPoint){
+        this.$store.commit('suppressPickSelect',true);
         this.isAddPoint=true;//更改添加点状态
         this.Url1Color='#82abfe';
         this.theConfig.buttonA=true;//更改按钮状态
         if(this.$store.state.mapConfig.cursorLock===false){//修改svg鼠标悬浮样式
           this.$store.state.mapConfig.cursor='crosshair';
         }
+
         this.$store.state.mapConfig.cursorLock=true;//禁用更新指针
-        this.$store.commit('suppressPickSelect',true);
         if(this.isAddLine){//更改其他按钮状态
           this.addRouteLineStart();
         }
@@ -440,7 +446,8 @@ export default {
                   updateId:intent.updateId,
                   changes:{color:intent.oldValue}
                 };
-                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+
+                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,intent.class);
                 break;
               }
               case 'width':{
@@ -449,7 +456,7 @@ export default {
                   updateId:intent.updateId,
                   changes:{width:intent.oldValue}
                 };
-                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,intent.class);
                 break;
               }
               case 'custom':{
@@ -458,7 +465,7 @@ export default {
                   updateId:intent.updateId,
                   changes:{custom:intent.oldValue}
                 };
-                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,intent.class);
                 break;
               }
               case 'details':{
@@ -467,7 +474,7 @@ export default {
                   updateId:intent.updateId,
                   changes:{details:intent.oldValue}
                 };
-                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+                this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,intent.class);
                 break;
               }
             }
@@ -477,6 +484,7 @@ export default {
         case 'updateNode':{
           let sendDataObj={
             id:id,
+            updateId:intent.updateId,
             point:intent.oldValue.point,
             points:intent.oldValue.points,
             type:kind,
@@ -490,6 +498,7 @@ export default {
         }
       }
     },
+    //ElementType
     F8Event(){
       this.$root.sendInstruct('openF4DebugBord');
     },

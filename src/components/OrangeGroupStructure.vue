@@ -875,7 +875,7 @@ export default {
       let screenCenter={x:window.innerWidth/2,y:window.innerHeight/2};
       let moveX=screenCenter.x-elementPosition.x;
       let moveY=screenCenter.y-elementPosition.y;
-      this.$store.state.mapConfig.A1.x+=moveX;
+      this.$store.state.mapConfig.A1.x-=moveX;
       this.$store.state.mapConfig.A1.y+=moveY;
       this.$store.state.baseMapConfig.baseMap.view.offsetX+=moveX;
       this.$store.state.baseMapConfig.baseMap.view.offsetY+=moveY;

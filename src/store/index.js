@@ -238,7 +238,7 @@ export default new Vuex.Store({
               return {lat:-1, lng:-1}
             }
         }
-        latLngToViewPosition(lat, lng) {
+        latLngToViewPosition(lat, lng) {//经纬度转虚拟显示坐标
           ({ lat: lat, lng: lng } = this.latLngRotate(lat, lng)); //尝试使用解构赋值
           const my = this.latToTileY(lat, this.options.zoom) * this.tileSize;
           const mx = this.lngToTileX(lng, this.options.zoom) * this.tileSize;
@@ -378,6 +378,7 @@ export default new Vuex.Store({
           this.mapLayerOrder=[];
           this.config={};
           this.lastEdit='很久以前';
+          this.updateCount=0;//对更新元素属性和节点的统计
           this.lastDeleteId=-1;
           this.otherA1=[];
           this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
@@ -650,28 +651,45 @@ export default new Vuex.Store({
             console.log(e);
           }
         }
-        broadcastUpdateElement(data){//广播更新某一要素
+        broadcastUpdateElement(data,type){//广播更新某一要素
           try {
-            if(!this.QIR.isObject(data)){return false;}//0.1检查是否属于object
-            if(this.QIR.hasProperty(data,'changes')){//0.2检查是否存在changes
-              if(this.QIR.hasProperty(data.changes,'color')){//0.3检color
-                if(!this.QIR.color16Check(data.changes.color)){
-                  return false;
-                }
-              }
-              if(this.QIR.hasProperty(data.changes,'width')){//0.4检查width
-                let refWidth=this.QIR.widthCheck(data.changes.width);
-                if(refWidth===false){return false;}else{data.changes.width=refWidth;}
-              }
-              if(this.QIR.hasProperty(data.changes,'details')){//0.5检查details
-                if(!this.QIR.detailsCheck(data.changes.details)){
-                  return false;
-                }
-              }
-              this.send(this.Instruct.broadcast_updateElement(data));//0.6广播
+            if(!data.hasOwnProperty('updateId')){
+              window.logConfig.message.code-=1;
+              window.logConfig.message.text='更新元素失败，缺失updateId';
+              window.logConfig.message.from='external:comprehensive';
+              window.logConfig.message.type='warn';
+              return false;
             }
-          }catch (e) {}
+            if(type==='point' || type==='line' || type==='area' || type==='curve'){
+              if(!this.QIR.isObject(data)){return false;}//0.1检查是否属于object
+              if(this.QIR.hasProperty(data,'changes')){//0.2检查是否存在changes
+                if(this.QIR.hasProperty(data.changes,'color')){//0.3检color
+                  if(!this.QIR.color16Check(data.changes.color)){
+                    return false;
+                  }
+                }
+                if(this.QIR.hasProperty(data.changes,'width')){//0.4检查width
+                  let refWidth=this.QIR.widthCheck(data.changes.width);
+                  if(refWidth===false){return false;}else{data.changes.width=refWidth;}
+                }
+                if(this.QIR.hasProperty(data.changes,'details')){//0.5检查details
+                  if(!this.QIR.detailsCheck(data.changes.details)){
+                    return false;
+                  }
+                }
+                data.type=type;
+                this.send(this.Instruct.broadcast_updateElement(data));//0.6广播
+              }
+            }else {
+              window.logConfig.message.code-=1;
+              window.logConfig.message.text='更新元素失败，所更新的元素类型不支持:'+type;
+              window.logConfig.message.from='external:comprehensive';
+              window.logConfig.message.type='warn';
+              return false;
+            }
+          }catch (e) {
 
+          }
         }
         broadcastDeleteElement(id){//广播删除某一要素
           this.send(this.Instruct.broadcast_deleteElement(id));
@@ -1272,33 +1290,36 @@ export default new Vuex.Store({
                     if(jsonData.data.hasOwnProperty('custom')){//解码details如果有的话
                       jsonData.data.custom=JSON.parse(window.atob(jsonData.data.custom));
                     }
-                    let eId=jsonData.data.id;//提取id
-                    for (let i=0;i<this.mapData.points.length;i++){//查找相应的地图数据并修改地图数据
-                      if(eId==this.mapData.points[i].id){
-                        Object.assign(this.mapData.points[i],jsonData.data);
-                        this.messages.push(jsonData);//更新message
-                        this.lastEdit=jsonData.time;
-                        break;
+                    let eType=undefined;
+                    if(jsonData.data.hasOwnProperty('type')){
+                      eType=jsonData.data.type+'s';
+                    }
+                    let found=false;
+                    let eId=parseInt(jsonData.data.id);//hack
+                    if(!isNaN(eId) && eType!==undefined){
+                      const Len=this.mapData[eType].length;
+                      for (let i=0;i<Len;i++){//查找相应的地图数据并修改地图数据
+                        if(eId===this.mapData[eType][i].id){
+                          Object.assign(this.mapData[eType][i],jsonData.data);
+                          this.messages.push(jsonData);//更新message
+                          this.lastEdit=jsonData.time;
+                          this.updateCount++;
+                          found=true;
+                          break;
+                        }
                       }
                     }
-                    for (let i=0;i<this.mapData.lines.length;i++){//查找相应的地图数据并修改地图数据
-                      if(eId==this.mapData.lines[i].id){
-                        Object.assign(this.mapData.lines[i],jsonData.data);
-                        this.messages.push(jsonData);//更新message
-                        this.lastEdit=jsonData.time;
-                        break;
-                      }
-                    }
-                    for (let i=0;i<this.mapData.areas.length;i++){//查找相应的地图数据并修改地图数据
-                      if(eId==this.mapData.areas[i].id){
-                        Object.assign(this.mapData.areas[i],jsonData.data);
-                        this.messages.push(jsonData);//更新message
-                        this.lastEdit=jsonData.time;
-                        break;
-                      }
+                    if(!found){
+                      window.logConfig.message.code-=1;
+                      window.logConfig.message.text='存在未同步的元素,建议刷新页面ID:'+eId;
+                      window.logConfig.message.from='external:comprehensive';
+                      window.logConfig.message.type='warn';
                     }
                   }catch (e) {
-
+                    window.logConfig.message.code-=1;
+                    window.logConfig.message.text='存在未同步的元素,建议刷新页面ID:'+jsonData.data.id;
+                    window.logConfig.message.from='external:comprehensive';
+                    window.logConfig.message.type='warn';
                   }
                   break;
                 }
@@ -1311,15 +1332,15 @@ export default new Vuex.Store({
                       pointObj=JSON.parse(window.atob(jsonData.data.point));
                       basePointObj=JSON.parse(window.atob(jsonData.data.point));
                     }
-                    let CgID=jsonData.data.id;
-                    let type=null;//查找type类型（如果有的话）
+                    let CgID=parseInt(jsonData.data.id);//hack
+                    let type=null;//查找type类型
                     if(this.QIR.hasProperty(jsonData.data,'type')){
                       type=jsonData.data.type+'s';
                     }
                     if(type!==null){//如果有type类型的话则按照type类型查找
                       let length=this.mapData[type].length;
                       for(let k=0;k<length;k++){
-                        if(this.mapData[type][k].id==CgID){
+                        if(this.mapData[type][k].id===CgID){
                           let copyObj={};
                           Object.assign(copyObj,this.mapData[type][k]);
                           copyObj.points=pointsObj;
@@ -1328,6 +1349,7 @@ export default new Vuex.Store({
                             copyObj.point=pointObj;
                             copyObj.basePoint=basePointObj;
                           }
+                          console.log(copyObj);
                           this.mapData[type].splice(k,1,copyObj);//删除旧数据
                           this.reinitializeSourcePoints=copyObj.points;//同步源
                           if(pointObj!==null){
@@ -1335,71 +1357,34 @@ export default new Vuex.Store({
                           }
                           this.reinitializeElement++;//更改初始化
                           this.reinitializeId=copyObj.id;
-                          this.lastEdit=jsonData.time;
                           break;
                         }
                       }
-                    }else {//没有的话全局查找
-                      let FindLock=false;
-                      let FindType=null;
-                      let FindUnder=null;
-                      let lineLen=this.mapData.lines.length;
-                      let pointLen=this.mapData.points.length;
-                      let areaLen=this.mapData.areas.length;
-                      let leng=Math.max(lineLen,pointLen,areaLen);
-                      for(let i=0;i<leng;i++){
-                        if(i<lineLen){
-                          if(this.mapData['lines'][i].id==CgID){
-                            FindLock=true;
-                            FindType='lines';
-                            FindUnder=i;
-                            break;
-                          }
+                      let MesObj={
+                        type: 'broadcast',
+                        class: 'updateElementNode',
+                        conveyor: jsonData.conveyor,
+                        time: jsonData.time,
+                        data: {
+                          id: jsonData.data.id,
+                          type: jsonData.data.type
                         }
-                        if(i<pointLen){
-                          if(this.mapData['points'][i].id==CgID){
-                            FindLock=true;
-                            FindType='points';
-                            FindUnder=i;
-                            break;
-                          }
-                        }
-                        if(i<areaLen){
-                          if(this.mapData['areas'][i].id==CgID){
-                            FindLock=true;
-                            FindType='areas';
-                            FindUnder=i;
-                            break;
-                          }
-                        }
-                      }
-                      if(FindLock){
-                        let copyObj={};
-                        Object.assign(copyObj,this.mapData[FindType][FindUnder]);
-                        copyObj.points=pointsObj;
-                        if(pointObj!==null){
-                          copyObj.point=pointObj;
-                        }
-                        this.mapData[FindType].splice(FindUnder,1,copyObj);//2.删除旧数据
-                        this.reinitializeElement++;//3.更改初始化
-                        this.reinitializeId=copyObj.id;
-                      }
+                      };
+                      this.messages.push(MesObj);//3.消息通知
+                      this.lastEdit=jsonData.time;
+                      this.updateCount++;
+                    }else{
+                      window.logConfig.message.code-=1;
+                      window.logConfig.message.text='存在未同步的元素,建议刷新页面ID:'+CgID;
+                      window.logConfig.message.from='external:comprehensive';
+                      window.logConfig.message.type='warn';
                     }
-                    let MesObj={
-                      type: 'broadcast',
-                      class: 'updateElementNode',
-                      conveyor: jsonData.conveyor,
-                      time: jsonData.time,
-                      data: {
-                        id: jsonData.data.id,
-                        type: jsonData.data.type
-                      }
-                    };
-                    this.messages.push(MesObj);//3.消息通知
-                    this.lastEdit=jsonData.time;
                     break;
                   }catch (e) {
-
+                    window.logConfig.message.code-=1;
+                    window.logConfig.message.text='存在未同步的元素,建议刷新页面ID:'+jsonData.data.id;
+                    window.logConfig.message.from='external:comprehensive';
+                    window.logConfig.message.type='warn';
                   }
                   break;
                 }
@@ -1677,50 +1662,6 @@ export default new Vuex.Store({
               }
               break;
             }
-            /**
-             RenderRangeCheck data:element
-             return true/false
-             true:normal
-             **/
-            case 'rrc':{
-              let [node,gap,num,out]=[0,1,0,0];
-              if(this.$configs.renderRangeX<=0 || this.$configs.renderRangeY<=0){//当渲染范围为小于等于0时任何都不渲染
-                return false;
-              }
-              let eleType=data.type;
-              switch (eleType) {
-                case 'point':{
-                  if(data.point.x>this.$configs.renderView.x2 || data.point.x<this.$configs.renderView.x1){
-                    return false;
-                  }else if(data.point.y>this.$configs.renderView.y2 || data.point.y<this.$configs.renderView.y1){
-                    return false;
-                  }else {
-                    return true;
-                  }
-                  break;
-                }
-                default:{
-                  node=data.points.length;
-                  if(node>5 && node<=25){
-                    gap=2;
-                  }else if(node>25 && node<=50){
-                    gap=4;
-                  }else if(node>50 && node<=100){
-                    gap=8;
-                  }else if(node>100){
-                    gap=16;
-                  }
-                  for(let i=0;i<node;i+=gap){
-                    num++;
-                    if(data.points[i].y > this.$configs.renderView.y2 || data.points[i].y < this.$configs.renderView.y1 ||
-                       data.points[i].x < this.$configs.renderView.x1 || data.points[i].x > this.$configs.renderView.x2) {
-                      out++;
-                    }
-                  }
-                  return num !== out;
-                }
-              }
-            }
           }
         }
         startSetting(){
@@ -1728,6 +1669,40 @@ export default new Vuex.Store({
           this.canvasBuild();
           this.mixSetRenderRange();
           this.mixDraw();
+        }
+        /**
+         RenderRangeCheck data:element
+         return true/false
+         true:normal
+         **/
+        renderRangeCheck(data){
+          let [gap,num,out]=[0,0,0];
+          let node=data.points.length;
+          if(node<=5){
+           gap=1;
+          }else if(node>5 && node<=25){
+           gap=2;
+          }else if(node>25 && node<=50){
+           gap=4;
+          }else if(node>50 && node<=100){
+           gap=8;
+          }else if(node>100){
+           gap=16;
+          }
+          const renderView=this.$configs.renderView;
+          for(let i=0;i<node;i+=gap){
+            num++;
+            if(
+              data.points[i].y > renderView.y2 ||
+              data.points[i].y < renderView.y1 ||
+              data.points[i].x < renderView.x1 ||
+              data.points[i].x > renderView.x2
+            )
+            {
+              out++;
+            }
+          }
+          return num !== out;
         }
         /**mixWatcher
          * 内部监听器，若外部有监听则内部不要再次监听
@@ -1779,6 +1754,9 @@ export default new Vuex.Store({
           this.$manage.colorLinks={};
         }
         mixDraw(){//绘制元素并同时绘制色块并建立色块与元素的映射关系
+          if(this.$configs.renderRangeX<=0 || this.$configs.renderRangeY<=0){//当渲染范围为小于等于0时任何都不渲染
+            return false;
+          }
           if(!this.$configs.pipelineHealthy){return false;}
           let pLen=this.pipeline.elements.points.length;
           let lLen=this.pipeline.elements.lines.length;
@@ -1788,10 +1766,7 @@ export default new Vuex.Store({
             return number.toString(16).padStart(6,'0');
           }
           for(let i=0;i<aLen;i++){//先后渲染顺序区域->线段->点
-            if(!this.QIR('rrc',this.pipeline.elements.areas[i])){
-              continue;
-            }
-            if(this.pipeline.elements.areas[i].points===undefined){
+            if(!this.renderRangeCheck(this.pipeline.elements.areas[i])){
               continue;
             }
             if(this.pipeline.options.mapHiddenElements.has(this.pipeline.elements.areas[i].id)){
@@ -1806,7 +1781,7 @@ export default new Vuex.Store({
             cBlockNum+=4;
           }
           for(let i=0;i<lLen;i++){
-            if(!this.QIR('rrc',this.pipeline.elements.lines[i])){
+            if(!this.renderRangeCheck(this.pipeline.elements.lines[i])){
               continue;
             }
             if(this.pipeline.elements.lines[i].points===undefined){
@@ -1827,7 +1802,7 @@ export default new Vuex.Store({
             /**
              *渲染前过滤
             **/
-            if(!this.QIR('rrc',this.pipeline.elements.points[i])){
+            if(!this.renderRangeCheck(this.pipeline.elements.points[i])){
               continue;
             }
             if(this.pipeline.elements.points[i].points===undefined){
@@ -2272,6 +2247,7 @@ export default new Vuex.Store({
       wheelInterval:50,//每次缩放间隔
       zoomIng:false,//缩放中否
       mixCanvasFlash:false,//mixCanvas的刷新
+      pauseInitialSvgId:-1,//暂停解析svg的id
     },
     monitorConfig:{
       fps:0,

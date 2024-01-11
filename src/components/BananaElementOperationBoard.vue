@@ -172,39 +172,6 @@ export default {
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
-    submitEdit(ev){//提交-更新缓存-同时上传数据
-      let changes=this.compareObjects(this.operatedBack,this.operatedCache)
-      if(changes.isChange){
-        changes.id=this.operatedCache.id;
-        delete changes.isChange;
-      }
-      this.$store.state.serverData.socket.broadcastUpdateElement(changes);
-    },
-    compareObjects(obj1,obj2){
-      const keys1=Object.keys(obj1);
-      const keys2=Object.keys(obj2);
-      const allKeys=Array.from(new Set(keys1.concat(keys2)));
-      let changes={};
-      for (let i=0;i<allKeys.length;i++) {//遍历对象的每个属性
-        const key=allKeys[i];
-        if (!this.isEqual(obj1[key],obj2[key])){//如果属性值不相等，则将该属性添加到变更对象中
-          changes[key]=obj2[key];
-        }
-      }
-      return {
-        isChange: Object.keys(changes).length > 0,
-        changes,
-       }
-     },
-    isEqual(value,other){//判断两个值是否相等
-      if (value===other){
-        return true
-      }
-      if (typeof value==='object' && typeof other==='object') {
-        return JSON.stringify(value)===JSON.stringify(other)
-      }
-      return false
-    },
     upInsertDetail(key){
       let index=-1;
       for(let i=0;i<this.operated.details.length;i++){
@@ -280,7 +247,7 @@ export default {
         }
       ));
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
-      this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+      this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
     },
     beforeChangeWidth(){
       this.oldWidth=this.operated.width;
@@ -305,7 +272,7 @@ export default {
         }
       ));
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
-      this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+      this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
     },
     beforeChangeColor(){
       this.oldColor=this.operated.color;
@@ -333,12 +300,12 @@ export default {
       if(this.operated.type==='point'){
         if(this.operated.custom!==null){
           this.operated.custom.color='#'+data;
-          this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+          this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
         }else {
-          this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+          this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
         }
       }else {
-        this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+        this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
       }
     },
     beforeChangeCustom(){
@@ -374,7 +341,7 @@ export default {
       ));
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.operated.custom.icon=data;
-      this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj);
+      this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
     },
     editElement(){//编辑操作
       this.editPanelShow=!this.editPanelShow;
