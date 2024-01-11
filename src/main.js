@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import router from './router';
 import App from "./App";
-import general_script from './js/general_script_v1.1';
+import general_script from './js/general_script_v1.1';//a
 import CONFIG from './js/config';
 import store from './store';
 Vue.config.productionTip = false;//允许生产环境输入错误信息
