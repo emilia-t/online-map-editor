@@ -1349,7 +1349,6 @@ export default new Vuex.Store({
                             copyObj.point=pointObj;
                             copyObj.basePoint=basePointObj;
                           }
-                          console.log(copyObj);
                           this.mapData[type].splice(k,1,copyObj);//删除旧数据
                           this.reinitializeSourcePoints=copyObj.points;//同步源
                           if(pointObj!==null){
@@ -1880,33 +1879,37 @@ export default new Vuex.Store({
          *no check pipeline healthy
         **/
         addPoint(element,colorBlock){//添加点，需要完整的元素数据和色块
-          this.$canvas.fillStyle='#'+element.color;//normal canvas
-          this.$canvas.beginPath();
+          this.$canvas.beginPath();//normal canvas
+          this.$canvas.fillStyle='#'+element.color;
           this.$canvas.arc(element.point.x+this.$configs.offsetX,element.point.y+this.$configs.offsetY,element.width,0,Math.PI*2);
           this.$canvas.fill();
 
-          this.$cBlock.fillStyle='#'+colorBlock;//color block canvas
-          this.$cBlock.beginPath();
+          this.$cBlock.beginPath();//color block canvas
+          this.$cBlock.fillStyle='#'+colorBlock;
           this.$cBlock.arc(element.point.x+this.$configs.offsetX,element.point.y+this.$configs.offsetY,element.width,0,Math.PI*2);
           this.$cBlock.fill();
         }
         addLine(element,colorBlock){//添加线，需要完整的元素数据和色块
-          let Len=element.points.length-1;
-          for(let i=0;i<Len;i++){
-            this.$canvas.beginPath();//normal canvas
-            this.$canvas.moveTo(element.points[i].x+this.$configs.offsetX, element.points[i].y+this.$configs.offsetY);
-            this.$canvas.lineTo(element.points[i+1].x+this.$configs.offsetX, element.points[i+1].y+this.$configs.offsetY);
-            this.$canvas.lineWidth=element.width;
-            this.$canvas.strokeStyle='#'+element.color;
-            this.$canvas.stroke();
-
-            this.$cBlock.beginPath();//color block canvas
-            this.$cBlock.moveTo(element.points[i].x+this.$configs.offsetX, element.points[i].y+this.$configs.offsetY);
-            this.$cBlock.lineTo(element.points[i+1].x+this.$configs.offsetX, element.points[i+1].y+this.$configs.offsetY);
-            this.$cBlock.lineWidth=element.width;
-            this.$cBlock.strokeStyle='#'+colorBlock;
-            this.$cBlock.stroke();
+          let Len=element.points.length;
+          this.$canvas.beginPath();//normal canvas
+          this.$canvas.moveTo(element.points[0].x+this.$configs.offsetX, element.points[0].y+this.$configs.offsetY);
+          for(let i=1;i<Len;i++) {
+            this.$canvas.lineTo(element.points[i].x + this.$configs.offsetX, element.points[i].y + this.$configs.offsetY);
           }
+          this.$canvas.lineWidth=element.width;
+          this.$canvas.strokeStyle='#'+element.color;
+          this.$canvas.lineJoin='round';
+          this.$canvas.stroke();
+
+          this.$cBlock.beginPath();//color block canvas
+          this.$cBlock.moveTo(element.points[0].x+this.$configs.offsetX, element.points[0].y+this.$configs.offsetY);
+          for(let i=1;i<Len;i++) {
+            this.$cBlock.lineTo(element.points[i].x + this.$configs.offsetX, element.points[i].y + this.$configs.offsetY);
+          }
+          this.$cBlock.lineWidth=element.width;
+          this.$cBlock.strokeStyle='#'+colorBlock;
+          this.$cBlock.lineJoin='round';
+          this.$cBlock.stroke();
         }
         addArea(element,colorBlock){//添加区域，需要完整的元素数据和色块
           this.$canvas.beginPath();//normal canvas

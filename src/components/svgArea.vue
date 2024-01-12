@@ -79,6 +79,7 @@ export default {
       selectId:-1,
       shiftStatus:false,
       shiftNodeOrder:null,
+      shiftNodeCount:null,//移动节点时元素节点总数
       shiftStartPoint:{x:null,y:null},
       shiftStartMouse:{x:null,y:null},
       shiftEndMouse:{x:null,y:null},
@@ -330,6 +331,7 @@ export default {
       if(ev.button!==0)return false;
       if(this.shiftNodeOrder!==order)this.shiftNodeOrder=order;//允许中途更换节点
       if(this.shiftNodeOrder===null)this.shiftNodeOrder=order;//确定选中节点是哪个
+      this.shiftNodeCount=this.areaConfig.points.length;
       this.$store.state.detailsPanelConfig.target=this.myId;//更新targetId
       this.$root.sendSwitchInstruct('disableZoomAndMove',true);//抑制details
       Object.assign(this.shiftStartPoint,this.areaConfig.points[order]);//保存当前节点坐标位置
@@ -685,6 +687,7 @@ export default {
     clearClick:{
       handler(){
         this.shiftNodeOrder=null;
+        this.shiftNodeCount=null;
       },
       deep:true
     },
@@ -828,7 +831,7 @@ export default {
           let nowOrder=this.shiftNodeOrder;
           if(this.shiftStartPoint.x!==null && this.shiftStartPoint.y!==null){
             if(this.shiftStartPoint.x!==this.areaConfig.points[nowOrder].x || this.shiftStartPoint.y!==this.areaConfig.points[nowOrder].y){
-              if(this.targetId===this.myId){
+              if(this.targetId===this.myId && this.shiftNodeCount===this.areaConfig.points.length){
                 let newPos=this.$root.computeMouseActualPos(newValue);//1.计算新的位置
                 let uObj={
                   id:null,
