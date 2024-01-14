@@ -143,7 +143,7 @@ export default {
         let str='';
         str+=(this.tempArea.showPos[0].x/this.unit1Y)+' '+(-this.tempArea.showPos[0].y/this.unit1Y);
         str+=' ';
-        str+=this.mouse.x+' '+this.mouse.y;
+        str+=(this.mouse.x+this.movingDistance.x)+' '+(this.mouse.y-this.movingDistance.y);
         return str;
       }
     },

@@ -2,9 +2,8 @@ import Vue from 'vue';
 import router from './router';
 import App from "./App";
 import general_script from './js/general_script_v1.1';//a
-import CONFIG from './js/config';
 import store from './store';
-Vue.config.productionTip = false;//允许生产环境输入错误信息
+Vue.config.productionTip = false;//不允许生产环境输入错误信息
 Array.prototype.remove = function (val) {
   const index = this.indexOf(val);
   if (index > -1) {
@@ -27,7 +26,6 @@ new Vue({
       Version:'0.5.5(Preview)',
       lastTime:0,
       fps:0,
-      CONFIG,
       general_script,
       commitsConfig:{
         disabledList:['createTestLine'],
@@ -54,7 +52,7 @@ new Vue({
   created(){
     if(this.$store.state.userSettingConfig.openFpsMonitor){
       setTimeout(()=>this.monitorFPS(),1000);
-      setInterval(()=>this.$store.state.monitorConfig.fps=this.fps,1000);
+      setInterval(()=>this.$store.state.monitorConfig.fps=this.fps,2000);
     }
   },
   methods:{

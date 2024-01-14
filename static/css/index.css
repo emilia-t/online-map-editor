@@ -99,10 +99,10 @@
   fill:rgba(255,255,255,0);
 }
 .svgAreaTempCircle{
-  pointer-events:fill;
-  fill-opacity:0.8;
-  fill:#bbb;
   stroke-width: 1;
+  stroke: #010101;
+  pointer-events: fill;
+  fill: #ffffff;
 }
 .graduallyEmergingFirst{animation:graduallyEmergingFirst 1s forwards;}
 .graduallyEmergingAfter{animation:graduallyEmergingAfter 1s forwards;}

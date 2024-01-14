@@ -351,19 +351,21 @@ export default {
     mapMoveOut(){//鼠标移出界面外后停止移动
       let dataLayer=this.$refs.dataLayer;
       dataLayer.addEventListener('mouseout',(e)=>{
-        if(e.button===0){
-          this.$store.state.cameraConfig.doNeedMoveMap=false;
-          let point={x:null,y:null};
-          point.x=e.x;
-          point.y=e.y;
-          this.theData.moveEndPt=point;
-          if(this.theData.moveObServer!==null){//停用移动侦测器
-            this.removeMoveObServer();
+        if(e.y<=1 || e.y>=window.innerHeight-1 || e.x<=1 || e.x>=window.innerWidth-1){
+          if(e.button===0){
+            this.$store.state.cameraConfig.doNeedMoveMap=false;
+            let point={x:null,y:null};
+            point.x=e.x;
+            point.y=e.y;
+            this.theData.moveEndPt=point;
+            if(this.theData.moveObServer!==null){//停用移动侦测器
+              this.removeMoveObServer();
+            }
+            this.clearMoveCache();//清空移动缓存
           }
-          this.clearMoveCache();//清空移动缓存
-        }
-        if(this.$store.state.mapConfig.cursorLock===false){//更改cursor
-          this.$store.state.mapConfig.cursor='default';
+          if(this.$store.state.mapConfig.cursorLock===false){//更改cursor
+            this.$store.state.mapConfig.cursor='default';
+          }
         }
       });
     },
@@ -401,10 +403,7 @@ export default {
       dataLayer.addEventListener('mouseup',(e)=>{
         if(e.button===0){
           this.$store.state.cameraConfig.doNeedMoveMap=false;
-          let point={x:null,y:null};
-          point.x=e.x;
-          point.y=e.y;
-          this.theData.moveEndPt=point;
+          this.theData.moveEndPt={x:e.x,y:e.y};
           if(this.theData.moveObServer!==null){//停用移动侦测器
             this.removeMoveObServer();
           }
