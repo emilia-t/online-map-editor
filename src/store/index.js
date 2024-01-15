@@ -1477,18 +1477,57 @@ export default new Vuex.Store({
                       this.deleteLayerId=jsonData.data.id;
                     }
                   }
-                  this.mapData.points=this.mapData.points.filter(
-                    (element)=>{
-                     return !jsonData.data.members.hasOwnProperty(element.id)
-                    });
-                  this.mapData.lines=this.mapData.lines.filter(
-                    (element)=>{
-                      return !jsonData.data.members.hasOwnProperty(element.id)
-                    });
-                  this.mapData.areas=this.mapData.areas.filter(
-                    (element)=>{
-                      return !jsonData.data.members.hasOwnProperty(element.id)
-                    });
+                  let changeCount=0;
+                  let changePoint=false;
+                  let changeLine=false;
+                  let changeArea=false;
+                  for(let key in jsonData.data.members){
+                    if(changeCount===3){
+                      break;
+                    }
+                    if     (jsonData.data.members[key]===1){
+                      if(changePoint===false){
+                        changePoint=true;
+                        changeCount+=1;
+                      }
+                    }
+                    else if(jsonData.data.members[key]===2){
+                      if(changeLine===false){
+                        changeLine=true;
+                        changeCount+=1;
+                      }
+                    }
+                    else if(jsonData.data.members[key]===3){
+                      if(changeArea===false){
+                        changeArea=true;
+                        changeCount+=1;
+                      }
+                    }
+                  }
+                  if(changePoint){
+                    let newPoints=this.mapData.points.filter(
+                      (element)=>{
+                        return !jsonData.data.members.hasOwnProperty(element.id)
+                      });
+                    this.mapData.points.length=0;
+                    this.mapData.points.push(...newPoints);
+                  }
+                  if(changeLine){
+                    let newLines=this.mapData.lines.filter(
+                      (element)=>{
+                        return !jsonData.data.members.hasOwnProperty(element.id)
+                      });
+                    this.mapData.lines.length=0;
+                    this.mapData.lines.push(...newLines);
+                  }
+                  if(changeArea){
+                    let newAreas=this.mapData.areas.filter(
+                      (element)=>{
+                        return !jsonData.data.members.hasOwnProperty(element.id)
+                      });
+                    this.mapData.areas.length=0;
+                    this.mapData.areas.push(...newAreas);
+                  }
                   break;
                 }
                 case 'updateLayerData':{
@@ -1618,6 +1657,10 @@ export default new Vuex.Store({
         constructor(pipeline){
           this.pipeline=pipeline;//管线允许外部自由修改
           this.startSetting();
+          setInterval(()=>{
+            console.log("pipeline:");
+            console.log(this.pipeline.elements.points.length);
+          },2000);
         }
         QIR(type,data){
           switch (type) {
