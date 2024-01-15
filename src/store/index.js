@@ -1657,10 +1657,6 @@ export default new Vuex.Store({
         constructor(pipeline){
           this.pipeline=pipeline;//管线允许外部自由修改
           this.startSetting();
-          setInterval(()=>{
-            console.log("pipeline:");
-            console.log(this.pipeline.elements.points.length);
-          },2000);
         }
         QIR(type,data){
           switch (type) {
