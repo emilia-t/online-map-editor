@@ -6,7 +6,7 @@
       <svg class="icon2" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.64645 3.14645C5.45118 3.34171 5.45118 3.65829 5.64645 3.85355L9.79289 8L5.64645 12.1464C5.45118 12.3417 5.45118 12.6583 5.64645 12.8536C5.84171 13.0488 6.15829 13.0488 6.35355 12.8536L10.8536 8.35355C11.0488 8.15829 11.0488 7.84171 10.8536 7.64645L6.35355 3.14645C6.15829 2.95118 5.84171 2.95118 5.64645 3.14645Z" fill="currentColor"></path></svg>
     </div>
   </div>
-  <div class="listButtonBox selected" ref="MenuButtonHomePage"><!--菜单按钮-->
+  <div class="listButtonBox selected" @click="MenuButtonHomePage()"><!--菜单按钮-->
     <home-page custom="margin:4px"></home-page>
     <span class="iconSpan">主页</span>
   </div>
@@ -18,6 +18,10 @@
   <div class="listButtonBox" @click="openSetting('b',$event)">
     <monitor custom="margin:4px"></monitor>
     <span class="iconSpan">显示</span>
+  </div>
+  <div class="listButtonBox" @click="openSetting('r',$event)">
+    <split-o-m-r custom="margin:4px"></split-o-m-r>
+    <span class="iconSpan">路由</span>
   </div>
   <div class="listButtonBox" @click="openSetting('c',$event)">
     <user-account custom="margin:4px"></user-account>
@@ -33,15 +37,12 @@
     <span class="iconSpan">帮助</span>
   </div>
   <hr/>
-  <div class="listButtonBox">
-    <span class="SpanTh">插件列</span>
-  </div>
   <div class="listButtonBox" @click="openToolbox($event)">
     <menu-tool custom="margin:4px"></menu-tool>
     <span class="iconSpan">工具</span>
   </div>
-  <div class="SettingsBox" ref="SettingsBox" v-show="settingShow" @contextmenu="stopDefaultEvent($event)">
-    <div class="Settings" ref="Settings"><!--具体的设置项目-->
+  <div class="SettingsBox" ref="SettingsBox" v-show="settingShow" @click.stop="settingShow=false">
+    <div class="Settings" ref="Settings" @click.stop="void 0"><!--具体的设置项目-->
       <div class="Setting" v-show="GeneralSettings"><!--常规设置-->
         <div class="SettingTitle">常规设置</div>
         <div class="SettingList">
@@ -97,52 +98,137 @@
         <hr class="style-one"/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">区块加载范围</span>
-            <span class="spansB">修改后会影响元素加载的范围</span>
+            <span class="spansA">调整元素可视范围</span>
+            <span class="spansB">修改后会影响元素显示的范围</span>
           </div>
-          <div class="switchOut" ref="DS08" @click=""><div ref="DS08_1" class="circle"></div></div>
+          <div class="switchOut" ref="DS08" @click="DS08($event)"><div ref="DS08_1" class="circle"></div></div>
+        </div>
+      </div>
+      <div class="Setting" v-show="RouteSettings"><!--显示设置-->
+        <div class="SettingTitle">路由设置</div>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">自动获取路由表</span>
+            <span class="spansB">开启后将自动从路由获取服务器列表</span>
+          </div>
+          <div class="switchOut" ref="RS01" @click="RS01($event)"><div ref="RS01_1" class="circle"></div></div>
+        </div>
+        <div class="routeListTitle">
+          <menu-about-c></menu-about-c>
+          已保存2条路由，至多保存20条路由
+        </div>
+        <div class="sheetList">
+          <div class="row">
+            <span class="rowSelect">✓</span>
+            <span class="rowName">当前路由地址</span>
+            <span class="rowC">操作</span>
+          </div>
+          <div class="row">
+            <span class="rowSelect">✓</span>
+            <span class="rowName" title="cn.key.myacghome.com">cn.key.myacghome.com</span>
+            <span class="rowButton">删除</span>
+            <span class="rowButton">修改</span>
+            <span class="rowButton">选择</span>
+          </div>
+        </div>
+        <div class="addRName">
+          <div class="addRInput" ref="addRInput" @focus="addRInputFocus()" @focusout="addRInputFocusout()" contenteditable="true">
+            输入ip地址或域名
+          </div>
+          <div class="addRSubmit">
+            添加
+          </div>
+          <div class="addRSubmit">
+            重置
+          </div>
         </div>
       </div>
       <div class="Setting" v-show="AccountSettings"><!--账号设置-->
         <div class="SettingTitle">账号设置</div>
-        <ul class="AccountSetUl">
-          <li>
-            <ol>
-              <li class="AccountSetLi">
-                账号
-              </li>
-              <li class="AccountSetLi">
-                密码
-              </li>
-            </ol>
-          </li>
-          <li class="AccountSetLiA">
-            操作
-          </li>
-        </ul>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">使用默认账号进行登录</span>
+            <span class="spansB">开启后将使用默认账号登录所有服务器</span>
+          </div>
+          <div class="switchOut" ref="AS01" @click="AS01($event)"><div ref="AS01_1" class="circle"></div></div>
+        </div>
         <hr class="style-one"/>
-        <ol class="AccountSetOl" v-for="value in accounts"><!--单个账号-->
-          <li class="AccountSetLiC">
-            <ol>
-              <li class="">
-                {{value.A}}
-              </li>
-              <li class="">
-                ************
-              </li>
-            </ol>
-          </li>
-          <li class="AccountSetLiB" @click="deleteAccount(value.A)">
-            删除
-          </li>
-        </ol>
+        <div class="sheetList">
+          <div class="row">
+            <span class="rowSelect">✓</span>
+            <span class="rowName">当前默认账号</span>
+            <span class="rowC">操作</span>
+          </div>
+          <div class="row" v-for="value in accounts" :key="value.A">
+            <span class="rowSelect" v-if="value.default">✓</span>
+            <span class="rowSelect" v-if="!value.default">-</span>
+            <span class="rowName" :title="value.A" v-text="value.A"></span>
+            <span class="rowButton" @click="deleteAccount(value.A)">删除</span>
+            <span class="rowButton" @click="editAccount(value.A)">修改</span>
+            <span class="rowButton" @click="selectAccount(value.A)">选择</span>
+          </div>
+          <div class="row" v-if="Object.keys(this.accounts).length===0">
+            <span class="rowSelect">-</span>
+            <span class="rowName">本地没有账号</span>
+          </div>
+        </div>
+        <br/>
+        <div class="inputBox styleK" v-show="!editAccountView">
+          <div class="addATitle">
+            添加账号
+          </div>
+          <div class="addAccount">
+            <div class="addAccountRow">
+              <span>账号</span>
+              <div class="addAInput" ref="addInputName" contenteditable="true">
+              </div>
+            </div>
+            <div class="addAccountRow">
+              <span>密码</span>
+              <div class="addAInput" ref="addInputPass" contenteditable="true">
+              </div>
+            </div>
+            <div class="addASubmitRow">
+              <div class="addASubmit" @click="addAccount()">
+                添加
+              </div>
+              <div class="addASubmit" @click="resetAInput()">
+                重置
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="inputBox styleL" v-show="editAccountView">
+          <div class="addATitle">
+            账号修改
+          </div>
+          <div class="addAccount">
+            <div class="addAccountRow">
+              <span>账号</span>
+              <div class="addAInput" style="border-bottom:none" ref="editInputName">
+              </div>
+            </div>
+            <div class="addAccountRow">
+              <span>密码</span>
+              <div class="addAInput" ref="editInputPass" contenteditable="true">
+              </div>
+            </div>
+            <div class="addASubmitRow">
+              <div class="addASubmit" @click="editedAccount()">
+                修改
+              </div>
+              <div class="addASubmit" @click="returnAInput()">
+                返回
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="Setting" v-show="AboutSettings"><!--关于界面-->
         <div class="AboutBox">
           <img alt="Map log" title="Map log" class="mapLog" src="../../../static/map-log.png"><!--图标-->
           <p class="Ap2">在线地图编辑器</p>
           <p class="Ap1">version{{$root.Version}}</p>
-<!--          <p class="Ap1"><a href="https://github.com/emilia-t/online-map-editor" target="_blank" style="color:blue">开放源代码</a></p>-->
           <p class="Ap1"><a href="https://hitokoto.cn" target="_blank" style="color:blue">一言提供</a></p>
           <p class="Ap3" style="letter-spacing:1px">Power by</p>
           <p class="Ap1">Online map editor</p>
@@ -171,6 +257,14 @@
           3.点击窗口右下角的创建按钮
           <br>
           4.在服务器列表即可看到您所添加的服务器，点击即可连接
+          <br>
+          *注意*用户名为一般的电子邮箱格式(aZ0~9-@xxx.xxx)
+          <br>
+          *注意*密码不允许包含一些字符，
+          <br>
+          例如：中文字符、()、{}、\/、[]
+          <br>
+          目前这些特殊字符可以使用：_!@$%^&*-+?;:*
         </div>
         <div class="title2">
           常用的快捷键：
@@ -305,6 +399,7 @@
 import menuTool from "../svgValidIcons/menuTool";
 import menuHelp from "../svgValidIcons/menuHelp";
 import menuAbout from "../svgValidIcons/menuAbout";
+import menuAboutC from "../svgValidIcons/custom/menuAbout";
 import userAccount from "../svgValidIcons/userAccount";
 import monitor from "../svgValidIcons/monitor";
 import homePage from "../svgValidIcons/homePage";
@@ -312,10 +407,12 @@ import generalSetting from "../svgValidIcons/generalSetting";
 import deleteButton from '../../../static/delete.png';
 import editButton from '../../../static/edit.png';
 import orangeSlideBlock from '../OrangeSlideBlock';
+import SplitOMR from "../svgValidIcons/splitOMR";
 export default {
   name: "LayerMenuPanel",
-  components:{orangeSlideBlock,homePage,
-    generalSetting,monitor,userAccount,menuAbout,
+  components:{
+    SplitOMR, orangeSlideBlock,homePage,
+    generalSetting,monitor,userAccount,menuAbout,menuAboutC,
     menuHelp,menuTool,},
   data(){
     return {
@@ -323,6 +420,7 @@ export default {
       settingShow:false,
       GeneralSettings:false,
       DisplaySettings:false,
+      RouteSettings:false,
       AccountSettings:false,
       AboutSettings:false,
       HelpSettings:false,
@@ -331,7 +429,8 @@ export default {
       accounts:{},
       deleteButton,
       editButton,
-      doubtRevoke:false
+      doubtRevoke:false,
+      editAccountView:false,
     }
   },
   mounted() {
@@ -343,23 +442,110 @@ export default {
       this.watchWindowSize();//监听窗口变化
       this.watchStorage();//开启storage监听
       this.findLocalSetConfig();//查找本地配置（设置方面），若查找不到则设置一个默认的设置
-      this.$refs.MenuButtonHomePage.addEventListener('click',this.MenuButtonHomePage);//设置主页按钮的功能
       this.$refs.SettingsBox.style.width=window.innerWidth+'px';//设置SettingsBox的大小
       this.$refs.SettingsBox.style.height=window.innerHeight+'px';
-      this.$refs.SettingsBox.addEventListener('click',(ev)=>{//设置点击空白处关闭按钮
-        ev.stopPropagation();
-        this.settingShow=false;//关闭所有设置
-        this.GeneralSettings=false;
-        this.DisplaySettings=false;
-        this.AccountSettings=false;
-        this.AboutSettings=false;
-        this.HelpSettings=false;
-      });
-      this.$refs.Settings.addEventListener('click',(ev)=>{//阻止冒泡
-        ev.stopPropagation();
-      });
       this.findLocalAccounts();//查找本地账号配置
       this.checkRouter();
+    },
+    isValidPassword(password){//检测密码合理性
+      const pattern = new RegExp('^[a-zA-Z0-9_!@$%^&*-+?\;:]*$');
+      return pattern.test(password);
+    },
+    isValidEmail(email){//检测邮箱合理性
+      const pattern = new RegExp('^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+)\\.([a-zA-Z]{2,})$');
+      return pattern.test(email);
+    },
+    addAccount(){//添加账号
+      let account=this.$refs.addInputName.innerText.replace(/[\n\r\s]+/g, '');
+      let password=this.$refs.addInputPass.innerText.replace(/[\n\r\s]+/g, '');
+      if(!this.isValidEmail(account)){
+        this.$store.commit('setCoLogMessage',{text:'账号格式错误，请参照帮助界面',from:'internal:LayerMenuPanel',type:'tip'});
+        return false;
+      }
+      if(!this.isValidPassword(password)){
+        this.$store.commit('setCoLogMessage',{text:'密码不合规，请参照帮助界面',from:'internal:LayerMenuPanel',type:'tip'});
+        return false;
+      }
+      if(account!=='' && password!==''){
+        let find=this.$root.general_script.handleLocalStorage('get','accounts');//1get
+        let accountsConfig=undefined;
+        if(!find){
+          this.$root.general_script.handleLocalStorage('set','accounts','{}');//初始化
+          accountsConfig={};
+        }else {
+          accountsConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','accounts'));
+        }
+        if(Object.prototype.toString.call(accountsConfig) === '[object Object]'){
+          if(accountsConfig.hasOwnProperty(account)){//检查有没有重复的账号,没有就加入，有则修改密码
+            accountsConfig[account].P=password;
+          }else {
+            let Default=Object.keys(accountsConfig).length===0;
+            accountsConfig[account]={A:account,P:password,default:Default};
+          }
+          this.$root.general_script.handleLocalStorage('set','accounts',JSON.stringify(accountsConfig));//写入storage
+        }
+        this.$store.commit('setCoLogMessage',{text:'账号添加成功！',from:'internal:LayerMenuPanel',type:'tip'});
+        this.findLocalAccounts();
+      }
+    },
+    resetAInput(){//重置账号输入
+      this.$refs.addInputName.innerHTML="";
+      this.$refs.addInputPass.innerHTML="";
+    },
+    editAccount(name){//修改账号
+      this.editAccountView=true;
+      let accountsConfig=undefined;
+      accountsConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','accounts'));
+      if(Object.prototype.toString.call(accountsConfig) === '[object Object]'){
+        if(accountsConfig.hasOwnProperty(name)){//检查有没有账号
+          this.$refs.editInputName.innerText=accountsConfig[name].A;
+          this.$refs.editInputPass.innerText=accountsConfig[name].P;
+        }
+      }
+    },
+    editedAccount(){
+      let account=this.$refs.editInputName.innerText.replace(/[\n\r\s]+/g, '');
+      let password=this.$refs.editInputPass.innerText.replace(/[\n\r\s]+/g, '');
+      if(!this.isValidEmail(account)){
+        this.$store.commit('setCoLogMessage',{text:'账号格式错误，请参照帮助界面',from:'internal:LayerMenuPanel',type:'tip'});
+        return false;
+      }
+      if(!this.isValidPassword(password)){
+        this.$store.commit('setCoLogMessage',{text:'密码不合规，请参照帮助界面',from:'internal:LayerMenuPanel',type:'tip'});
+        return false;
+      }
+      if(account!=='' && password!==''){
+        let accountsConfig=undefined;
+        accountsConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','accounts'));
+        if(Object.prototype.toString.call(accountsConfig) === '[object Object]'){
+          if(accountsConfig.hasOwnProperty(account)){
+            accountsConfig[account].P=password;
+          }
+          this.$root.general_script.handleLocalStorage('set','accounts',JSON.stringify(accountsConfig));//写入storage
+        }
+        this.$store.commit('setCoLogMessage',{text:'账号修改成功！',from:'internal:LayerMenuPanel',type:'tip'});
+        this.findLocalAccounts();
+      }
+    },
+    returnAInput(){//返回添加账号
+      this.editAccountView=false;
+    },
+    selectAccount(name){
+      let accountsConfig=undefined;
+      accountsConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','accounts'));
+      if(Object.prototype.toString.call(accountsConfig) === '[object Object]'){
+        Object.keys(accountsConfig).forEach((key)=>{
+          accountsConfig[key].default = key === name;
+        });
+        this.$root.general_script.handleLocalStorage('set','accounts',JSON.stringify(accountsConfig));//写入storage
+      }
+      this.findLocalAccounts();
+    },
+    addRInputFocus(){
+      this.$refs.addRInput.innerHTML="&nbsp;";
+    },
+    addRInputFocusout(){
+      this.$refs.addRInput.innerText="输入ip地址或域名";
     },
     openToolbox(e){
       this.$store.commit('setCoLogMessage',{text:'打开工具箱',from:'internal:LayerMenuPanel',type:'tip'});
@@ -404,9 +590,6 @@ export default {
         this.$root.sendInstruct('reloadServers');//更新组件
       }
     },
-    stopDefaultEvent(ev){//关闭默认事件
-      ev.preventDefault();
-    },
     findLocalAccounts(){//查找本地账号配置
       let find=this.handleLocalStorage('get','accounts');
       if(find!==false){
@@ -425,12 +608,17 @@ export default {
         let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));//格式化本地配置设置
         let hasAutoCheckServerStatus=nowLocalStorage.hasOwnProperty('set_GS_AutoCheckServerStatus');
         let hasMouseSamplingRate=nowLocalStorage.hasOwnProperty('set_DS_MouseSamplingRate');
+        let hasMixVisibleRange=nowLocalStorage.hasOwnProperty('set_DS_MixVisibleRange');
         if(!hasAutoCheckServerStatus){
           nowLocalStorage.set_GS_AutoCheckServerStatus=true;
           this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
         }
         if(!hasMouseSamplingRate){
           nowLocalStorage.set_DS_MouseSamplingRate='medium';
+          this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
+        }
+        if(!hasMixVisibleRange){
+          nowLocalStorage.set_DS_MixVisibleRange='medium';
           this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
         }
         for(let key in nowLocalStorage){
@@ -473,11 +661,11 @@ export default {
               if(nowLocalStorage[key]==true){
                 this.$refs.DS01.classList.add('switchOutOn');//更新样式
                 this.$refs.DS01_1.classList.add('circleOn');
-                this.$store.state.userSettingConfig.elementPanelLayerShow=true;//更新状态
+                this.$store.state.userSettingConfig.openElementPanel=true;//更新状态
               }else if(nowLocalStorage[key]==false){
                 this.$refs.DS01.classList.remove('switchOutOn');
                 this.$refs.DS01_1.classList.remove('circleOn');
-                this.$store.state.userSettingConfig.elementPanelLayerShow=false;//更新状态
+                this.$store.state.userSettingConfig.openElementPanel=false;//更新状态
               }
               break;
             }
@@ -503,6 +691,55 @@ export default {
                 this.$refs.DS06_1.classList.remove('circleOn');
                 this.$store.state.userSettingConfig.closeDefaultLayer=false;//更新状态
               }
+              break;
+            }
+            case 'set_DS_MixVisibleRange':{
+              let oldStatus=nowLocalStorage[key];
+              switch (oldStatus) {
+                case 'low':{
+                  this.$refs.DS08.classList.add('switchOutLow');
+                  this.$refs.DS08_1.classList.add('circleLow');
+                  this.$store.state.userSettingConfig.mixVisibleRange='low';
+                  break;
+                }
+                case 'medium':{
+                  this.$refs.DS08.classList.add('switchOutMedium');
+                  this.$refs.DS08_1.classList.add('circleMedium');
+                  this.$store.state.userSettingConfig.mixVisibleRange='medium';
+                  break;
+                }
+                case 'high':{
+                  this.$refs.DS08.classList.add('switchOutHigh');
+                  this.$refs.DS08_1.classList.add('circleHigh');
+                  this.$store.state.userSettingConfig.mixVisibleRange='high';
+                  break;
+                }
+              }
+              break;
+            }
+            case 'set_RS_AutoGetRoute':{
+              if(nowLocalStorage[key]==true){
+                this.$refs.RS01.classList.add('switchOutOn');//更新样式
+                this.$refs.RS01_1.classList.add('circleOn');
+                this.$store.state.userSettingConfig.autoGetRoute=true;//更新状态
+              }else if(nowLocalStorage[key]==false){
+                this.$refs.RS01.classList.remove('switchOutOn');
+                this.$refs.RS01_1.classList.remove('circleOn');
+                this.$store.state.userSettingConfig.autoGetRoute=false;//更新状态
+              }
+              break;
+            }
+            case 'set_AS_DefaultAccountLogin':{
+              if(nowLocalStorage[key]==true){
+                this.$refs.AS01.classList.add('switchOutOn');//更新样式
+                this.$refs.AS01_1.classList.add('circleOn');
+                this.$store.state.userSettingConfig.defaultAccountLogin=true;//更新状态
+              }else if(nowLocalStorage[key]==false){
+                this.$refs.AS01.classList.remove('switchOutOn');
+                this.$refs.AS01_1.classList.remove('circleOn');
+                this.$store.state.userSettingConfig.defaultAccountLogin=false;//更新状态
+              }
+              break;
             }
           }
         }
@@ -511,6 +748,7 @@ export default {
         let SetObj={//创建设置对象
           'set_GS_AutoCheckServerStatus':true,
           'set_DS_MouseSamplingRate':'medium',
+          'set_DS_MixVisibleRange':'medium',
         };
         let SetStr=JSON.stringify(SetObj);//格式化对象
         this.handleLocalStorage('set','setting','true');//添加默认配置
@@ -518,6 +756,8 @@ export default {
         this.handleLocalStorage('set','A_tips_cn','请勿在控制台修改本地配置');
         this.handleLocalStorage('set','A_tips_uk','Do not modify local configuration on the console');
         this.settingSwitch('set_GS_AutoCheckServerStatus',true);//按钮初始化
+        this.settingSwitch('set_DS_MouseSamplingRate','medium');//按钮初始化
+        this.settingSwitch('set_DS_MixVisibleRange','medium');//按钮初始化
       }
     },
     MenuButtonHomePage(){//主页按钮
@@ -586,13 +826,13 @@ export default {
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         this.$refs.DS01.classList.remove('switchOutOn');//更改样式
         this.$refs.DS01_1.classList.remove('circleOn');
-        this.$store.state.userSettingConfig.elementPanelLayerShow=false;//更新状态
+        this.$store.state.userSettingConfig.openElementPanel=false;//更新状态
       }else {
         settingsObj.set_DS_OpenElementPanel=true;
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         this.$refs.DS01.classList.add('switchOutOn');//更改样式
         this.$refs.DS01_1.classList.add('circleOn');
-        this.$store.state.userSettingConfig.elementPanelLayerShow=true;//更新状态
+        this.$store.state.userSettingConfig.openElementPanel=true;//更新状态
       }
     },
     DS04(ev){//显示设置下的历史面板开关
@@ -681,6 +921,84 @@ export default {
           this.$store.state.userSettingConfig.closeDefaultLayer=false;
           break;
         }
+      }
+    },
+    DS08(ev){
+      ev.stopPropagation();
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+      let oldStatus=null;
+      if(settingsObj.hasOwnProperty('set_DS_MixVisibleRange')){
+        oldStatus=settingsObj.set_DS_MixVisibleRange;
+      }else{
+        oldStatus='medium';
+      }
+      switch (oldStatus) {
+        case 'low':{
+          settingsObj.set_DS_MixVisibleRange='medium';
+          this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+          this.$refs.DS08.classList.remove('switchOutLow');//更改样式
+          this.$refs.DS08.classList.add('switchOutMedium');
+          this.$refs.DS08_1.classList.remove('circleLow');
+          this.$refs.DS08_1.classList.add('circleMedium');
+          this.$store.state.userSettingConfig.mixVisibleRange='medium';
+          break;
+        }
+        case 'medium':{
+          settingsObj.set_DS_MixVisibleRange='high';
+          this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+          this.$refs.DS08.classList.remove('switchOutMedium');//更改样式
+          this.$refs.DS08.classList.add('switchOutHigh');
+          this.$refs.DS08_1.classList.remove('circleMedium');
+          this.$refs.DS08_1.classList.add('circleHigh');
+          this.$store.state.userSettingConfig.mixVisibleRange='high';
+          break;
+        }
+        case 'high':{
+          settingsObj.set_DS_MixVisibleRange='low';
+          this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+          this.$refs.DS08.classList.remove('switchOutHigh');//更改样式
+          this.$refs.DS08.classList.add('switchOutLow');
+          this.$refs.DS08_1.classList.remove('circleHigh');
+          this.$refs.DS08_1.classList.add('circleLow');
+          this.$store.state.userSettingConfig.mixVisibleRange='low';
+          break;
+        }
+      }
+    },
+    RS01(ev){//路由设置下的功能开关
+      ev.stopPropagation();
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+      let oldStatus=settingsObj.set_RS_AutoGetRoute;
+      if(oldStatus===true){//修改storage中的值
+        settingsObj.set_RS_AutoGetRoute=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.RS01.classList.remove('switchOutOn');//更改样式
+        this.$refs.RS01_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.autoGetRoute=false;//更新状态
+      }else {
+        settingsObj.set_RS_AutoGetRoute=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.RS01.classList.add('switchOutOn');//更改样式
+        this.$refs.RS01_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.autoGetRoute=true;//更新状态
+      }
+    },
+    AS01(ev){//账号设置下的功能开关
+      ev.stopPropagation();
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+      let oldStatus=settingsObj.set_AS_DefaultAccountLogin;
+      if(oldStatus===true){//修改storage中的值
+        settingsObj.set_AS_DefaultAccountLogin=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.AS01.classList.remove('switchOutOn');//更改样式
+        this.$refs.AS01_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.autoGetRoute=false;//更新状态
+      }else {
+        settingsObj.set_AS_DefaultAccountLogin=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.AS01.classList.add('switchOutOn');//更改样式
+        this.$refs.AS01_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.autoGetRoute=true;//更新状态
       }
     },
     GS01(ev){//常规设置（GS）下的功能开关
@@ -772,11 +1090,11 @@ export default {
         }
         case 'set_DS_OpenElementPanel':{
           if(value==true){
-            this.$store.state.userSettingConfig.elementPanelLayerShow=true;
+            this.$store.state.userSettingConfig.openElementPanel=true;
             this.$refs.DS01.classList.add('switchOutOn');//更新样式
             this.$refs.DS01_1.classList.add('circleOn');
           }else if(value==false){
-            this.$store.state.userSettingConfig.elementPanelLayerShow=false;
+            this.$store.state.userSettingConfig.openElementPanel=false;
             this.$refs.DS01.classList.remove('switchOutOn');
             this.$refs.DS01_1.classList.remove('circleOn');
           }
@@ -806,6 +1124,59 @@ export default {
           }
           break;
         }
+        case 'set_DS_MixVisibleRange':{
+          switch (value) {
+            case 'low':{
+              this.$refs.DS08.classList.remove('switchOutHigh');//更改样式
+              this.$refs.DS08.classList.add('switchOutLow');
+              this.$refs.DS08_1.classList.remove('circleHigh');
+              this.$refs.DS08_1.classList.add('circleLow');
+              this.$store.state.userSettingConfig.mixVisibleRange='low';
+              break;
+            }
+            case 'medium':{
+              this.$refs.DS08.classList.remove('switchOutLow');//更改样式
+              this.$refs.DS08.classList.add('switchOutMedium');
+              this.$refs.DS08_1.classList.remove('circleLow');
+              this.$refs.DS08_1.classList.add('circleMedium');
+              this.$store.state.userSettingConfig.mixVisibleRange='medium';
+              break;
+            }
+            case 'high':{
+              this.$refs.DS08.classList.remove('switchOutMedium');//更改样式
+              this.$refs.DS08.classList.add('switchOutHigh');
+              this.$refs.DS08_1.classList.remove('circleMedium');
+              this.$refs.DS08_1.classList.add('circleHigh');
+              this.$store.state.userSettingConfig.mixVisibleRange='high';
+              break;
+            }
+          }
+          break;
+        }
+        case 'set_RS_AutoGetRoute':{
+          if(value==true){
+            this.$refs.RS01.classList.add('switchOutOn');//更新样式
+            this.$refs.RS01_1.classList.add('circleOn');
+            this.$store.state.userSettingConfig.autoGetRoute=true;//更新状态
+          }else if(value==false){
+            this.$refs.RS01.classList.remove('switchOutOn');
+            this.$refs.RS01_1.classList.remove('circleOn');
+            this.$store.state.userSettingConfig.autoGetRoute=false;//更新状态
+          }
+          break;
+        }
+        case 'set_AS_DefaultAccountLogin':{
+          if(value==true){
+            this.$refs.AS01.classList.add('switchOutOn');//更新样式
+            this.$refs.AS01_1.classList.add('circleOn');
+            this.$store.state.userSettingConfig.defaultAccountLogin=true;//更新状态
+          }else if(value==false){
+            this.$refs.AS01.classList.remove('switchOutOn');
+            this.$refs.AS01_1.classList.remove('circleOn');
+            this.$store.state.userSettingConfig.defaultAccountLogin=false;//更新状态
+          }
+          break;
+        }
       }
     },
     storageCheck(obj){
@@ -826,6 +1197,7 @@ export default {
           this.settingShow=true;
           this.GeneralSettings=true;
           this.DisplaySettings=false;
+          this.RouteSettings=false;
           this.AccountSettings=false;
           this.AboutSettings=false;
           this.HelpSettings=false;
@@ -836,6 +1208,7 @@ export default {
           this.settingShow=true;
           this.GeneralSettings=false;
           this.DisplaySettings=true;
+          this.RouteSettings=false;
           this.AccountSettings=false;
           this.AboutSettings=false;
           this.HelpSettings=false;
@@ -847,6 +1220,18 @@ export default {
           this.GeneralSettings=false;
           this.DisplaySettings=false;
           this.AccountSettings=true;
+          this.RouteSettings=false;
+          this.AboutSettings=false;
+          this.HelpSettings=false;
+          this.setSettingsTop(ev);
+          break;
+        }
+        case 'r':{//路由
+          this.settingShow=true;
+          this.GeneralSettings=false;
+          this.DisplaySettings=false;
+          this.AccountSettings=false;
+          this.RouteSettings=true;
           this.AboutSettings=false;
           this.HelpSettings=false;
           this.setSettingsTop(ev);
@@ -856,6 +1241,7 @@ export default {
           this.settingShow=true;
           this.GeneralSettings=false;
           this.DisplaySettings=false;
+          this.RouteSettings=false;
           this.AccountSettings=false;
           this.AboutSettings=true;
           this.HelpSettings=false;
@@ -866,6 +1252,7 @@ export default {
           this.settingShow=true;
           this.GeneralSettings=false;
           this.DisplaySettings=false;
+          this.RouteSettings=false;
           this.AccountSettings=false;
           this.AboutSettings=false;
           this.HelpSettings=true;
@@ -976,6 +1363,186 @@ export default {
 </script>
 
 <style scoped>
+.inputBox{
+  width: calc(100% - 10px);
+  height: 130px;
+  padding: 0px 5px;
+  margin:10px 0px 10px 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+.styleK{
+  box-shadow:0px 0px 1px #000000;
+}
+.styleL{
+  box-shadow:0px 0px 5px #fce4ee;
+}
+.routeListTitle{
+  width: 100%;
+  height: 30px;
+  background: #e3f2fd;
+  font-size:12px;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sheetList{
+  width: 100%;
+  min-height: 70px;
+  height: auto;
+  max-height: 150px;
+  overflow-y: auto;
+  margin: 0px 0px 10px 0px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+}
+.row{
+  width: 100%;
+  height: 30px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+.rowC{
+  width: 100px;
+  display: flex;
+  justify-content: center;
+}
+.rowSelect{
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.rowName{
+  width: 146px;
+  max-width:146px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowButton{
+  width: 38px;
+  display: flex;
+  justify-content: center;
+}
+.rowButton:hover{
+  text-decoration: underline;
+}
+.addRName{
+  width: 100%;
+  height: 40px;
+  margin-bottom:10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.addRInput{
+  width: calc(180px - 12px - 8px);
+  padding: 0px 6px;
+  margin: 0px 4px;
+  height: 30px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  outline:1px solid #7f7a74;
+  border-radius: 3px;
+}
+.addRInput:focus{
+  outline:2px solid #7f7a74;
+}
+.addRSubmit{
+  width: calc(50px - 8px);
+  margin: 0px 4px;
+  height: 24px;
+  border-radius: 3px;
+  box-shadow: 0px 0px 3px #acacac;
+  font-size: 14px;
+  background: #f6f6f6;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  transition: 0.4s;
+}
+.addRSubmit:hover{
+  box-shadow: 0px 0px 3px #5a5a5a;
+}
+.addATitle{
+  width: 100%;
+  font-size: 16px;
+  transition: 0.4s;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.addAccount{
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.addASubmitRow{
+  width: 100%;
+  height: auto;
+  display:flex;
+  flex-direction:row;
+  align-items: center;
+  justify-content: center;
+}
+.addASubmit{
+  width: 40%;
+  height: 30px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.addASubmit:hover{
+  text-decoration:underline;
+}
+.addAccountRow{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+.addAInput{
+  width: calc(100% - 80px);
+  padding: 0px 6px;
+  margin: 5px 4px;
+  height: 25px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  outline:0px solid;
+  border-bottom: 1px solid #c4c4c4;
+}
+.addAInput:focus{
+  border-bottom: 1px solid #575757;
+}
 hr.style-one{
   width:270px;
   margin:0 auto;
@@ -1135,56 +1702,6 @@ hr.style-one{
   justify-content: center;
   align-items: center;
 }
-.AccountSetUl{
-  width:calc(100% - 14px);
-  height: 30px;
-  margin: 10px 0px;
-  padding: 7px;
-  display: flex;
-  justify-content: space-between;
-  flex-direction: row;
-  flex-flow: wrap;
-  flex-wrap: wrap;
-}
-.AccountSetOl{
-  width:calc(100% - 14px);
-  height: 30px;
-  margin: 10px 0px;
-  padding: 7px;
-  display: flex;
-  justify-content: space-between;
-  flex-direction: row;
-  flex-flow: wrap;
-  flex-wrap: wrap;
-}
-.AccountSetLi{
-  width: auto;
-  height: auto;
-}
-.AccountSetLiA{
-  width: 36px;
-}
-.AccountSetLiB{
-  width: 36px;
-  border: 1px solid #afafaf;
-  border-radius: 3px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-}
-.AccountSetLiC{
-  width: calc(100% - 38px);
-  height: 28px;
-  font-size: 14px;
-  display: flex;
-  flex-wrap: wrap;
-}
-ol,ul{
-  list-style: none;
-  margin: 0px;
-  padding: 0px;
-}
 a {
   color: rgba(0,0,0,0.8);
   text-decoration: none;
@@ -1250,7 +1767,7 @@ a:hover, a:active {
   flex-direction: column;
   justify-content: center;
   flex-wrap: wrap;
-  width: calc(100% - 70px);
+  width: calc(100% - 65px);
 }
 .spansA{
   font-size: 16px;

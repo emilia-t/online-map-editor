@@ -588,10 +588,10 @@ export default new Vuex.Store({
         }
         clearLocalData(){//清除本地数据
           this.userData=null;//1.清除会话内的用户数据
-          this.otherA1=[];//2.清除他人的A1
-          this.mapData.points=[];//3.清除地图数据
-          this.mapData.lines=[];
-          this.mapData.areas=[];
+          this.otherA1.length=0;//2.清除他人的A1
+          this.mapData.points.length=0;//3.清除地图数据
+          this.mapData.lines.length=0;
+          this.mapData.areas.length=0;
         }
         broadcastUpdateLayerData(data){//id,structure,members
           this.send(this.Instruct.broadcast_updateLayerData(data));
@@ -1601,7 +1601,7 @@ export default new Vuex.Store({
           return true;
         }
       },
-      mixCanvas:class mixCanvas{
+      mixCanvas:class mixCanvas{//混合地图数据渲染类
         $configs={//$开头的为私有属性，请通过内部函数修改私有属性
           pipelineHealthy:true,
           renderRangeX:1,
@@ -2330,14 +2330,14 @@ export default new Vuex.Store({
       ]
     },
     userSettingConfig:{//用户设置
-      UpdateServerStatus:false,//1.是否在服务器列表中开启每隔60秒自动更新服务器在线状态
-      UpdateServerStatusTime:60000,
-      startUpdateServerStatus:true,//2.是否启用启动时自动搜索服务器状态
-      elementPanelLayerShow:false,//是否开启元素面板
       openFpsMonitor:false,//fps监控开启
+      openElementPanel:false,//是否开启元素面板
       openStepRecorder:false,//步骤记录器
-      mouseSamplingRate:'medium',
-      closeDefaultLayer:false,
+      mouseSamplingRate:'medium',//调整移动采样率
+      closeDefaultLayer:false,//默认关闭默认图层
+      mixVisibleRange:'medium',
+      autoGetRoute:false,//自动获取路由表
+      defaultAccountLogin:false,//自动使用默认账号登录
     },
     detailsPanelConfig:{//左侧元素信息面板显示的数据
       data:{

@@ -258,6 +258,14 @@ export default {
       let url=OMS.serverAddress;//1收集信息
       let account=OMS.account;
       let password=OMS.password;
+      if(account===undefined || account===null){
+        this.$store.commit('setCoLogMessage',{text:'oms文件缺失账户信息，无法创建服务器连接',from:'internal:LayerConnectionInterface',type:'tip'});
+        return false;
+      }
+      if(password===undefined || password===null){
+        this.$store.commit('setCoLogMessage',{text:'oms文件缺失账户信息，无法创建服务器连接',from:'internal:LayerConnectionInterface',type:'tip'});
+        return false;
+      }
       if(!this.isValidUrl(url)){//2.检测URL合理性
         this.$store.commit('setCoLogMessage',{text:'Url格式错误，请参照帮助界面',from:'internal:LayerConnectionInterface',type:'tip'});
         return false;
@@ -298,7 +306,8 @@ export default {
           if(accountsConfig.hasOwnProperty(obj.account)){//检查有没有重复的账号,没有就加入，有则修改密码
             accountsConfig[obj.account].P=obj.password;
           }else {
-            accountsConfig[obj.account]={A:obj.account,P:obj.password};
+            let Default=Object.keys(accountsConfig).length===0;
+            accountsConfig[obj.account]={A:obj.account,P:obj.password,default:Default};
           }
           this.$root.general_script.handleLocalStorage('set','accounts',JSON.stringify(accountsConfig));//写入storage
         }
@@ -332,7 +341,6 @@ export default {
         return false;
       }
       configObj.account=obj.account;//3.添加配置(预)
-      configObj.password=obj.password;
       configObj.serverAddress=obj.url;
       localConfig[obj.url]=configObj;
       this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(localConfig));//3.添加入localstorage
@@ -343,7 +351,7 @@ export default {
       return pattern.test(password);
     },
     isValidEmail(email){//检测邮箱合理性
-      const pattern = new RegExp('^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\\.([a-zA-Z]{2,})$');
+      const pattern = new RegExp('^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+)\\.([a-zA-Z]{2,})$');
       return pattern.test(email);
     },
     isValidUrl(url){//检测URL合理性

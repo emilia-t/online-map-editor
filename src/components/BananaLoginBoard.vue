@@ -4,7 +4,7 @@
     <div class="left">
       <svg @click="close()" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
     </div>
-    <div class="log-in" id="LinkPage">
+    <div class="log-in LoginPage">
       <h4>登录至此 <span>OMS</span></h4>
       <p>欢迎回来，请输入您的账号以登录此 OMS</p>
       <div class="floating-label">
@@ -29,7 +29,7 @@
     <div class="left">
       <svg @click="close()" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
     </div>
-    <div class="log-in" id="LinkPage">
+    <div class="log-in LoginPage">
       <h4>您已登录此 <span>OMS</span></h4>
       <p>不是我的账号？请输入您的账号以重新登录此 OMS</p>
       <div class="floating-label">
@@ -85,27 +85,36 @@ export default {
       let pd=false;//密码
       let Ser=this.$root.general_script.handleLocalStorage('get','servers');//获取服务器配置
       let Acc=this.$root.general_script.handleLocalStorage('get','accounts');
-      if(Ser!==false && Acc!==false){
-        Ser=JSON.parse(Ser);
-        Acc=JSON.parse(Acc);
-        for(let key in Ser){//查找与该key相同的服务器
-          if(Ser[key].serverKey===this.serverKey){
-            if(Ser[key].hasOwnProperty('account')){
-              em=Ser[key].account;//获取账号名
-              break;
+      let DAL=this.$store.state.userSettingConfig.defaultAccountLogin;
+      let getDA=this.getDefaultAccount();
+      if(DAL===true && getDA!==false){//若设置了使用默认账号登录并且存在默认账号则使用默认账号登录
+        em=getDA.A;
+        pd=getDA.P;
+      }
+      else{
+        if(Ser!==false && Acc!==false){
+          Ser=JSON.parse(Ser);
+          Acc=JSON.parse(Acc);
+          for(let key in Ser){//查找与该key相同的服务器
+            if(Ser[key].serverKey===this.serverKey){
+              if(Ser[key].hasOwnProperty('account')){
+                em=Ser[key].account;//获取账号名
+                break;
+              }
+            }
+          }
+          if(em!==false){
+            if(Object.prototype.toString.call(Acc) === '[object Object]'){
+              if(Acc.hasOwnProperty(em)){
+                pd=Acc[em].P;//获取密码
+              }
             }
           }
         }
-        if(em!==false){
-          if(Object.prototype.toString.call(Acc) === '[object Object]'){
-            if(Acc.hasOwnProperty(em)){
-              pd=Acc[em].P;//获取密码
-            }
-          }
+        else {
+          em=false;
+          pd=false;
         }
-      }else {
-        em=false;
-        pd=false;
       }
       if(em!==false && pd!==false){
         setTimeout(()=>{//尝试进行登录
@@ -129,6 +138,20 @@ export default {
           }
         },100);
       }
+    },
+    getDefaultAccount(){//获取默认账号，失败则返回false
+      let accountsConfig=undefined;
+      let ref=false;
+      accountsConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','accounts'));
+      if (Object.prototype.toString.call(accountsConfig)==='[object Object]'){
+        for(let key in accountsConfig){
+          if(accountsConfig[key].default===true){
+            ref=accountsConfig[key];
+            break;
+          }
+        }
+      }
+      return ref;
     },
     login(){//登录中
       if(this.$store.state.serverData.socket===undefined){//检查是否存在连接
@@ -253,97 +276,171 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
-.loginAndLogoutBut{
-  width: 322px;
-  height: auto;
-  display: flex;
-  justify-content: center;
-}
-.loginBordLevelTips{
-  width: 320px;
-  height: 30px;
-  font-size: 12px;
-  display: flex;
-  justify-content: right;
-  align-items: center;
-}
+<style scoped>
 .BananaLoginBoard{
   position: fixed;
   z-index: 550;
-  width: 600px;height: auto;
-  top:calc(50% - 220px);
-  left:calc(50% - 300px);
-}
-* {
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", Helvetica,
-  Arial, sans-serif;
+  width: 600px;
+  height: auto;
+  top: calc(50% - 220px);
+  left: calc(50% - 300px);
+  font-family: -apple-system,BlinkMacSystemFont,San Francisco,Helvetica,Arial,sans-serif;
   font-weight: 300;
   margin: 0;
 }
-$primary: #87c4f5;
-html,
-body {
-  height: 100vh;
-  width: 100vw;
-  margin: 0 0;
+.session{
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  background: #f3f2f2;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  width: auto;
+  height: auto;
+  margin: auto;
+  background: #fff;
+  overflow: hidden;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 2px 6px 3px rgba(0,0,0,.12);
+  box-shadow: 0 2px 6px 3px rgba(0,0,0,.12);
 }
-h4 {
+.left{
+  width: 220px;
+  height: auto;
+  min-height: 100%;
+  position: relative;
+  background-image: url("/static/logBordBj.jpg");
+  background-size: cover;
+}
+.LoginPage{
+  padding: 40px 30px 0;
+  background: #fefefe;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  width: 320px;
+}
+.left svg{
+  height: 40px;
+  width: auto;
+  margin: 20px;
+}
+.LoginPage h4{
+  margin-bottom: 20px;
+  color: rgba(0,0,0,.5);
+}
+h4{
   font-size: 24px;
   font-weight: 600;
   color: #000;
-  opacity: 0.85;
+  opacity: .85;
 }
-label {
-  font-size: 12.5px;
+.LoginPage h4 span{
   color: #000;
-  opacity: 0.8;
-  font-weight: 400;
-}
-#LinkPage {
-  padding: 40px 30px 0px 30px;
-  background: #fefefe;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 320px;
-h4 {
-  margin-bottom: 20px;
-  color: rgba(#000, 0.5);
-span {
-  color: rgba(#000, 1);
   font-weight: 700;
 }
-}
-p {
+.LoginPage p{
   line-height: 155%;
-  margin-bottom: 5px;
   font-size: 14px;
   color: #000;
-  opacity: 0.65;
+  opacity: .65;
   font-weight: 400;
   max-width: 200px;
   margin-bottom: 40px;
 }
+.floating-label{
+  position: relative;
+  margin-bottom: 10px;
+  width: 100%;
 }
-a.discrete {
-  color: rgba(#000, 0.4);
-  font-size: 14px;
-  border-bottom: solid 1px rgba(#000, 0);
-  padding-bottom: 4px;
+.floating-label input{
+  width: calc(100% - 44px);
   margin-left: auto;
-  font-weight: 300;
-  transition: all 0.3s ease;
-  margin-top: 40px;
-&:hover {
-   border-bottom: solid 1px rgba(#000, 0.2);
- }
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
 }
-button {
+input{
+  font-size: 16px;
+  padding: 20px 0;
+  height: 56px;
+  border: none;
+  border-bottom: 1px solid rgba(0,0,0,.1);
+  background: #fff;
+  width: 280px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transition: all .3s linear;
+  transition: all .3s linear;
+  color: #000;
+  font-weight: 400;
+  -webkit-appearance: none;
+  outline: none;
+}
+.floating-label label{
+  position: absolute;
+  top: calc(50% - 7px);
+  left: 0;
+  opacity: 0;
+  -webkit-transition: all .3s ease;
+  transition: all .3s ease;
+  padding-left: 44px;
+}
+label{
+  font-size: 12px;
+  color: #000;
+  opacity: .8;
+  font-weight: 400;
+}
+.floating-label .icon{
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 56px;
+  width: 44px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.floating-label .icon svg, .floating-label .icon svg path{
+  -webkit-transition: all .3s ease;
+  transition: all .3s ease;
+}
+.floating-label .icon svg{
+  height: 45px;
+  width: 45px;
+  margin: auto;
+  opacity: .15;
+}
+.floating-label .icon{
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 56px;
+  width: 44px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.loginAndLogoutBut{
+  width: 322px;
+  height: auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+button{
   -webkit-appearance: none;
   width: auto;
   min-width: 100px;
@@ -351,141 +448,28 @@ button {
   text-align: center;
   padding: 15px 40px;
   margin-top: 5px;
-  background-color: saturate($primary, 30%);
+  background-color: #7dc5ff;
   color: #fff;
   font-size: 14px;
   margin-left: auto;
   font-weight: 500;
-  box-shadow: 0px 2px 6px -1px rgba(0, 0, 0, 0.13);
+  -webkit-box-shadow: 0 2px 6px -1px rgba(0,0,0,.13);
+  box-shadow: 0 2px 6px -1px rgba(0,0,0,.13);
   border: none;
-  transition: all 0.3s ease;
+  -webkit-transition: all .3s ease;
+  transition: all .3s ease;
   outline: 0;
-&:hover {
-   transform: translateY(-3px);
-   box-shadow: 0 2px 6px -1px rgba($primary, 0.65);
-&:active {
-   transform: scale(0.99);
- }
 }
-}
-input {
-  font-size: 16px;
-  padding: 20px 0px;
-  height: 56px;
-  border: none;
-  border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-  background: #fff;
-  width: 280px;
-  box-sizing: border-box;
-  transition: all 0.3s linear;
-  color: #000;
-  font-weight: 400;
-  -webkit-appearance: none;
-&:focus {
-   border-bottom: solid 1px $primary;
-   outline: 0;
-   box-shadow: 0 2px 6px -8px rgba($primary, 0.45);
- }
-}
-.floating-label {
-  position: relative;
-  margin-bottom: 10px;
-  width: 100%;
-label {
-  position: absolute;
-  top: calc(50% - 7px);
-  left: 0;
-  opacity: 0;
-  transition: all 0.3s ease;
-  padding-left: 44px;
-}
-input {
-  width: calc(100% - 44px);
-  margin-left: auto;
+.loginBordLevelTips{
+  width: 320px;
+  height: 30px;
+  font-size: 12px;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  justify-content: right;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
 }
-.icon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 56px;
-  width: 44px;
-  display: flex;
-svg {
-  height: 45px;
-  width: 45px;
-  margin: auto;
-  opacity: 0.15;
-  transition: all 0.3s ease;
-path {
-  transition: all 0.3s ease;
-}
-}
-}
-input:not(:placeholder-shown) {
-  padding: 28px 0px 12px 0px;
-}
-input:not(:placeholder-shown) + label {
-  transform: translateY(-10px);
-  opacity: 0.7;
-}
-input:valid:not(:placeholder-shown) + label + .icon {
-svg {
-  opacity: 1;
-path {
-  fill: $primary;
-}
-}
-}
-input:not(:valid):not(:focus) + label + .icon {
-  animation-name: shake-shake;
-  animation-duration: 0.3s;
-}
-}
-$displacement: 3px;
-@keyframes shake-shake {
-  0% {
-    transform: translateX(-$displacement);
-  }
-  20% {
-    transform: translateX($displacement);
-  }
-  40% {
-    transform: translateX(-$displacement);
-  }
-  60% {
-    transform: translateX($displacement);
-  }
-  80% {
-    transform: translateX(-$displacement);
-  }
-  100% {
-    transform: translateX(0px);
-  }
-}
-.session {
-  display: flex;
-  flex-direction: row;
-  width: auto;
-  height: auto;
-  margin: auto auto;
-  background: #ffffff;
-  overflow: hidden;
-  border-radius: 5px;
-  box-shadow: 0px 2px 6px 3px rgba(0, 0, 0, 0.12);
-}
-.left {
-  width: 220px;
-  height: auto;
-  min-height: 100%;
-  position: relative;
-  background-image: url("../../static/logBordBj.jpg");
-  background-size: cover;
-svg {
-  height: 40px;
-  width: auto;
-  margin: 20px;
-}
-}
-
 </style>

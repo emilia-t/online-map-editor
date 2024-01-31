@@ -10,14 +10,19 @@
             版本更新通知
           </div>
           <div class="PopupVerChange">
-            0.4.9(Preview) -> 0.4.9.5(Develop)
+            当前版本{{this.$root.Version}}
           </div>
           <div class="PopupText">本次版本更新了以下内容，请阅读：
-            1.新增日志功能，用以查看以往日志记录，按 L 键打开面板
-            2.新增插件功能，用以安装额外的应用功能，位于左侧菜单栏
-            3.新增Kml2Omd，用以将KML转为OMD文件，位于工具(插件)
-            4.新增全局通知弹窗，用于发布重要信息
-            5.修复了部分已知Bug
+            1.增加了log日志记录工具(L键)
+            2.增加了插件列(左侧菜单面板)
+            3.增加了kml转omd的工具(插件)
+            4.增加了全局通知弹窗
+            5.增加了图层搜索功能
+            6.增加了图层跳转要素功能
+            7.增加了分组图层的单个子分组选中功能
+            8.增加了图层按颜色和按类型分组功能
+            9.增加了svgEffects(特效层)
+            10.增加了mixCanvas(用于渲染元素，优化整体流畅度)
           </div>
         </div>
         <div class="PopupButtonBox">
@@ -90,7 +95,6 @@ export default {
           return false;
         }
         if(Config.noticeAgainPopup === true){
-          console.log(Config);
           this.popupShow=true;
         }
       }else {
@@ -203,16 +207,18 @@ export default {
 }
 .PopupText{
   height: auto;
-  padding: 10px;
+  max-height: 165px;
+  padding:2px 10px 0px 10px;
   width: calc(100% - 20px);
   display: flex;
-  flex-direction: row;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
   font-size: 16px;
   font-weight: 400;
   white-space: pre-line;
   line-height: 24px;
+  overflow-y: auto;
 }
 .PopupTitle{
   height: auto;

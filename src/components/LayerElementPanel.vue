@@ -1,5 +1,5 @@
 <template>
-  <div class="elementPanelLayer" v-show="this.$store.state.userSettingConfig.elementPanelLayerShow">
+  <div class="elementPanelLayer" v-show="this.$store.state.userSettingConfig.openElementPanel">
     <div class="panelHead">
       <div class="headTitle">
         <span v-text="this.$store.state.serverData.socket.config.name"></span>

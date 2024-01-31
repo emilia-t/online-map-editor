@@ -181,15 +181,26 @@ export default {
       setTimeout(
         ()=>{
           this.mixPipeLine.el='mixCanvas';
+          this.mixPipeLine.elements.points=this.MyPointData;
+          this.mixPipeLine.elements.lines=this.MyPolyLineData;
+          this.mixPipeLine.elements.areas=this.MyAreaData;
           this.mixPipeLine.options.viewWidth=this.browserSize.width;
           this.mixPipeLine.options.viewHeight=this.browserSize.height;
           this.mixPipeLine.options.mapHiddenElements=this.mapHiddenElements;
           this.mixPipeLine.options.mapEjectElements=new Map();
-          this.mixPipeLine.elements.points=this.MyPointData;
-          this.mixPipeLine.elements.lines=this.MyPolyLineData;
-          this.mixPipeLine.elements.areas=this.MyAreaData;
+          if(this.mixVisibleRange==='low'){
+            this.mixPipeLine.options.renderRangeX='100%';
+            this.mixPipeLine.options.renderRangeY='100%';
+          }else if(this.mixVisibleRange==='medium'){
+            this.mixPipeLine.options.renderRangeX='150%';
+            this.mixPipeLine.options.renderRangeY='150%';
+          }else if(this.mixVisibleRange==='high'){
+            this.mixPipeLine.options.renderRangeX='200%';
+            this.mixPipeLine.options.renderRangeY='200%';
+          }
           this.mixCanvas=new this.$store.state.classList.mixCanvas(this.mixPipeLine);
-        },0
+        },
+        0
       );
     },
     selectElement(id){
@@ -579,8 +590,41 @@ export default {
         return -1;
       }
     },
+    mixVisibleRange(){
+      return this.$store.state.userSettingConfig.mixVisibleRange;
+    },
   },
   watch:{
+    mixVisibleRange:{
+      handler(newValue){
+        switch (newValue){
+          case 'low':{
+            this.mixPipeLine.options.renderRangeX='100%';
+            this.mixPipeLine.options.renderRangeY='100%';
+            this.mixCanvas.mixSetRenderRange();
+            this.mixCanvas.mixWash();
+            this.mixCanvas.mixDraw();
+            break;
+          }
+          case 'medium':{
+            this.mixPipeLine.options.renderRangeX='150%';
+            this.mixPipeLine.options.renderRangeY='150%';
+            this.mixCanvas.mixSetRenderRange();
+            this.mixCanvas.mixWash();
+            this.mixCanvas.mixDraw();
+            break;
+          }
+          case 'high':{
+            this.mixPipeLine.options.renderRangeX='200%';
+            this.mixPipeLine.options.renderRangeY='200%';
+            this.mixCanvas.mixSetRenderRange();
+            this.mixCanvas.mixWash();
+            this.mixCanvas.mixDraw();
+            break;
+          }
+        }
+      }
+    },
     updateCount:{//用于同步svg与mixCanvas的数据
       handler(){
         let pointLen=this.svgPointData.length;
