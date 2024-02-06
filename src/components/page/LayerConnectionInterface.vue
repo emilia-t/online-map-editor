@@ -6,14 +6,29 @@
   <div class="content" ref="content"><!--主内容-->
     <div class="InterfaceHead"><!--顶部-->
       <div class="HeadLeft"><!--标题-->
-        <svg t="1681041457556" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="27339" width="200" height="200"><path d="M0 0" fill="" p-id="27340"></path><path d="M128 608h768v192H128v-192z m0-256h768v192H128v-192z m32-140.8h704l28.8 73.6H131.2L160 211.2zM131.2 160L64 284.8V864h896V284.8L896 160H131.2z" fill="" p-id="27341"></path><path d="M768 416h64v64h-64zM768 672h64v64h-64z" fill="" p-id="27342"></path></svg>
-        <span class="InterfaceHeadTitle">在线地图</span>
+        <server custom="margin:7px 10"></server>
+        <span class="InterfaceHeadTitle">来自手动添加</span>
       </div>
-      <svg ref="addNewConnectButton" t="1681030518295" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="26321" width="200" height="200"><path d="M546.133333 479.662933h360.533334a32 32 0 1 1 0 64H546.133333v364.8a32 32 0 1 1-64 0v-364.8H117.333333a32 32 0 1 1 0-64H482.133333v-360.533333a32 32 0 0 1 64 0v360.533333z" fill="#333333" p-id="26322"></path></svg><!--创建新链接按钮-->
+      <div ref="addNewConnectButton">
+        <add-plus custom="margin:6px 10px 2px 10px"></add-plus>
+      </div>
     </div>
-    <hr/>
     <div class="connectionInterfaceBox"><!--连接盒子-->
       <banana-connection-box v-for="value in serverLocalConfig" :key="value.serverAddress" :account="value.account" :password="value.password" :default-x="value.defaultX" :default-y="value.defaultY" :img-time="value.imgTime" :max-height="value.maxHeight" :online-number="value.onlineNumber" :max-online-user="value.maxOnlineUser" :max-width="value.maxWidth" :server-address="value.serverAddress" :server-img="value.serverImg" :server-key="value.serverKey" :server-name="value.serverName" @ancBoxChange="handlerCnBox"></banana-connection-box>
+    </div>
+  </div>
+  <div class="content"><!--主内容-->
+    <div class="InterfaceHead"><!--顶部-->
+      <div class="HeadLeft"><!--标题-->
+        <server custom="margin:7px 10"></server>
+        <span class="InterfaceHeadTitle">来自路由搜索</span>
+      </div>
+      <div ref="addNewRouteButton">
+        <add-plus custom="margin:6px 10px 2px 10px"></add-plus>
+      </div>
+    </div>
+    <div class="connectionInterfaceBox"><!--连接盒子-->
+
     </div>
   </div>
 <!--  <div class="content">&lt;!&ndash;主内容&ndash;&gt;-->
@@ -29,6 +44,14 @@
 <!--      <banana-local-map-box v-for="value in localMapConfig" :key="value.serverAddress" :config="value"></banana-local-map-box>-->
 <!--    </div>-->
 <!--  </div>-->
+  <div class="addNewRouteBox" ref="addNewRouteBox" v-show="true">
+    <div class="addNewRouteBoard">
+      <input class="addNewRouteInput" type="text" placeholder="输入ip地址或域名"/>
+      <button class="addNewRouteSubmit">
+        添加next_
+      </button>
+    </div>
+  </div>
   <div class="addNewConnectBox" ref="addNewConnectBox" v-show="AncShow" @contextmenu="stopDefaultEvent($event)"><!--添加连接的面板-->
     <div class="addNewConnectBoard" ref="addNewConnectBoard"><!--中间的实际面板-->
       <div class="AncTitle"><!--标题-->
@@ -80,7 +103,7 @@
       </div>
     </div>
   </div>
-  <div class="addNewConnectBox" ref="newLocalMap" v-show="lmShow" @contextmenu="stopDefaultEvent($event)">
+  <div class="addNewConnectBox" ref="newLocalMap" v-if="lmShow" @contextmenu="stopDefaultEvent($event)">
     <div class="newLocalMapBoard">
       <div>
         地图类型：
@@ -109,12 +132,15 @@
 </template>
 
 <script>
+import AddPlus from "../svgValidIcons/40X/addPlus";
+import Server from "../svgValidIcons/40X/server";
 import BananaConnectionBox from "./BananaConnectionBox";
 import BananaLocalMapBox from "./BananaLocalMapBox";
 export default {
   name: "LayerConnectionInterface",
   data(){
     return {
+      AnrShow:false,
       AncShow:false,
       lmShow:false,
       PasswordHide:true,
@@ -124,7 +150,7 @@ export default {
     }
   },
   components:{
-    BananaConnectionBox,BananaLocalMapBox
+    BananaConnectionBox,BananaLocalMapBox,Server,AddPlus
   },
   mounted() {
     this.startSetting();
@@ -440,6 +466,43 @@ export default {
 </script>
 
 <style scoped>
+.addNewRouteSubmit{
+  width: 60px;
+  height: 30px;
+  margin: 0px 10px;
+}
+.addNewRouteInput{
+  width: 200px;
+  height: 30px;
+  margin: 0px 10px;
+}
+.addNewRouteBoard{
+  width: 400px;
+  height: 100px;
+  background: #eae8e8;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.addNewRouteBox{
+  width: 100%;
+  height: 100%;
+  animation-name: gradualEntry;
+  animation-duration: 0.6s;
+  animation-iteration-count: 1;
+  animation-direction: normal;
+  background: rgba(255,255,255,0.8);
+  position: fixed;
+  top:0px;
+  left: 0px;
+  z-index: 570;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
 .newLocalMapBoard{
   width: 400px;
   height: auto;
@@ -599,13 +662,14 @@ input:focus{
   height: 8px;
 }
 .content{
+  background: #ffffff;
   user-select: none;
   width: calc(100% - 100px - 2px - 16px);
-  height: calc(100% - 8px - 16px - 2px);
+  height: calc(80% - 8px - 16px - 2px);
   overflow-x: hidden;
   overflow-y: auto;
   margin: 0px 8px 8px 108px;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid rgb(220,220,220);
 }
 .addNewConnectBox{
@@ -634,9 +698,11 @@ input:focus{
   height:100%;
 }
 .InterfaceHead{
+  background: linear-gradient(to right,#ffffff, #fffcfc,#ffffff, #f7f7ff);;
   width: 100%;
-  height: 40px;
+  height: 44px;
   display: flex;
+  border-bottom:1px solid rgb(220,220,220);
   justify-content: space-between;
   align-items: center;
 }
@@ -646,6 +712,11 @@ input:focus{
   padding: 0px 10px 0px 0px;
 }
 .InterfaceHeadTitle{
+  width: auto;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   font-size: 20px;
   font-weight: 400;
   letter-spacing:2px

@@ -50,9 +50,12 @@ export default {
     }
   },
   mounted() {
-    this.findLocalNotificationConfig();
+    this.startSetting();
   },
   methods:{
+    startSetting(){
+      this.findLocalNotificationConfig();
+    },
     handleLocalStorage(method, key, value) {
       try {
         switch (method) {
@@ -90,12 +93,18 @@ export default {
         }
         if(!Config.hasOwnProperty('noticeLastReadTime')
           || !Config.hasOwnProperty('noticeReadState')
-          || !Config.hasOwnProperty('noticeAgainPopup')){
+          || !Config.hasOwnProperty('noticeAgainPopup')
+          || !Config.hasOwnProperty('lastReadVersion')
+        ){
           this.clearNotificationConfig();
           return false;
         }
         if(Config.noticeAgainPopup === true){
           this.popupShow=true;
+        }else{
+          if(Config.lastReadVersion!==this.$root.Version){
+            this.popupShow=true;
+          }
         }
       }else {
         this.setDefaultConfig();
@@ -110,6 +119,7 @@ export default {
         noticeLastReadTime:'1970-1-1 0:0:0',
         noticeReadState:false,
         noticeAgainPopup:true,
+        lastReadVersion:"0",
       };
       let json=JSON.stringify(config);
       this.handleLocalStorage('set','notificationConfig',json);
@@ -129,6 +139,9 @@ export default {
       let OldConfig=JSON.parse(this.handleLocalStorage('get','notificationConfig'));
       OldConfig.noticeLastReadTime=this.getFormattedDate();
       OldConfig.noticeReadState=true;
+      OldConfig.lastReadVersion=this.$root.Version;
+      let checkedStatus=this.$refs.PopupNextUpNone.checked;
+      OldConfig.noticeAgainPopup=!checkedStatus;
       let json=JSON.stringify(OldConfig);
       this.handleLocalStorage('set','notificationConfig',json);
       this.popupShow=false;

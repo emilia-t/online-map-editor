@@ -115,7 +115,7 @@
         </div>
         <div class="routeListTitle">
           <menu-about-c></menu-about-c>
-          已保存2条路由，至多保存20条路由
+          已保存{{routes.length}}条路由，至多保存20条路由
         </div>
         <div class="sheetList">
           <div class="row">
@@ -123,22 +123,22 @@
             <span class="rowName">当前路由地址</span>
             <span class="rowC">操作</span>
           </div>
-          <div class="row">
-            <span class="rowSelect">✓</span>
-            <span class="rowName" title="cn.key.myacghome.com">cn.key.myacghome.com</span>
-            <span class="rowButton">删除</span>
-            <span class="rowButton">修改</span>
-            <span class="rowButton">选择</span>
+          <div class="row" v-for="route in this.routes">
+            <span class="rowSelect" v-show="route.use">✓</span>
+            <span class="rowSelect" v-show="!route.use">-</span>
+            <span class="rowName" :title="route.address" v-text="route.address"></span>
+            <span class="rowButton" @click="deleteRoute(route.address)">删除</span>
+            <span class="rowButton" @click="topRoute(route.address)">置顶</span>
+            <span class="rowButton" @click="selectRoute(route.address)">选择</span>
           </div>
         </div>
         <div class="addRName">
-          <div class="addRInput" ref="addRInput" @focus="addRInputFocus()" @focusout="addRInputFocusout()" contenteditable="true">
-            输入ip地址或域名
+          <div class="addRInput" ref="addRInput" @focus="addRInputFocus()" contenteditable="true">
           </div>
-          <div class="addRSubmit">
+          <div class="addRSubmit" ref="addRSubmitA" @click="addRoute()">
             添加
           </div>
-          <div class="addRSubmit">
+          <div class="addRSubmit" ref="addRSubmitB" @click="resetRInput()">
             重置
           </div>
         </div>
@@ -441,7 +441,8 @@ export default {
     startSetting(){//初始设置
       this.watchWindowSize();//监听窗口变化
       this.watchStorage();//开启storage监听
-      this.findLocalSetConfig();//查找本地配置（设置方面），若查找不到则设置一个默认的设置
+      this.findLocalSetConfig();//查找本地设置，若查找不到则设置一个默认的值
+      this.findLocalRouteConfig();//查找本地路由，若查找不到则设置一个默认的值
       this.$refs.SettingsBox.style.width=window.innerWidth+'px';//设置SettingsBox的大小
       this.$refs.SettingsBox.style.height=window.innerHeight+'px';
       this.findLocalAccounts();//查找本地账号配置
@@ -454,6 +455,108 @@ export default {
     isValidEmail(email){//检测邮箱合理性
       const pattern = new RegExp('^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+)\\.([a-zA-Z]{2,})$');
       return pattern.test(email);
+    },
+    isValidDomain(str){
+      const pattern1 = /-{2,}|^-|^\.|\.$/;//以-开头或.开头结尾或连续存在-则返回true
+      const pattern2 = new RegExp('^([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$');//域名方面检测
+      const pattern3 = new RegExp('^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$');//ip地址方面检测
+      if(pattern1.test(str)){
+        return false;
+      }else {
+        if(pattern2.test(str)){
+          return true;
+        }else {
+          return pattern3.test(str);
+        }
+      }
+    },
+    selectRoute(address){
+      let Config=undefined;
+      try {
+        Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
+      }catch(e){}
+      if(Array.isArray(Config) && Config!==null){
+        let index=Config.findIndex((val)=>{return val.address===address});
+        if(index!==-1){
+          let Len=Config.length;
+          for(let i=0;i<Len;i++){
+            Config[i].use=false;
+          }
+          Config[index].use=true;
+          this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
+          this.$store.commit('setCoLogMessage',{text:'已选择路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
+          this.findLocalRouteConfig();
+        }
+      }
+    },
+    topRoute(address){
+      let Config=undefined;
+      try {
+        Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
+      }catch(e){}
+      if(Array.isArray(Config) && Config!==null){
+        let index=Config.findIndex((val)=>{return val.address===address});
+        if(index!==-1){
+          let insert=Config[index];
+          Config.splice(index,1);
+          Config.unshift(insert);
+          this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
+          this.$store.commit('setCoLogMessage',{text:'已置顶路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
+          this.findLocalRouteConfig();
+        }
+      }
+    },
+    deleteRoute(address){
+      let Config=undefined;
+      try {
+        Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
+      }catch(e){}
+      if(Array.isArray(Config) && Config!==null){
+        let index=Config.findIndex((val)=>{return val.address===address});
+        if(index!==-1){
+          Config.splice(index,1);
+          this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
+          this.$store.commit('setCoLogMessage',{text:'已删除路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
+          this.findLocalRouteConfig();
+        }
+      }
+    },
+    addRoute(){//添加路由
+      if(this.$refs.addRSubmitA.classList.contains('AnimationL')){
+        this.$refs.addRSubmitA.classList.remove('AnimationL');
+        this.$refs.addRSubmitA.classList.add('AnimationK');
+      }else {
+        this.$refs.addRSubmitA.classList.remove('AnimationK');
+        this.$refs.addRSubmitA.classList.add('AnimationL');
+      }
+      let address=this.$refs.addRInput.innerText.replace(/[\n\r\s]+/g, '');
+      let Config=undefined;
+      if(this.isValidDomain(address)){
+        address=address.toLowerCase();
+        try {
+          Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
+        }catch(e){}
+        if(Array.isArray(Config) && Config!==null){
+          if(Config.length>=20){
+            this.$store.commit('setCoLogMessage',{text:'无法添加，请删除其余路由后重试',from:'internal:LayerMenuPanel',type:'tip'});
+          }
+          if(-1===Config.findIndex(val=>{return val.address===address})){//检查有没有重复的路由,没有就加入
+            let route={
+              name:'route',//自定义名称，默认为route
+              address:address,//地址
+              port:35553,//端口，默认35553
+              use:false,//是否使用中，默认false
+            };
+            Config.push(route);
+          }
+          this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
+        }
+        this.$store.commit('setCoLogMessage',{text:'路由添加成功！',from:'internal:LayerMenuPanel',type:'tip'});
+        this.findLocalRouteConfig();
+      }else {
+        this.$store.commit('setCoLogMessage',{text:'路由格式错误，请输入正确的英文域名或ip地址',from:'internal:LayerMenuPanel',type:'tip'});
+        return false;
+      }
     },
     addAccount(){//添加账号
       let account=this.$refs.addInputName.innerText.replace(/[\n\r\s]+/g, '');
@@ -487,6 +590,16 @@ export default {
         this.$store.commit('setCoLogMessage',{text:'账号添加成功！',from:'internal:LayerMenuPanel',type:'tip'});
         this.findLocalAccounts();
       }
+    },
+    resetRInput(){//重置路由输入
+      if(this.$refs.addRSubmitB.classList.contains('AnimationL')){
+        this.$refs.addRSubmitB.classList.remove('AnimationL');
+        this.$refs.addRSubmitB.classList.add('AnimationK');
+      }else {
+        this.$refs.addRSubmitB.classList.remove('AnimationK');
+        this.$refs.addRSubmitB.classList.add('AnimationL');
+      }
+      this.$refs.addRInput.innerHTML="输入ip地址或域名";
     },
     resetAInput(){//重置账号输入
       this.$refs.addInputName.innerHTML="";
@@ -544,9 +657,6 @@ export default {
     addRInputFocus(){
       this.$refs.addRInput.innerHTML="&nbsp;";
     },
-    addRInputFocusout(){
-      this.$refs.addRInput.innerText="输入ip地址或域名";
-    },
     openToolbox(e){
       this.$store.commit('setCoLogMessage',{text:'打开工具箱',from:'internal:LayerMenuPanel',type:'tip'});
       this.$store.commit('setCoToolboxShowPanel',true);
@@ -600,6 +710,16 @@ export default {
         function isObject(obj) {
           return obj != null && typeof obj === 'object' && Array.isArray(obj) === false;
         }
+      }
+    },
+    findLocalRouteConfig(){//查找本地路由配置
+      let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','routes'));//格式化本地配置路由
+      if(nowLocalStorage!==false && Array.isArray(nowLocalStorage)){
+        this.$store.state.userRouteConfig.routes=nowLocalStorage;
+      }else {//初始化routes
+        let SetArr=[];
+        let SetStr=JSON.stringify(SetArr);//格式化对象
+        this.handleLocalStorage('set','routes',SetStr);
       }
     },
     findLocalSetConfig(){//查找本地设置配置
@@ -1273,6 +1393,9 @@ export default {
     }
   },
   computed:{
+    routes(){
+      return this.$store.state.userRouteConfig.routes;
+    },
     menuPanelDisplay(){
       return this.$store.state.commits.menuPanelDisplay;
     },
@@ -1363,6 +1486,12 @@ export default {
 </script>
 
 <style scoped>
+.AnimationL{
+  animation:buttonEffectsSd 0.2s forwards;
+}
+.AnimationK{
+  animation:buttonEffectsSe 0.2s forwards;
+}
 .inputBox{
   width: calc(100% - 10px);
   height: 130px;

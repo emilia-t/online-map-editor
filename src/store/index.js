@@ -2329,6 +2329,10 @@ export default new Vuex.Store({
 
       ]
     },
+    userRouteConfig:{
+      routes:[],
+      use:""
+    },
     userSettingConfig:{//用户设置
       openFpsMonitor:false,//fps监控开启
       openElementPanel:false,//是否开启元素面板
