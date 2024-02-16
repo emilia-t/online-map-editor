@@ -2331,7 +2331,7 @@ export default new Vuex.Store({
     },
     userRouteConfig:{
       routes:[],
-      use:""
+      use:null
     },
     userSettingConfig:{//用户设置
       openFpsMonitor:false,//fps监控开启
@@ -2341,6 +2341,7 @@ export default new Vuex.Store({
       closeDefaultLayer:false,//默认关闭默认图层
       mixVisibleRange:'medium',
       autoGetRoute:false,//自动获取路由表
+      enableSSL:false,//路由拉取时启用加密传输
       defaultAccountLogin:false,//自动使用默认账号登录
     },
     detailsPanelConfig:{//左侧元素信息面板显示的数据

@@ -108,10 +108,17 @@
         <div class="SettingTitle">路由设置</div>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">自动获取路由表</span>
+            <span class="spansA">自动向路由拉取数据</span>
             <span class="spansB">开启后将自动从路由获取服务器列表</span>
           </div>
           <div class="switchOut" ref="RS01" @click="RS01($event)"><div ref="RS01_1" class="circle"></div></div>
+        </div>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">使用SSL加密传输</span>
+            <span class="spansB">需要路由端支持SSL加密传输才能使用</span>
+          </div>
+          <div class="switchOut" ref="RS02" @click="RS02($event)"><div ref="RS02_1" class="circle"></div></div>
         </div>
         <div class="routeListTitle">
           <menu-about-c></menu-about-c>
@@ -126,21 +133,49 @@
           <div class="row" v-for="route in this.routes">
             <span class="rowSelect" v-show="route.use">✓</span>
             <span class="rowSelect" v-show="!route.use">-</span>
-            <span class="rowName" :title="route.address" v-text="route.address"></span>
-            <span class="rowButton" @click="deleteRoute(route.address)">删除</span>
+            <span class="rowName" :title="route.address" v-text="getRouteName(route)"></span>
+            <span class="rowButton" @click="editRoute(route.address)">编辑</span>
             <span class="rowButton" @click="topRoute(route.address)">置顶</span>
             <span class="rowButton" @click="selectRoute(route.address)">选择</span>
           </div>
         </div>
-        <div class="addRName">
-          <div class="addRInput" ref="addRInput" @focus="addRInputFocus()" contenteditable="true">
+        <div class="editRouteBox" v-show="editRouteShow">
+            <div class="editRouteTitle">
+              编辑路由
+            </div>
+            <div class="editRouteRow">
+              <span>地址</span>
+              <input type="text" :value="tempEditRoute.address" class="editRouteInput" disabled/>
+            </div>
+            <div class="editRouteRow">
+              <span>端口</span>
+              <input type="number" v-model="tempEditRoute.port" class="editRouteInput"  @focusin="onFocusMode()" @focusout="noFocusMode()"/>
+            </div>
+            <div class="editRouteRow">
+              <span>名称</span>
+              <input type="text" v-model="tempEditRoute.name" class="editRouteInput"  @focusin="onFocusMode()" @focusout="noFocusMode()"/>
+            </div>
+            <div class="editRouteSubmit">
+              <button class="editRouteSubmitBt" @click="submitEditRoute()">确定</button>
+              <button class="editRouteSubmitBt" @click="cancelEditRoute()">取消</button>
+              <button class="editRouteSubmitBt2" @click="deleteRoute(tempEditRoute.address)">删除路由</button>
+            </div>
+        </div>
+        <div class="addRName" v-show="!editRouteShow">
+          <div class="addRInput" ref="addRInput" @focus="addRInputFocus()" contenteditable="true" @focusin="onFocusMode()" @focusout="noFocusMode()">
           </div>
-          <div class="addRSubmit" ref="addRSubmitA" @click="addRoute()">
+          <button class="addRNameButton" @click="addRoute()">
             添加
+          </button>
+          <button class="addRNameButton" @click="resetRInput()">
+            重置
+          </button>
+          <!-- <div class="addRSubmit" ref="addRSubmitA" @click="addRoute()">
+            
           </div>
           <div class="addRSubmit" ref="addRSubmitB" @click="resetRInput()">
             重置
-          </div>
+          </div> -->
         </div>
       </div>
       <div class="Setting" v-show="AccountSettings"><!--账号设置-->
@@ -180,12 +215,12 @@
           <div class="addAccount">
             <div class="addAccountRow">
               <span>账号</span>
-              <div class="addAInput" ref="addInputName" contenteditable="true">
+              <div class="addAInput" ref="addInputName" contenteditable="true" @focusin="onFocusMode()" @focusout="noFocusMode()">
               </div>
             </div>
             <div class="addAccountRow">
               <span>密码</span>
-              <div class="addAInput" ref="addInputPass" contenteditable="true">
+              <div class="addAInput" ref="addInputPass" contenteditable="true" @focusin="onFocusMode()" @focusout="noFocusMode()">
               </div>
             </div>
             <div class="addASubmitRow">
@@ -210,7 +245,7 @@
             </div>
             <div class="addAccountRow">
               <span>密码</span>
-              <div class="addAInput" ref="editInputPass" contenteditable="true">
+              <div class="addAInput" ref="editInputPass" contenteditable="true" @focusin="onFocusMode()" @focusout="noFocusMode()">
               </div>
             </div>
             <div class="addASubmitRow">
@@ -416,6 +451,7 @@ export default {
     menuHelp,menuTool,},
   data(){
     return {
+      editRouteShow:false,
       panelShow:true,
       settingShow:false,
       GeneralSettings:false,
@@ -431,6 +467,12 @@ export default {
       editButton,
       doubtRevoke:false,
       editAccountView:false,
+      tempEditRoute:{
+        address:null,
+        name:null,
+        port:null,
+        use:null,
+      },
     }
   },
   mounted() {
@@ -447,6 +489,12 @@ export default {
       this.$refs.SettingsBox.style.height=window.innerHeight+'px';
       this.findLocalAccounts();//查找本地账号配置
       this.checkRouter();
+    },
+    onFocusMode(){//聚焦模式
+      this.$store.state.mapConfig.inputFocusStatus=true;
+    },
+    noFocusMode(){//非聚焦模式
+      this.$store.state.mapConfig.inputFocusStatus=false;
     },
     isValidPassword(password){//检测密码合理性
       const pattern = new RegExp('^[a-zA-Z0-9_!@$%^&*-+?\;:]*$');
@@ -470,7 +518,7 @@ export default {
         }
       }
     },
-    selectRoute(address){
+    selectRoute(address){//选用路由
       let Config=undefined;
       try {
         Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
@@ -489,7 +537,7 @@ export default {
         }
       }
     },
-    topRoute(address){
+    topRoute(address){//置顶路由
       let Config=undefined;
       try {
         Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
@@ -503,10 +551,62 @@ export default {
           this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
           this.$store.commit('setCoLogMessage',{text:'已置顶路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
           this.findLocalRouteConfig();
+        }else{
+          this.$store.commit('setCoLogMessage',{text:'无法查询此路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
         }
       }
     },
-    deleteRoute(address){
+    getRouteName(routeObj){
+      if(routeObj.name==='route'){
+        return routeObj.address;
+      }else{
+        return routeObj.name;
+      }
+    },
+    editRoute(address){//开始编辑路由
+      this.editRouteShow=true;
+      let Config=undefined;
+      try {
+        Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
+      }catch(e){}
+      if(Array.isArray(Config) && Config!==null){
+        let index=Config.findIndex((val)=>{return val.address===address});
+        if(index!==-1){
+          this.tempEditRoute.address=Config[index].address;
+          this.tempEditRoute.name=Config[index].name;
+          this.tempEditRoute.port=Config[index].port;
+          this.tempEditRoute.use=Config[index].use;
+        }
+      }
+    },
+    submitEditRoute(){//结束编辑路由
+      let address=this.tempEditRoute.address;
+      let name=this.tempEditRoute.name;
+      let port=parseInt(this.tempEditRoute.port);
+      if(port===NaN){
+        this.$store.commit('setCoLogMessage',{text:'修改失败，请输入正确的端口号 '+address,from:'internal:LayerMenuPanel',type:'tip'});
+        return false;
+      }
+      let Config=undefined;
+      try {
+        Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
+      }catch(e){}
+      if(Array.isArray(Config) && Config!==null){
+        let index=Config.findIndex((val)=>{return val.address===address});
+        if(index!==-1){
+          Config[index].name=name;
+          Config[index].port=port;
+          this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
+          this.$store.commit('setCoLogMessage',{text:'已修改路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
+          this.editRouteShow=false;
+          this.findLocalRouteConfig();
+        }else{
+          this.editRouteShow=false;
+          this.$store.commit('setCoLogMessage',{text:'无法查询此路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
+        }
+      }
+    },
+    deleteRoute(address){//删除路由
       let Config=undefined;
       try {
         Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
@@ -518,17 +618,21 @@ export default {
           this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
           this.$store.commit('setCoLogMessage',{text:'已删除路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
           this.findLocalRouteConfig();
+        }else{
+          this.$store.commit('setCoLogMessage',{text:'无法查询此路由 '+address,from:'internal:LayerMenuPanel',type:'tip'});
         }
       }
     },
+    cancelEditRoute(){//取消编辑路由
+      this.editRouteShow=false;
+      this.tempEditRoute={
+        address:null,
+        name:null,
+        port:null,
+        use:null,
+      };
+    },
     addRoute(){//添加路由
-      if(this.$refs.addRSubmitA.classList.contains('AnimationL')){
-        this.$refs.addRSubmitA.classList.remove('AnimationL');
-        this.$refs.addRSubmitA.classList.add('AnimationK');
-      }else {
-        this.$refs.addRSubmitA.classList.remove('AnimationK');
-        this.$refs.addRSubmitA.classList.add('AnimationL');
-      }
       let address=this.$refs.addRInput.innerText.replace(/[\n\r\s]+/g, '');
       let Config=undefined;
       if(this.isValidDomain(address)){
@@ -541,18 +645,22 @@ export default {
             this.$store.commit('setCoLogMessage',{text:'无法添加，请删除其余路由后重试',from:'internal:LayerMenuPanel',type:'tip'});
           }
           if(-1===Config.findIndex(val=>{return val.address===address})){//检查有没有重复的路由,没有就加入
+            let use=Config.length===0;
             let route={
               name:'route',//自定义名称，默认为route
               address:address,//地址
               port:35553,//端口，默认35553
-              use:false,//是否使用中，默认false
+              use:use,//是否使用中，默认false，首次添加为true
             };
             Config.push(route);
-          }
-          this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
+            this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
+            this.findLocalRouteConfig();
+            this.$store.commit('setCoLogMessage',{text:'路由添加成功！',from:'internal:LayerMenuPanel',type:'tip'});
+          }else{
+            this.$store.commit('setCoLogMessage',{text:'已存在同样的路由',from:'internal:LayerMenuPanel',type:'tip'});
+          }          
         }
-        this.$store.commit('setCoLogMessage',{text:'路由添加成功！',from:'internal:LayerMenuPanel',type:'tip'});
-        this.findLocalRouteConfig();
+        
       }else {
         this.$store.commit('setCoLogMessage',{text:'路由格式错误，请输入正确的英文域名或ip地址',from:'internal:LayerMenuPanel',type:'tip'});
         return false;
@@ -592,13 +700,6 @@ export default {
       }
     },
     resetRInput(){//重置路由输入
-      if(this.$refs.addRSubmitB.classList.contains('AnimationL')){
-        this.$refs.addRSubmitB.classList.remove('AnimationL');
-        this.$refs.addRSubmitB.classList.add('AnimationK');
-      }else {
-        this.$refs.addRSubmitB.classList.remove('AnimationK');
-        this.$refs.addRSubmitB.classList.add('AnimationL');
-      }
       this.$refs.addRInput.innerHTML="输入ip地址或域名";
     },
     resetAInput(){//重置账号输入
@@ -670,7 +771,7 @@ export default {
     },
     async getHiToKoTo(){
       let xhr = new XMLHttpRequest();
-      xhr.open('get', 'https://v1.hitokoto.cn/?c=a&c=b&c=d&c=i&max_length=18');
+      xhr.open('GET', 'https://v1.hitokoto.cn/?c=a&c=b&c=d&c=i&max_length=18',true);
       xhr.onreadystatechange = ()=> {
         if (xhr.readyState === 4) {
           const data = JSON.parse(xhr.responseText);
@@ -716,6 +817,13 @@ export default {
       let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','routes'));//格式化本地配置路由
       if(nowLocalStorage!==false && Array.isArray(nowLocalStorage)){
         this.$store.state.userRouteConfig.routes=nowLocalStorage;
+        let leng=nowLocalStorage.length;
+        for(let i=0;i<leng;i++){
+          if(nowLocalStorage[i].use===true){
+            this.$store.state.userRouteConfig.use=nowLocalStorage[i];
+            break;
+          }
+        }
       }else {//初始化routes
         let SetArr=[];
         let SetStr=JSON.stringify(SetArr);//格式化对象
@@ -727,10 +835,15 @@ export default {
       if(hasLocalConfig=='true'){
         let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));//格式化本地配置设置
         let hasAutoCheckServerStatus=nowLocalStorage.hasOwnProperty('set_GS_AutoCheckServerStatus');
+        let hasAutoGetRoute=nowLocalStorage.hasOwnProperty('set_RS_AutoGetRoute');
         let hasMouseSamplingRate=nowLocalStorage.hasOwnProperty('set_DS_MouseSamplingRate');
         let hasMixVisibleRange=nowLocalStorage.hasOwnProperty('set_DS_MixVisibleRange');
         if(!hasAutoCheckServerStatus){
           nowLocalStorage.set_GS_AutoCheckServerStatus=true;
+          this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
+        }
+        if(!hasAutoGetRoute){
+          nowLocalStorage.set_RS_AutoGetRoute=true;
           this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
         }
         if(!hasMouseSamplingRate){
@@ -849,6 +962,18 @@ export default {
               }
               break;
             }
+            case 'set_RS_EnableSSL':{
+              if(nowLocalStorage[key]==true){
+                this.$refs.RS02.classList.add('switchOutOn');//更新样式
+                this.$refs.RS02_1.classList.add('circleOn');
+                this.$store.state.userSettingConfig.enableSSL=true;//更新状态
+              }else if(nowLocalStorage[key]==false){
+                this.$refs.RS02.classList.remove('switchOutOn');
+                this.$refs.RS02_1.classList.remove('circleOn');
+                this.$store.state.userSettingConfig.enableSSL=false;//更新状态
+              }
+              break;
+            }
             case 'set_AS_DefaultAccountLogin':{
               if(nowLocalStorage[key]==true){
                 this.$refs.AS01.classList.add('switchOutOn');//更新样式
@@ -867,6 +992,7 @@ export default {
       else {
         let SetObj={//创建设置对象
           'set_GS_AutoCheckServerStatus':true,
+          'set_RS_AutoGetRoute':true,
           'set_DS_MouseSamplingRate':'medium',
           'set_DS_MixVisibleRange':'medium',
         };
@@ -876,6 +1002,7 @@ export default {
         this.handleLocalStorage('set','A_tips_cn','请勿在控制台修改本地配置');
         this.handleLocalStorage('set','A_tips_uk','Do not modify local configuration on the console');
         this.settingSwitch('set_GS_AutoCheckServerStatus',true);//按钮初始化
+        this.settingSwitch('set_RS_AutoGetRoute',true);//按钮初始化
         this.settingSwitch('set_DS_MouseSamplingRate','medium');//按钮初始化
         this.settingSwitch('set_DS_MixVisibleRange','medium');//按钮初始化
       }
@@ -1043,7 +1170,7 @@ export default {
         }
       }
     },
-    DS08(ev){
+    DS08(ev){//调整元素可视范围
       ev.stopPropagation();
       let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
       let oldStatus=null;
@@ -1085,7 +1212,7 @@ export default {
         }
       }
     },
-    RS01(ev){//路由设置下的功能开关
+    RS01(ev){//路由设置下的自动拉取开关
       ev.stopPropagation();
       let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
       let oldStatus=settingsObj.set_RS_AutoGetRoute;
@@ -1101,6 +1228,24 @@ export default {
         this.$refs.RS01.classList.add('switchOutOn');//更改样式
         this.$refs.RS01_1.classList.add('circleOn');
         this.$store.state.userSettingConfig.autoGetRoute=true;//更新状态
+      }
+    },
+    RS02(ev){//路由设置下的ssl开关
+      ev.stopPropagation();
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+      let oldStatus=settingsObj.set_RS_EnableSSL;
+      if(oldStatus===true){//修改storage中的值
+        settingsObj.set_RS_EnableSSL=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.RS02.classList.remove('switchOutOn');//更改样式
+        this.$refs.RS02_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.enableSSL=false;//更新状态
+      }else {
+        settingsObj.set_RS_EnableSSL=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.RS02.classList.add('switchOutOn');//更改样式
+        this.$refs.RS02_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.enableSSL=true;//更新状态
       }
     },
     AS01(ev){//账号设置下的功能开关
@@ -1282,6 +1427,18 @@ export default {
             this.$refs.RS01.classList.remove('switchOutOn');
             this.$refs.RS01_1.classList.remove('circleOn');
             this.$store.state.userSettingConfig.autoGetRoute=false;//更新状态
+          }
+          break;
+        }
+        case 'set_RS_EnableSSL':{
+          if(value==true){
+            this.$refs.RS02.classList.add('switchOutOn');//更新样式
+            this.$refs.RS02_1.classList.add('circleOn');
+            this.$store.state.userSettingConfig.enableSSL=true;//更新状态
+          }else if(value==false){
+            this.$refs.RS02.classList.remove('switchOutOn');
+            this.$refs.RS02_1.classList.remove('circleOn');
+            this.$store.state.userSettingConfig.enableSSL=false;//更新状态
           }
           break;
         }
@@ -1486,6 +1643,63 @@ export default {
 </script>
 
 <style scoped>
+.editRouteSubmitBt{
+  width: 50px;
+  font-size: 14px;
+}
+.editRouteSubmitBt2{
+  width: 100px;
+  font-size: 14px;
+}
+.editRouteSubmit{
+  width:100%;
+  height:35px;
+  display:flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.editRouteTitle{
+  height:24px;
+}
+.editRouteBox{
+  margin: 0px 0px 10px 0px;
+  width: calc(100% - 12px);
+  border-radius: 4px;
+  padding:6px;
+  height: 145px;
+  box-shadow:0px 0px 1px #000000
+}
+.editRouteRow{
+  width: 100%;
+  height: 24px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin:4px 0px;
+}
+.editRouteRow span{
+  width: 40px;
+  height: 24px;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.editRouteInput{
+  width: calc(100% - 52px);
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.editRouteRow label{
+  width: 40px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .AnimationL{
   animation:buttonEffectsSd 0.2s forwards;
 }
@@ -1576,8 +1790,16 @@ export default {
   justify-content: center;
   align-items: center;
 }
+.addRNameButton{
+ width:45px;
+ height:30px;
+ margin: 0px 5px;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+}
 .addRInput{
-  width: calc(180px - 12px - 8px);
+  width: calc(100% - 110px);
   padding: 0px 6px;
   margin: 0px 4px;
   height: 30px;
@@ -1593,23 +1815,6 @@ export default {
 }
 .addRInput:focus{
   outline:2px solid #7f7a74;
-}
-.addRSubmit{
-  width: calc(50px - 8px);
-  margin: 0px 4px;
-  height: 24px;
-  border-radius: 3px;
-  box-shadow: 0px 0px 3px #acacac;
-  font-size: 14px;
-  background: #f6f6f6;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  transition: 0.4s;
-}
-.addRSubmit:hover{
-  box-shadow: 0px 0px 3px #5a5a5a;
 }
 .addATitle{
   width: 100%;

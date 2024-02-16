@@ -36,8 +36,36 @@ export default {
       return this.$store.state.pageConfig.homeSeparateState;
     }
   },
+  mounted(){
+    this.startSetting();
+  },
   methods:{
-
+    startSetting(){
+      let userAgent=navigator.userAgent;
+      let exp=/Firefox/g;
+      if(exp.test(userAgent)){
+         this.addNewStyle(
+          [
+          "*{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,0.1) rgba(0,0,0,0.2);}"
+          ]
+        );
+      }
+    },
+    addNewStyle(style_array){
+        try{
+            let styleElement=document.getElementById('styles_js');
+            if (!styleElement) {
+                styleElement=document.createElement('style');
+                styleElement.type='text/css';
+                styleElement.id='styles_js';
+                document.getElementsByTagName('head')[0].appendChild(styleElement);
+            }
+            for(let i=0;i<style_array.length;i++){
+                styleElement.appendChild(document.createTextNode(style_array[i]));
+            }
+        }catch (e) {
+        }
+    }
   }
 }
 </script>
@@ -54,27 +82,16 @@ body, html {
   margin: 0px;
   padding: 0px;
 }
-:root{
-
+::-webkit-scrollbar {
+  width: 4px !important;
 }
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.1) rgba(0,0,0,0.2);
+::-webkit-scrollbar-thumb {
+  border-radius: 10px !important;
+  background: rgba(0,0,0,0.2) !important;
 }
-*::-webkit-scrollbar {
-  width: 4px;
-}
-*::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background: rgba(0,0,0,0.2);
-}
-*::-webkit-scrollbar-track {
-  border-radius: 0;
-  background: rgba(0,0,0,0.1);
-}
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.1) rgba(0,0,0,0.2);
+::-webkit-scrollbar-track {
+  border-radius: 0 !important;
+  background: rgba(0,0,0,0.1) ;
 }
 *{
   font-family: Roboto;
