@@ -171,7 +171,7 @@
             重置
           </button>
           <!-- <div class="addRSubmit" ref="addRSubmitA" @click="addRoute()">
-            
+
           </div>
           <div class="addRSubmit" ref="addRSubmitB" @click="resetRInput()">
             重置
@@ -658,9 +658,9 @@ export default {
             this.$store.commit('setCoLogMessage',{text:'路由添加成功！',from:'internal:LayerMenuPanel',type:'tip'});
           }else{
             this.$store.commit('setCoLogMessage',{text:'已存在同样的路由',from:'internal:LayerMenuPanel',type:'tip'});
-          }          
+          }
         }
-        
+
       }else {
         this.$store.commit('setCoLogMessage',{text:'路由格式错误，请输入正确的英文域名或ip地址',from:'internal:LayerMenuPanel',type:'tip'});
         return false;
@@ -1791,7 +1791,7 @@ export default {
   align-items: center;
 }
 .addRNameButton{
- width:45px;
+ width:50px;
  height:30px;
  margin: 0px 5px;
  display: flex;

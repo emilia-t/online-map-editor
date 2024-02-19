@@ -67,7 +67,10 @@ export default {
       saveEmail:'',//仅用于登录，并不是用户的名称
       password:'',//仅用于登录，并不是用户的名称
       savePassword:'',//仅用于登录，并不是用户的名称
-      bordTipsText:'您只能输入数字、字母、下划线、@ . -'
+      bordTipsText:'您只能输入数字、字母、下划线、@ . -',
+      em:null,//自动登录的账号
+      pd:null,//自动登录的密码
+      automaticLoginCount:0,//自动登录次数
     }
   },
   mounted() {
@@ -117,26 +120,28 @@ export default {
         }
       }
       if(em!==false && pd!==false){
-        setTimeout(()=>{//尝试进行登录
-          try {
-            if(this.$store.state.serverData.socket.isLink){
-              setTimeout(()=>{
-                let encrypt=new JSEncrypt();//加密
-                encrypt.setPublicKey(this.$store.state.serverData.socket.publickey);
-                if(this.$store.state.serverData.socket.publickey===''){
-                  this.$store.commit('setCoLogMessage',{text:'获取公钥失败，请尝试刷新浏览器',from:'internal:BananaLoginBoard',type:'tip'});
-                  return false;
-                }
-                let newPwd=encrypt.encrypt(pd);
-                this.$store.state.serverData.socket.login(em,newPwd);
-              },100)
-            }else {
-              this.$store.commit('setCoLogMessage',{text:'自动登录失败，无法连接服务器',from:'internal:BananaLoginBoard',type:'tip'});
+        this.em=em;
+        this.pd=pd;
+      }
+    },
+    autoLoginServer(em,pd){//尝试进行登录
+      try {
+        if(this.$store.state.serverData.socket.isLink){
+          setTimeout(()=>{
+            let encrypt=new JSEncrypt();//加密
+            encrypt.setPublicKey(this.$store.state.serverData.socket.publickey);
+            if(this.$store.state.serverData.socket.publickey===''){
+              this.$store.commit('setCoLogMessage',{text:'获取公钥失败，请尝试刷新浏览器',from:'internal:BananaLoginBoard',type:'tip'});
+              return false;
             }
-          }catch (e){
+            let newPwd=encrypt.encrypt(pd);
+            this.$store.state.serverData.socket.login(em,newPwd);
+          },100)
+        }else {
+          this.$store.commit('setCoLogMessage',{text:'自动登录失败，请点击右上角头像手动登录',from:'internal:BananaLoginBoard',type:'tip'});
+        }
+      }catch (e){
 
-          }
-        },100);
       }
     },
     getDefaultAccount(){//获取默认账号，失败则返回false
@@ -247,9 +252,26 @@ export default {
       }else {
         return null;
       }
+    },
+    isLink(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.isLink;
+      }else {
+        return null;
+      }
     }
   },
   watch:{
+    isLink:{
+      handler(newValue){
+        if(newValue){
+          if(this.automaticLoginCount===0){
+            this.autoLoginServer(this.em,this.pd);
+            this.automaticLoginCount+=1;
+          }
+        }
+      }
+    },
     numberOfLoginAttempts:{
       handler(newValue,oldValue){
         if(oldValue!==null){

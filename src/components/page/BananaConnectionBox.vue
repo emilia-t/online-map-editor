@@ -1,28 +1,29 @@
 <template>
 <div class="BananaConnectionBox"><!--连接盒子-->
   <div class="ConnectionImgBox"><!--图像-->
-    <img class="ConnectionImg" alt="服务器显示图" :src="serverImg"/>
+    <img class="ConnectionImg" alt="图片加载失败" v-if="ServerImage!==''" :src="ServerImage"/>
+    <image-loading-failed v-if="ServerImage===''"></image-loading-failed>
   </div>
-  <router-link :to="`/m/${serverKey}`" title="点击打开地图"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
-  <div class="downloadButtonBox" title="下载OMS文件" @click="downLoad()"><!--右上角更多属性按钮-->
+  <router-link :to="`/m/${MyConfig.serverKey}`" title="点击打开地图"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
+  <div class="downloadButtonBox" title="下载OMS文件" v-if="source==='manual'" @click="downLoad()"><!--右上角更多属性按钮-->
     <download></download>
   </div>
   <div class="moreButtonBox" title="点击查看更多" @click="openDetailBoard()"><!--右上角更多属性按钮-->
     <svg t="1681047402121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="33387" width="200" height="200"><path d="M288 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33388" data-spm-anchor-id="a313x.7781069.0.i32" class="selected"></path><path d="M512 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33389" data-spm-anchor-id="a313x.7781069.0.i33" class="selected"></path><path d="M736 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33390" data-spm-anchor-id="a313x.7781069.0.i34" class="selected"></path></svg>
   </div>
   <div class="onlineNumber" title="在线人数"><!--左上角在线人数-->
-    <span>{{onlineNumber}} / {{maxOnlineUser}}</span>
+    <span v-text="onlineNumberView"></span>
   </div>
   <div class="ConnectionDetails"><!--底部信息-->
-    <div>{{serverName}}</div>
-    <div>{{serverAddress}}</div>
-    <div>{{account}}</div>
+    <div>{{MyConfig.serverName}}</div>
+    <div>{{MyConfig.serverAddress}}</div>
+    <div>{{MyConfig.account}}</div>
   </div>
   <div class="moreBoard" ref="moreBoard"><!--点击更多显示信息-->
     <div class="moreBoardClose" title="点击关闭" @click="closeDetailBoard">
       <svg t="1681049938063" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="34516" width="200" height="200"><path d="M235.403636 182.178909l270.475637 270.498909L776.401455 182.178909a58.181818 58.181818 0 1 1 82.292363 82.292364L588.171636 534.946909 858.693818 805.469091a58.181818 58.181818 0 1 1-82.292363 82.269091L505.879273 617.239273 235.403636 887.738182A58.181818 58.181818 0 0 1 153.134545 805.469091l270.475637-270.522182L153.134545 264.471273a58.181818 58.181818 0 0 1 82.269091-82.292364z" fill="#282C33" p-id="34517"></path></svg>
     </div>
-    <span>服务器Key：{{serverKey}}</span>
+    <span>服务器Key：{{MyConfig.serverKey}}</span>
     <span>最大在线人数：{{MyConfig.maxOnlineUser}}</span>
     <span>最大宽度：{{MyConfig.maxWidth}}</span>
     <span>最小宽度：{{MyConfig.minWidth}}</span>
@@ -43,7 +44,7 @@
     <span>中心点Y：{{MyConfig.defaultY}}</span>
     <span>分辨率：{{MyConfig.resolutionX}}×{{MyConfig.resolutionY}}</span>
   </div>
-  <div class="serverDelete" ref="serverDelete" title="点击删除服务器"><!--左下角的删除按钮-->
+  <div class="serverDelete" ref="serverDelete" title="点击删除服务器" v-if="source==='manual'"><!--左下角的删除按钮-->
     <svg t="1682340682455" ref="serverDeleteIcon" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10839" width="200" height="200"><path d="M585.27998 767.998465 585.27998 365.722472c0-46.879704 73.238025-46.879704 73.238025 0l0 402.275993C658.518005 814.883285 585.27998 814.883285 585.27998 767.998465L585.27998 767.998465 585.27998 767.998465zM365.500415 767.998465 365.500415 365.722472c0-46.879704 73.271794-46.879704 73.271794 0l0 402.275993C438.771185 814.883285 365.500415 814.883285 365.500415 767.998465L365.500415 767.998465 365.500415 767.998465zM988.190423 182.861748 805.060569 182.861748l0-73.16844c0-60.576657-49.247634-109.692285-108.754936-109.692285L328.879356 0.001023c-60.673871 0-109.887736 49.116651-109.887736 109.692285l0 73.16844L35.860742 182.861748c-46.949288 0-46.949288 73.104995 0 73.104995l952.32968 0C1035.104919 255.966743 1035.104919 182.861748 988.190423 182.861748L988.190423 182.861748 988.190423 182.861748zM292.26239 109.692285c0-19.428491 17.158798-36.58729 36.615942-36.58729l367.426277 0c19.459191 0 35.484166 14.863523 35.484166 36.58729l0 73.16844L292.26239 182.860724 292.26239 109.692285 292.26239 109.692285zM768.410857 1024 255.607562 1024c-60.640102 0-109.853967-49.111534-109.853967-109.687168L145.753595 365.722472c0-21.723767 17.158798-36.586267 36.615942-36.586267 19.462261 0 36.621059 14.862499 36.621059 36.586267l0 548.589336c0 19.389606 17.192567 36.547381 36.615942 36.547381l512.803295 0c19.457144 0 36.649711-17.157775 36.649711-36.547381L805.059546 366.855272c0-48.012504 73.238025-48.012504 73.238025 0l0 547.456536C878.298594 974.888466 829.084729 1024 768.410857 1024L768.410857 1024zM768.410857 1024" fill="#272636" p-id="10840"></path></svg>
   </div>
   <div class="serverStatus" title="服务器在线状态" :style="`color:${onlineShowColor}`"><!--右下角的在线状态-->
@@ -57,9 +58,10 @@
 
 <script>
 import Download from "../svgValidIcons/download";
+import ImageLoadingFailed from "../svgValidIcons/custom/imageLoadingFailed";
 export default {
   name: "BananaConnectionBox",
-  components:{Download},
+  components:{ImageLoadingFailed, Download},
   data(){
     return {
       MyConfig:{
@@ -99,6 +101,11 @@ export default {
     }
   },
   props:{
+    source:{
+      type:String,
+      default:'manual',
+      required:false
+    },
     account:{
       type:String,
       default:'',
@@ -174,7 +181,9 @@ export default {
       if(setObj.set_GS_AutoCheckServerStatus==true){//1.检测服务器在线状态（在线的情况下会主动更新服务器配置）
         this.checkOnline(this.serverAddress);
       }
-      this.appendDeleteServer();//删除按钮添加删除服务器的事件
+      if(this.source==='manual'){
+        this.appendDeleteServer();//删除按钮添加删除服务器的事件
+      }
     },
     deleteServer(){//删除服务器
       let Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));//1.查询本地存储
@@ -271,21 +280,23 @@ export default {
                 configObj.defaultY=this.MyConfig.defaultY;
                 configObj.resolutionX=this.MyConfig.resolutionX;
                 configObj.resolutionY=this.MyConfig.resolutionY;
-                let nowServersConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));//获取本地配置
-                nowServersConfig[configObj.serverAddress]=configObj;//找到与当前url匹配的项目
-                this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(nowServersConfig));//更新localstorage
+                if(this.source==='manual'){
+                  let nowServersConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));//获取本地配置
+                  nowServersConfig[configObj.serverAddress]=configObj;//找到与当前url匹配的项目
+                  this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(nowServersConfig));//更新localstorage
+                }
                 this.MyConfig=configObj;
                 break;
               }
               case 'send_serverImg':{
                 this.MyConfig.serverImg=jsonData.data.string!==undefined ? jsonData.data.string : this.MyConfig.serverImg;
                 this.MyConfig.imgTime=jsonData.data.time!==undefined ? jsonData.data.time : this.MyConfig.imgTime;
-                let nowServersConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));//获取本地配置
-                nowServersConfig[this.MyConfig.serverAddress]['serverImg']=this.MyConfig.serverImg;//找到与当前url匹配的项目
-                nowServersConfig[this.MyConfig.serverAddress]['imgTime']=this.MyConfig.imgTime;
-                this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(nowServersConfig));//还原
-                this.MyConfig.serverImg=jsonData.data.string;//更新组件
-                this.MyConfig.imgTime=jsonData.data.time;
+                if(this.source==='manual'){
+                  let nowServersConfig=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));//获取本地配置
+                  nowServersConfig[this.MyConfig.serverAddress]['serverImg']=this.MyConfig.serverImg;//找到与当前url匹配的项目
+                  nowServersConfig[this.MyConfig.serverAddress]['imgTime']=this.MyConfig.imgTime;
+                  this.$root.general_script.handleLocalStorage('set','servers',JSON.stringify(nowServersConfig));//还原
+                }
                 break;
               }
             }
@@ -330,6 +341,22 @@ export default {
     },
     closeDetailBoard(){
       this.$refs.moreBoard.style.top='-170px';
+    }
+  },
+  computed:{
+    onlineNumberView(){
+      if(this.MyConfig.serverImg===''){
+        return '';
+      }else {
+        return this.MyConfig.onlineNumber+' / '+this.MyConfig.maxOnlineUser;
+      }
+    },
+    ServerImage(){
+      if(this.serverImg===''){
+        return this.MyConfig.serverImg;
+      }else {
+        return this.serverImg;
+      }
     }
   }
 }
@@ -379,6 +406,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   position: absolute;
   z-index: 505;
   top:0px;

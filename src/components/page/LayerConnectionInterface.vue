@@ -7,7 +7,7 @@
     <div class="InterfaceHead"><!--顶部-->
       <div class="HeadLeft"><!--标题-->
         <server custom="margin:7px 10"></server>
-        <span class="InterfaceHeadTitle">来自手动添加</span>
+        <span class="InterfaceHeadTitle">服务器列表</span>
       </div>
       <div ref="addNewConnectButton">
         <add-plus custom="margin:6px 10px 2px 10px"></add-plus>
@@ -16,19 +16,24 @@
     <div class="connectionInterfaceBox"><!--连接盒子-->
       <banana-connection-box v-for="value in serverLocalConfig" :key="value.serverAddress" :account="value.account" :password="value.password" :default-x="value.defaultX" :default-y="value.defaultY" :img-time="value.imgTime" :max-height="value.maxHeight" :online-number="value.onlineNumber" :max-online-user="value.maxOnlineUser" :max-width="value.maxWidth" :server-address="value.serverAddress" :server-img="value.serverImg" :server-key="value.serverKey" :server-name="value.serverName" @ancBoxChange="handlerCnBox"></banana-connection-box>
     </div>
-  </div>
-  <div class="content"><!--主内容-->
-    <div class="InterfaceHead"><!--顶部-->
-      <div class="HeadLeft"><!--标题-->
-        <server custom="margin:7px 10"></server>
-        <span class="InterfaceHeadTitle">来自路由拉取</span>
+    <div class="emptyServerList" v-if="isObjectEmpty(serverLocalConfig)">
+      <div class="emptyBox">
+        <empty-server :custom="'box-shadow:1px 1px 4px rgb(200,200,200);border-radius:7px;'"></empty-server>
       </div>
-      <div ref="addNewRouteButton" @click="changeAnrShow(true)">
-        <add-plus custom="margin:6px 10px 2px 10px"></add-plus>
+    </div>
+    <hr>
+    <div class="connectionInterfaceBoxT">
+      <div class="connectionInterfaceBoxN">
+        以下服务器来自路由端
       </div>
     </div>
     <div class="connectionInterfaceBox"><!--连接盒子-->
-      <banana-connection-box v-for="address in serverAddressList" :key="address" :server-address="address"></banana-connection-box>
+      <banana-connection-box v-for="address in addressList2Route" :key="address" :source="'route'" :server-address="address"></banana-connection-box>
+    </div>
+    <div class="emptyServerList" v-if="addressList2Route.length===0">
+      <div class="emptyBox">
+        <empty-server :custom="'box-shadow:1px 1px 4px rgb(200,200,200);border-radius:7px;'"></empty-server>
+      </div>
     </div>
   </div>
 <!--  <div class="content">&lt;!&ndash;主内容&ndash;&gt;-->
@@ -44,14 +49,6 @@
 <!--      <banana-local-map-box v-for="value in localMapConfig" :key="value.serverAddress" :config="value"></banana-local-map-box>-->
 <!--    </div>-->
 <!--  </div>-->
-  <div class="addNewRouteBox" ref="addNewRouteBox" @click.stop="changeAnrShow(false)" v-show="AnrShow">
-    <div class="addNewRouteBoard" @click.stop="void 0">
-      <input class="addNewRouteInput" @click.stop="void 0" ref="addRInput" type="text" placeholder="输入路由ip地址或域名" @focusin="onFocusMode()" @focusout="noFocusMode()"/>
-      <button class="addNewRouteSubmit" @click.stop="addRoute()">
-        添加
-      </button>
-    </div>
-  </div>
   <div class="addNewConnectBox" ref="addNewConnectBox" v-show="AncShow" @contextmenu="stopDefaultEvent($event)"><!--添加连接的面板-->
     <div class="addNewConnectBoard" ref="addNewConnectBoard"><!--中间的实际面板-->
       <div class="AncTitle"><!--标题-->
@@ -136,21 +133,22 @@ import AddPlus from "../svgValidIcons/40X/addPlus";
 import Server from "../svgValidIcons/40X/server";
 import BananaConnectionBox from "./BananaConnectionBox";
 import BananaLocalMapBox from "./BananaLocalMapBox";
+import EmptyServer from "../svgValidIcons/custom/emptyServer";
 export default {
   name: "LayerConnectionInterface",
   data(){
     return {
-      AnrShow:false,
       AncShow:false,
       lmShow:false,
       PasswordHide:true,
       isNewAddServer:true,
       serverLocalConfig:null,
       localMapConfig:null,
-      serverAddressList:[],
+      addressList2Route:[],//数组格式
     }
   },
   components:{
+    EmptyServer,
     BananaConnectionBox,BananaLocalMapBox,Server,AddPlus
   },
   mounted() {
@@ -181,24 +179,43 @@ export default {
         this.getRouteData(useRoute);
       }
     },
+    parseJson(str){
+      try{
+        return JSON.parse(str);
+      }catch(e){
+        return false;
+      }
+    },
     async getRouteData(routeObject){
-      let xhr = new XMLHttpRequest();
       let address=routeObject.address;
       let port=routeObject.port;
       let enableSSL=this.$store.state.userSettingConfig.enableSSL;
       let agreement='http://';
-      if(enableSSL){
-        agreement='https://';
-      }
+      if(enableSSL){agreement='https://';}
       let makeUp=agreement+address+':'+port;
-      xhr.open('GET', makeUp , true);
-      xhr.onreadystatechange = ()=> {
-        if (xhr.readyState === 4) {
-          const data = JSON.parse(xhr.responseText);
-          console.log(data);
+      let instructObj={type:'get_routeList'};
+      let xhr=new XMLHttpRequest();
+      xhr.onreadystatechange=()=>{
+        if(xhr.readyState===4){
+          let jsonData=this.parseJson(xhr.responseText);
+          if(jsonData===false){
+            return false;
+          }
+          if(typeof jsonData==='object' && jsonData!==null){
+            if(jsonData.hasOwnProperty('data') && jsonData.hasOwnProperty('type')){
+              let type=jsonData.type;
+              switch (type) {
+                case 'send_routeList':{
+                  this.addressList2Route=jsonData.data;
+                  break;
+                }
+              }
+            }
+          }
         }
       }
-      xhr.send('');
+      xhr.open('POST',makeUp ,true);
+      xhr.send(JSON.stringify(instructObj));
     },
     isValidDomain(str){
       const pattern1 = /-{2,}|^-|^\.|\.$/;//以-开头或.开头结尾或连续存在-则返回true
@@ -214,8 +231,11 @@ export default {
         }
       }
     },
-    changeAnrShow(value){
-      this.AnrShow=value;
+    isObjectEmpty(obj){
+      if(obj===null){
+        return true;
+      }
+      return Object.keys(obj).length===0;
     },
     findLocalRouteConfig(){//查找本地路由配置
       let nowLocalStorage=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));//格式化本地配置路由
@@ -232,39 +252,6 @@ export default {
         let SetArr=[];
         let SetStr=JSON.stringify(SetArr);//格式化对象
         this.handleLocalStorage('set','routes',SetStr);
-      }
-    },
-    addRoute(){//添加路由
-      let address=this.$refs.addRInput.value.replace(/[\n\r\s]+/g, '');
-      let Config=undefined;
-      if(this.isValidDomain(address)){
-        address=address.toLowerCase();
-        try {
-          Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','routes'));
-        }catch(e){}
-        if(Array.isArray(Config) && Config!==null){
-          if(Config.length>=20){
-            this.$store.commit('setCoLogMessage',{text:'无法添加，请删除其余路由后重试',from:'internal:LayerMenuPanel',type:'tip'});
-          }
-          if(-1===Config.findIndex(val=>{return val.address===address})){//检查有没有重复的路由,没有就加入
-            let use=Config.length===0;
-            let route={
-              name:'route',//自定义名称，默认为route
-              address:address,//地址
-              port:35553,//端口，默认35553
-              use:use,//是否使用中，默认false，首次添加为true
-            };
-            Config.push(route);
-            this.$root.general_script.handleLocalStorage('set','routes',JSON.stringify(Config));//写入storage
-            this.findLocalRouteConfig();
-            this.$store.commit('setCoLogMessage',{text:'路由添加成功！',from:'internal:LayerMenuPanel',type:'tip'});
-          }else{
-            this.$store.commit('setCoLogMessage',{text:'已存在同样的路由',from:'internal:LayerMenuPanel',type:'tip'});
-          }
-        }
-      }else {
-        this.$store.commit('setCoLogMessage',{text:'路由格式错误，请输入正确的英文域名或ip地址',from:'internal:LayerMenuPanel',type:'tip'});
-        return false;
       }
     },
     setDropEvent(){
@@ -567,43 +554,34 @@ export default {
 </script>
 
 <style scoped>
-.addNewRouteSubmit{
-  width: 60px;
-  height: 30px;
-  margin: 0px 10px;
-}
-.addNewRouteInput{
-  width: 200px;
-  height: 30px;
-  margin: 0px 10px;
-}
-.addNewRouteBoard{
-  width: 400px;
-  height: 100px;
-  background: #fefefe;
-  box-shadow:0px 0px 6px #c1c1c1;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-.addNewRouteBox{
+.emptyServerList{
   width: 100%;
-  height: 100%;
-  animation-name: gradualEntry;
-  animation-duration: 0.6s;
-  animation-iteration-count: 1;
-  animation-direction: normal;
-  background: rgba(255,255,255,0.8);
-  position: fixed;
-  top:0px;
-  left: 0px;
-  z-index: 570;
+  height: 270px;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  justify-content: flex-start;
+}
+.emptyBox{
+  width: 220px;
+  height: 230px;
+  margin: 20px 30px;
+  display: flex;
+  flex-direction: row;
   justify-content: center;
+  align-items: center;
+}
+.connectionInterfaceBoxN{
+  width: 240px;
+  height: 50px;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.connectionInterfaceBoxT{
+  width: 100%;
+  height: 50px;
 }
 .newLocalMapBoard{
   width: 400px;
@@ -767,7 +745,7 @@ input:focus{
   background: #ffffff;
   user-select: none;
   width: calc(100% - 100px - 2px - 16px);
-  height: calc(80% - 8px - 16px - 2px);
+  height: calc(100% - 8px - 16px - 2px);
   overflow-x: hidden;
   overflow-y: auto;
   margin: 0px 8px 8px 108px;

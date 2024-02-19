@@ -2331,7 +2331,7 @@ export default new Vuex.Store({
     },
     userRouteConfig:{
       routes:[],
-      use:null
+      use:null,//若无use则更改为null
     },
     userSettingConfig:{//用户设置
       openFpsMonitor:false,//fps监控开启
