@@ -76,10 +76,8 @@ export default {
         needRouteSearch=true;
       }
       if(find){//找到了配置信息
-        this.$store.commit('setCoLogMessage',{text:'正在连接服务器，请稍后...',from:'internal:SeparateMap',type:'tip'});
         let tempLink=new WebSocket(Address);//尝试连接
         tempLink.onopen=()=>{
-          this.$store.commit('setCoLogMessage',{text:'连接成功',from:'internal:SeparateMap',type:'tip'});
           this.tempLinked=true;
           tempLink.close();//断开连接
           this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(Address);//正式连接
@@ -130,10 +128,8 @@ export default {
                       if(this.isValidUrl(jsonData.data.url)){
                         Address=jsonData.data.url;
 
-                        this.$store.commit('setCoLogMessage',{text:'正在连接服务器，请稍后...',from:'internal:SeparateMap',type:'tip'});
                         let tempLink=new WebSocket(Address);//尝试连接
                         tempLink.onopen=()=>{
-                          this.$store.commit('setCoLogMessage',{text:'连接成功',from:'internal:SeparateMap',type:'tip'});
                           this.tempLinked=true;
                           tempLink.close();//断开连接
                           this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(Address);//正式连接

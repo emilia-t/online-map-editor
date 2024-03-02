@@ -381,12 +381,18 @@ export default new Vuex.Store({
           this.updateCount=0;//对更新元素属性和节点的统计
           this.lastDeleteId=-1;
           this.otherA1=[];
-          this.typeList=['broadcast','get_serverConfig','get_publickey','login','publickey','loginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
+          this.typeList=['broadcast','get_serverConfig','get_publickey','publickey','login','loginStatus','anonymousLogin','anonymousLoginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
           this.Instruct={//指令合集
             login(email,password) {//登录指令
               this.email=email || '';
               this.password=password || '';
               return {type:'login',data:{email:this.email,password:this.password}}
+            },
+            anonymousLogin(name){
+              return {
+                type:'anonymousLogin',
+                data:{name}
+              }
             },
             get_presence() {//获取在线用户数据
               return {type:'get_presence'}
@@ -465,6 +471,28 @@ export default new Vuex.Store({
             },
           };
           this.QIR={//检测间
+            /**
+             * 日志函数
+             */
+            onLog(text,type){
+              function reset(){
+                window.logConfig={
+                  message:{code:-1,time:'',text:'',from:'',type:'',data:undefined}
+                };
+              }
+              let lock=false;
+              try{
+                window.logConfig.message.code-=1;
+                window.logConfig.message.text=text;
+                window.logConfig.message.from='external:comprehensive';
+                window.logConfig.message.type=type;
+              }catch (e) {
+                lock=true;
+              }
+              if(lock){
+                reset();
+              }
+            },
             /**检测是否为对象类型的数据,是则返回t
              * @return boolean
              * @param obj any
@@ -488,10 +516,7 @@ export default new Vuex.Store({
               if(Object.prototype.toString.call(str)!=='[object String]'){return false;}
               let Exp=/^[0-9A-F]{6}$/i;
               if(Exp.test(str)===false){
-                window.logConfig.message.code-=1;
-                window.logConfig.message.text='请输入正确的16进制颜色格式例如#123456';
-                window.logConfig.message.from='external:comprehensive';
-                window.logConfig.message.type='warn';
+                this.onLog('请输入正确的16进制颜色格式例如#123456','warn');
                 return false;
               }
               return true;
@@ -508,17 +533,11 @@ export default new Vuex.Store({
                 return typeof value === 'number' && !isNaN(value);
               }
               if(!isNumber(number)){
-                window.logConfig.message.code-=1;
-                window.logConfig.message.text='宽度为数字，范围为2~64';
-                window.logConfig.message.from='external:comprehensive';
-                window.logConfig.message.type='warn';
+                this.onLog('宽度为数字，范围为2~64','warn');
                 return false;
               }else {
                 if(number>64 || number<2){
-                  window.logConfig.message.code-=1;
-                  window.logConfig.message.text='宽度范围为2~64';
-                  window.logConfig.message.from='external:comprehensive';
-                  window.logConfig.message.type='warn';
+                  this.onLog('宽度范围为2~64','warn');
                   return false;
                 }else {
                   return number=~~number;
@@ -537,24 +556,15 @@ export default new Vuex.Store({
                   if(Object.prototype.toString.call(details[i])!=='[object object]'){//3检查是否为对象
                     if(details[i].hasOwnProperty('key') && details[i].hasOwnProperty('value')){//4检查是否包含key，value属性
                       if(details[i].key==''){
-                        window.logConfig.message.code-=1;
-                        window.logConfig.message.text='属性名不能为空';
-                        window.logConfig.message.from='external:comprehensive';
-                        window.logConfig.message.type='warn';
+                        this.onLog('属性名不能为空','warn');
                         return false;
                       }
                       if(KeyExp.test(details[i].key)){//5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
-                        window.logConfig.message.code-=1;
-                        window.logConfig.message.text='列名错误，仅允许使用字母、数字、汉字、下划线';
-                        window.logConfig.message.from='external:comprehensive';
-                        window.logConfig.message.type='warn';
+                        this.onLog('列名错误，仅允许使用字母、数字、汉字、下划线','warn');
                         return false;
                       }
                       if(ValueExp.test(details[i].value)){
-                        window.logConfig.message.code-=1;
-                        window.logConfig.message.text="列值错误，不允许使用如下字符[]、{}、#、`、\'、\"、--、//、%%、/*";
-                        window.logConfig.message.from='external:comprehensive';
-                        window.logConfig.message.type='warn';
+                        this.onLog('列值错误，不允许使用如下字符[]、{}、#、`、\'、\"、--、//、%%、/*','warn');
                         return false;
                       }
                     }else {
@@ -654,10 +664,7 @@ export default new Vuex.Store({
         broadcastUpdateElement(data,type){//广播更新某一要素
           try {
             if(!data.hasOwnProperty('updateId')){
-              window.logConfig.message.code-=1;
-              window.logConfig.message.text='更新元素失败，缺失updateId';
-              window.logConfig.message.from='external:comprehensive';
-              window.logConfig.message.type='warn';
+              this.onLog('更新元素失败，缺失updateId','warn');
               return false;
             }
             if(type==='point' || type==='line' || type==='area' || type==='curve'){
@@ -681,10 +688,7 @@ export default new Vuex.Store({
                 this.send(this.Instruct.broadcast_updateElement(data));//0.6广播
               }
             }else {
-              window.logConfig.message.code-=1;
-              window.logConfig.message.text='更新元素失败，所更新的元素类型不支持:'+type;
-              window.logConfig.message.from='external:comprehensive';
-              window.logConfig.message.type='warn';
+              this.onLog('更新元素失败，所更新的元素类型不支持:'+type,'warn');
               return false;
             }
           }catch (e) {
@@ -872,18 +876,19 @@ export default new Vuex.Store({
           this.send(this.Instruct.get_publickey());
         }
         login(email,password){//登录方法
-          if (check(''+email+password)){//1.检查用户输入
+          let pat=new RegExp('[^a-zA-Z0-9\_@.+/=-]');
+          if(!pat.test(''+email+password)){
             this.send(this.Instruct.login(email,password));
+          }else {
+            this.onLog('邮箱及密码只能是字母、数字、下划线 @ . - ，','warn');
           }
-          function check(text){
-            let pat=new RegExp('[^a-zA-Z0-9\_@.+/=-]','i');
-            if(pat.test(text)===true) {
-              window.logConfig.message.code-=1;
-              window.logConfig.message.text='邮箱及密码只能是：字母，数字，下划线 @ . - ，如果您的邮箱包含除此之外的字符，请联系站长';
-              window.logConfig.message.from='external:comprehensive';
-              window.logConfig.message.type='warn';
-              return false;
-            }else {return true}
+        }
+        anonymousLogin(name){
+          let pat=/[^_A-Za-z0-9\u4e00-\u9fa5]/;
+          if(!pat.test(''+name)){
+            this.send(this.Instruct.anonymousLogin(name));
+          }else {
+            this.onLog('名称只能是字母、数字、下划线或汉字','warn');
           }
         }
         link(){//连接服务器方法
@@ -901,10 +906,7 @@ export default new Vuex.Store({
               this.socket.send(json);
             }
           }else {
-            window.logConfig.message.code-=1;
-            window.logConfig.message.text='服务器连接中断';
-            window.logConfig.message.from='external:comprehensive';
-            window.logConfig.message.type='warn';
+            this.onLog('服务器连接中断','warn');
           }
         }
         instructObjCheck(instructObj){//指令检查
@@ -924,6 +926,25 @@ export default new Vuex.Store({
           }
           return true;
         }
+        onLog(text,type){
+          function reset(){
+            window.logConfig={
+              message:{code:-1,time:'',text:'',from:'',type:'',data:undefined}
+            };
+          }
+          let lock=false;
+          try{
+            window.logConfig.message.code-=1;
+            window.logConfig.message.text=text;
+            window.logConfig.message.from='external:comprehensive';
+            window.logConfig.message.type=type;
+          }catch (e) {
+            lock=true;
+          }
+          if(lock){
+            reset();
+          }
+        }
         onMessage(ev){//收到消息事件
           let jsonData=JSON.parse(ev.data);
           if(jsonData.type!==undefined){
@@ -942,6 +963,16 @@ export default new Vuex.Store({
               break;
             }
             case 'loginStatus':{//服务器发来登录状态
+              if(jsonData.data){
+                this.isLogin=true;
+                this.numberOfLoginAttempts++;
+              }else {
+                this.isLogin=false;
+                this.numberOfLoginFailed++;
+              }
+              break;
+            }
+            case 'anonymousLoginStatus':{//服务器发来匿名登录状态
               if(jsonData.data){
                 this.isLogin=true;
                 this.numberOfLoginAttempts++;
@@ -1310,16 +1341,10 @@ export default new Vuex.Store({
                       }
                     }
                     if(!found){
-                      window.logConfig.message.code-=1;
-                      window.logConfig.message.text='存在未同步的元素,建议刷新页面ID:'+eId;
-                      window.logConfig.message.from='external:comprehensive';
-                      window.logConfig.message.type='warn';
+                      this.onLog('存在未同步的元素,建议刷新页面ID:'+eId,'warn');
                     }
                   }catch (e) {
-                    window.logConfig.message.code-=1;
-                    window.logConfig.message.text='存在未同步的元素,建议刷新页面ID:'+jsonData.data.id;
-                    window.logConfig.message.from='external:comprehensive';
-                    window.logConfig.message.type='warn';
+                    this.onLog('存在未同步的元素,建议刷新页面ID:'+jsonData.data.id,'warn');
                   }
                   break;
                 }
@@ -1373,17 +1398,11 @@ export default new Vuex.Store({
                       this.lastEdit=jsonData.time;
                       this.updateCount++;
                     }else{
-                      window.logConfig.message.code-=1;
-                      window.logConfig.message.text='存在未同步的元素,建议刷新页面ID:'+CgID;
-                      window.logConfig.message.from='external:comprehensive';
-                      window.logConfig.message.type='warn';
+                      this.onLog('存在未同步的元素,建议刷新页面ID:'+CgID,'warn');
                     }
                     break;
                   }catch (e) {
-                    window.logConfig.message.code-=1;
-                    window.logConfig.message.text='存在未同步的元素,建议刷新页面ID:'+jsonData.data.id;
-                    window.logConfig.message.from='external:comprehensive';
-                    window.logConfig.message.type='warn';
+                    this.onLog('存在未同步的元素,建议刷新页面ID:'+jsonData.data.id,'warn');
                   }
                   break;
                 }
@@ -1580,22 +1599,17 @@ export default new Vuex.Store({
         }
         onClose(ev){//断开连接事件
           this.isLink=false;
-          window.logConfig.message.code-=1;
-          window.logConfig.message.text='服务器连接中断';
-          window.logConfig.message.from='external:comprehensive';
-          window.logConfig.message.type='warn';
+          this.onLog('服务器连接中断','warn');
           return true;
         }
         onError(ev){//连接失败事件
           this.isLink=false;
-          window.logConfig.message.code-=1;
-          window.logConfig.message.text='服务器连接失败';
-          window.logConfig.message.from='external:comprehensive';
-          window.logConfig.message.type='warn';
+          this.onLog('服务器连接失败','warn');
           return true;
         }
         onOpen(ev){//连接成功事件
           this.isLink=true;
+          this.onLog('服务器连接成功','tip');
           this.getServerPublickey();//获取公钥
           this.getServerConfig();//获取服务器配置
           return true;
@@ -1976,10 +1990,7 @@ export default new Vuex.Store({
           }
         }
         throwError(message){
-          window.logConfig.message.code-=1;
-          window.logConfig.message.text=message;
-          window.logConfig.message.from='external:mixCanvas';
-          window.logConfig.message.type='warn';
+          this.mixLog(message,'warn');
         }
         pipelineCheck(){
           if(this.QIR('tc',{value:this.pipeline,correct:'object'})){
@@ -2075,6 +2086,25 @@ export default new Vuex.Store({
         }
         pipelineOpen(){
           this.$configs.pipelineHealthy=true;
+        }
+        mixLog(text,type){
+          function reset(){
+            window.logConfig={
+              message:{code:-1,time:'',text:'',from:'',type:'',data:undefined}
+            };
+          }
+          let lock=false;
+          try{
+            window.logConfig.message.code-=1;
+            window.logConfig.message.text=text;
+            window.logConfig.message.from='external:comprehensive';
+            window.logConfig.message.type=type;
+          }catch (e) {
+            lock=true;
+          }
+          if(lock){
+            reset();
+          }
         }
       }
     },

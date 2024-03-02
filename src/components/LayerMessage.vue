@@ -16,7 +16,7 @@
             <div class="messageConveyor">
               <div class="avatar" :style="{'backgroundColor': '#'+message.data.headColor}">{{message.conveyor.charAt(0)}}</div>
               <div class="avatarName">
-                <span v-if="message.data.name" v-text="message.data.name"></span>{{message.conveyor}}
+                <span v-if="message.data.name" v-text="message.data.name"></span>
               </div>
             </div>
             <div class="messageData">{{message.data.message}}</div>

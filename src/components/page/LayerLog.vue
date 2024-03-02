@@ -600,7 +600,18 @@ export default {
       return this.$store.state.logConfig.message;
     },
     windowMessage(){
-      return window.logConfig.message;
+      try {
+        return window.logConfig.message;
+      }catch (e) {
+        return {
+          code:-999999999,
+          data:undefined,
+          from:'internal:LayerLog',
+          text:'windowMessage异常重置',
+          time:'',
+          type:'error'
+        }
+      }
     },
     showHistoryPanel(){
       return this.$store.state.logConfig.showPanel;
