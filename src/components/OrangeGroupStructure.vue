@@ -74,13 +74,13 @@
         <div class="menuList" @click="deleteGroup()" v-if="this.level!==1">
           删除此分组
         </div>
-        <div class="menuList" @click="groupByColorType('color')" title="按颜色分组会删除所有子分组" @mouseenter="alertTip('按颜色分组会删除所有子分组')">
-          按颜色分组
+        <div class="menuList" @click="groupByColorType('color')" title="按颜色分组会删除所有子分组">
+          按颜色重新分组
         </div>
-        <div class="menuList" @click="groupByColorType('type')" title="按类型分组会删除所有子分组" @mouseenter="alertTip('按类型分组会删除所有子分组')">
-          按类型分组
+        <div class="menuList" @click="groupByColorType('type')" title="按类型分组会删除所有子分组">
+          按类型重新分组
         </div>
-        <div class="menuList">
+        <div class="menuList" @click="openTemplate()" title="点击打开模板设置界面">
           设置模板
         </div>
       </div>
@@ -92,12 +92,6 @@
           移除出图层
         </div>
       </div>
-    </div>
-    <div class="templateMenu" v-if="false">
-
-    </div>
-    <div class="templateMenuClose"  v-if="false">
-
     </div>
   </div>
 </template>
@@ -223,6 +217,11 @@ export default {
 
   },
   methods:{
+    openTemplate(){
+      this.$store.commit('setCoTemplateStructure',this.structure);
+      this.$store.commit('setCoTemplateShow',true);
+      this.memberHeadMenu.show=false;
+    },
     alertTip(text){
       this.$store.commit('setCoLogMessage',{text:text,from:'internal:OrangeGroupStructure',type:'warn'});
     },
@@ -1072,24 +1071,6 @@ export default {
 }
 .memberTeamContent:hover{
   box-shadow: 0px 0px 2px #0055ff;
-}
-.templateMenu{
-  width: 600px;
-  height: 388px;
-  background: #ffffff;
-  position: fixed;
-  z-index: 556;
-  top: calc(50% - 194px);
-  left: calc(50% - 300px);
-}
-.templateMenuClose{
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  background: rgba(0,0,0,0.2);
-  z-index: 555;
-  top: 0px;
-  left: 0px;
 }
 .groupListName{
   outline: none;

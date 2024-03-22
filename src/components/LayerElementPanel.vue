@@ -245,9 +245,11 @@
         </orange-group-list>
       </div>
     </div>
+    <banana-template-edit></banana-template-edit>
   </div>
 </template>
 <script>
+import BananaTemplateEdit from "./BananaTemplateEdit";
 import dropPng from '../../static/dropDown.png';
 import ResetRefresh from "./svgValidIcons/resetRefresh";
 import ExpandMore from "./svgValidIcons/expandMore";
@@ -269,6 +271,7 @@ import SunActive from "./svgValidIcons/sunActive";
 export default {
   name: "LayerElementPanel",
   components: {
+    BananaTemplateEdit,
     SunActive,
     SegmentCurve,
     More,AddNewLayer,AddNewGroup,Point,SegmentLine,Region,ExpandMore,Search,
@@ -1549,7 +1552,7 @@ export default {
   width: calc(300px - 18px);
   height: calc(100% - 20px);
   position: fixed;
-  z-index: 545;
+  z-index: 555;
   left: 20px;
   top: 10px;
   overflow: hidden;

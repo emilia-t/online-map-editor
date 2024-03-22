@@ -2131,6 +2131,12 @@ export default new Vuex.Store({
      * Config:可读可写 read write
      * Data:可读 read
     **/
+    templateConfig:{
+      code:1,
+      templateShow:false,
+      usedStructure:[],
+      tempTemplate:null,
+    },
     toolboxConfig:{
       position:{
         x:null,
@@ -2728,7 +2734,14 @@ export default new Vuex.Store({
       state.effectsConfig.svgFlicker.svgData=product.svgData;
       state.effectsConfig.svgFlicker.duration=product.duration;
       state.effectsConfig.svgFlicker.changeCode+=1;
-    }
+    },
+    setCoTemplateShow(state,product){//product:true/false
+      state.templateConfig.templateShow=product;
+    },
+    setCoTemplateStructure(state,product){//product:structure(array)
+      state.templateConfig.usedStructure=product;
+      state.templateConfig.code+=1;
+    },
   },
   actions: {
 

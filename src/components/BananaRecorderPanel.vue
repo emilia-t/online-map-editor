@@ -615,7 +615,7 @@ export default {
   display: block;
   position: fixed;
   transition: 0.3s;
-  z-index: 550;
+  z-index: 585;
   top:-340px;
   left: 325px;
   border-radius: 5px 5px 6px 6px;

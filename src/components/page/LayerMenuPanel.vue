@@ -2157,10 +2157,10 @@ a:hover, a:active {
   background: rgb(255,255,255);
   box-shadow: #c5c5c5 0px 0px 6px;
   position: fixed;
+  z-index: 700;
   left: 0px;
   top:0px;
   padding: 10px 0px;
-  z-index: 550;
   color: rgba(0,0,0,0.9);
   transition: 0.4s;
 }

@@ -28,7 +28,7 @@ export default {
   cursor: default;
   white-space: nowrap;
   text-align: right;
-  z-index: 580;
+  z-index: 700;
   bottom:0px;
   right: 0px;
 }

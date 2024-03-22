@@ -227,9 +227,10 @@ export default {
   font-weight: 800;
   font-size: 16px;
   color: #181818;
-  overflow: hidden;
-  display: flex;
   align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .userEmail{
   margin:0px 0px 2px 0px;
@@ -238,8 +239,10 @@ export default {
   font-weight: 400;
   font-size: 12px;
   color: #3590ff;
-  display: flex;
   align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .userPanelBottom{
   height: 14px;
