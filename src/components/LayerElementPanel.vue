@@ -1570,7 +1570,7 @@ export default {
   width: 100%;
   border-radius: 3px;
   height: 30px;
-  background: #f3f3f3;
+  background: #ffffff;
   display: flex;
   flex-direction: row;
   justify-content: space-around;

@@ -145,6 +145,7 @@ export default {
       grabSeparateRight:320,//拖动独立x轴的右侧条件
       grabIndex:-1,
       moveObServe:null,
+      editTpTaskId:null,//编辑模板任务id
     }
   },
   props:{
@@ -218,9 +219,58 @@ export default {
   },
   methods:{
     openTemplate(){
-      this.$store.commit('setCoTemplateStructure',this.structure);
+      function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
+      let code=this.$store.state.templateConfig.taskCode+=2;
+      let stu1=this.structure[1];
+      let name = this.structure[0];
+      if(!isObj(stu1)){
+        this.resetStructure1();
+        this.$store.commit('setCoLogMessage',{text:'此分组模板已重置，请稍后重试',from:'internal:OrangeGroupStructure',type:'warn'});
+        return false;
+      }
+      if(!stu1.hasOwnProperty('template')){
+        this.resetStructure1();
+        this.$store.commit('setCoLogMessage',{text:'此分组模板已重置，请稍后重试',from:'internal:OrangeGroupStructure',type:'warn'});
+        return false;
+      }
+      if(typeof stu1.template!=='object'){
+        this.resetStructure1();
+        this.$store.commit('setCoLogMessage',{text:'此分组模板已重置，请稍后重试',from:'internal:OrangeGroupStructure',type:'warn'});
+        return false;
+      }
+      let template=stu1.template;
+      let product={
+        template , name  , code
+      };
+      this.$store.commit('setCoTemplateEdit',product);
       this.$store.commit('setCoTemplateShow',true);
+      this.editTpTaskId=code;
       this.memberHeadMenu.show=false;
+    },
+    resetStructure1(){
+      let old=this.structure;
+      if(old.length>=2){
+        if(typeof old[1] === 'number'){//如果第二个是元素id则插入
+          old.splice(1,0,{template:null});
+          let newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),old);
+          this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
+        }else if(Array.isArray(old[1])){//如果第二个元素是另一个分组则插入
+          old.splice(1,0,{template:null});
+          let newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),old);
+          this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
+        }else {//其他情况下更换第二个元素
+          old[1]={template:null};
+          let newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),old);
+          this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
+        }
+      }else if(old.length===1){//结构缺失第二个参数
+        old.push({template:null});
+        let newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),old);
+        this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
+      }else {//空的数组
+        this.$store.commit('setCoLogMessage',{text:'存在异常为空的分组',from:'internal:OrangeGroupStructure',type:'warn'});
+        return false;
+      }
     },
     alertTip(text){
       this.$store.commit('setCoLogMessage',{text:text,from:'internal:OrangeGroupStructure',type:'warn'});
@@ -437,7 +487,6 @@ export default {
               this.$refs.memberTeamBox[this.grabIndex].style.background=null;
               this.$refs.memberTeamBox[this.grabIndex].style.zIndex='';
             }
-            //next UI优化
             this.grabItemState=false;
             this.grabIndex=-1;
             this.grabItemId=-1;
@@ -990,9 +1039,32 @@ export default {
     },
     eachLevelClass(){
       return this.level===1?'OrangeGroupStructureL1':'OrangeGroupStructure';
+    },
+    taskEndCode(){
+      return this.$store.state.templateConfig.taskEndCode;
+    },
+    resultCode(){
+      return this.$store.state.templateConfig.resultCode;
+    },
+    resultTemplate(){
+      return this.$store.state.templateConfig.resultTemplate;
     }
   },
   watch:{
+    taskEndCode:{
+      handler(newValue){
+        if(newValue===this.editTpTaskId){//模板编辑任务回执
+          if(this.resultCode===2){
+            let newTem=this.resultTemplate;
+            let route=this.route.split('⇉');
+            let newStr=JSON.parse(JSON.stringify(this.structure));
+            newStr[1]={template:newTem};
+            let newStructure=this.structureChangeData(this.layer.structure,route,newStr);
+            this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
+          }
+        }
+      }
+    },
     allExpand:{
       handler(newValue){
         this.groupExpand=newValue;

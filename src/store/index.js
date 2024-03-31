@@ -658,7 +658,7 @@ export default new Vuex.Store({
             this.send(this.Instruct.broadcast_updateElementNode(sObj));
           }
           catch (e) {
-            console.log(e);
+            //console.log(e);
           }
         }
         broadcastUpdateElement(data,type){//广播更新某一要素
@@ -1092,7 +1092,7 @@ export default new Vuex.Store({
                 this.mapLayerData=res;
                 this.mapLayerOrder=ord;
               }catch (e) {
-                console.log(e);
+                //console.log(e);
               }
               break;
             }
@@ -2132,10 +2132,13 @@ export default new Vuex.Store({
      * Data:可读 read
     **/
     templateConfig:{
-      code:1,
+      taskCode:1040,//任务ID
+      taskEndCode:0,//执行结束的任务ID
+      resultCode:0,//执行结束的返回状态 1 取消 2提交
+      resultTemplate:null,//执行结束返回的新模板对象
+      editTemplate:null,//提交需要编辑的模板对象
+      editName:null,//提交需要编辑的分组名
       templateShow:false,
-      usedStructure:[],
-      tempTemplate:null,
     },
     toolboxConfig:{
       position:{
@@ -2402,7 +2405,7 @@ export default new Vuex.Store({
     serverData:{//仅读
       socket:undefined,
       underlay:undefined,//2.底图背景数据
-      userName:'点击头像登录',
+      userName:'未登录',
       userEmail:'Anyone@Any.com',
       userQq:1077365277,
       userHeadColor:'ffffff',
@@ -2738,9 +2741,20 @@ export default new Vuex.Store({
     setCoTemplateShow(state,product){//product:true/false
       state.templateConfig.templateShow=product;
     },
-    setCoTemplateStructure(state,product){//product:structure(array)
-      state.templateConfig.usedStructure=product;
-      state.templateConfig.code+=1;
+    setCoTemplateEdit(state,product){//product:{ template : {}  , name : 'zoo' , code : number }
+      state.templateConfig.editTemplate=product.template;//模板对象
+      state.templateConfig.editName=product.name;//分组名
+      state.templateConfig.taskCode=product.code;//校验码
+    },
+    setCoTemplateCancel(state,code){//code (TaskNumber)
+      state.templateConfig.resultTemplate=null;
+      state.templateConfig.resultCode=1;
+      state.templateConfig.taskEndCode=code;
+    },
+    setCoTemplateSubmit(state,product){//product:{ template : {}  , code : TaskNumber }
+      state.templateConfig.resultTemplate=product.template;
+      state.templateConfig.resultCode=2;
+      state.templateConfig.taskEndCode=product.code;
     },
   },
   actions: {

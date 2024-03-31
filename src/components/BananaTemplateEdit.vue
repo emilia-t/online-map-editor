@@ -2,7 +2,7 @@
   <div class="BananaTemplateEdit">
     <div class="templateMenu" @click.stop="void 0" v-if="templateShow">
       <div class="templateTitle">
-        <span>模板设置：{{structure[0]}}</span>
+        <span>模板设置：{{EditName}}</span>
       </div>
       <div class="templateContent">
         <div class="templateLeft">
@@ -51,32 +51,32 @@
             <div class="TContent" >
               <div class="statusList cursorDefault">
                 <span class="ListLeft">模板状态</span>
-                <span class="ListRight">空的模板</span>
+                <span class="ListRight" style="cursor:pointer" @click.stop="tpManualCheck()">{{templateStatus}}</span>
               </div>
               <div class="statusList cursorDefault">
                 <span class="ListLeft">锁定状态</span>
-                <span class="ListRight" style="cursor:pointer" @click="templateSettings.locked=true" v-show="!templateSettings.locked">未锁定(点击锁定)</span>
-                <span class="ListRight" style="cursor:pointer" @click="templateSettings.locked=false" v-show="templateSettings.locked">已锁定(点击解锁)</span>
+                <span class="ListRight" style="cursor:pointer" @click.stop="editTemplate.locked=true" v-show="!editTemplate.locked">未锁定(点击锁定)</span>
+                <span class="ListRight" style="cursor:pointer" @click.stop="editTemplate.locked=false" v-show="editTemplate.locked">已锁定(点击解锁)</span>
               </div>
               <div class="statusList">
                 <span class="ListLeft cursorDefault">模板名称</span>
                 <span class="ListRight">
-                  <input class="statusInput" type="text" placeholder="未命名模板" v-model="templateSettings.name" :disabled="templateSettings.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                  <input class="statusInput" type="text" placeholder="未命名模板" v-model="editTemplate.name" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
                 </span>
               </div>
               <div class="statusList">
                 <span class="ListLeft cursorDefault">描述信息</span>
-                <span class="ListRight" style="align-items: start">
-                  <input class="statusInput" type="text" placeholder="空的描述信息" v-model="templateSettings.explain" :disabled="templateSettings.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                <span class="ListRight">
+                  <input class="statusInput" type="text" placeholder="空的描述信息" v-model="editTemplate.explain" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
                 </span>
               </div>
               <div class="statusList cursorDefault">
                 <span class="ListLeft">创建者</span>
-                <span class="ListRight">{{templateSettings.creator}}</span>
+                <span class="ListRight">{{editTemplate.creator}}</span>
               </div>
               <div class="statusList cursorDefault">
                 <span class="ListLeft">修改日期</span>
-                <span class="ListRight">{{templateSettings.modify}}</span>
+                <span class="ListRight">{{editTemplate.modify}}</span>
               </div>
               <div class="statusList cursorDefault">
                 <div class="ListLeft">应用规则一览</div>
@@ -92,7 +92,7 @@
                       颜色规则：
                     </div>
                       <div class="overviewRule" v-for="item in overviewColor">
-                        <div class="overviewText">{{item.str}} color ⇒ </div>
+                        <div class="overviewText">{{item.str}} ⇒ </div>
                         <div class="overviewColor" :style="{background:item.color}"></div>
                       </div>
                   </div>
@@ -102,7 +102,7 @@
                     </div>
                     <div class="overviewRule" v-for="item in overviewWidth">
                       <div class="overviewText">{{item.str}}</div>
-                      <div class="overviewText">width ⇒ {{item.width}}</div>
+                      <div class="overviewText"> ⇒ {{item.width}}</div>
                     </div>
                   </div>
                 </div>
@@ -134,7 +134,7 @@
                   点击选择允许加入此分组的元素类型，来限制此分组下的成员元素类型。注意：在您点击“应用”之前都可以更改此项，一旦点击了“应用”之后，此分组内不允许加入的元素将会被移除出此分组。
                 </div>
                 <div class="setChoice">
-                  <div class="setChoiceBox" :class="status?'useTemplate':'unUseTemplate'" :key="type" v-for="(status,type) in templateSettings.typeRule">
+                  <div class="setChoiceBox" :class="status?'useTemplate':'unUseTemplate'" :key="type" v-for="(status,type) in editTemplate.typeRule">
                     <span @click="allowType(type)">
                       {{type}}
                     </span>
@@ -193,17 +193,17 @@
                       为空
                     </div>
                   </div>
-                  <div class="SheetRow RowText" v-for="(item,index) in this.templateSettings.detailsRule">
+                  <div class="SheetRow RowText" v-for="(item,index) in this.editTemplate.detailsRule">
                     <div class="SheetCo0">
                       <span @click.stop="detailsUp(index)" v-show="!switchDelMod1"><arrow-up></arrow-up></span>
                       <span @click.stop="detailsDown(index)" v-show="!switchDelMod1"><arrow-down></arrow-down></span>
                       <span @click.stop="deleteDetails(index)" v-show="switchDelMod1"><trash-can></trash-can></span>
                     </div>
                     <div class="SheetCo1">
-                      <input class="SheetInput" type="text" v-model="item.name" :disabled="templateSettings.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <input class="SheetInput" type="text" v-model="item.name" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                     <div class="SheetCo2">
-                      <input class="SheetInput" type="text" v-model="item.default" :disabled="templateSettings.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <input class="SheetInput" type="text" v-model="item.default" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                     <div class="SheetCo3" v-if="item.name!=='name'">
                       <div class="lopCo3" v-show="item.set">
@@ -222,10 +222,10 @@
                       <div class="inputCo3" v-show="!item.set">
                         {{item.type}}
                       </div>
-                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && templateSettings.locked===false">
+                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
                         <dropdown-button></dropdown-button>
                       </div>
-                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="templateSettings.locked===true">
+                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
                         <dropdown-button></dropdown-button>
                       </div>
                     </div>
@@ -239,18 +239,18 @@
                       <div class="inputCo3" v-show="!item.set">
                         {{item.type}}
                       </div>
-                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && templateSettings.locked===false">
+                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
                         <dropdown-button></dropdown-button>
                       </div>
-                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="templateSettings.locked===true">
+                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
                         <dropdown-button></dropdown-button>
                       </div>
                     </div>
                     <div class="SheetCo4">
-                      <input class="SheetInput" type="number" v-model="item.length" :disabled="templateSettings.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <input class="SheetInput" type="number" v-model="item.length" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                     <div class="SheetCo5">
-                      <input type="checkbox" :checked="item.empty" v-model="item.empty" :disabled="templateSettings.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <input type="checkbox" :checked="item.empty" v-model="item.empty" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                   </div>
                   <div class="SheetRow">
@@ -276,8 +276,8 @@
                   点击下方按钮选择其中一个属性作为颜色的依据。
                 </div>
                 <div class="setChoice">
-                  <select name="colorsAoe" v-model="templateSettings.colorRule.basis" :disabled="templateSettings.locked" :title="'当前依据属性类型：'+templateSettings.colorRule.type" @change="changeColorRuleBasis()">
-                    <option :value="item.name" v-if="item.type!=='long' && item.name!==''" v-for="item in templateSettings.detailsRule">{{item.name}}</option>
+                  <select name="colorsAoe" v-model="editTemplate.colorRule.basis" :disabled="editTemplate.locked" :title="'当前依据属性类型：'+editTemplate.colorRule.type" @change="changeColorRuleBasis()">
+                    <option :value="item.name" v-if="item.type!=='long' && item.name!==''" v-for="item in editTemplate.detailsRule">{{item.name}}</option>
                   </select>
                   <br/>
                 </div>
@@ -305,7 +305,7 @@
                       颜色
                     </div>
                   </div>
-                  <div class="SheetRow RowText" v-for="(item,index) in templateSettings.colorRule.condition">
+                  <div class="SheetRow RowText" v-for="(item,index) in editTemplate.colorRule.condition">
                     <div class="SheetCo0">
                       <span @click.stop="colorUp(index)" v-show="!switchDelMod2"><arrow-up></arrow-up></span>
                       <span @click.stop="colorDown(index)" v-show="!switchDelMod2"><arrow-down></arrow-down></span>
@@ -321,27 +321,27 @@
                       <div class="inputCo3" v-show="!item.set">
                         {{item.type}}
                       </div>
-                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && templateSettings.locked===false">
+                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
                         <dropdown-button></dropdown-button>
                       </div>
-                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="templateSettings.locked===true">
+                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
                         <dropdown-button></dropdown-button>
                       </div>
                     </div>
                     <div class="SheetCo8">
-                      <input class="SheetInput" type="text" v-model="item.value" :disabled="templateSettings.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <input class="SheetInput" type="text" v-model="item.value" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                     <div class="SheetCo9">
-                      <input class="inpCo9" type="color" v-model="item.color" :disabled="templateSettings.locked"/>
+                      <input class="inpCo9" type="color" v-model="item.color" :disabled="editTemplate.locked"/>
                       <div class="colCo9">
-                        <div class="lisCo9" v-for="color in colors" :style="'background:'+color" @click="()=>{if(!templateSettings.locked)item.color=color}"></div>
+                        <div class="lisCo9" v-for="color in colors" :style="'background:'+color" @click="()=>{if(!editTemplate.locked)item.color=color}"></div>
                       </div>
                     </div>
                   </div>
-                  <div class="SheetRow" v-show="templateSettings.colorRule.condition.length===0">
+                  <div class="SheetRow" v-show="editTemplate.colorRule.condition.length===0">
                     <div class="RowEmpty" @click="addColorRule()" >Empty rule Click to add ✚</div>
                   </div>
-                  <div class="SheetRow" v-show="templateSettings.colorRule.condition.length!==0">
+                  <div class="SheetRow" v-show="editTemplate.colorRule.condition.length!==0">
                     <div class="RowButton" @click="addColorRule()">Add new rule ✚</div>
                   </div>
                 </div>
@@ -364,8 +364,8 @@
                   点击下方按钮选择其中一个属性作为宽度的依据。
                 </div>
                 <div class="setChoice">
-                  <select name="colorsAoe" v-model="templateSettings.widthRule.basis" :disabled="templateSettings.locked" :title="'当前依据属性类型：'+templateSettings.widthRule.type" @change="changeWidthRuleBasis()">
-                    <option :value="item.name" v-if="item.type!=='long' && item.name!==''" v-for="item in templateSettings.detailsRule">{{item.name}}</option>
+                  <select name="colorsAoe" v-model="editTemplate.widthRule.basis" :disabled="editTemplate.locked" :title="'当前依据属性类型：'+editTemplate.widthRule.type" @change="changeWidthRuleBasis()">
+                    <option :value="item.name" v-if="item.type!=='long' && item.name!==''" v-for="item in editTemplate.detailsRule">{{item.name}}</option>
                   </select>
                   <br/>
                 </div>
@@ -393,7 +393,7 @@
                       宽度
                     </div>
                   </div>
-                  <div class="SheetRow RowText" v-for="(item,index) in templateSettings.widthRule.condition">
+                  <div class="SheetRow RowText" v-for="(item,index) in editTemplate.widthRule.condition">
                     <div class="SheetCo0">
                       <span @click.stop="widthUp(index)" v-show="!switchDelMod3"><arrow-up></arrow-up></span>
                       <span @click.stop="widthDown(index)" v-show="!switchDelMod3"><arrow-down></arrow-down></span>
@@ -409,31 +409,31 @@
                       <div class="inputCo3" v-show="!item.set">
                         {{item.type}}
                       </div>
-                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && templateSettings.locked===false">
+                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
                         <dropdown-button></dropdown-button>
                       </div>
-                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="templateSettings.locked===true">
+                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
                         <dropdown-button></dropdown-button>
                       </div>
                     </div>
                     <div class="SheetCo8">
-                      <input class="SheetInput" type="text" v-model="item.value" :disabled="templateSettings.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <input class="SheetInput" type="text" v-model="item.value" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                     <div class="SheetCo9">
-                      <input class="inpCo9" type="number" min="2" max="15" v-model="item.width" :disabled="templateSettings.locked"/>
+                      <input class="inpCo9" type="number" min="2" max="15" v-model="item.width" :disabled="editTemplate.locked"/>
                       <div class="widCo9">
-                        <span  @click="()=>{if(!templateSettings.locked)item.width=2}">2</span>
-                        <span  @click="()=>{if(!templateSettings.locked)item.width=4}">4</span>
-                        <span  @click="()=>{if(!templateSettings.locked)item.width=8}">8</span>
-                        <span  @click="()=>{if(!templateSettings.locked)item.width=12}">12</span>
-                        <span  @click="()=>{if(!templateSettings.locked)item.width=15}">15</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=2}">2</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=4}">4</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=8}">8</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=12}">12</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=15}">15</span>
                       </div>
                     </div>
                   </div>
-                  <div class="SheetRow" v-show="templateSettings.widthRule.condition.length===0">
+                  <div class="SheetRow" v-show="editTemplate.widthRule.condition.length===0">
                     <div class="RowEmpty" @click="addWidthRule()" >Empty rule Click to add ✚</div>
                   </div>
-                  <div class="SheetRow" v-show="templateSettings.widthRule.condition.length!==0">
+                  <div class="SheetRow" v-show="editTemplate.widthRule.condition.length!==0">
                     <div class="RowButton" @click="addWidthRule()">Add new rule ✚</div>
                   </div>
                 </div>
@@ -443,13 +443,13 @@
         </div>
       </div>
       <div class="templateBottom">
-        <button>下一步</button>
-        <button>上一步</button>
-        <button>取消</button>
-        <button>应用</button>
+        <button @click.stop="niftyBack()">Back</button>
+        <button @click.stop="niftyNext()">Next</button>
+        <button @click.stop="closeAndCancel()">Cancel</button>
+        <button @click.stop="submitEdit()">Submit</button>
       </div>
     </div>
-    <div class="templateMenuClose"  @click.stop="closeTemplate()"  v-if="templateShow">
+    <div class="templateMenuClose"  @click.stop="closeAndCancel()"  v-if="templateShow">
 
     </div>
   </div>
@@ -480,7 +480,6 @@ export default {
         '#333366','#6633cc',
         '#cccccc','#666666',
         '#333333','#000000'],
-      structure:null,
       templateShow:false,//模板设置显示
       templateNifty:2,//模板左侧显示页序号
       niftyList:[
@@ -564,42 +563,39 @@ export default {
           viewRadius:'2px',
         },
       ],
-      templateSettings:{
-        id:null,
-        name:null,
-        creator:null,
-        modify:null,
+      taskCode:0,
+      editTemplate:{
+        id:'',
+        name:'',
+        creator:'',
+        modify:'',
         locked:false,
-        explain:null,
+        explain:'',
         typeRule:{
           point:true,
           line:true,
           area:true,
-          curve:true,
+          curve:true
         },
         detailsRule:[
           {
-            set:false,//修改属性的状态
-            name:'name',//属性名称
-            default:'unknown',//默认值
-            type:'text',//默认为文本
-            length:100,//长度
-            empty:true,//能否为空值
+            set:false,
+            name:'name',
+            default:'unknown',
+            type:'text',
+            length:100,
+            empty:true
           }
         ],
         colorRule:{
-          basis:null,
-          type:null,
-          condition:[
-
-          ]
+          basis:'',
+          type:'',
+          condition:[]
         },
         widthRule:{
-          basis:null,
-          type:null,
-          condition:[
-
-          ]
+          basis:'',
+          type:'',
+          condition:[]
         }
       },
       switchDelMod1:false,
@@ -608,82 +604,194 @@ export default {
     }
   },
   mounted() {
-
+    let testTemplateObj={
+      id:'123456',
+      name:'test',
+      creator:'minxi',
+      modify:'2023',
+      locked:false,
+      explain:'test',
+      typeRule:{
+        point:true,
+        line:false,
+        area:false,
+        curve:false
+      },
+      detailsRule:[
+        {
+          set:false,
+          name:'name',
+          default:'unknown',
+          type:'text',
+          length:100,
+          empty:true
+        },
+        {
+          set:false,
+          name:'test',
+          default:10,
+          type:'score',
+          length:10,
+          empty:true
+        },
+        {
+          set:false,
+          name:'testd',
+          default:10,
+          type:'score',
+          length:10,
+          empty:true
+        }
+      ],
+      colorRule:{
+        basis:'name',
+        type:'text',
+        condition:[
+          {
+            set:false,
+            color:'#ffffff',
+            method:'equ',
+            value:'test'
+          }
+        ]
+      },
+      widthRule:{
+        basis:'name',
+        type:'text',
+        condition:[
+          {
+            set:false,
+            width:8,
+            method:'equ',
+            value:'test'
+          }
+        ]
+      }
+    };
   },
   methods:{
+    niftyBack(){//上一步骤
+      if(this.templateNifty===1)return false;
+      this.templateNifty--
+    },
+    niftyNext(){//下一步骤
+      if(this.templateNifty===6)return false;
+      this.templateNifty++
+    },
+    getFormattedDate() {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const date = new Date();
+       const day = days[date.getDay()];
+      const month = months[date.getMonth()];
+      const dayOfMonth = date.getDate();
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      const timeZoneOffset = -date.getTimezoneOffset();// 获取时区偏移量，转换为小时
+      const offsetSign = timeZoneOffset >= 0 ? '+' : '-';
+      const offsetHours = String(Math.floor(Math.abs(timeZoneOffset) / 60)).padStart(2, '0');
+      const offsetMinutes = String(Math.abs(timeZoneOffset) % 60).padStart(2, '0');
+      const timeZone = `GMT${offsetSign}${offsetHours}${offsetMinutes}`;
+      return `${day} ${month} ${dayOfMonth.toString().padStart(2, '0')} ${year} ${hours}:${minutes}:${seconds} ${timeZone}`;
+    },
+    submitEdit(){
+      let creator=this.userName+'('+this.userEmail+')';
+      let time=this.getFormattedDate();
+      if(this.editTemplate.creator==='' || this.editTemplate.creator===null){
+        this.editTemplate.creator=creator;
+      }
+      this.editTemplate.modify=time;
+      let template=this.editTemplate;
+      let ckCode=this.tpCheck(template);
+      if(ckCode!==true){
+        let text='';
+        text=this.codeExplain(ckCode,false);
+        this.$store.commit('setCoLogMessage',{text:text,from:'internal:BananaTemplateEdit',type:'tip'});
+        return false;
+      }else {
+        let product={
+          template,
+          code:this.taskCode
+        };
+        this.$store.commit('setCoTemplateSubmit',product);
+        this.$store.commit('setCoLogMessage',{text:'模板编辑已提交',from:'internal:BananaTemplateEdit',type:'tip'});
+      }
+    },
     changeWidthRuleBasis(){
-      if(this.templateSettings.widthRule.basis===null
-        || this.templateSettings.widthRule.basis===''
+      if(this.editTemplate.widthRule.basis===null
+        || this.editTemplate.widthRule.basis===''
       ){
         return false;
       }
       let type='text';
-      let basis=this.templateSettings.widthRule.basis;
-      let len=this.templateSettings.detailsRule.length;
+      let basis=this.editTemplate.widthRule.basis;
+      let len=this.editTemplate.detailsRule.length;
       for(let i=0;i<len;i++){//调整widthRule.type
-        if(basis===this.templateSettings.detailsRule[i].name){
-          type=this.templateSettings.detailsRule[i].type;
+        if(basis===this.editTemplate.detailsRule[i].name){
+          type=this.editTemplate.detailsRule[i].type;
           break;
         }
       }
-      this.templateSettings.widthRule.type=type;
+      this.editTemplate.widthRule.type=type;
       let condition=[];
-      len=this.templateSettings.widthRule.condition.length;
+      len=this.editTemplate.widthRule.condition.length;
       for(let q=0;q<len;q++){//过滤不可用的规则
         if(type==='bool' || type==='list' || type==='text'){
-          if(this.templateSettings.widthRule.condition[q].type==='equ' || this.templateSettings.widthRule.condition[q].type==='nequ'){
-            condition.push(this.templateSettings.widthRule.condition[q]);
+          if(this.editTemplate.widthRule.condition[q].method==='equ' || this.editTemplate.widthRule.condition[q].method==='nequ'){
+            condition.push(this.editTemplate.widthRule.condition[q]);
           }
         }
         else if(type==='percent' || type==='date'){
-          if(this.templateSettings.widthRule.condition[q].type==='equ' || this.templateSettings.widthRule.condition[q].type==='nequ'
-            || this.templateSettings.widthRule.condition[q].type==='gre' || this.templateSettings.widthRule.condition[q].type==='greq'
-            || this.templateSettings.widthRule.condition[q].type==='les' || this.templateSettings.widthRule.condition[q].type==='lesq'
+          if(this.editTemplate.widthRule.condition[q].method==='equ' || this.editTemplate.widthRule.condition[q].method==='nequ'
+            || this.editTemplate.widthRule.condition[q].method==='gre' || this.editTemplate.widthRule.condition[q].method==='greq'
+            || this.editTemplate.widthRule.condition[q].method==='les' || this.editTemplate.widthRule.condition[q].method==='lesq'
           ){
-            condition.push(this.templateSettings.widthRule.condition[q]);
+            condition.push(this.editTemplate.widthRule.condition[q]);
           }
         }else if(type==='score' || type==='number'){
-          condition.push(this.templateSettings.widthRule.condition[q]);
+          condition.push(this.editTemplate.widthRule.condition[q]);
         }
       }
-      this.templateSettings.widthRule.condition=condition;
+      this.editTemplate.widthRule.condition=condition;
     },
     changeColorRuleBasis(){
-      if(this.templateSettings.colorRule.basis===null
-      || this.templateSettings.colorRule.basis===''
+      if(this.editTemplate.colorRule.basis===null
+      || this.editTemplate.colorRule.basis===''
       ){
         return false;
       }
       let type='text';
-      let basis=this.templateSettings.colorRule.basis;
-      let len=this.templateSettings.detailsRule.length;
+      let basis=this.editTemplate.colorRule.basis;
+      let len=this.editTemplate.detailsRule.length;
+      let condition=[];
       for(let i=0;i<len;i++){//调整colorRule.type
-        if(basis===this.templateSettings.detailsRule[i].name){
-          type=this.templateSettings.detailsRule[i].type;
+        if(basis===this.editTemplate.detailsRule[i].name){
+          type=this.editTemplate.detailsRule[i].type;
           break;
         }
       }
-      this.templateSettings.colorRule.type=type;
-      let condition=[];
-      len=this.templateSettings.colorRule.condition.length;
+      this.editTemplate.colorRule.type=type;
+      len=this.editTemplate.colorRule.condition.length;
       for(let q=0;q<len;q++){//过滤不可用的规则
         if(type==='bool' || type==='list' || type==='text'){
-          if(this.templateSettings.colorRule.condition[q].type==='equ' || this.templateSettings.colorRule.condition[q].type==='nequ'){
-            condition.push(this.templateSettings.colorRule.condition[q]);
+          if(this.editTemplate.colorRule.condition[q].method==='equ' || this.editTemplate.colorRule.condition[q].method==='nequ'){
+            condition.push(this.editTemplate.colorRule.condition[q]);
           }
         }
         else if(type==='percent' || type==='date'){
-          if(this.templateSettings.colorRule.condition[q].type==='equ' || this.templateSettings.colorRule.condition[q].type==='nequ'
-          || this.templateSettings.colorRule.condition[q].type==='gre' || this.templateSettings.colorRule.condition[q].type==='greq'
-          || this.templateSettings.colorRule.condition[q].type==='les' || this.templateSettings.colorRule.condition[q].type==='lesq'
+          if(this.editTemplate.colorRule.condition[q].method==='equ' || this.editTemplate.colorRule.condition[q].method==='nequ'
+          || this.editTemplate.colorRule.condition[q].method==='gre' || this.editTemplate.colorRule.condition[q].method==='greq'
+          || this.editTemplate.colorRule.condition[q].method==='les' || this.editTemplate.colorRule.condition[q].method==='lesq'
           ){
-            condition.push(this.templateSettings.colorRule.condition[q]);
+            condition.push(this.editTemplate.colorRule.condition[q]);
           }
         }else if(type==='score' || type==='number'){
-          condition.push(this.templateSettings.colorRule.condition[q]);
+          condition.push(this.editTemplate.colorRule.condition[q]);
         }
       }
-      this.templateSettings.colorRule.condition=condition;
+      this.editTemplate.colorRule.condition=condition;
     },
     onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
@@ -691,91 +799,89 @@ export default {
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
-    openTemplate(){
-      this.templateShow=true;
-    },
-    closeTemplate(){
+    closeAndCancel(){
       this.templateShow=false;
+      this.$store.commit('setCoTemplateCancel',this.taskCode);
     },
     widthUp(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
       if(index===0){
         this.$store.commit('setCoLogMessage',{text:'已经在最上方了',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      let temp=this.templateSettings.widthRule.condition[index];
-      this.templateSettings.widthRule.condition[index]=this.templateSettings.widthRule.condition[index-1];
-      this.templateSettings.widthRule.condition[index-1]=temp;
-      this.templateSettings.widthRule.condition.push(null);
-      this.templateSettings.widthRule.condition.pop();
+      let temp=this.editTemplate.widthRule.condition[index];
+      this.editTemplate.widthRule.condition[index]=this.editTemplate.widthRule.condition[index-1];
+      this.editTemplate.widthRule.condition[index-1]=temp;
+      this.editTemplate.widthRule.condition.push(null);
+      this.editTemplate.widthRule.condition.pop();
     },
     widthDown(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
-      if(index+1>=this.templateSettings.widthRule.condition.length){
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
+      if(index+1>=this.editTemplate.widthRule.condition.length){
         this.$store.commit('setCoLogMessage',{text:'已经在最下方了',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      let temp=this.templateSettings.widthRule.condition[index];
-      this.templateSettings.widthRule.condition[index]=this.templateSettings.widthRule.condition[index+1];
-      this.templateSettings.widthRule.condition[index+1]=temp;
-      this.templateSettings.widthRule.condition.push(null);
-      this.templateSettings.widthRule.condition.pop();
+      let temp=this.editTemplate.widthRule.condition[index];
+      this.editTemplate.widthRule.condition[index]=this.editTemplate.widthRule.condition[index+1];
+      this.editTemplate.widthRule.condition[index+1]=temp;
+      this.editTemplate.widthRule.condition.push(null);
+      this.editTemplate.widthRule.condition.pop();
     },
     deleteWidth(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
-      if(index>=this.templateSettings.widthRule.condition.length || index<0){
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
+      if(index>=this.editTemplate.widthRule.condition.length || index<0){
         return false;
       }
-      this.templateSettings.widthRule.condition.splice(index,1);
+      this.editTemplate.widthRule.condition.splice(index,1);
     },
     colorUp(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
       if(index===0){
         this.$store.commit('setCoLogMessage',{text:'已经在最上方了',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      let temp=this.templateSettings.colorRule.condition[index];
-      this.templateSettings.colorRule.condition[index]=this.templateSettings.colorRule.condition[index-1];
-      this.templateSettings.colorRule.condition[index-1]=temp;
-      this.templateSettings.colorRule.condition.push(null);
-      this.templateSettings.colorRule.condition.pop();
+      let temp=this.editTemplate.colorRule.condition[index];
+      this.editTemplate.colorRule.condition[index]=this.editTemplate.colorRule.condition[index-1];
+      this.editTemplate.colorRule.condition[index-1]=temp;
+      this.editTemplate.colorRule.condition.push(null);
+      this.editTemplate.colorRule.condition.pop();
     },
     colorDown(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
-      if(index+1>=this.templateSettings.colorRule.condition.length){
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
+      if(index+1>=this.editTemplate.colorRule.condition.length){
         this.$store.commit('setCoLogMessage',{text:'已经在最下方了',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      let temp=this.templateSettings.colorRule.condition[index];
-      this.templateSettings.colorRule.condition[index]=this.templateSettings.colorRule.condition[index+1];
-      this.templateSettings.colorRule.condition[index+1]=temp;
-      this.templateSettings.colorRule.condition.push(null);
-      this.templateSettings.colorRule.condition.pop();
+      let temp=this.editTemplate.colorRule.condition[index];
+      this.editTemplate.colorRule.condition[index]=this.editTemplate.colorRule.condition[index+1];
+      this.editTemplate.colorRule.condition[index+1]=temp;
+      this.editTemplate.colorRule.condition.push(null);
+      this.editTemplate.colorRule.condition.pop();
     },
     deleteColor(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
-      if(index>=this.templateSettings.colorRule.condition.length || index<0){
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
+      if(index>=this.editTemplate.colorRule.condition.length || index<0){
         return false;
       }
-      this.templateSettings.colorRule.condition.splice(index,1);
+      this.editTemplate.colorRule.condition.splice(index,1);
     },
     switchTemplateNifty(serial){//切换模板右侧页面
       this.templateNifty=serial;
     },
     useLocalTemplate(id){//选择本地的模板
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
       this.localTemplate.forEach((item)=>{
         item.use=item.id===id;
       });
     },
     allowType(type){//更改模板
-      if(this.templateSettings.locked){
+      if(this.editTemplate.locked){
         this.alertTip('请先解锁模板');return false;
       }
       let ct=0;
-      for(let i in this.templateSettings.typeRule){
-        if(this.templateSettings.typeRule.hasOwnProperty(i)){
-          if(this.templateSettings.typeRule[i]===true){
+      for(let i in this.editTemplate.typeRule){
+        if(this.editTemplate.typeRule.hasOwnProperty(i)){
+          if(this.editTemplate.typeRule[i]===true){
             ct++;
           }
         }
@@ -783,49 +889,49 @@ export default {
       if(ct<=1){
         this.alertTip('至少需要允许一种');return false;
       }
-      this.templateSettings.typeRule[type]=!this.templateSettings.typeRule[type];
+      this.editTemplate.typeRule[type]=!this.editTemplate.typeRule[type];
     },
     deleteDetails(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
-      if(index>=this.templateSettings.detailsRule.length || index<0){
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
+      if(index>=this.editTemplate.detailsRule.length || index<0){
         return false;
       }
-      if(this.templateSettings.detailsRule.length<=1){
+      if(this.editTemplate.detailsRule.length<=1){
         this.$store.commit('setCoLogMessage',{text:'至少需要保留一个属性',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      if(this.templateSettings.detailsRule[index].name==='name'){
+      if(this.editTemplate.detailsRule[index].name==='name'){
         this.$store.commit('setCoLogMessage',{text:'不能删除name属性',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      this.templateSettings.detailsRule.splice(index,1);
+      this.editTemplate.detailsRule.splice(index,1);
     },
     detailsDown(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
-      if(index+1>=this.templateSettings.detailsRule.length){
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
+      if(index+1>=this.editTemplate.detailsRule.length){
         this.$store.commit('setCoLogMessage',{text:'已经在最下方了',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      let temp=this.templateSettings.detailsRule[index];
-      this.templateSettings.detailsRule[index]=this.templateSettings.detailsRule[index+1];
-      this.templateSettings.detailsRule[index+1]=temp;
-      this.templateSettings.detailsRule.push(null);
-      this.templateSettings.detailsRule.pop();
+      let temp=this.editTemplate.detailsRule[index];
+      this.editTemplate.detailsRule[index]=this.editTemplate.detailsRule[index+1];
+      this.editTemplate.detailsRule[index+1]=temp;
+      this.editTemplate.detailsRule.push(null);
+      this.editTemplate.detailsRule.pop();
     },
     detailsUp(index){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
       if(index===0){
         this.$store.commit('setCoLogMessage',{text:'已经在最上方了',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      let temp=this.templateSettings.detailsRule[index];
-      this.templateSettings.detailsRule[index]=this.templateSettings.detailsRule[index-1];
-      this.templateSettings.detailsRule[index-1]=temp;
-      this.templateSettings.detailsRule.push(null);
-      this.templateSettings.detailsRule.pop();
+      let temp=this.editTemplate.detailsRule[index];
+      this.editTemplate.detailsRule[index]=this.editTemplate.detailsRule[index-1];
+      this.editTemplate.detailsRule[index-1]=temp;
+      this.editTemplate.detailsRule.push(null);
+      this.editTemplate.detailsRule.pop();
     },
     addDetailsRule(){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
       let obj=Object.create(null);
       obj.set=false;
       obj.name='';
@@ -833,29 +939,29 @@ export default {
       obj.type='text';
       obj.length=100;
       obj.empty=true;
-      this.templateSettings.detailsRule.push(obj);
+      this.editTemplate.detailsRule.push(obj);
     },
     addWidthRule(){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
-      if(this.templateSettings.widthRule.basis===null || this.templateSettings.widthRule.type===null){this.alertTip('请先选择宽度依据');return false;}
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
+      if(this.editTemplate.widthRule.basis===null || this.editTemplate.widthRule.method===null){this.alertTip('请先选择宽度依据');return false;}
       let obj=Object.create(null);
       obj.set=false;
-      obj.type='equ';
+      obj.method='equ';
       obj.value='0';
       obj.width=2;
-      this.templateSettings.widthRule.condition.push(obj);
+      this.editTemplate.widthRule.condition.push(obj);
     },
     addColorRule(){
-      if(this.templateSettings.locked){this.alertTip('请先解锁模板');return false;}
-      if(this.templateSettings.colorRule.basis===null || this.templateSettings.colorRule.type===null){this.alertTip('请先选择颜色依据');return false;}
+      if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
+      if(this.editTemplate.colorRule.basis===null || this.editTemplate.colorRule.method===null){this.alertTip('请先选择颜色依据');return false;}
       let obj=Object.create(null);
       obj.set=false;
-      obj.type='equ';
+      obj.method='equ';
       obj.value='0';
       obj.color='#000000';
-      this.templateSettings.colorRule.condition.push(obj);
+      this.editTemplate.colorRule.condition.push(obj);
     },
-    getTemplateId(){
+    createTemplateId(){
       const validChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const length = Math.floor(Math.random() * 7) + 6;
       let array = new Uint8Array(length);//输出长度为随机的6-12位
@@ -878,46 +984,545 @@ export default {
         border:obj.viewBorder,
         borderRadius:obj.viewRadius
       }
-    }
+    },
+    tpManualCheck(){
+      let checkCode=this.tpCheck(this.editTemplate);
+      if(checkCode!==true){
+        let text='';
+        text=this.codeExplain(checkCode);
+        this.$store.commit('setCoLogMessage',{text:'检查结果：'+text,from:'internal:BananaTemplateEdit',type:'warn'});
+      }else {
+        this.$store.commit('setCoLogMessage',{text:'检查结果：正常',from:'internal:BananaTemplateEdit',type:'tip'});
+      }
+    },
+    isInteger(value){//判断一个数字是否为正整数
+      return Number.isInteger(value) && value>0;
+    },
+    isColor16(color){//检测一个字符串是否是标准的16进制颜色-正确则返回true
+      const regex=/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/;
+      return regex.test(color);
+    },
+    isAllowValueTyp(type,value){//依据type检测value(或default)是否是正确的type类型-正确则返回true
+      switch (type) {
+        case 'text':{
+          return typeof value==='string';
+        }
+        case 'long':{
+          return typeof value==='string';
+        }
+        case 'number':{
+          return typeof value === 'number';
+        }
+        case 'date':{
+          return typeof value === 'string';
+        }
+        case 'bool':{
+          return typeof value === 'boolean';
+        }
+        case 'list':{
+          return typeof value === 'string';
+        }
+        case 'percent':{
+          if(typeof value!=='string')return false;
+          const reg=/^\d+(\.\d+)?%$/;
+          return reg.test(value);
+        }
+        case 'score':{
+          if(typeof value!=='number')return false;
+        }
+      }
+    },
+    isAllowMethod(type,method){//判断method是否为type允许使用的方法-正确则返回true
+      switch (type){
+        case 'long':{
+          return false;
+        }
+        case 'score':{
+          return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
+        }
+        case 'number':{
+          return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
+        }
+        case 'percent':{
+          return ['equ','nequ','gre','greq','les','lesq'].includes(method);
+        }
+        case 'date':{
+          return ['equ','nequ','gre','greq','les','lesq'].includes(method);
+        }
+        case 'bool':{
+          return ['equ','nequ'].includes(method);
+        }
+        case 'list':{
+          return ['equ','nequ'].includes(method);
+        }
+        case 'text':{
+          return ['equ','nequ'].includes(method);
+        }
+        default:{
+          return false;
+        }
+      }
+    },
+    isAllowValueTypL(type,length,value){//依据type length检测value(或default)是否是type类型的数据以及长度是否合理-正确则返回true
+      switch (type) {
+        case 'text':{
+          if(typeof value!=='string')return false;
+          return value.length <= length;
+        }
+        case 'long':{
+          if(typeof value!=='string')return false;
+          return value.length <= length;
+        }
+        case 'number':{
+          return typeof value === 'number';
+        }
+        case 'date':{
+          return typeof value === 'string';
+        }
+        case 'bool':{
+          return typeof value === 'boolean';
+        }
+        case 'list':{
+          return typeof value === 'string';
+        }
+        case 'percent':{
+          if(typeof value!=='string')return false;
+          const reg=/^\d+(\.\d+)?%$/;
+          return reg.test(value);
+        }
+        case 'score':{
+          if(typeof value!=='number')return false;
+          return value <= length;
+        }
+      }
+    },
+    isAllowTypeLen(type,num){//检测num是否超过type规定的最大长度-正确则返回true
+      if(num<0)return false;
+      switch (type) {
+        case 'text':{
+          return num <= 100;
+        }
+        case 'long':{
+          return num <= 1000;
+        }
+        case 'score':{
+          return num <= 10;
+        }
+        default:{
+          return num === 0;
+        }
+      }
+    },
+    isDetailsType(str){//检测str是否为模板属性规定以内的类型-正确则返回true
+      return ['text','long','number','date','bool','list','percent','score'].includes(str);
+    },
+    isNameDetails(obj){//检测是否obj是默认的name属性-正确则返回true
+      let obj1={
+        set:false,
+        name:'name',
+        default:'unknown',
+        type:'text',
+        length:100,
+        empty:true
+      };
+     const keys1 = Object.keys(obj1);
+      const keys2 = Object.keys(obj);
+      if (keys1.length !== keys2.length) {
+       return false;
+     }
+      for (let key of keys1) {
+        if (obj1[key] !== obj[key]) {
+         return false;
+        }
+     }
+      return true;
+    },
+    codeExplain(code,english){//错误代码的解释
+      let A=code%100;
+      let B=(code-A);
+      switch (B){
+        case 500:{return english?'Template is null':'模板为空';}
+        case 1000:{return english?'Template is not an object':'模板不是一个对象';}
+        case 2000:{return english?'Template missing id attribute':'模板缺失id属性';}//A layer property check
+        case 2100:{return english?'Template id value type error':'模板id值类型错误';}
+        case 2200:{return english?'Template id value cannot be empty':'模板id值不能为空字符';}
+
+        case 4000:{return english?'Template missing name attribute':'模板缺失name属性';}
+        case 4100:{return english?'Template name value type error':'模板名称值类型错误';}
+        case 4200:{return english?'Template name value cannot be empty':'模板名称值不能为空字符';}
+
+        case 6000:{return english?'Template missing creator attribute':'模板缺失creator属性';}
+        case 6100:{return english?'Template creator value type error':'模板创建者值类型错误';}
+        case 6200:{return english?'Template creator value cannot be empty':'模板创建者值不能为空字符';}
+
+        case 8000:{return english?'Template missing modify attribute':'模板缺少modify属性';}
+        case 8100:{return english?'Template modify value type error':'模板编辑日期值类型错误';}
+        case 8200:{return english?'Template modify value cannot be empty':'模板编辑日期值不能为空';}
+
+        case 10000: { return english ? 'Template missing locked attribute' : '模板缺失locked属性'; }
+        case 10100: { return english ? 'Template locked value type error' : '模板locked值类型错误'; }
+
+        case 12000: { return english ? 'Template missing explain attribute' : '模板缺失explain属性'; }
+        case 12100: { return english ? 'Template explain value type error' : '模板描述信息值类型错误'; }
+
+        case 14000: { return english ? 'Template missing typeRule attribute' : '模板缺失typeRule属性'; } //typeRule property check
+        case 15000: { return english ? 'Template typeRule is not an object' : '模板typeRule不是一个对象'; }
+
+        case 16000: { return english ? 'TypeRule missing point attribute' : '类型规则缺失point属性'; }
+        case 17000: { return english ? 'TypeRule point value type error' : '类型规则point值类型错误'; }
+
+        case 18000: { return english ? 'TypeRule missing line attribute' : '类型规则缺失line属性'; }
+        case 19000: { return english ? 'TypeRule line value type error' : '类型规则line值类型错误'; }
+
+        case 20000: { return english ? 'TypeRule missing area attribute' : '类型规则缺失area属性'; }
+        case 21000: { return english ? 'TypeRule area value type error' : '类型规则area值类型错误'; }
+
+        case 22000: { return english ? 'TypeRule missing curve attribute' : '类型规则缺失curve属性'; }
+        case 23000: { return english ? 'TypeRule curve value type error' : '类型规则curve值类型错误'; }
+        case 24000: { return english ? 'TypeRule at least one must be allowed' : '类型规则至少需要允许一个'; }
+
+        case 30000: { return english ? 'Template missing detailsRule attribute' : '模板缺失detailsRule属性'; } //detailsRule property check
+        case 30100: { return english ? 'Template detailsRule is not an array' : '模板detailsRule不是一个数组'; }
+        case 30200: { return english ? 'Template detailsRule length cannot = 0' : '模板detailsRule长度不能为0'; }
+        case 30300: { return english ? 'Template detailsRule length cannot > 90' : '模板detailsRule长度不能大于90'; }
+        case 30400: { return english ? 'Template detailsRule first element type error' : '模板detailsRule第一个元素类型错误'; }
+        case 30500: { return english ? 'Template detailsRule first element value error' : '模板detailsRule第一个元素值错误'; }
+
+        case 31000: { return english ? 'Template detailsRule type error in:' + A + ' item' : '模板属性规则类型错误，在：' + A + '项'; }
+        case 32000: { return english ? 'DetailsRule missing set attribute in:' + A + ' item' : '属性规则缺失set属性，在：' + A + '项'; }
+        case 32100: { return english ? 'DetailsRule set value type error in:' + A + ' item' : '属性规则set值类型错误，在：' + A + '项'; }
+
+        case 33000: { return english ? 'DetailsRule missing name attribute in:' + A + ' item' : '属性规则缺失name属性，在：' + A + '项'; }
+        case 33100: { return english ? 'DetailsRule name value type error in:' + A + ' item' : '属性规则name值类型错误，在：' + A + '项'; }
+        case 33200: { return english ? 'DetailsRule name value cannot be empty in:' + A + ' item' : '属性规则name值不能为空，在：' + A + '项'; }
+        case 33300: { return english ? 'DetailsRule name value length cannot > 40 in:' + A + ' item' : '属性规则name值长度不能大于40，在：' + A + '项'; }
+        case 33400: { return english ? 'DetailsRule name cannot duplicated:'+A+' item': '属性规则name值不能重复，在：' + A + '项';}
+
+        case 34000: { return english ? 'DetailsRule missing empty attribute in:' + A + ' item' : '属性规则缺失empty属性，在：' + A + '项'; }
+        case 34100: { return english ? 'DetailsRule empty value type error in:' + A + ' item' : '属性规则empty值类型错误，在：' + A + '项'; }
+
+        case 35000: { return english ? 'DetailsRule missing type attribute in:' + A + ' item' : '属性规则缺失type属性，在：' + A + '项'; }
+        case 35100: { return english ? 'DetailsRule type value type error in:' + A + ' item' : '属性规则type值类型错误，在：' + A + '项'; }
+        case 35200: { return english ? 'DetailsRule type value undefined in:' + A + ' item' : '属性规则type值未定义，在：' + A + '项'; }
+
+        case 36000: { return english ? 'DetailsRule missing length attribute in:' + A + ' item' : '属性规则缺失length属性，在：' + A + '项'; }
+        case 36100: { return english ? 'DetailsRule length value type error in:' + A + ' item' : '属性规则length值类型错误，在：' + A + '项'; }
+        case 36200: { return english ? 'Exceeded the allowed detailsRule length value in:' + A + ' item' : 'length超出允许的长度值，在：' + A + '项'; }
+
+        case 37000: { return english ? 'DetailsRule missing default attribute in:' + A + ' item' : '属性规则缺失default属性，在：' + A + '项'; }
+        case 37100: { return english ? 'DetailsRule default value type error in:' + A + ' item' : '属性规则default值类型错误，在：' + A + '项'; }
+
+        case 40000: { return english ? 'Template missing colorRule attribute' : '模板缺失colorRule属性'; } //colorRule property check
+        case 40100: { return english ? 'Template colorRule is not an object' : '模板颜色规则不是一个对象'; }
+        case 40200: { return english ? 'ColorRule missing basis attribute' : '颜色规则缺失basis属性'; }
+        case 40300: { return english ? 'ColorRule basis value type error' : '颜色规则basis值类型错误'; }
+        case 40400: { return english ? 'ColorRule missing type attribute' : '颜色规则缺失type属性'; }
+        case 40500: { return english ? 'ColorRule type value type error' : '颜色规则type值类型错误'; }
+        case 40600: { return english ? 'ColorRule missing condition attribute' : '颜色规则缺失condition属性'; }
+        case 40700: { return english ? 'ColorRule condition is not an array' : '颜色规则condition不是一个数组'; }
+        case 40800: { return english ? 'If the basis is empty, the type must be empty' : '如果basis为空，则type必须为空'; }
+        case 40900: { return english ? 'If the basis is empty, the condition must be an empty array' : '如果basis为空，则condition必须是一个空数组'; }
+        case 41000: { return english ? 'If the basis is not empty, the type cannot be empty' : '如果basis不为空，则type不能为空'; }
+        case 41100: { return english ? 'ColorRule type value not allowed' : '颜色规则type值不允许'; }
+        case 41200: { return english ? 'ColorRule item length cannot > 90' : '颜色规则数量不能大于90'; }
+
+        case 42000: { return english ? 'ColorRule item is not an object in:' + A + ' item' : '此条颜色规则不是一个对象，在：' + A + '项'; }
+        case 42100: { return english ? 'ColorRule item missing set attribute in:' + A + ' item' : '此条颜色规则缺失set属性，在：' + A + '项'; }
+        case 42200: { return english ? 'ColorRule item set value type error in:'+A+' item': '此条颜色规则set值类型错误，在：' + A + '项';}
+
+        case 43000: { return english ? 'ColorRule item missing color attribute in:' + A + ' item' : '此条颜色规则缺失color属性，在：' + A + '项'; }
+        case 43100: { return english ? 'ColorRule item color value type error in:' + A + ' item' : '此条颜色规则color值类型错误，在：' + A + '项'; }
+        case 43200: { return english ? 'ColorRule item color value format error in:' + A + ' item' : '此条颜色规则color值格式错误，在：' + A + '项'; }
+
+        case 44000: { return english ? 'ColorRule item missing method attribute in:' + A + ' item' : '此条颜色规则缺失method属性，在：' + A + '项'; }
+        case 44100: { return english ? 'ColorRule item method value type error in:' + A + ' item' : '此条颜色规则的method值类型错误，在：' + A + '项'; }
+        case 44200: { return english ? 'ColorRule item method not allowed in:' + A + ' item' : '此条颜色规则的method不合理，在：' + A + '项'; }
+
+        case 45000: { return english ? 'ColorRule item missing value attribute in:' + A + ' item' : '此条颜色规则缺失value属性，在：' + A + '项'; }
+        case 45100: { return english ? 'ColorRule item value type not allowed in:' + A + ' item' : '此条颜色规则的value类型不合理，在：' + A + '项'; }
+        case 45200: { return english ? 'ColorRule item value length cannot > 100 in:' + A + ' item' : '此条颜色规则的value字符长度不能大于100，在：' + A + '项'; }
+
+        case 50000: { return english ? 'Template missing widthRule attribute' : '模板缺失widthRule属性'; } //widthRule property check
+        case 50100: { return english ? 'Template widthRule is not an object' : '模板widthRule不是一个对象'; }
+        case 50200: { return english ? 'WidthRule missing basis attribute' : '宽度规则缺失basis属性'; }
+        case 50300: { return english ? 'WidthRule basis value type error' : '宽度规则basis值类型错误'; }
+        case 50400: { return english ? 'WidthRule missing type attribute' : '宽度规则缺失type属性'; }
+        case 50500: { return english ? 'WidthRule type value type error' : '宽度规则type值类型错误'; }
+        case 50600: { return english ? 'WidthRule missing condition attribute' : '宽度规则缺失condition属性'; }
+        case 50700: { return english ? 'WidthRule condition is not an array' : '宽度规则condition不是一个数组'; }
+        case 50800: { return english ? 'If the basis is empty, the type must be empty' : '宽度规则中，如果basis为空，则type必须为空'; }
+        case 50900: { return english ? 'If the basis is empty, the condition must be an empty array' : '宽度规则中，如果basis为空，则condition必须是一个空数组'; }
+        case 51000: { return english ? 'If the basis is not empty, the type cannot be empty' : '宽度规则中，如果basis不为空，则type不能为空'; }
+        case 51100: { return english ? 'WidthRule type value not allowed' : '宽度规则type值不合理'; }
+        case 51200: { return english ? 'WidthRule item length cannot > 90' : '宽度规则数量不能大于90'; }
+
+        case 52000: { return english ? 'WidthRule item is not an object in:' + A + ' item' : '此条宽度规则不是一个对象，在：' + A + '项'; }
+        case 52100: { return english ? 'WidthRule item missing set attribute in:' + A + ' item' : '此条宽度规则缺失set属性，在：' + A + '项'; }
+        case 52200: { return english ? 'WidthRule item set value type error in:'+A+' item' : '此条宽度规则set值类型错误，在：' + A + '项';}
+
+        case 53000: { return english ? 'WidthRule item missing width attribute in:' + A + ' item' : '此条宽度规则缺失width属性，在：' + A + '项'; }
+        case 53100: { return english ? 'WidthRule item width value type error in:' + A + ' item' : '此条宽度规则width值类型错误，在：' + A + '项'; }
+        case 53200: { return english ? 'WidthRule item width value must be integer in:' + A + ' item' : '此条宽度规则width值必须为整数，在：' + A + '项'; }
+
+        case 54000: { return english ? 'WidthRule item missing method attribute in:' + A + ' item' : '此条宽度规则缺失method属性，在：' + A + '项'; }
+        case 54100: { return english ? 'WidthRule item method value type error in:' + A + ' item' : '此条宽度规则的method值类型错误，在：' + A + '项'; }
+        case 54200: { return english ? 'WidthRule item method not allowed in:' + A + ' item' : '此条宽度规则的method不合理，在：' + A + '项'; }
+
+        case 55000: { return english ? 'WidthRule item missing value attribute in:' + A + ' item' : '此条宽度规则缺失value属性，在：' + A + '项'; }
+        case 55100: { return english ? 'WidthRule item value type not allowed in:' + A + ' item' : '此条宽度规则的value类型不合理，在：' + A + '项'; }
+        case 55200: { return english ? 'WidthRule item value length cannot > 100 in:' + A + ' item' : '此条宽度规则的value字符长度不能大于100，在：' + A + '项'; }
+      }
+    },
+    tpCheck(template){//模板检查,若正常则返回true，否则返回其他错误的代码
+      if(template===null)return 500;
+      let arr=[];
+      let names=['name'];
+      let len=0;
+      let count=0;
+      let cType='';
+      let wType='';
+      function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
+
+
+      if(!isObj(template))return 1000;
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'id'))return 2000;//A layer property check
+      if(typeof template.id!=='string')return 2100;
+      if(template.id==='')return 2200;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'name'))return 4000;
+      if(typeof template.name!=='string')return 4100;
+      if(template.name==='')return 4200;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'creator'))return 6000;
+      if(typeof template.creator!=='string')return 6100;
+      if(template.creator==='')return 6200;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'modify'))return 8000;
+      if(typeof template.modify!=='string')return 8100;
+      if(template.modify==='')return 8200;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'locked'))return 10000;
+      if(typeof template.locked!=='boolean')return 10100;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'explain'))return 12000;
+      if(typeof template.explain!=='string')return 12100;
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'typeRule'))return 14000;//typeRule property check
+      if(!isObj(template.typeRule))return 15000;
+      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'point'))return 16000;
+      if(typeof template.typeRule.point!=='boolean')return 17000;
+      if(template.typeRule.point)count++;
+      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'line'))return 18000;
+      if(typeof template.typeRule.line!=='boolean')return 19000;
+      if(template.typeRule.line)count++;
+      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'area'))return 20000;
+      if(typeof template.typeRule.area!=='boolean')return 21000;
+      if(template.typeRule.area)count++;
+      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'curve'))return 22000;
+      if(typeof template.typeRule.curve!=='boolean')return 23000;
+      if(template.typeRule.curve)count++;
+      if(count<=0){return 24000;}
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'detailsRule'))return 30000;//detailsRule property check
+      if(!Array.isArray(template.detailsRule))return 30100;
+      len=template.detailsRule.length;
+      arr=template.detailsRule;
+      if(len<=0)return 30200;
+      if(len>90)return 30300;
+      if(!isObj(arr[0]))return 30400;
+      if(!this.isNameDetails(arr[0]))return 30500;
+      for(let i=1;i<len;i++){
+        if(!isObj(arr[i])){
+          return 31000+i;
+        }else {
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 32000+i;
+          if(typeof arr[i].set!=='boolean')return 32100+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'name'))return 33000+i;
+          if(typeof arr[i].name!=='string')return 33100+i;
+          if(arr[i].name==='')return 33200+i;
+          if(arr[i].name.length>40)return 33300+i;
+          if(names.includes(arr[i].name)){return 33400+i}//检测重复属性
+          else{names.push(arr[i].name);}
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'empty'))return 34000+i;
+          if(typeof arr[i].empty!=='boolean')return 34100+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'type'))return 35000+i;
+          if(typeof arr[i].type!=='string')return 35100+i;
+          if(!this.isDetailsType(arr[i].type))return 35200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'length'))return 36000+i;
+          if(typeof arr[i].length!=='number')return 36100+i;
+          if(!this.isAllowTypeLen(arr[i].type,arr[i].length))return 36200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'default'))return 37000+i;
+          if(!this.isAllowValueTypL(arr[i].type,arr[i].length,arr[i].default))return 37100+i;
+        }
+      }
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'colorRule'))return 40000;//colorRule property check
+      if(!isObj(template.colorRule))return 40100;
+      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'basis'))return 40200;
+      if(typeof template.colorRule.basis!=='string')return  40300;
+      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'type'))return 40400;
+      if(typeof template.colorRule.type!=='string')return  40500;
+      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'condition'))return 40600;
+      if(!Array.isArray(template.colorRule.condition))return  40700;
+      if(template.colorRule.basis===''){//rule(A)
+        if(template.colorRule.type!=='')return 40800;
+        if(template.colorRule.condition.length!==0)return 40900;
+      }else{
+        if(template.colorRule.type==='')return 41000;
+        if(!this.isDetailsType(template.colorRule.type))return 41100;
+      }
+      len=template.colorRule.condition.length;
+      if(len>90)return 41200;//规则条例最多90条
+      arr=template.colorRule.condition;
+      cType=template.colorRule.type;
+      for(let i=0;i<len;i++){
+        if(!isObj(arr[i])){
+          return 42000+i;
+        }else {
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 42100+i;
+          if(typeof arr[i].set!=='boolean')return 42200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'color'))return 43000+i;
+          if(typeof arr[i].color!=='string')return 43100+i;
+          if(!this.isColor16(arr[i].color))return 43200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 44000+i;
+          if(typeof arr[i].method!=='string')return 44100+i;
+          if(!this.isAllowMethod(cType,arr[i].method))return 44200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 45000+i;
+          if(!this.isAllowValueTyp(cType,arr[i].value))return 45100+i;
+          if(typeof arr[i].value==='string'){//rule(E)
+            if(arr[i].value.length>100)return 45200+i;
+          }
+        }
+      }
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'widthRule'))return 50000;//widthRule property check
+      if(!isObj(template.widthRule))return 50100;
+      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'basis'))return 50200;
+      if(typeof template.widthRule.basis!=='string')return  50300;
+      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'type'))return 50400;
+      if(typeof template.widthRule.type!=='string')return  50500;
+      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'condition'))return 50600;
+      if(!Array.isArray(template.widthRule.condition))return  50700;
+      if(template.widthRule.basis===''){//rule(A)
+        if(template.widthRule.type!=='')return 50800;
+        if(template.widthRule.condition.length!==0)return 50900;
+      }else{
+        if(template.widthRule.type==='')return 51000;
+        if(!this.isDetailsType(template.widthRule.type))return 51100;
+      }
+      len=template.widthRule.condition.length;
+      if(len>90)return 51200;//规则条例最多90条
+      arr=template.widthRule.condition;
+      wType=template.widthRule.type;
+      for(let i=0;i<len;i++){
+        if(!isObj(arr[i])){
+          return 52000+i;
+        }else {
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 52100+i;
+          if(typeof arr[i].set!=='boolean')return 52200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'width'))return 53000+i;
+          if(typeof arr[i].width!=='number')return 53100+i;
+          if(!this.isInteger(arr[i].width))return 53200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 54000+i;
+          if(typeof arr[i].method!=='string')return 54100+i;
+          if(!this.isAllowMethod(wType,arr[i].method))return 54200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 55000+i;
+          if(!this.isAllowValueTyp(wType,arr[i].value))return 55100+i;
+          if(typeof arr[i].value==='string'){//rule(E)
+            if(arr[i].value.length>100)return 55200+i;
+          }
+        }
+      }
+      return true;
+    },
   },
   computed:{
+    templateStatus(){
+      if(this.editTemplate===null)return '空的模板';
+      return '正常(点击检查)';
+    },
+    userName(){
+      if(this.$store.state.serverData.socket!==undefined){
+        if(this.$store.state.serverData.socket.userData!==null){
+          return this.$store.state.serverData.socket.userData.user_name;
+        }else {
+          return this.$store.state.serverData.userName
+        }
+      }else {
+        return this.$store.state.serverData.userName;
+      }
+    },
+    userEmail(){
+      if(this.$store.state.serverData.socket!==undefined){
+        if(this.$store.state.serverData.socket.userData!==null){
+          return this.$store.state.serverData.socket.userData.user_email;
+        }else {
+          return this.$store.state.serverData.userEmail
+        }
+      }else {
+        return this.$store.state.serverData.userEmail;
+      }
+    },
     overviewType(){
       let str=[];
-      if(this.templateSettings.typeRule.area===true){
+      let obj={
+        point:true,
+        line:true,
+        area:true,
+        curve:true
+      };//用函数检查上述的对象是否正确，四种类型中必须要有一种类型为true才算正确
+      if(this.editTemplate.typeRule.area===true){
         str.push('Area');
       }
-      if(this.templateSettings.typeRule.line===true){
+      if(this.editTemplate.typeRule.line===true){
         str.push('Line');
       }
-      if(this.templateSettings.typeRule.point===true){
+      if(this.editTemplate.typeRule.point===true){
         str.push('point');
       }
-      if(this.templateSettings.typeRule.curve===true){
+      if(this.editTemplate.typeRule.curve===true){
         str.push('curve');
       }
       return str.join('、');
     },
     overviewDetails(){
       let str=[];
-      let len=this.templateSettings.detailsRule.length;
+      let len=this.editTemplate.detailsRule.length;
       for(let i=0;i<len;i++){
-        if(this.templateSettings.detailsRule[i].name!=''){
-          str.push(this.templateSettings.detailsRule[i].name);
+        if(this.editTemplate.detailsRule[i].name!=''){
+          str.push(this.editTemplate.detailsRule[i].name);
         }
       }
       return str.join('、');
     },
     overviewWidth(){
-      let basis=this.templateSettings.widthRule.basis;
+      let basis=this.editTemplate.widthRule.basis;
       if(basis===null || basis===''){
         return '无';
       }
       let str=[];
-      let len=this.templateSettings.widthRule.condition.length;
+      let len=this.editTemplate.widthRule.condition.length;
       for(let i=0;i<len;i++){
-        let sym=this.templateSettings.widthRule.condition[i].type;
-        let val=this.templateSettings.widthRule.condition[i].value;
-        let width=this.templateSettings.widthRule.condition[i].width;
+        let sym=this.editTemplate.widthRule.condition[i].type;
+        let val=this.editTemplate.widthRule.condition[i].value;
+        let width=this.editTemplate.widthRule.condition[i].width;
         switch (sym){
           case 'equ':{
             str.push({
@@ -972,16 +1577,16 @@ export default {
       return str;
     },
     overviewColor(){
-      let basis=this.templateSettings.colorRule.basis;
+      let basis=this.editTemplate.colorRule.basis;
       if(basis===null || basis===''){
         return '无';
       }
       let str=[];
-      let len=this.templateSettings.colorRule.condition.length;
+      let len=this.editTemplate.colorRule.condition.length;
       for(let i=0;i<len;i++){
-        let sym=this.templateSettings.colorRule.condition[i].type;
-        let val=this.templateSettings.colorRule.condition[i].value;
-        let color=this.templateSettings.colorRule.condition[i].color;
+        let sym=this.editTemplate.colorRule.condition[i].type;
+        let val=this.editTemplate.colorRule.condition[i].value;
+        let color=this.editTemplate.colorRule.condition[i].color;
         switch (sym){
           case 'equ':{
             str.push({
@@ -1036,7 +1641,7 @@ export default {
       return str;
     },
     allowType2Width(){
-      switch (this.templateSettings.widthRule.type) {
+      switch (this.editTemplate.widthRule.type) {
         case 'text':{
           return {'equ':'等于','nequ':'不等于'};
         }
@@ -1064,7 +1669,7 @@ export default {
       }
     },
     allowType2Color(){
-      switch (this.templateSettings.colorRule.type) {
+      switch (this.editTemplate.colorRule.type) {
         case 'text':{
           return {'equ':'等于','nequ':'不等于'};
         }
@@ -1100,39 +1705,86 @@ export default {
     /**
      * @return {number}
      */
-    TemplateCode(){
-      return this.$store.state.templateConfig.code;
+    TaskCode(){
+      return this.$store.state.templateConfig.taskCode;
     },
     /**
-     * @return {array}
+     * @return {object|null}
      */
-    UsedStructure(){
-      return this.$store.state.templateConfig.usedStructure;
+    EditTemplate(){
+      return this.$store.state.templateConfig.editTemplate;
     },
-    basisAoe(){
-      if(this.templateSettings.colorRule.basis===null || this.templateSettings.colorRule.basis===''){
-        return '~无依据~';
-      }
-      return this.templateSettings.colorRule.basis;
-    }
+    /**
+     * @return {object|null}
+     */
+    EditName(){
+      return this.$store.state.templateConfig.editName;
+    },
   },
   watch:{
-
-    TemplateCode(){
+    TaskCode(){
       if(this.TemplateShow){
-        this.openTemplate();
+        let ID=this.createTemplateId();
+        let Empty={
+          id:ID,
+          name:'',
+          creator:'',
+          modify:'',
+          locked:false,
+          explain:'none',
+          typeRule:{point:true, line:true, area:true, curve:true},
+          detailsRule:[{set:false, name:'name', default:'unknown', type:'text', length:100, empty:true}],
+          colorRule:{basis:'', type:'', condition:[]},
+          widthRule:{basis:'', type:'', condition:[]}
+        };
+        this.templateShow=true;
+        if(this.EditTemplate!==null){//传入模板不为空
+          if(this.tpCheck(this.EditTemplate)){//传入模板通过检查
+            this.editTemplate=this.EditTemplate;
+            this.taskCode=this.TaskCode;
+          }else {
+            this.editTemplate=Empty;
+            this.taskCode=this.TaskCode;
+          }
+        }else {
+          this.editTemplate=Empty;
+          this.taskCode=this.TaskCode;
+        }
       }else {
-        this.closeTemplate();
+        this.closeAndCancel();
       }
-    },
-    UsedStructure(newValue){
-      this.structure=newValue;
-    },
+    }
   }
 }
 </script>
 
 <style scoped>
+button{
+  cursor: pointer;
+  -webkit-appearance: none;
+  width: auto;
+  min-width: 100px;
+  border-radius: 24px;
+  text-align: center;
+  padding: 15px 40px;
+  background-color: #7dc5ff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  -webkit-box-shadow: 0 2px 6px -1px rgba(0,0,0,.13);
+  box-shadow: 0 2px 6px -1px rgba(0,0,0,.13);
+  border: none;
+  -webkit-transition: all .3s ease;
+  transition: all .3s ease;
+  outline: 0;
+}
+button:hover{
+  background: #289ffe;
+}
+button:active{
+  background: #ffffff;
+  color: #000000;
+}
 .BananaTemplateEdit{
   width: 100%;
   height: 100%;
@@ -1146,29 +1798,17 @@ export default {
   top: 0px;
   left: 0px;
 }
-.basisAoe{
-  width: auto;
-  min-width: 100px;
-  padding-right: 5px;
-  height: auto;
-  font-weight: 800;
-  font-size: 15px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
 .templateMenu{
   width: calc(50% - 30px);
   min-width: 690px;
-  height: calc(60% - 30px);
+  height: 60%;
   min-height: 410px;
   background: #ffffff;
   position: fixed;
   z-index: 558;
   top: 20%;
   left: 25%;
-  padding: 15px;
+  padding: 0px 15px;
   border-radius: 5px;
 }
 .RowTitle{
@@ -1218,6 +1858,14 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  transition: all .3s ease;
+}
+.RowButton:hover{
+  background: #289ffe;
+}
+.RowButton:active{
+  background: #ffffff;
+  color: #000000;
 }
 .statusInput{
   width: 92%;
@@ -1695,7 +2343,7 @@ input[disabled]{
 }
 .templateTitle{
   width: 100%;
-  height: 40px;
+  height: 55px;
   font-size: 20px;
   font-weight: 800;
   display: flex;
@@ -1706,7 +2354,7 @@ input[disabled]{
 }
 .templateContent{
   width: 100%;
-  height: calc(100% - 40px - 40px);
+  height: calc(100% - 55px - 55px);
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -1718,16 +2366,16 @@ input[disabled]{
   padding-top: 5px;
   background: #f8f8f8;
   box-shadow: 0px 0px 10px #d8d8d8;
+  user-select: none;
 }
 .templateRight{
   width: calc(100% - 180px - 40px);
   height: calc(100% - 40px);
   padding: 20px;
-  box-shadow: inset 0px 0px 10px #e4e1e1;
 }
 .templateBottom{
   width: 100%;
-  height: 40px;
+  height: 55px;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
