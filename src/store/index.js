@@ -350,6 +350,8 @@ export default new Vuex.Store({
       comprehensive:class comprehensive {//综合的一个连接服务端的通讯类
         constructor(url){
           this.url=url;
+          this.loadData=false;//首次加载数据的状态
+          this.loadLayer=false;//首次加载图层的状态
           this.isLink=false;
           this.isLogin=false;
           this.localId=-1;//元素创建后的本地虚拟id
@@ -468,6 +470,9 @@ export default new Vuex.Store({
             },
             broadcast_deleteLayerAndMembers(id){
               return {type:'broadcast',class:'deleteLayerAndMembers',data:{id}}
+            },
+            broadcast_batchDeleteElement(id){
+              return {type:'broadcast',class:'batchDeleteElement',data:{id}}
             },
           };
           this.QIR={//检测间
@@ -602,6 +607,16 @@ export default new Vuex.Store({
           this.mapData.points.length=0;//3.清除地图数据
           this.mapData.lines.length=0;
           this.mapData.areas.length=0;
+        }
+        broadcastBatchDeleteElement(id){//批量删除元素
+          if(Array.isArray(id)){
+            let len=id.length;
+            let lock=false;
+            for(let i=0;i<len;i++){if(typeof id[i]!=='number')lock=true;}//检查数组内是否都为元素ID
+            if(!lock){
+              this.send(this.Instruct.broadcast_batchDeleteElement(id));
+            }
+          }
         }
         broadcastUpdateLayerData(data){//id,structure,members
           this.send(this.Instruct.broadcast_updateLayerData(data));
@@ -1072,6 +1087,7 @@ export default new Vuex.Store({
                 }
                 catch(e){}
               }
+              this.loadData=true;
               break;
             }
             case 'send_mapLayer':{
@@ -1091,7 +1107,9 @@ export default new Vuex.Store({
                 }
                 this.mapLayerData=res;
                 this.mapLayerOrder=ord;
-              }catch (e) {
+                this.loadLayer=true;
+              }
+              catch (e) {
                 //console.log(e);
               }
               break;
@@ -1303,6 +1321,54 @@ export default new Vuex.Store({
                       this.messages.push(jsonData);//更新消息
                       this.lastEdit=jsonData.time;
                       this.lastDeleteId=ID;
+                    }
+                  }
+                  catch (e) {}
+                  break;
+                }
+                case 'batchDeleteElement':{//批量删除元素的广播
+                  try{
+                    let point=jsonData.data.point;
+                    let line=jsonData.data.line;
+                    let area=jsonData.data.area;
+                    let curve=jsonData.data.curve;
+                    let len=0;
+                    let ID=0;
+                    len=point.length;
+                    for(let i=0;i<len;i++){
+                      ID=parseInt(point[i]);
+                      this.mapData.points.some((item, index)=>{//查找并删除该id
+                        if (item.id==ID){
+                          this.mapData.points.splice(index,1);
+                        }
+                      });
+                    }
+                    len=line.length;
+                    for(let i=0;i<len;i++){
+                      ID=parseInt(line[i]);
+                      this.mapData.lines.some((item, index)=>{//查找并删除该id
+                        if (item.id==ID){
+                          this.mapData.lines.splice(index,1);
+                        }
+                      });
+                    }
+                    len=area.length;
+                    for(let i=0;i<len;i++){
+                      ID=parseInt(area[i]);
+                      this.mapData.areas.some((item, index)=>{//查找并删除该id
+                        if (item.id==ID){
+                          this.mapData.areas.splice(index,1);
+                        }
+                      });
+                    }
+                    len=curve.length;
+                    for(let i=0;i<len;i++){
+                      ID=parseInt(curve[i]);
+                      this.mapData.curves.some((item, index)=>{//查找并删除该id
+                        if (item.id==ID){
+                          this.mapData.curves.splice(index,1);
+                        }
+                      });
                     }
                   }
                   catch (e) {}
@@ -2137,8 +2203,30 @@ export default new Vuex.Store({
       resultCode:0,//执行结束的返回状态 1 取消 2提交
       resultTemplate:null,//执行结束返回的新模板对象
       editTemplate:null,//提交需要编辑的模板对象
+      editBackup:null,//编辑前的备份
       editName:null,//提交需要编辑的分组名
       templateShow:false,
+      useTpId:'none',//正在使用中的模板
+      useTpName:'none',
+      useTpCreator:'none',
+      useTpModify:'none',
+      useTpExplain:'none',
+      useTypeRule:{
+        point:true,line:true,area:true,curve:true
+      },
+      useDetailsRule:[
+        {set:false,name:'name',default:'unknown',type:'text',length:100,empty:true}
+      ],
+      useColorRule:{
+        basis:'',
+        type:'',
+        condition:[]
+      },
+      useWidthRule:{
+        basis:'',
+        type:'',
+        condition:[]
+      }
     },
     toolboxConfig:{
       position:{
@@ -2742,7 +2830,8 @@ export default new Vuex.Store({
       state.templateConfig.templateShow=product;
     },
     setCoTemplateEdit(state,product){//product:{ template : {}  , name : 'zoo' , code : number }
-      state.templateConfig.editTemplate=product.template;//模板对象
+      state.templateConfig.editTemplate=JSON.parse(JSON.stringify(product.template));//拷贝模板对象
+      state.templateConfig.editBackup=product.template;//备份模板对象
       state.templateConfig.editName=product.name;//分组名
       state.templateConfig.taskCode=product.code;//校验码
     },
@@ -2750,11 +2839,26 @@ export default new Vuex.Store({
       state.templateConfig.resultTemplate=null;
       state.templateConfig.resultCode=1;
       state.templateConfig.taskEndCode=code;
+      state.templateConfig.editTemplate=null;//还原为null
+      state.templateConfig.editBackup=null;
+      state.templateConfig.editName=null;
     },
     setCoTemplateSubmit(state,product){//product:{ template : {}  , code : TaskNumber }
       state.templateConfig.resultTemplate=product.template;
       state.templateConfig.resultCode=2;
       state.templateConfig.taskEndCode=product.code;
+    },
+    setCoTemplateUse(state,template){//template:{ ... }
+      state.templateConfig.useTpId=template.id;
+      state.templateConfig.useTpName=template.name;
+      state.templateConfig.useTpCreator=template.creator;
+      state.templateConfig.useTpModify=template.modify;
+      state.templateConfig.useTpExplain=template.explain;
+
+      state.templateConfig.useTypeRule=template.typeRule;
+      state.templateConfig.useDetailsRule=template.detailsRule;
+      state.templateConfig.useColorRule=template.colorRule;
+      state.templateConfig.useWidthRule=template.widthRule;
     },
   },
   actions: {

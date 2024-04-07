@@ -20,13 +20,10 @@
           <span v-show="!allExpand">展开</span><span v-show="allExpand">收起</span>所有分组
         </div>
         <div class="layerMoreAction" title="检查并修复图层异常问题" @click.stop="repairLayer()">
-          检查并修复此图层
+          检查并修复图层
         </div>
         <div class="layerMoreAction" title="删除图层，并且删除其中的元素" @click.stop="deleteLayerAndElement()">
-          删除图层及元素
-        </div>
-        <div class="layerMoreAction" title="删除图层，不会删除其中的元素" @click.stop="deleteLayer()">
-          仅删除图层
+          删除图层与元素
         </div>
       </div>
     </div>
@@ -37,11 +34,18 @@
                               :rename-response="renameApprovalResult"
                               :adjust-item-order-response="adjustItemOrderResponse"
                               :pick-child-group-response="pickChildGroupResult"
+                              :pick-layer-id="pickLayerResponse.id"
                               @renameRequest="renameRequestCheck"
                               @adjustItemOrderRequest="adjustItemOrderApproval"
                               @pickChildGroupRequest="pickChildGroupApproval">
       </orange-group-structure>
     </div>
+    <pomelo-confirm
+      :view="firmView"
+      :plan="firmPlan"
+      :message="firmMessage"
+      @confirm="handleConfirm">
+    </pomelo-confirm>
   </div>
 </template>
 
@@ -50,6 +54,7 @@ import More from "./svgValidIcons/more";
 import OrangeGroupStructure from "./OrangeGroupStructure";
 import SunActive from "./svgValidIcons/sunActive";
 import AddNewGroup from "./svgValidIcons/addNewGroup";
+import PomeloConfirm from "./PomeloConfirm";
 export default {
   name: "BananaGroupLayer",
   data(){
@@ -74,9 +79,12 @@ export default {
       grabSeparateLeft:20,//拖动独立x轴的左侧条件
       grabSeparateRight:320,//拖动独立x轴的右侧条件
       moveObServe:null,
+      firmView:false,//确认菜单
+      firmPlan:{},
+      firmMessage:'',
     }
   },
-  components:{AddNewGroup, SunActive,More,OrangeGroupStructure},
+  components:{AddNewGroup, SunActive,More,OrangeGroupStructure,PomeloConfirm},
   props:{
     layer:{
       type:Object,
@@ -195,7 +203,7 @@ export default {
       this.pickLayer();
     },
     adjustItemOrderApproval(data){
-      this.$emit('adjustItemOrderRequest',data);//转发申请
+      this.$emit('adjustItemOrderRequest',data);//转发申请到Layer层
     },
     grabLayerStart(ev){//拖拽起步
       if(ev.button!==0){
@@ -322,13 +330,26 @@ export default {
       this.allExpand=!this.allExpand;
       this.switchLayerActions();
     },
-    deleteLayerAndElement(){
-      this.$store.state.serverData.socket.broadcastDeleteLayerAndMembers(this.layer.id);
-      this.switchLayerActions();
+    handleConfirm(plan){//一些需要再次确认才能执行的操作
+      if(!plan.state){//取消执行
+        this.firmView=false;//关闭确认菜单
+        return false;
+      }
+      this.firmView=false;//关闭确认菜单
+      let method=plan.method;
+      let value=plan.value;
+      switch(method){
+        case 'deleteLayerAndElement':{//删除此图层与其中的元素
+          this.$store.state.serverData.socket.broadcastDeleteLayerAndMembers(this.layer.id);
+          break;
+        }
+      }
     },
-    deleteLayer(){
-      this.$store.state.serverData.socket.broadcastDeleteLayer(this.layer.id);
+    deleteLayerAndElement(){//删除此图层与其中的元素
       this.switchLayerActions();
+      this.firmPlan={method:'deleteLayerAndElement',value:null};
+      this.firmMessage='即将删除此图层及其包含的元素，是否要继续？';
+      this.firmView=true;//呼出确认菜单
     },
     repairLayer(){
       let layerBasicCk=false;//图层基础属性检测
@@ -804,7 +825,7 @@ export default {
 
 <style scoped>
 .selectedLayer{
-  background: #f3f3f3;
+  background: #f8f8f8;
   color: #4f4f4f;
 }
 .groupLayersBox{

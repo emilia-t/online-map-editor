@@ -6,6 +6,10 @@
   from{opacity:0;}
   to{opacity:1;}
 }
+@keyframes graduallyEmergingHide{
+  from{opacity:1;}
+  to{opacity:0;}
+}
 @keyframes buttonEffectsSd {
   0%{
     background:#f6f6f6;
@@ -128,3 +132,75 @@
 }
 .graduallyEmergingFirst{animation:graduallyEmergingFirst 1s forwards;}
 .graduallyEmergingAfter{animation:graduallyEmergingAfter 1s forwards;}
+/*PO*/
+.pomeloCM{position:fixed;z-index:1000;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;background-color:rgba(0,0,0,0.5);}
+.pomeloCMB{cursor:pointer;-webkit-appearance:none;width:auto;min-width:100px;border-radius:24px;text-align:center;padding:5px 10px;background-color:#7dc5ff;color:#fff;font-size:14px;font-weight:500;-webkit-box-shadow:0 2px 6px -1px rgba(0,0,0,.13);box-shadow:0 2px 6px -1px rgba(0,0,0,.13);border:none;-webkit-transition:all .3s ease;transition:all .3s ease;outline:0;}
+.pomeloCMB:hover{background:#289ffe;}
+.pomeloCMB:active{background:#ffffff;color:#000000;}
+.pomeloCMA{user-select:none;min-width:240px;background-color:white;padding:20px 25px;border-radius:5px;}
+.pomeloCMD{width:100%;height:auto;display:flex;flex-direction:row;justify-content:space-around;align-items:center;}
+.pomeloCMP{font-size:16px;margin:10px 0 16px 0;color:#5d5d5d;}
+/*PL*/
+.pomeloLD-end{
+  animation:graduallyEmergingHide 0.5s forwards !important;
+}
+.pomeloLD{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 2000;
+  background: #e9e9e9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation:graduallyEmergingFirst 0.5s forwards;
+}
+.pomeloLDT{
+  font-size: 24px;
+  font-weight: 800;
+  color:#826a67;
+  margin: 24px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.pomeloLDA{
+  width: 256px;
+  height: 256px;
+  animation: floatEarth 5s infinite ease-in-out;
+}
+.pomeloLD1{
+  width: 30px;
+  height: 24px;
+  animation: JumpingPoints 1.5s infinite ease-in-out;
+}
+.pomeloLD2{
+  width: 16px;
+  height: 24px;
+  animation: JumpingPoints 1.5s infinite ease-in-out;
+}
+.pomeloLD1[data-s='1']{animation-delay:0ms;}
+.pomeloLD1[data-s='2']{animation-delay:100ms;}
+.pomeloLD1[data-s='3']{animation-delay:200ms;}
+.pomeloLD1[data-s='4']{animation-delay:300ms;}
+.pomeloLD1[data-s='5']{animation-delay:400ms;}
+.pomeloLD1[data-s='6']{animation-delay:500ms;}
+.pomeloLD1[data-s='7']{animation-delay:600ms;}
+.pomeloLD2[data-s='8']{animation-delay:700ms;margin-left: 4px;}
+.pomeloLD2[data-s='9']{animation-delay:800ms;}
+.pomeloLD2[data-s='10']{animation-delay:900ms;}
+.pomeloLD2[data-s='11']{animation-delay:1000ms;}
+.pomeloLD2[data-s='12']{animation-delay:1100ms;}
+.pomeloLD2[data-s='13']{animation-delay:1200ms;}
+@keyframes floatEarth{
+  0%{transform: translateY(0px);}
+  50%{transform: translateY(-100px);}
+  100%{transform: translateY(0px);}
+}
+@keyframes JumpingPoints{
+  0%{transform: translateY(0px);}
+  50%{transform: translateY(-10px);}
+  100%{transform: translateY(0px);}
+}

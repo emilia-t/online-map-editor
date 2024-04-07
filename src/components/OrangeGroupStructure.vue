@@ -8,7 +8,7 @@
         <div class="expandMoreL" @click.stop="expandGroup()" v-show="groupExpand">
           <expand-more custom="transform:translate(0px,2px);cursor:pointer;"></expand-more>
         </div>
-        <span contenteditable="true" class="groupListName" ref="groupListName" v-text="structure[0]" @focus="focusGroupName($event)" @blur="blurGroupName($event)"></span>
+        <span class="groupListName" v-text="structure[0]"></span>
       </div>
       <div class="memberTeamNameR" title="隐藏操作仅对您可见" v-show="hasElementMember">
         <div class="memberRightEyeA" @click.stop="hiddenAllElements()" v-show="!groupMemberAllHide">
@@ -22,7 +22,6 @@
     <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in extractLatter()" v-show="groupExpand">
       <div class="memberTeamContent" v-if="!isArray(item)">
         <div class="memberKeyInfo" :title="getItemName(layer.members[item])"
-             @contextmenu.stop.prevent="contextmenuItemOpen($event,layer.members[item])"
              @mouseenter="expandOrderCase($event,layer.members[item].id)"
              @mouseleave="restoreOrderCase($event)"
              @mouseup="confirmOrderCase($event,layer.members[item].id)">
@@ -71,28 +70,40 @@
         <div class="menuList" @click="createGroupAtBottom()">
           在底部新建分组
         </div>
-        <div class="menuList" @click="deleteGroup()" v-if="this.level!==1">
-          删除此分组
-        </div>
-        <div class="menuList" @click="groupByColorType('color')" title="按颜色分组会删除所有子分组">
+        <div class="menuList" title="按颜色分组会删除所有子分组" @click="groupByColorType('color')">
           按颜色重新分组
         </div>
-        <div class="menuList" @click="groupByColorType('type')" title="按类型分组会删除所有子分组">
+        <div class="menuList" title="按类型分组会删除所有子分组" @click="groupByColorType('type')">
           按类型重新分组
         </div>
-        <div class="menuList" @click="openTemplate()" title="点击打开模板设置界面">
+        <div class="menuList" title="删除此分组会同时删除组内元素" @click="deleteGroup()" v-if="this.level!==1">
+          删除分组与元素
+        </div>
+        <div class="menuList" title="点击打开模板设置界面" @click="openTemplate()">
           设置模板
         </div>
-      </div>
-    </div>
-    <div class="memberMenuClose" @contextmenu.prevent="void 1" @click.stop="contextmenuItemClose()" v-show="memberItemMenu.show"></div>
-    <div class="memberMenu" :style="itemContextmenuPos" v-show="memberItemMenu.show">
-      <div class="menuListBox">
-        <div class="menuList" @click="removeLayerMember()">
-          移除出图层
+        <div class="menuList" @click="openRename()">
+          重命名
         </div>
       </div>
     </div>
+    <div class="renameClose" @click.stop="closeRename()" v-if="renameShow"></div>
+    <div class="renameY" v-if="renameShow">
+      <div class="renameRow">
+        *新的分组名称不能与同级别分组名称重复*
+      </div>
+      <input ref="rename" type="text" maxlength="20" @focus="onFocusMode()" @blur="noFocusMode()">
+      <div class="renameRow">
+        <button @click.stop="closeRename()">取消</button>
+        <button @click.stop="groupRename()">确定</button>
+      </div>
+    </div>
+    <pomelo-confirm
+      :view="firmView"
+      :plan="firmPlan"
+      :message="firmMessage"
+      @confirm="handleConfirm">
+    </pomelo-confirm>
   </div>
 </template>
 
@@ -105,14 +116,17 @@ import Region from "./svgValidIcons/region";
 import SegmentLine from "./svgValidIcons/segmentLine";
 import Point from "./svgValidIcons/point";
 import {mapState} from "vuex";
+import PomeloConfirm from "./PomeloConfirm";
 export default {
   name: "OrangeGroupStructure",
   components:{
     OrangeGroupStructure,EyeVisible,EyeNotVisible,ExpandMore,Region,
-    SegmentLine,Point,
+    SegmentLine,Point,PomeloConfirm,
   },
   data(){
     return {
+      renameShow:false,
+      grabStartY:0,//拖拽开始位置
       groupExpand:true,
       renameApprovalTemplate:{//重命名审批模板
         code:1,
@@ -124,12 +138,6 @@ export default {
         name:'',
       },
       memberHeadMenu:{
-        x:0,
-        y:0,
-        show:false,
-      },
-      memberItemMenu:{
-        target:null,
         x:0,
         y:0,
         show:false,
@@ -146,9 +154,17 @@ export default {
       grabIndex:-1,
       moveObServe:null,
       editTpTaskId:null,//编辑模板任务id
+      firmView:false,//确认菜单
+      firmPlan:{},
+      firmMessage:'',
     }
   },
   props:{
+    pickLayerId:{
+      type:Number,
+      default:-1,
+      required:false
+    },
     layer:{//继承根图层数据
       type:Object,
       default:{},
@@ -217,7 +233,44 @@ export default {
   mounted() {
 
   },
+  created() {
+    this.unwatch=this.$watch('pickLayerId',(newValue)=>{//设置第一个分组图层的行为
+      if(newValue==this.layer.id){
+        this.$refs.memberTeamOut.classList.add('memberTeamBoxPickA');
+        let stu1=this.structure[1];
+        if(typeof stu1==='object' && !Array.isArray(stu1)){
+          if(Object.prototype.hasOwnProperty.call(stu1,'template')){
+            if(this.tpCheck(stu1.template)){//通过安全检查后应用此模板
+              this.$store.commit('setCoTemplateUse',this.structure[1].template);
+            }else {
+              this.$store.commit('setCoLogMessage',{text:'警告！当前选中分组存在异常，无法应用模板',from:'internal:OrangeGroupStructure',type:'warn'});
+            }
+          }
+        }
+      }
+      this.unwatch();//仅执行一次
+    });
+  },
   methods:{
+    openRename(){
+      this.renameShow=true;
+      this.memberHeadMenu.show=false;
+    },
+    closeRename(){
+      this.renameShow=false;
+    },
+    reuseTemplate(){//用于更新当前使用的模板(与store同步)
+      let stu1=this.structure[1];
+      if(typeof stu1==='object' && !Array.isArray(stu1)){
+        if(Object.prototype.hasOwnProperty.call(stu1,'template')){
+          if(this.tpCheck(stu1.template)){//通过安全检查后应用此模板
+            this.$store.commit('setCoTemplateUse',this.structure[1].template);
+          }else {
+            this.$store.commit('setCoLogMessage',{text:'警告！当前选中分组存在异常，无法应用模板',from:'internal:OrangeGroupStructure',type:'warn'});
+          }
+        }
+      }
+    },
     openTemplate(){
       function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
       let code=this.$store.state.templateConfig.taskCode+=2;
@@ -321,7 +374,7 @@ export default {
           }
         );
       }else {//附加旧数据
-        newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),newStructure)
+        newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),newStructure);
         this.$store.state.serverData.socket.broadcastUpdateLayerData(
           {
             id:this.layer.id,
@@ -409,6 +462,7 @@ export default {
       if(ev.button!==0){
         return false;
       }
+      this.grabStartY=ev.y;
       let correct={x:0,y:0};
       let targetName=ev.target.nodeName;
       if(targetName==='SPAN'){
@@ -436,6 +490,7 @@ export default {
       if(this.moveObServe===null){
         this.moveObServe=true;
         document.addEventListener('mousemove',(event)=>{
+          if(Math.abs(this.grabStartY-event.y)<=3)return false;//仅当拖拽幅度大于3px时才进行拖拽事件
           if(this.grabItemState){
             if(this.adjustItemOrderResponse.idA!==this.grabItemId){
               this.$emit('adjustItemOrderRequest',{
@@ -446,7 +501,7 @@ export default {
                 layerA:this.layer.id,
               });//申请调序
             }
-            if(event.x<this.grabSeparateLeft || event.x>this.grabSeparateRight){
+            if(event.x<this.grabSeparateLeft || event.x>this.grabSeparateRight){//拖出图层面板
               this.$refs.memberTeamBox[this.grabIndex].style.pointerEvents='none';
               this.$refs.memberTeamBox[this.grabIndex].style.position='fixed';
               this.$refs.memberTeamBox[this.grabIndex].style.zIndex='666';
@@ -520,61 +575,112 @@ export default {
     groupNameRenameRequest(template){//检查名称是否重复
       this.$emit('renameRequest',template);
     },
-    focusGroupName(ev){
-      this.oldGroupName=ev.target.innerText;
-      this.onFocusMode();
-    },
     onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
     },
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
-    blurGroupName(ev){
-      let nowGroupName=ev.target.innerText;
-      if(nowGroupName===''){
-        this.$refs.groupListName.innerText=this.oldGroupName;
-        this.$store.commit('setCoLogMessage',{text:'名称不能为空',from:'internal:OrangeGroupStructure',type:'tip'});
+    groupRename(){
+      function clean(inputString){return inputString.replace(/⇉|\n/g, '').trim();}
+      let newName=clean(this.$refs.rename.value);
+      if(newName===''){
+        this.$store.commit('setCoLogMessage',{text:'名称不能为空字符',from:'internal:OrangeGroupStructure',type:'tip'});
         return false;
       }
-      this.noFocusMode();
-      if(this.groupNameIllegal(nowGroupName)===true){
-        this.$refs.groupListName.innerText=this.oldGroupName;
-        this.$store.commit('setCoLogMessage',{text:'名称不能含有⇉符号',from:'internal:OrangeGroupStructure',type:'tip'});
+      if(newName===this.structure[0]){//与原名称一致
+        this.$store.commit('setCoLogMessage',{text:'名称与原始名称一致',from:'internal:OrangeGroupStructure',type:'tip'});
         return false;
-      }
-      if(nowGroupName!==this.oldGroupName){
+      }else{
         this.renameApprovalTemplate.code=this.randomNumber8();
-        this.renameApprovalTemplate.name=nowGroupName;
+        this.renameApprovalTemplate.name=newName;
         this.groupNameRenameRequest(this.renameApprovalTemplate);
       }
     },
     groupNameIllegal(value){//检查分组名称是否含有非法字符
         return value.includes('⇉');
     },
-    deleteGroup(){//删除此子分组 获取当前图层路由
-      let routeArr=this.route.split('⇉');
-      let StructureMembers=this.structureRemoveByGroup(this.layer.structure,routeArr);
-      let newStructure=StructureMembers.structure;
-      let removeMembers=StructureMembers.members;
-      let newMembers=this.removeMembersByArray(removeMembers);
-      newStructure=this.removeUndefined(newStructure);//删除子分组结构同时删除结构内的成员
-      let groupLayerId=this.layer.id;
-      this.$store.state.serverData.socket.broadcastUpdateLayerData(
-        {
-          id:groupLayerId,
-          members:newMembers,
-          structure:newStructure,
+    handleConfirm(plan){//一些需要再次确认才能执行的操作
+      if(!plan.state){//取消执行
+        this.firmView=false;//关闭确认菜单
+        return false;
+      }
+      this.firmView=false;//关闭确认菜单
+      let method=plan.method;
+      let value=plan.value;
+      switch(method){
+        case 'deleteGroup':{//删除子分组及其元素(包含子分组的子分组)
+          let routeArr=this.route.split('⇉');
+          let StructureMembers=this.structureRemoveByGroup(this.layer.structure,routeArr);
+          let newStructure=StructureMembers.structure;
+          let removeMembers=StructureMembers.members;//[1,2,3,...]
+          let newMembers=this.removeMembersByArray(removeMembers);
+          newStructure=this.removeUndefined(newStructure);//删除子分组结构同时删除结构内的成员
+          let groupLayerId=this.layer.id;
+          this.$store.state.serverData.socket.broadcastUpdateLayerData({id:groupLayerId,members:newMembers,structure:newStructure});
+          this.$store.state.serverData.socket.broadcastBatchDeleteElement(removeMembers);
+          break;
         }
-      );
-      this.memberHeadMenu.show=false;
+      }
+    },
+    deleteGroup(){//删除子分组及其元素(包含子分组的子分组)
+      this.memberHeadMenu.show=false;//关闭右键菜单
+      this.firmPlan={method:'deleteGroup',value:null};
+      this.firmMessage='即将删除此分组及其包含的元素，是否要继续？';
+      this.firmView=true;//呼出确认菜单
+    },
+    getFormattedDate() {//获取模板时间
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const date = new Date();
+      const day = days[date.getDay()];
+      const month = months[date.getMonth()];
+      const dayOfMonth = date.getDate();
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      const timeZoneOffset = -date.getTimezoneOffset();// 获取时区偏移量，转换为小时
+      const offsetSign = timeZoneOffset >= 0 ? '+' : '-';
+      const offsetHours = String(Math.floor(Math.abs(timeZoneOffset) / 60)).padStart(2, '0');
+      const offsetMinutes = String(Math.abs(timeZoneOffset) % 60).padStart(2, '0');
+      const timeZone = `GMT${offsetSign}${offsetHours}${offsetMinutes}`;
+      return `${day} ${month} ${dayOfMonth.toString().padStart(2, '0')} ${year} ${hours}:${minutes}:${seconds} ${timeZone}`;
+    },
+    createTemplateId(){//创建模板ID
+      const validChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const length = Math.floor(Math.random() * 7) + 8;//先生成一个[0,7)的随机数，然后加上8
+      let array = new Uint8Array(length);//输出长度为随机的8-14位
+      window.crypto.getRandomValues(array);
+      let result = '';
+      array.forEach((byte) => {
+        result += validChars.charAt(byte % validChars.length);
+      });
+      return result;
     },
     createGroupAtTop(){//在此分组顶部新增子分组
       let groupLayerId=this.layer.id;
       let newGroupName='G'+this.randomNumber8();
+      let time=this.getFormattedDate();
+      let ID=this.createTemplateId();
+      let creator=this.userName+'('+this.userEmail+')';
       let newGroup=[
         newGroupName,
-        {template:null}
+        {
+          template:{//初始给定空模板对象
+            id:ID,
+            name:'template',
+            creator,
+            modify:time,
+            locked:false,
+            explain:'none',
+            typeRule:{point:true, line:true, area:true, curve:true},
+            detailsRule:[{set:false, name:'name', default:'unknown', type:'text', length:100, empty:true}],
+            colorRule:{basis:'', type:'', condition:[]},
+            widthRule:{basis:'', type:'', condition:[]
+            }
+          }
+        }
       ];
       let routeArr=this.route.split('⇉');
       let newStructure=this.structureUnshiftByItem(this.layer.structure,routeArr,newGroup);
@@ -589,9 +695,26 @@ export default {
     createGroupAtBottom(){//在此分组底部新增子分组
       let groupLayerId=this.layer.id;
       let newGroupName='G'+this.randomNumber8();
+      let time=this.getFormattedDate();
+      let ID=this.createTemplateId();
+      let creator=this.userName+'('+this.userEmail+')';
       let newGroup=[
         newGroupName,
-        {template:null}
+        {
+          template:{//初始给定空模板对象
+            id:ID,
+            name:'template',
+            creator,
+            modify:time,
+            locked:false,
+            explain:'none',
+            typeRule:{point:true, line:true, area:true, curve:true},
+            detailsRule:[{set:false, name:'name', default:'unknown', type:'text', length:100, empty:true}],
+            colorRule:{basis:'', type:'', condition:[]},
+            widthRule:{basis:'', type:'', condition:[]
+            }
+          }
+        }
       ];
       let routeArr=this.route.split('⇉');
       let newStructure=this.structureInsertByItem(this.layer.structure,routeArr,newGroup);
@@ -732,7 +855,7 @@ export default {
       }
       return structure;
     },
-    /**依据图层路由和图层结构删除子分组并且返回被删除的子分组的成员
+    /**依据图层路由和图层结构删除子分组并且返回被删除的子分组的成员以及新的图层结构
      * @return false|mixed
      * @param structure | array
      * @param route | array
@@ -825,18 +948,6 @@ export default {
     contextmenuHeadClose(){
       this.memberHeadMenu.show=false;
     },
-    contextmenuItemOpen(ev,item){//成员右键菜单
-      this.memberItemMenu.target=item;
-      this.memberItemMenu.show=true;
-      this.memberItemMenu.x=ev.x;
-      this.memberItemMenu.y=ev.y-15;
-    },
-    contextmenuItemClose(){
-      this.memberItemMenu.show=false;
-      this.memberItemMenu.target=null;
-      this.memberItemMenu.x=0;
-      this.memberItemMenu.y=0;
-    },
     expandGroup(){//展开或收起分组
       this.groupExpand=!this.groupExpand;
     },
@@ -928,7 +1039,7 @@ export default {
       this.$store.state.baseMapConfig.baseMap.view.offsetX+=moveX;
       this.$store.state.baseMapConfig.baseMap.view.offsetY+=moveY;
       this.$store.state.baseMapConfig.baseMap.render();
-      this.$store.state.cameraConfig.mixCanvasFlash=!this.$store.state.cameraConfig.mixCanvasFlash
+      this.$store.state.cameraConfig.mixCanvasFlash=!this.$store.state.cameraConfig.mixCanvasFlash;
       this.allReinitialize();
       this.setElementFlicker(element,2000);
     },
@@ -981,12 +1092,364 @@ export default {
     },
     inHiddenElements(id){
       return this.mapHiddenElements.has(id);
-    }
+    },
+    /**
+     * tpCheck
+     */
+    isInteger(value){//判断一个数字是否为正整数
+      return Number.isInteger(value) && value>0;
+    },
+    isColor16(color){//检测一个字符串是否是标准的16进制颜色-正确则返回true
+      const regex=/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/;
+      return regex.test(color);
+    },
+    isAllowValueTyp(type,value){//依据type检测value(或default)是否是正确的type类型-正确则返回true
+      switch (type) {
+        case 'text':{
+          return typeof value==='string';
+        }
+        case 'long':{
+          return typeof value==='string';
+        }
+        case 'number':{
+          return typeof value === 'number';
+        }
+        case 'date':{
+          return typeof value === 'string';
+        }
+        case 'bool':{
+          return typeof value === 'boolean';
+        }
+        case 'list':{
+          return typeof value === 'string';
+        }
+        case 'percent':{
+          if(typeof value!=='string')return false;
+          const reg=/^\d+(\.\d+)?%$/;
+          return reg.test(value);
+        }
+        case 'score':{
+          if(typeof value!=='number')return false;
+        }
+      }
+    },
+    isAllowMethod(type,method){//判断method是否为type允许使用的方法-正确则返回true
+      switch (type){
+        case 'long':{
+          return false;
+        }
+        case 'score':{
+          return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
+        }
+        case 'number':{
+          return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
+        }
+        case 'percent':{
+          return ['equ','nequ','gre','greq','les','lesq'].includes(method);
+        }
+        case 'date':{
+          return ['equ','nequ','gre','greq','les','lesq'].includes(method);
+        }
+        case 'bool':{
+          return ['equ','nequ'].includes(method);
+        }
+        case 'list':{
+          return ['equ','nequ'].includes(method);
+        }
+        case 'text':{
+          return ['equ','nequ'].includes(method);
+        }
+        default:{
+          return false;
+        }
+      }
+    },
+    isAllowValueTypL(type,length,value){//依据type length检测value(或default)是否是type类型的数据以及长度是否合理-正确则返回true
+      switch (type) {
+        case 'text':{
+          if(typeof value!=='string')return false;
+          return value.length <= length;
+        }
+        case 'long':{
+          if(typeof value!=='string')return false;
+          return value.length <= length;
+        }
+        case 'number':{
+          return typeof value === 'number';
+        }
+        case 'date':{
+          return typeof value === 'string';
+        }
+        case 'bool':{
+          return typeof value === 'boolean';
+        }
+        case 'list':{
+          return typeof value === 'string';
+        }
+        case 'percent':{
+          if(typeof value!=='string')return false;
+          const reg=/^\d+(\.\d+)?%$/;
+          return reg.test(value);
+        }
+        case 'score':{
+          if(typeof value!=='number')return false;
+          return value <= length;
+        }
+      }
+    },
+    isAllowTypeLen(type,num){//检测num是否超过type规定的最大长度-正确则返回true
+      if(num<0)return false;
+      switch (type) {
+        case 'text':{
+          return num <= 100;
+        }
+        case 'long':{
+          return num <= 1000;
+        }
+        case 'score':{
+          return num <= 10;
+        }
+        default:{
+          return num === 0;
+        }
+      }
+    },
+    isDetailsType(str){//检测str是否为模板属性规定以内的类型-正确则返回true
+      return ['text','long','number','date','bool','list','percent','score'].includes(str);
+    },
+    isNameDetails(obj){//检测是否obj是默认的name属性-正确则返回true
+      let obj1={
+        set:false,
+        name:'name',
+        default:'unknown',
+        type:'text',
+        length:100,
+        empty:true
+      };
+      const keys1 = Object.keys(obj1);
+      const keys2 = Object.keys(obj);
+      if (keys1.length !== keys2.length) {
+        return false;
+      }
+      for (let key of keys1) {
+        if (obj1[key] !== obj[key]) {
+          return false;
+        }
+      }
+      return true;
+    },
+    tpCheck(template){//模板检查,若正常则返回true，否则返回其他错误的代码
+      if(template===null)return 500;
+      let arr=[];
+      let names=['name'];
+      let len=0;
+      let count=0;
+      let cType='';
+      let wType='';
+      function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
+
+
+      if(!isObj(template))return 1000;
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'id'))return 2000;//A layer property check
+      if(typeof template.id!=='string')return 2100;
+      if(template.id==='')return 2200;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'name'))return 4000;
+      if(typeof template.name!=='string')return 4100;
+      if(template.name==='')return 4200;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'creator'))return 6000;
+      if(typeof template.creator!=='string')return 6100;
+      if(template.creator==='')return 6200;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'modify'))return 8000;
+      if(typeof template.modify!=='string')return 8100;
+      if(template.modify==='')return 8200;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'locked'))return 10000;
+      if(typeof template.locked!=='boolean')return 10100;
+
+      if(!Object.prototype.hasOwnProperty.call(template,'explain'))return 12000;
+      if(typeof template.explain!=='string')return 12100;
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'typeRule'))return 14000;//typeRule property check
+      if(!isObj(template.typeRule))return 15000;
+      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'point'))return 16000;
+      if(typeof template.typeRule.point!=='boolean')return 17000;
+      if(template.typeRule.point)count++;
+      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'line'))return 18000;
+      if(typeof template.typeRule.line!=='boolean')return 19000;
+      if(template.typeRule.line)count++;
+      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'area'))return 20000;
+      if(typeof template.typeRule.area!=='boolean')return 21000;
+      if(template.typeRule.area)count++;
+      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'curve'))return 22000;
+      if(typeof template.typeRule.curve!=='boolean')return 23000;
+      if(template.typeRule.curve)count++;
+      if(count<=0){return 24000;}
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'detailsRule'))return 30000;//detailsRule property check
+      if(!Array.isArray(template.detailsRule))return 30100;
+      len=template.detailsRule.length;
+      arr=template.detailsRule;
+      if(len<=0)return 30200;
+      if(len>90)return 30300;
+      if(!isObj(arr[0]))return 30400;
+      if(!this.isNameDetails(arr[0]))return 30500;
+      for(let i=1;i<len;i++){
+        if(!isObj(arr[i])){
+          return 31000+i;
+        }else {
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 32000+i;
+          if(typeof arr[i].set!=='boolean')return 32100+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'name'))return 33000+i;
+          if(typeof arr[i].name!=='string')return 33100+i;
+          if(arr[i].name==='')return 33200+i;
+          if(arr[i].name.length>40)return 33300+i;
+          if(names.includes(arr[i].name)){return 33400+i}//检测重复属性
+          else{names.push(arr[i].name);}
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'empty'))return 34000+i;
+          if(typeof arr[i].empty!=='boolean')return 34100+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'type'))return 35000+i;
+          if(typeof arr[i].type!=='string')return 35100+i;
+          if(!this.isDetailsType(arr[i].type))return 35200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'length'))return 36000+i;
+          if(typeof arr[i].length!=='number')return 36100+i;
+          if(!this.isAllowTypeLen(arr[i].type,arr[i].length))return 36200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'default'))return 37000+i;
+          if(!this.isAllowValueTypL(arr[i].type,arr[i].length,arr[i].default))return 37100+i;
+        }
+      }
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'colorRule'))return 40000;//colorRule property check
+      if(!isObj(template.colorRule))return 40100;
+      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'basis'))return 40200;
+      if(typeof template.colorRule.basis!=='string')return  40300;
+      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'type'))return 40400;
+      if(typeof template.colorRule.type!=='string')return  40500;
+      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'condition'))return 40600;
+      if(!Array.isArray(template.colorRule.condition))return  40700;
+      if(template.colorRule.basis===''){//rule(A)
+        if(template.colorRule.type!=='')return 40800;
+        if(template.colorRule.condition.length!==0)return 40900;
+      }else{
+        if(template.colorRule.type==='')return 41000;
+        if(!this.isDetailsType(template.colorRule.type))return 41100;
+      }
+      len=template.colorRule.condition.length;
+      if(len>90)return 41200;//规则条例最多90条
+      arr=template.colorRule.condition;
+      cType=template.colorRule.type;
+      for(let i=0;i<len;i++){
+        if(!isObj(arr[i])){
+          return 42000+i;
+        }else {
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 42100+i;
+          if(typeof arr[i].set!=='boolean')return 42200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'color'))return 43000+i;
+          if(typeof arr[i].color!=='string')return 43100+i;
+          if(!this.isColor16(arr[i].color))return 43200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 44000+i;
+          if(typeof arr[i].method!=='string')return 44100+i;
+          if(!this.isAllowMethod(cType,arr[i].method))return 44200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 45000+i;
+          if(!this.isAllowValueTyp(cType,arr[i].value))return 45100+i;
+          if(typeof arr[i].value==='string'){//rule(E)
+            if(arr[i].value.length>100)return 45200+i;
+          }
+        }
+      }
+
+
+      if(!Object.prototype.hasOwnProperty.call(template,'widthRule'))return 50000;//widthRule property check
+      if(!isObj(template.widthRule))return 50100;
+      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'basis'))return 50200;
+      if(typeof template.widthRule.basis!=='string')return  50300;
+      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'type'))return 50400;
+      if(typeof template.widthRule.type!=='string')return  50500;
+      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'condition'))return 50600;
+      if(!Array.isArray(template.widthRule.condition))return  50700;
+      if(template.widthRule.basis===''){//rule(A)
+        if(template.widthRule.type!=='')return 50800;
+        if(template.widthRule.condition.length!==0)return 50900;
+      }else{
+        if(template.widthRule.type==='')return 51000;
+        if(!this.isDetailsType(template.widthRule.type))return 51100;
+      }
+      len=template.widthRule.condition.length;
+      if(len>90)return 51200;//规则条例最多90条
+      arr=template.widthRule.condition;
+      wType=template.widthRule.type;
+      for(let i=0;i<len;i++){
+        if(!isObj(arr[i])){
+          return 52000+i;
+        }else {
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 52100+i;
+          if(typeof arr[i].set!=='boolean')return 52200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'width'))return 53000+i;
+          if(typeof arr[i].width!=='number')return 53100+i;
+          if(!this.isInteger(arr[i].width))return 53200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 54000+i;
+          if(typeof arr[i].method!=='string')return 54100+i;
+          if(!this.isAllowMethod(wType,arr[i].method))return 54200+i;
+
+          if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 55000+i;
+          if(!this.isAllowValueTyp(wType,arr[i].value))return 55100+i;
+          if(typeof arr[i].value==='string'){//rule(E)
+            if(arr[i].value.length>100)return 55200+i;
+          }
+        }
+      }
+      return true;
+    },
+    /**
+     * tpCheck
+     */
   },
   computed:{
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    userName(){
+      if(this.$store.state.serverData.socket!==undefined){
+        if(this.$store.state.serverData.socket.userData!==null){
+          return this.$store.state.serverData.socket.userData.user_name;
+        }else {
+          return this.$store.state.serverData.userName
+        }
+      }else {
+        return this.$store.state.serverData.userName;
+      }
+    },
+    userEmail(){
+      if(this.$store.state.serverData.socket!==undefined){
+        if(this.$store.state.serverData.socket.userData!==null){
+          return this.$store.state.serverData.socket.userData.user_email;
+        }else {
+          return this.$store.state.serverData.userEmail
+        }
+      }else {
+        return this.$store.state.serverData.userEmail;
+      }
+    },
+    templateId(){
+      return this.$store.state.templateConfig.useTpId+this.$store.state.templateConfig.useTpName
+    },
     mapHiddenElements(){
       let map=new Map();
       this.hiddenElements.forEach(value=>map.set(value.id,true));
@@ -1004,12 +1467,6 @@ export default {
         }
       }
       return count !== 0;
-    },
-    itemContextmenuPos(){
-      return {
-        left:this.memberItemMenu.x+'px',
-        top:this.memberItemMenu.y+'px',
-      }
     },
     headContextmenuPos(){
       return {
@@ -1029,7 +1486,7 @@ export default {
       const Member=this.extractNumber();
       const length=Member.length;
       for(let i=0;i<length;i++){
-        let member=this.layer.members[Member[i]]
+        let member=this.layer.members[Member[i]];
         if(member===undefined){continue;}
         if(map.has(member.id)){
           hideNum++;
@@ -1048,9 +1505,22 @@ export default {
     },
     resultTemplate(){
       return this.$store.state.templateConfig.resultTemplate;
+    },
+    modify(){
+     try {return this.structure[1].template.modify;}
+     catch (e) {return false;}
     }
   },
   watch:{
+    modify:{
+      handler(){//当本分组模板更新后更新使用中的模板
+        let im='';
+        try{im=this.structure[1].template.id+this.structure[1].template.name;}catch (e) {}
+        if(this.templateId===im){
+          this.reuseTemplate();
+        }
+      }
+    },
     taskEndCode:{
       handler(newValue){
         if(newValue===this.editTpTaskId){//模板编辑任务回执
@@ -1078,15 +1548,11 @@ export default {
             let routeArr=this.route.split('⇉');
             let newName=newValue.name;
             let newStructure=this.structureRenameByGroup(this.layer.structure,routeArr,newName);
-            this.$store.state.serverData.socket.broadcastUpdateLayerData(
-              {
-                id:groupLayerId,
-                structure:newStructure,
-              }
-            );
+            this.$store.state.serverData.socket.broadcastUpdateLayerData({id:groupLayerId, structure:newStructure});
+            this.$store.commit('setCoLogMessage',{text:'已重命名分组',from:'internal:OrangeGroupStructure',type:'tip'});
+            this.closeRename();
           }else{
-            this.$refs.groupListName.innerText=this.oldGroupName;
-            this.$store.commit('setCoLogMessage',{text:'同组同级分组中不能存在同名分组',from:'internal:OrangeGroupStructure',type:'tip'});
+            this.$store.commit('setCoLogMessage',{text:'同级别分组中不能存在同名分组',from:'internal:OrangeGroupStructure',type:'tip'});
           }
         }
       },
@@ -1122,10 +1588,22 @@ export default {
     },
     pickChildGroupResponse:{
       handler(newValue){
-        if(newValue.route===this.route){
-          this.$refs.memberTeamOut.classList.add('memberTeamBoxPicking');
+        if(newValue.route===this.route){//此子分组被选中
+          if(this.level===1) {this.$refs.memberTeamOut.classList.add('memberTeamBoxPickA');}
+          else {this.$refs.memberTeamOut.classList.add('memberTeamBoxPickB');}
+          let stu1=this.structure[1];
+          if(typeof stu1==='object' && !Array.isArray(stu1)){
+            if(Object.prototype.hasOwnProperty.call(stu1,'template')){
+              if(this.tpCheck(stu1.template)){//通过安全检查后应用此模板
+                this.$store.commit('setCoTemplateUse',this.structure[1].template);
+              }else {
+                this.$store.commit('setCoLogMessage',{text:'警告！当前选中分组存在异常，无法应用模板',from:'internal:OrangeGroupStructure',type:'warn'});
+              }
+            }
+          }
         }else {
-          this.$refs.memberTeamOut.classList.remove('memberTeamBoxPicking');
+          if(this.level===1) {this.$refs.memberTeamOut.classList.remove('memberTeamBoxPickA');}
+          else {this.$refs.memberTeamOut.classList.remove('memberTeamBoxPickB');}
         }
       },
       deep:true
@@ -1135,6 +1613,78 @@ export default {
 </script>
 
 <style scoped>
+.renameClose{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 555;
+  top: 0px;
+  left: 0px;
+  background: rgba(0, 0, 0, 0.26);
+}
+.renameY{
+  width: 400px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.84);
+  position: fixed;
+  z-index: 556;
+  border-radius: 15px;
+  left: calc(50% - 200px);
+  top: calc(50% - 50px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.renameY input{
+  width: 300px;
+  height: 30px;
+  font-size: 15px;
+  padding: 2px 4px;
+  outline: none;
+  border: none;
+  border-bottom: 1px dashed #8e8e8e;
+  transition: 0.3s;
+  background: rgba(255, 255, 255, 0.84);
+}
+.renameY input:focus{
+  border-bottom: 1px solid #292929;
+}
+.renameRow{
+  width: 100%;
+  height: 50px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  font-size: 16px;
+}
+button{
+  cursor: pointer;
+  -webkit-appearance: none;
+  width: auto;
+  min-width: 100px;
+  border-radius: 24px;
+  text-align: center;
+  padding: 5px 20px;
+  background-color: #7dc5ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  -webkit-box-shadow: 0 2px 6px -1px rgba(0,0,0,.13);
+  box-shadow: 0 2px 6px -1px rgba(0,0,0,.13);
+  border: none;
+  -webkit-transition: all .3s ease;
+  transition: all .3s ease;
+  outline: 0;
+}
+button:hover{
+  background: #289ffe;
+}
+button:active{
+  background: #ffffff;
+  color: #000000;
+}
 .memberTeamContent{
   width: calc(100% - 19px);
   padding-left: 15px;
@@ -1146,11 +1696,13 @@ export default {
 }
 .groupListName{
   outline: none;
+  user-select: none;
 }
 .groupPicked{
   color:#4d90fe;
 }
 .menuListBox{
+  user-select: none;
   width: 100%;
   height: auto;
   min-height: 60px;
@@ -1240,9 +1792,13 @@ export default {
 .memberKeyInfo:hover .memberRightEyeA{
   opacity: 1;
 }
-.memberTeamBoxPicking{
+.memberTeamBoxPickA{
   border-left: 2px solid #4d90fe;
-  width: calc(100% - 17px);/*17px含2px边框和15px padding*/
+  width: calc(100% - 2px);/*含2px边框和*/
+}
+.memberTeamBoxPickB{
+  border-left: 2px solid #4d90fe;
+  width: calc(100% - 17px);/*含2px边框和15px padding*/
 }
 .memberTeamNameL{
   width: auto;
@@ -1279,6 +1835,7 @@ export default {
   flex-direction: row;
 }
 .expandMoreL{
+  user-select: none;
   width: 25px;
   height: 25px;
   display: -webkit-box;

@@ -1,16 +1,16 @@
 <template>
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
     <div class="controlButtonBox"><!--添加按钮-->
-      <div @click="addInterestPointStart()" class="ButtonOut">
+      <div @click="pointButton()" class="ButtonOut">
         <point :custom="'fill:'+Url1Color"></point>
       </div>
-      <div @click="addRouteLineStart()" class="ButtonOut">
+      <div @click="lineButton()" class="ButtonOut">
         <segment-line :custom="'fill:'+Url2Color"></segment-line>
       </div>
-      <div @click="addAreaStart()" class="ButtonOut">
+      <div @click="areaButton()" class="ButtonOut">
         <region :custom="'fill:'+Url3Color"></region>
       </div>
-      <div @click="addCurveStart()" class="ButtonOut">
+      <div @click="curveButton()" class="ButtonOut">
         <segment-curve :custom="'fill:'+Url4Color"></segment-curve>
       </div>
     </div>
@@ -205,7 +205,34 @@ export default {
       this.addLineClock=false;//4.停用锁止
       this.theConfig.addLinePos=[];//清除点击位置缓存
     },
-
+    curveButton(){
+      if(this.enableCurve){
+        this.addCurveStart();
+      }else{
+        this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“曲线”',from:'internal:LayerControl',type:'tip'});
+      }
+    },
+    areaButton(){//右侧“区域”按钮事件
+      if(this.enableArea){
+        this.addAreaStart();
+      }else{
+        this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“区域”',from:'internal:LayerControl',type:'tip'});
+      }
+    },
+    lineButton(){//右侧“线段”按钮事件
+      if(this.enableLine){
+        this.addRouteLineStart();
+      }else{
+        this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“线段”',from:'internal:LayerControl',type:'tip'});
+      }
+    },
+    pointButton(){//右侧“点”按钮事件
+      if(this.enablePoint){
+        this.addInterestPointStart();
+      }else{
+        this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“点”',from:'internal:LayerControl',type:'tip'});
+      }
+    },
     addInterestPointStart(){//添加关注点
       if(!this.isAddPoint){
         this.$store.commit('suppressPickSelect',true);
@@ -326,15 +353,35 @@ export default {
             break;
           }
           case '1':{
+            if(!this.enablePoint){
+              this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“点”',from:'internal:LayerControl',type:'tip'});
+              break;
+            }
             this.addInterestPointStart();
             break;
           }
           case '2':{
+            if(!this.enableLine){
+              this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“线段”',from:'internal:LayerControl',type:'tip'});
+              break;
+            }
             this.addRouteLineStart();
             break;
           }
           case '3':{
+            if(!this.enableArea){
+              this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“区域”',from:'internal:LayerControl',type:'tip'});
+              break;
+            }
             this.addAreaStart();
+            break;
+          }
+          case '4':{
+            if(!this.enableCurve){
+              this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“曲线”',from:'internal:LayerControl',type:'tip'});
+              break;
+            }
+            this.addCurveStart();
             break;
           }
           case ' ':{
@@ -494,6 +541,21 @@ export default {
     },
   },
   computed:{
+    templateId(){
+      return this.$store.state.templateConfig.useTpId+this.$store.state.templateConfig.useTpName
+    },
+    enablePoint(){
+      return this.$store.state.templateConfig.useTypeRule.point;
+    },
+    enableLine(){
+      return this.$store.state.templateConfig.useTypeRule.line;
+    },
+    enableArea(){
+      return this.$store.state.templateConfig.useTypeRule.area;
+    },
+    enableCurve(){
+      return this.$store.state.templateConfig.useTypeRule.curve;
+    },
     zoomIng(){
       return this.$store.state.cameraConfig.zoomIng;
     },
@@ -550,6 +612,62 @@ export default {
     },
   },
   watch:{
+    enablePoint:{
+      handler(value){
+        if(!value){
+          if(this.buttonA){
+            this.addInterestPointStart();//取消正在进行的点添加
+          }
+          this.Url1Color='#919191';//灰度右侧按钮颜色
+        }else {
+          if(this.Url1Color==='#919191'){//如果右侧按钮是灰度则还原为黑色
+            this.Url1Color='#000000';
+          }
+        }
+      }
+    },
+    enableLine:{
+      handler(value){
+        if(!value){
+          if(this.buttonB){
+            this.addRouteLineStart();
+          }
+          this.Url2Color='#919191';
+        }else {
+          if(this.Url2Color==='#919191'){
+            this.Url2Color='#000000';
+          }
+        }
+      }
+    },
+    enableArea:{
+      handler(value){
+        if(!value){
+          if(this.buttonC){
+            this.addAreaStart();
+          }
+          this.Url3Color='#919191';
+        }else {
+          if(this.Url3Color==='#919191'){
+            this.Url3Color='#000000';
+          }
+        }
+      }
+    },
+    enableCurve:{
+      handler(value){
+        if(!value){
+          if(this.buttonD){
+            this.addCurveStart();
+          }
+          this.Url4Color='#919191';
+        }else {
+          if(this.Url4Color==='#919191'){
+            this.Url4Color='#000000';
+          }
+        }
+      }
+    },
     zoomIng:{
       handler(newValue){
         if(newValue){

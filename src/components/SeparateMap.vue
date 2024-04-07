@@ -1,16 +1,17 @@
 <template>
 <div id="SeparateMap" v-if="mapSeparateState">
-<!--  <layer-background v-if="this.$store.state.baseMapConfig.enableBaseMap"></layer-background>&lt;!&ndash;背景层&ndash;&gt;-->
-  <layer-realistic-base-map v-if="this.$store.state.baseMapConfig.enableBaseMap && this.$store.state.baseMapConfig.baseMapType==='realistic'"></layer-realistic-base-map><!--背景层-->
-  <layer-fictitious-base-map v-if="this.$store.state.baseMapConfig.enableBaseMap && this.$store.state.baseMapConfig.baseMapType==='fictitious'"></layer-fictitious-base-map><!--背景层-->
-  <layer-user :server-key="serverKey"></layer-user><!--用户层-->
-  <layer-data></layer-data><!--数据层-->
-  <layer-message></layer-message><!--消息层-->
-<!--  <layer-ruler></layer-ruler>--><!--标尺层-->
-  <layer-control></layer-control><!--控制层-->
-  <layer-element-panel></layer-element-panel><!--元素面板层-->
-  <layer-details-panel></layer-details-panel><!--属性面板层-->
-  <layer-console></layer-console><!--调试面板-->
+<!--  <layer-background v-if="this.$store.state.baseMapConfig.enableBaseMap"/>&lt;!&ndash;背景层&ndash;&gt;-->
+  <layer-realistic-base-map :opacity="loading?0:1" v-if="useBaseMap"/><!--背景层-->
+  <layer-fictitious-base-map :opacity="loading?0:1" v-if="!useBaseMap"/><!--背景层-->
+  <layer-user :server-key="serverKey" v-show="!loading"/><!--用户层-->
+  <layer-data v-show="!loading"/><!--数据层-->
+  <layer-message v-show="!loading"/><!--消息层-->
+<!--  <layer-ruler/>标尺层-->
+  <layer-control v-show="!loading"/><!--控制层-->
+  <layer-element-panel v-show="!loading"/><!--元素面板层-->
+  <layer-details-panel v-show="!loading"/><!--属性面板层-->
+  <layer-console v-show="!loading"/><!--调试面板-->
+<!--  <pomelo-loading :view="loading"/>&lt;!&ndash;加载界面&ndash;&gt;-->
 </div>
 </template>
 
@@ -26,11 +27,13 @@ import LayerConsole from "./LayerConsole";
 import LayerUser from "./LayerUser";
 import LayerDetailsPanel from "./LayerDetailsPanel";
 import LayerMessage from "./LayerMessage";
+import PomeloLoading from "./PomeloLoading";
 export default {
   name: "SeparateMap",
   components:{
     LayerData,LayerRuler,LayerBackground,LayerControl,LayerElementPanel,LayerConsole,
     LayerUser,LayerDetailsPanel,LayerMessage,LayerRealisticBaseMap,LayerFictitiousBaseMap,
+    PomeloLoading,
   },
   props:{
     serverKey:{
@@ -42,11 +45,13 @@ export default {
     return {
       MapServerAddress:null,
       tempLinked:false,
-      nowLinkClock:false
+      nowLinkClock:false,
+      loading:false,//加载中状态
     }
   },
   mounted() {
     this.startSetting();
+    //this.changeLoad();//开发时关闭加载页面
   },
   methods:{
     startSetting(){//初始化
@@ -83,12 +88,12 @@ export default {
           this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(Address);//正式连接
           this.$store.state.pageConfig.mapSeparateState=true;//展开地图主体
           this.$store.state.pageConfig.homeSeparateState=false;//隐藏起始页
-        }
+        };
         tempLink.onerror=()=>{
           if(!this.tempLinked){
             this.$store.commit('setCoLogMessage',{text:'服务器连接失败',from:'internal:SeparateMap',type:'warn'});
           }
-        }
+        };
         tempLink.onclose=()=>{
           if(!this.tempLinked){
             this.$store.commit('setCoLogMessage',{text:'服务器已关闭连接',from:'internal:SeparateMap',type:'warn'});
@@ -127,7 +132,6 @@ export default {
                     if(jsonData.data.hasOwnProperty('url')){
                       if(this.isValidUrl(jsonData.data.url)){
                         Address=jsonData.data.url;
-
                         let tempLink=new WebSocket(Address);//尝试连接
                         tempLink.onopen=()=>{
                           this.tempLinked=true;
@@ -135,29 +139,43 @@ export default {
                           this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(Address);//正式连接
                           this.$store.state.pageConfig.mapSeparateState=true;//展开地图主体
                           this.$store.state.pageConfig.homeSeparateState=false;//隐藏起始页
-                        }
+                        };
                         tempLink.onerror=()=>{
                           if(!this.tempLinked){
                             this.$store.commit('setCoLogMessage',{text:'服务器连接失败',from:'internal:SeparateMap',type:'warn'});
                           }
-                        }
+                        };
                         tempLink.onclose=()=>{
                           if(!this.tempLinked){
                             this.$store.commit('setCoLogMessage',{text:'服务器已关闭连接',from:'internal:SeparateMap',type:'warn'});
                           }
-                        }
-
+                        };
                       }
                     }
                   }
                 }
               }
             }
-          }
+          };
           xhr.open('POST',makeUp ,true);
           xhr.send(jsonParams);//发送请求
         }
       }
+    },
+    changeLoad(){//切换加载状态
+      setTimeout(
+        ()=>{
+          if(this.$store.state.serverData.socket!==undefined){
+            if(this.$store.state.serverData.socket.loadData===true && this.$store.state.serverData.socket.loadLayer===true){
+              this.loading=false;
+            }else {
+              this.changeLoad();
+            }
+          }else {//2秒后再次检查是否加载完毕
+            this.changeLoad();
+          }
+        }
+      ,2000);
     },
     isValidUrl(url){//检测url是否正常正常则返回true
       try {
@@ -289,6 +307,9 @@ export default {
     }
   },
   computed:{
+    useBaseMap(){//使用虚拟地图还是现实地图
+      return this.$store.state.baseMapConfig.enableBaseMap && this.$store.state.baseMapConfig.baseMapType==='realistic';
+    },
     mapSeparateState(){
       return this.$store.state.pageConfig.mapSeparateState;
     },

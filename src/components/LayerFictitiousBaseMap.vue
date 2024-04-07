@@ -1,12 +1,15 @@
 <template>
-<div class="LayerFictitiousBaseMap">
+<div class="LayerFictitiousBaseMap" :style="'opacity:'+opacity">
 
 </div>
 </template>
 
 <script>
 export default {
-  name: "LayerFictitiousBaseMap"
+  name: "LayerFictitiousBaseMap",
+  props:{
+    opacity:{type:Number,default:0,required:false}
+  },
 }
 </script>
 

@@ -452,6 +452,35 @@ export default {
       this.adjustOrderTemplate.code=template.code;
       this.adjustOrderTemplate.id=template.id;
     },
+    getFormattedDate() {//获取模板时间
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const date = new Date();
+      const day = days[date.getDay()];
+      const month = months[date.getMonth()];
+      const dayOfMonth = date.getDate();
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      const timeZoneOffset = -date.getTimezoneOffset();// 获取时区偏移量，转换为小时
+      const offsetSign = timeZoneOffset >= 0 ? '+' : '-';
+      const offsetHours = String(Math.floor(Math.abs(timeZoneOffset) / 60)).padStart(2, '0');
+      const offsetMinutes = String(Math.abs(timeZoneOffset) % 60).padStart(2, '0');
+      const timeZone = `GMT${offsetSign}${offsetHours}${offsetMinutes}`;
+      return `${day} ${month} ${dayOfMonth.toString().padStart(2, '0')} ${year} ${hours}:${minutes}:${seconds} ${timeZone}`;
+    },
+    createTemplateId(){//创建模板ID
+      const validChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const length = Math.floor(Math.random() * 7) + 8;//先生成一个[0,7)的随机数，然后加上8
+      let array = new Uint8Array(length);//输出长度为随机的8-14位
+      window.crypto.getRandomValues(array);
+      let result = '';
+      array.forEach((byte) => {
+        result += validChars.charAt(byte % validChars.length);
+      });
+      return result;
+    },
     addNewGroupLayer(){//添加新的分组图层：1.构建基础结构，2：上传
       function randomNumber() {
         const min = 100000;
@@ -459,11 +488,28 @@ export default {
         return Math.floor(Math.random() * (max - min + 1)) + min;
       }
       let newLayerName='layer-'+randomNumber();
+      let time=this.getFormattedDate();
+      let ID=this.createTemplateId();
+      let creator=this.userName+'('+this.userEmail+')';
       let defaultGroupLayer={
         members:{'0':0},//不能为空对象
         structure:[
           newLayerName,
-          {template:null}
+          {
+            template:{//初始给定空模板对象
+              id:ID,
+              name:'template',
+              creator,
+              modify:time,
+              locked:false,
+              explain:'none',
+              typeRule:{point:true, line:true, area:true, curve:true},
+              detailsRule:[{set:false, name:'name', default:'unknown', type:'text', length:100, empty:true}],
+              colorRule:{basis:'', type:'', condition:[]},
+              widthRule:{basis:'', type:'', condition:[]
+              }
+            }
+          }
         ]
       };
       this.$store.state.serverData.socket.broadcastCreateGroupLayer(defaultGroupLayer);
@@ -833,6 +879,28 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    userName(){
+      if(this.$store.state.serverData.socket!==undefined){
+        if(this.$store.state.serverData.socket.userData!==null){
+          return this.$store.state.serverData.socket.userData.user_name;
+        }else {
+          return this.$store.state.serverData.userName
+        }
+      }else {
+        return this.$store.state.serverData.userName;
+      }
+    },
+    userEmail(){
+      if(this.$store.state.serverData.socket!==undefined){
+        if(this.$store.state.serverData.socket.userData!==null){
+          return this.$store.state.serverData.socket.userData.user_email;
+        }else {
+          return this.$store.state.serverData.userEmail
+        }
+      }else {
+        return this.$store.state.serverData.userEmail;
+      }
+    },
     mapHiddenElements(){
       let map=new Map();
       this.hiddenElements.forEach(value=>map.set(value.id,true));
@@ -1215,6 +1283,7 @@ export default {
   box-shadow: #c5c5c5 0px 0px 6px;
 }
 .menuListBox{
+  user-select: none;
   width: 100%;
   height: auto;
   padding: 5px 0px;

@@ -24,39 +24,45 @@
                 模板简介：
               </div>
               <div class="textH2">
-                模板，是分组图层内置的一个用于规范分组内元素成员的基本规则或条例。使用模板可以限制分组内可添加的元素类型，规定成员的属性名称，或者依据成员的某项属性来自动设置其颜色、宽度等参数。为便于理解，我们会在之后的文档中，逐一介绍并示范模板的各项功能：包括模板状态更改、设置基本类型、设置属性规则、设置颜色规则、设置宽度规则。<span class="textH4">我们会在需要重点关注的地方使用蓝色字体以显著。</span>
+                模板，是分组图层内置的一个用于规范分组内元素成员的基本规则或条例。使用模板可以限制分组内可添加的元素类型，规定成员的属性名称，或者依据成员的某项属性来自动设置其颜色、宽度等参数。为便于理解，我们会在之后的文档中，逐一介绍模板的各项功能与使用方法：包括模板状态、模板锁、设置基本类型、设置属性规则、设置颜色规则、设置宽度规则。<span class="textH4">我们会在需要重点关注的地方使用红色字体以显著。</span>
               </div>
               <div class="textH3">
-                模板状态更改：
+                模板状态：
               </div>
               <div class="textH2">
-                模板，是分组图层内置的一个用于规范分组内元素成员的基本规则或条例。使用模板可以限制分组内可添加的元素类型，规定成员的属性名称，或者依据成员的某项属性来自动设置其颜色、宽度等参数。为便于理解，我们会在之后的文档中，逐一介绍并示范模板的各项功能：包括模板状态更改、设置基本类型、设置属性规则、设置颜色规则、设置宽度规则。<span class="textH4">我们会在需要重点关注的地方使用蓝色字体以显著。</span>
+                模板状态，是指该分组的模板的健康状态，有以下几种状态：1.正常，2.异常，3.空的，其中第3种状态是指此分组的模板不存在或为null值。如果模板状态为异常，则此分组模板无法正常运作，需要进行修复。<span class="textH4">您可以依次点击“模板状态”->“当前状态”->“(点击修复)”进行模板修复。</span>
+              </div>
+              <div class="textH3">
+                模板锁：
+              </div>
+              <div class="textH2">
+                模板锁，是用于防止模板被误修改的一种状态，当模板锁处于锁定状态时，所有的规则将无法编辑，也无法上传。<span class="textH4">您可以依次点击“模板状态”->“锁定状态”->“(点击锁定)”进行锁定或解除锁定。</span>
               </div>
               <div class="textH3">
                 设置基本类型：
               </div>
               <div class="textH2">
-                模板，是分组图层内置的一个用于规范分组内元素成员的基本规则或条例。使用模板可以限制分组内可添加的元素类型，规定成员的属性名称，或者依据成员的某项属性来自动设置其颜色、宽度等参数。为便于理解，我们会在之后的文档中，逐一介绍并示范模板的各项功能：包括模板状态更改、设置基本类型、设置属性规则、设置颜色规则、设置宽度规则。<span class="textH4">我们会在需要重点关注的地方使用蓝色字体以显著。</span>
+
               </div>
             </div>
             <div class="Navigation">
-              <div class="NavigationTi">文档导航栏</div>
+              <div class="NavigationTi">文档导航</div>
               <div class="NavigationLi">模板简介</div>
-              <div class="NavigationLi">模板状态更改</div>
-              <div class="NavigationLi">设置基本类型</div>
+              <div class="NavigationLi">模板状态</div>
+              <div class="NavigationLi">模板锁</div>
               <div class="NavigationLi">设置基本类型</div>
             </div>
           </div>
           <div class="templateNifty" v-if="templateNifty===2">
             <div class="TContent" >
               <div class="statusList cursorDefault">
-                <span class="ListLeft">模板状态</span>
+                <span class="ListLeft">当前状态</span>
                 <span class="ListRight" style="cursor:pointer" @click.stop="tpManualCheck()">{{templateStatus}}</span>
               </div>
               <div class="statusList cursorDefault">
                 <span class="ListLeft">锁定状态</span>
-                <span class="ListRight" style="cursor:pointer" @click.stop="editTemplate.locked=true" v-show="!editTemplate.locked">未锁定(点击锁定)</span>
-                <span class="ListRight" style="cursor:pointer" @click.stop="editTemplate.locked=false" v-show="editTemplate.locked">已锁定(点击解锁)</span>
+                <span class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="!editTemplate.locked">未锁定(点击锁定)</span>
+                <span class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="editTemplate.locked">已锁定(点击解锁)</span>
               </div>
               <div class="statusList">
                 <span class="ListLeft cursorDefault">模板名称</span>
@@ -113,7 +119,7 @@
             <div class="TContent">
               <div class="setList">
                 <div class="setTitle">
-                  设置模板类型
+                  快速应用模板
                 </div>
                 <div class="setExplain">
                   点击使用本地或在线的模板快速的设置您的模板，也可以依据这些模板进行细节的调整。
@@ -247,7 +253,7 @@
                       </div>
                     </div>
                     <div class="SheetCo4">
-                      <input class="SheetInput" type="number" v-model="item.length" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <input class="SheetInput" type="number" v-model.number="item.length" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                     <div class="SheetCo5">
                       <input type="checkbox" :checked="item.empty" v-model="item.empty" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
@@ -314,12 +320,12 @@
                     <div class="SheetCo7">
                       <div class="lopCo3" v-show="item.set">
                         <div class="listCo3">
-                          <div class="itemCo3" v-for="(nn,oo) in allowType2Color" :class="item.type===oo?'pickCo3':''" @click.stop="()=>{item.type=oo;item.set=false}">{{nn}}</div>
+                          <div class="itemCo3" v-for="(nn,oo) in allowType2Color" :class="item.method===oo?'pickCo3':''" @click.stop="()=>{item.method=oo;item.set=false}">{{nn}}</div>
                           <div class="itemCo3" style="color:#1ba903" @click.stop="()=>{item.set=false}">返回</div>
                         </div>
                       </div>
                       <div class="inputCo3" v-show="!item.set">
-                        {{item.type}}
+                        {{item.method}}
                       </div>
                       <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
                         <dropdown-button></dropdown-button>
@@ -402,12 +408,12 @@
                     <div class="SheetCo7">
                       <div class="lopCo3" v-show="item.set">
                         <div class="listCo3">
-                          <div class="itemCo3" v-for="(nn,oo) in allowType2Width" :class="item.type===oo?'pickCo3':''" @click.stop="()=>{item.type=oo;item.set=false}">{{nn}}</div>
+                          <div class="itemCo3" v-for="(nn,oo) in allowType2Width" :class="item.method===oo?'pickCo3':''" @click.stop="()=>{item.method=oo;item.set=false}">{{nn}}</div>
                           <div class="itemCo3" style="color:#1ba903" @click.stop="()=>{item.set=false}">返回</div>
                         </div>
                       </div>
                       <div class="inputCo3" v-show="!item.set">
-                        {{item.type}}
+                        {{item.method}}
                       </div>
                       <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
                         <dropdown-button></dropdown-button>
@@ -420,7 +426,7 @@
                       <input class="SheetInput" type="text" v-model="item.value" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                     <div class="SheetCo9">
-                      <input class="inpCo9" type="number" min="2" max="15" v-model="item.width" :disabled="editTemplate.locked"/>
+                      <input class="inpCo9" type="number" min="2" max="15" v-model.number="item.width" :disabled="editTemplate.locked"/>
                       <div class="widCo9">
                         <span  @click="()=>{if(!editTemplate.locked)item.width=2}">2</span>
                         <span  @click="()=>{if(!editTemplate.locked)item.width=4}">4</span>
@@ -452,6 +458,12 @@
     <div class="templateMenuClose"  @click.stop="closeAndCancel()"  v-if="templateShow">
 
     </div>
+    <pomelo-confirm
+      :view="firmView"
+      :plan="firmPlan"
+      :message="firmMessage"
+      @confirm="handleConfirm">
+    </pomelo-confirm>
   </div>
 </template>
 
@@ -460,10 +472,11 @@ import ArrowDown from "./svgValidIcons/arrowDown";
 import ArrowUp from "./svgValidIcons/arrowUp";
 import DropdownButton from "./svgValidIcons/dropdownButton";
 import TrashCan from "./svgValidIcons/trashCan";
+import PomeloConfirm from "./PomeloConfirm";
 export default {
   name: "BananaTemplateEdit",
   components:{
-    DropdownButton,ArrowUp,ArrowDown,TrashCan,
+    DropdownButton,ArrowUp,ArrowDown,TrashCan,PomeloConfirm
   },
   data(){
     return{
@@ -481,15 +494,15 @@ export default {
         '#cccccc','#666666',
         '#333333','#000000'],
       templateShow:false,//模板设置显示
-      templateNifty:2,//模板左侧显示页序号
+      templateNifty:1,//模板左侧显示页序号
       niftyList:[
         '模板使用方法','模板状态','设置基本类型',
         '设置属性规则', '设置颜色规则','设置宽度规则'
       ],
       localTemplate:[//本地模板
         {
-          use:true,
-          id:'000000',
+          use:false,
+          id:'100000',
           name:'空的模板',
           creator:'Emilia-t',
           modify:'Wed Mar 06 2024 07:50:50 GMT+0800',
@@ -501,6 +514,22 @@ export default {
           viewBoxShadow:'0px 0px 5px #b6b6b6',
           viewBorder:'1px solid #e1e1e1',
           viewRadius:'2px',
+          typeRule:{point:true,line:true,area:true,curve:true},//模板规则
+          detailsRule:[
+            {set:false,name:'name',default:'unknown',type:'text',length:100,empty:true}
+          ],
+          colorRule:{
+            basis:'',type:'',
+            condition:[
+
+            ]
+          },
+          widthRule:{
+            basis:'',type:'',
+            condition:[
+
+            ]
+          }
         },
         {
           use:false,
@@ -516,11 +545,36 @@ export default {
           viewBoxShadow:'0px 0px 5px #cffbff',
           viewBorder:'1px solid #e1e1e1',
           viewRadius:'2px',
+          typeRule:{point:true,line:true,area:true,curve:true},//模板规则
+          detailsRule:[
+            {set:false,name:'name',default:'unknown',type:'text',length:100,empty:true},
+            {set:false,name:'grade',default:'unknown',type:'text',length:100,empty:true},
+            {set:false,name:'region',default:'unknown',type:'text',length:100,empty:true},
+            {set:false,name:'address',default:'unknown',type:'text',length:100,empty:true},
+            {set:false,name:'telephone',default:'unknown',type:'text',length:100,empty:true}
+          ],
+          colorRule:{
+            basis:'grade',
+            type:'text',
+            condition:[
+              {set:false, method: 'equ', value: 'demo', color: '#009966'},
+              {set: false, method: 'equ', value: 'stress', color: '#ffcc33'},
+              {set: false, method: 'equ', value: 'initial', color: '#ff6666'}
+            ]
+          },
+          widthRule:{
+            basis:'region',
+            type:'text',
+            condition: [
+              {set: false, method: 'equ', value: 'inside', width: 6},
+              {set: false, method: 'equ', value: 'inside', width: 2}
+            ]
+          }
         },
         {
           use:false,
           id:'222222',
-          name:'公共园区模板',
+          name:'公共园区模板(next_)',
           creator:'Emilia-t',
           modify:'Wed Mar 06 2024 07:50:50 GMT+0800',
           locked:true,
@@ -601,73 +655,13 @@ export default {
       switchDelMod1:false,
       switchDelMod2:false,
       switchDelMod3:false,
+      firmView:false,//确认菜单
+      firmPlan:{},
+      firmMessage:'',
     }
   },
   mounted() {
-    let testTemplateObj={
-      id:'123456',
-      name:'test',
-      creator:'minxi',
-      modify:'2023',
-      locked:false,
-      explain:'test',
-      typeRule:{
-        point:true,
-        line:false,
-        area:false,
-        curve:false
-      },
-      detailsRule:[
-        {
-          set:false,
-          name:'name',
-          default:'unknown',
-          type:'text',
-          length:100,
-          empty:true
-        },
-        {
-          set:false,
-          name:'test',
-          default:10,
-          type:'score',
-          length:10,
-          empty:true
-        },
-        {
-          set:false,
-          name:'testd',
-          default:10,
-          type:'score',
-          length:10,
-          empty:true
-        }
-      ],
-      colorRule:{
-        basis:'name',
-        type:'text',
-        condition:[
-          {
-            set:false,
-            color:'#ffffff',
-            method:'equ',
-            value:'test'
-          }
-        ]
-      },
-      widthRule:{
-        basis:'name',
-        type:'text',
-        condition:[
-          {
-            set:false,
-            width:8,
-            method:'equ',
-            value:'test'
-          }
-        ]
-      }
-    };
+
   },
   methods:{
     niftyBack(){//上一步骤
@@ -678,7 +672,68 @@ export default {
       if(this.templateNifty===6)return false;
       this.templateNifty++
     },
-    getFormattedDate() {
+    handleConfirm(plan){//一些需要再次确认才能执行的操作
+      if(!plan.state){//取消执行
+        this.firmView=false;//关闭确认菜单
+        return false;
+      }
+      this.firmView=false;//关闭确认菜单
+      let method=plan.method;
+      let value=plan.value;
+      switch(method){
+        case 'useLocalTemplate':{//使用本地模板覆盖之前的模板
+          this.localTemplate.forEach((item)=>{
+            item.use=item.id===value;
+            if(item.id===value){
+              item.use=true;
+              this.editTemplate.name=item.name;
+              this.editTemplate.locked=item.locked;
+              this.editTemplate.explain=item.explain;
+              this.editTemplate.typeRule=item.typeRule;
+              this.editTemplate.detailsRule=item.detailsRule;
+              this.editTemplate.colorRule=item.colorRule;
+              this.editTemplate.widthRule=item.widthRule;
+            }else {
+              item.use=false;
+            }
+          });
+          break;
+        }
+        case 'submitEdit':{
+          let creator=this.userName+'('+this.userEmail+')';
+          let time=this.getFormattedDate();
+          if(this.editTemplate.creator==='' || this.editTemplate.creator===null){
+            this.editTemplate.creator=creator;
+          }
+          this.editTemplate.modify=time;
+          let template=this.editTemplate;
+          let ckCode=this.tpCheck(template);
+          if(ckCode!==true){
+            let text='';
+            text=this.codeExplain(ckCode,false);
+            this.$store.commit('setCoLogMessage',{text:text,from:'internal:BananaTemplateEdit',type:'tip'});
+            return false;
+          }else {
+            let product={
+              template,
+              code:this.taskCode
+            };
+            this.$store.commit('setCoTemplateSubmit',product);
+            this.$store.commit('setCoLogMessage',{text:'模板更新已提交',from:'internal:BananaTemplateEdit',type:'tip'});
+            this.templateShow=false;
+            this.resetUI();
+          }
+          break;
+        }
+      }
+    },
+    resetUI(){//还原部分UI界面
+      this.templateNifty=1;//还原模板设置页面左侧的按钮
+      for(let i=0;i<this.localTemplate.length;i++){//还原快速应用模板的界面
+        this.localTemplate[i].use=false;
+      }
+    },
+    getFormattedDate() {//获取模板时间
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const date = new Date();
@@ -696,28 +751,19 @@ export default {
       const timeZone = `GMT${offsetSign}${offsetHours}${offsetMinutes}`;
       return `${day} ${month} ${dayOfMonth.toString().padStart(2, '0')} ${year} ${hours}:${minutes}:${seconds} ${timeZone}`;
     },
+    lockUnlock(){
+      this.editTemplate.locked=!this.editTemplate.locked;
+    },
     submitEdit(){
-      let creator=this.userName+'('+this.userEmail+')';
-      let time=this.getFormattedDate();
-      if(this.editTemplate.creator==='' || this.editTemplate.creator===null){
-        this.editTemplate.creator=creator;
-      }
-      this.editTemplate.modify=time;
-      let template=this.editTemplate;
-      let ckCode=this.tpCheck(template);
-      if(ckCode!==true){
-        let text='';
-        text=this.codeExplain(ckCode,false);
-        this.$store.commit('setCoLogMessage',{text:text,from:'internal:BananaTemplateEdit',type:'tip'});
+      let s1=JSON.stringify(this.editTemplate);
+      let s2=JSON.stringify(this.EditBackup);
+      if(s1===s2){
+        this.$store.commit('setCoLogMessage',{text:'没有任何变动',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
-      }else {
-        let product={
-          template,
-          code:this.taskCode
-        };
-        this.$store.commit('setCoTemplateSubmit',product);
-        this.$store.commit('setCoLogMessage',{text:'模板编辑已提交',from:'internal:BananaTemplateEdit',type:'tip'});
       }
+      this.firmPlan={method:'submitEdit',value:null};
+      this.firmMessage='即将更新模板，是否要继续？';
+      this.firmView=true;//呼出确认菜单
     },
     changeWidthRuleBasis(){
       if(this.editTemplate.widthRule.basis===null
@@ -801,6 +847,7 @@ export default {
     },
     closeAndCancel(){
       this.templateShow=false;
+      this.resetUI();
       this.$store.commit('setCoTemplateCancel',this.taskCode);
     },
     widthUp(index){
@@ -870,9 +917,9 @@ export default {
     },
     useLocalTemplate(id){//选择本地的模板
       if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
-      this.localTemplate.forEach((item)=>{
-        item.use=item.id===id;
-      });
+      this.firmPlan={method:'useLocalTemplate',value:id};
+      this.firmMessage='即将覆盖当前编辑，是否要继续？';
+      this.firmView=true;//呼出确认菜单
     },
     allowType(type){//更改模板
       if(this.editTemplate.locked){
@@ -886,7 +933,7 @@ export default {
           }
         }
       }
-      if(ct<=1){
+      if(ct<=1 && this.editTemplate.typeRule[type]===true){
         this.alertTip('至少需要允许一种');return false;
       }
       this.editTemplate.typeRule[type]=!this.editTemplate.typeRule[type];
@@ -961,10 +1008,10 @@ export default {
       obj.color='#000000';
       this.editTemplate.colorRule.condition.push(obj);
     },
-    createTemplateId(){
+    createTemplateId(){//创建模板ID
       const validChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const length = Math.floor(Math.random() * 7) + 6;
-      let array = new Uint8Array(length);//输出长度为随机的6-12位
+      const length = Math.floor(Math.random() * 7) + 8;//先生成一个[0,7)的随机数，然后加上8
+      let array = new Uint8Array(length);//输出长度为随机的8-14位
       window.crypto.getRandomValues(array);
       let result = '';
       array.forEach((byte) => {
@@ -985,16 +1032,23 @@ export default {
         borderRadius:obj.viewRadius
       }
     },
+    tpRepair(){
+      this.$store.commit('setCoLogMessage',{text:'暂不支持修复',from:'internal:BananaTemplateEdit',type:'warn'});
+    },
     tpManualCheck(){
       let checkCode=this.tpCheck(this.editTemplate);
       if(checkCode!==true){
         let text='';
         text=this.codeExplain(checkCode);
-        this.$store.commit('setCoLogMessage',{text:'检查结果：'+text,from:'internal:BananaTemplateEdit',type:'warn'});
+        this.$store.commit('setCoLogMessage',{text:'模板存在异常：'+text,from:'internal:BananaTemplateEdit',type:'warn'});
+        this.tpRepair();
       }else {
-        this.$store.commit('setCoLogMessage',{text:'检查结果：正常',from:'internal:BananaTemplateEdit',type:'tip'});
+        this.$store.commit('setCoLogMessage',{text:'模板检查结果：正常',from:'internal:BananaTemplateEdit',type:'tip'});
       }
     },
+    /**
+     * tpCheck
+    */
     isInteger(value){//判断一个数字是否为正整数
       return Number.isInteger(value) && value>0;
     },
@@ -1452,11 +1506,15 @@ export default {
       }
       return true;
     },
+    /**
+     * tpCheck
+     */
   },
   computed:{
     templateStatus(){
-      if(this.editTemplate===null)return '空的模板';
-      return '正常(点击检查)';
+      if(this.editTemplate===null)return '空的';
+      if(this.tpCheck(this.editTemplate)===true)return '正常(点击检查)';
+      return '异常(点击修复)';
     },
     userName(){
       if(this.$store.state.serverData.socket!==undefined){
@@ -1520,7 +1578,7 @@ export default {
       let str=[];
       let len=this.editTemplate.widthRule.condition.length;
       for(let i=0;i<len;i++){
-        let sym=this.editTemplate.widthRule.condition[i].type;
+        let sym=this.editTemplate.widthRule.condition[i].method;
         let val=this.editTemplate.widthRule.condition[i].value;
         let width=this.editTemplate.widthRule.condition[i].width;
         switch (sym){
@@ -1576,7 +1634,7 @@ export default {
       }
       return str;
     },
-    overviewColor(){
+    overviewColor(){//规则一览中的颜色规则
       let basis=this.editTemplate.colorRule.basis;
       if(basis===null || basis===''){
         return '无';
@@ -1584,7 +1642,7 @@ export default {
       let str=[];
       let len=this.editTemplate.colorRule.condition.length;
       for(let i=0;i<len;i++){
-        let sym=this.editTemplate.colorRule.condition[i].type;
+        let sym=this.editTemplate.colorRule.condition[i].method;
         let val=this.editTemplate.colorRule.condition[i].value;
         let color=this.editTemplate.colorRule.condition[i].color;
         switch (sym){
@@ -1640,7 +1698,7 @@ export default {
       }
       return str;
     },
-    allowType2Width(){
+    allowType2Width(){//传入type类型获取可用的method及其字面意思
       switch (this.editTemplate.widthRule.type) {
         case 'text':{
           return {'equ':'等于','nequ':'不等于'};
@@ -1713,6 +1771,12 @@ export default {
      */
     EditTemplate(){
       return this.$store.state.templateConfig.editTemplate;
+    },
+    /**
+     * @return {object|null}
+     */
+    EditBackup(){
+      return this.$store.state.templateConfig.editBackup;
     },
     /**
      * @return {object|null}
@@ -1806,7 +1870,7 @@ button:active{
   background: #ffffff;
   position: fixed;
   z-index: 558;
-  top: 20%;
+  top: -5%;
   left: 25%;
   padding: 0px 15px;
   border-radius: 5px;
@@ -1962,6 +2026,7 @@ input[disabled]{
   width:100%;
   height:auto;
   padding:5px 0px;
+  user-select: none;
 }
 .listCo3{
   width: 100%;
@@ -2259,6 +2324,7 @@ input[disabled]{
   height: auto;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: start;
   align-items: start;
 }
@@ -2292,6 +2358,7 @@ input[disabled]{
   height: 100%;
   overflow: auto;
   float: left;
+  color:#393939;
 }
 .Navigation{
   width: 100px;
@@ -2305,14 +2372,14 @@ input[disabled]{
 .NavigationTi{
   font-size: 15px;
   font-weight: 400;
-  color: #ff28d4;
+  color: #2d2d2d;
   margin: 5px 0px;
   cursor: default;
 }
 .NavigationLi{
   font-size: 15px;
   font-weight: 400;
-  color: #ff7413;
+  color: #58a8fe;
   margin: 5px 0px;
   cursor: pointer;
 }
@@ -2339,7 +2406,7 @@ input[disabled]{
   margin: 10px;
 }
 .textH4{
-  color: blue;
+  color: #ff4f4f;
 }
 .templateTitle{
   width: 100%;

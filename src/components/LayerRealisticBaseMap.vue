@@ -1,5 +1,5 @@
 <template>
-  <div class="baseMap">
+  <div class="baseMap" :style="'opacity:'+opacity">
     <canvas id="baseMap" ref="baseMap"></canvas>
   </div>
 </template>
@@ -12,6 +12,9 @@ export default {
       moveStatus:false,
       A1Cache:{x:0,y:0},
     }
+  },
+  props:{
+    opacity:{type:Number,default:0,required:false}
   },
   mounted() {
     this.startSetting();
@@ -138,15 +141,15 @@ export default {
   height: 100%;
   background: #cecece;
   position: fixed;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
 }
 #baseMap{
   width: inherit;
   height: inherit;
   background: #cecece;
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
 }
 </style>
