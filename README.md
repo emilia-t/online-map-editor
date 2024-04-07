@@ -4,7 +4,7 @@
 
 ##1.download the latest release on github
 
-##2.add config.js
+##2.add config.js(Steps that can be skipped)
 ```
 cd src/js
 touch config.js
@@ -19,7 +19,7 @@ bottomAnchorTextC:'Filing number',
 }
 
 ```
-##3.install and build
+##3.install and build(The packaged code is in /dist)
 ```
 ## Build Setup
 
