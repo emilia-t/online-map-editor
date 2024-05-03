@@ -130,14 +130,14 @@ export default {
     popupNextUp(){
       let checkedStatus=this.$refs.PopupNextUpNone.checked;
       let OldConfig=JSON.parse(this.handleLocalStorage('get','notificationConfig'));
-      OldConfig.noticeLastReadTime=this.getFormattedDate();
+      OldConfig.noticeLastReadTime=this.getReadDate();
       OldConfig.noticeAgainPopup=!checkedStatus;
       let json=JSON.stringify(OldConfig);
       this.handleLocalStorage('set','notificationConfig',json);
     },
     popupRead(){
       let OldConfig=JSON.parse(this.handleLocalStorage('get','notificationConfig'));
-      OldConfig.noticeLastReadTime=this.getFormattedDate();
+      OldConfig.noticeLastReadTime=this.getReadDate();
       OldConfig.noticeReadState=true;
       OldConfig.lastReadVersion=this.$root.Version;
       let checkedStatus=this.$refs.PopupNextUpNone.checked;
@@ -146,7 +146,7 @@ export default {
       this.handleLocalStorage('set','notificationConfig',json);
       this.popupShow=false;
     },
-    getFormattedDate(){
+    getReadDate(){
       const date = new Date();
       const year = date.getFullYear();
       const month = (date.getMonth() + 1).toString().padStart(2, '0');

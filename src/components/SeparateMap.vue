@@ -85,7 +85,7 @@ export default {
         tempLink.onopen=()=>{
           this.tempLinked=true;
           tempLink.close();//断开连接
-          this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(Address);//正式连接
+          this.$store.state.serverData.socket=new this.$store.state.classList.instructPipe(Address);//正式连接
           this.$store.state.pageConfig.mapSeparateState=true;//展开地图主体
           this.$store.state.pageConfig.homeSeparateState=false;//隐藏起始页
         };
@@ -136,7 +136,7 @@ export default {
                         tempLink.onopen=()=>{
                           this.tempLinked=true;
                           tempLink.close();//断开连接
-                          this.$store.state.serverData.socket=new this.$store.state.classList.comprehensive(Address);//正式连接
+                          this.$store.state.serverData.socket=new this.$store.state.classList.instructPipe(Address);//正式连接
                           this.$store.state.pageConfig.mapSeparateState=true;//展开地图主体
                           this.$store.state.pageConfig.homeSeparateState=false;//隐藏起始页
                         };
@@ -339,7 +339,7 @@ export default {
     }
   },
   destroyed(){
-    this.$store.commit('destroyComprehensive');//主体被销毁时，一并重置数据
+    this.$store.commit('destroyInstructPipe');//主体被销毁时，一并重置数据
     this.$store.commit('restoreCameraConfig');
     this.$store.commit('restoreBaseMapConfig');
     this.$store.commit('restoreMapConfig');

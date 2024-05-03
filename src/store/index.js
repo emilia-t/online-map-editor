@@ -1,17 +1,18 @@
 /**
- * 将在0.4.9版本后将更新vuex state 除Data数据以外更改为正常的修改state模式
- * 尤其是 commits
- * 同样的 将取消匿名的指令 anonymousInstruct
  * type:config\data\storage
  * **/
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from "axios";
-Vue.use(Vuex)
+
+Vue.use(Vuex);
 export default new Vuex.Store({
-  state: {
+  state:{
+    constant:{
+
+    },
     classList:{
-      realisticBaseMap:class realisticBaseMap {//真实地图底图类
+      realisticTile:class realisticTile{//真实地图底图类
         constructor(mountDocument,baseMapOptions){
           this.ctx=null;
           this.el=null;//挂载点
@@ -203,7 +204,7 @@ export default new Vuex.Store({
           );
         }
         drawText(text, x, y) {
-          this.ctx.fillStyle = "white"
+          this.ctx.fillStyle = "white";
           this.ctx.font = "18px serif";
           this.ctx.textAlign = "center";
           this.ctx.textBaseline = "middle";
@@ -347,7 +348,7 @@ export default new Vuex.Store({
           if(!this.QIR.hasProperty(baseMapOptions,'baseMapUrl'))return false;
         }
       },
-      comprehensive:class comprehensive {//综合的一个连接服务端的通讯类
+      instructPipe:class instructPipe{//综合的一个连接服务端的通讯类
         constructor(url){
           this.url=url;
           this.loadData=false;//首次加载数据的状态
@@ -489,7 +490,7 @@ export default new Vuex.Store({
               try{
                 window.logConfig.message.code-=1;
                 window.logConfig.message.text=text;
-                window.logConfig.message.from='external:comprehensive';
+                window.logConfig.message.from='external:instructPipe';
                 window.logConfig.message.type=type;
               }catch (e) {
                 lock=true;
@@ -554,22 +555,17 @@ export default new Vuex.Store({
              * @param details
              */
             detailsCheck(details){
-              const KeyExp=/[^a-z0-9A-Z_\u4e00-\u9fa5]/m;//key正则表达式
-              const ValueExp=/[\[\]{}#`'"]|(-){2}|(\/){2}|(%){2}|\/\*/m;
+              const ValueExp=/["]/m;
               if(Object.prototype.toString.call(details)==='[object Array]'){//1检查是否为数组
                 for(let i=0;i<details.length;i++){//2循环检查类型
                   if(Object.prototype.toString.call(details[i])!=='[object object]'){//3检查是否为对象
                     if(details[i].hasOwnProperty('key') && details[i].hasOwnProperty('value')){//4检查是否包含key，value属性
-                      if(details[i].key==''){
+                      if(details[i].key===''){
                         this.onLog('属性名不能为空','warn');
                         return false;
                       }
-                      if(KeyExp.test(details[i].key)){//5检查key属性是否存在非法字符[key只能由汉字[a~Z][0~9]组成]，
-                        this.onLog('列名错误，仅允许使用字母、数字、汉字、下划线','warn');
-                        return false;
-                      }
                       if(ValueExp.test(details[i].value)){
-                        this.onLog('列值错误，不允许使用如下字符[]、{}、#、`、\'、\"、--、//、%%、/*','warn');
+                        this.onLog('列值错误，不允许使用如下字符\"','warn');
                         return false;
                       }
                     }else {
@@ -745,7 +741,7 @@ export default new Vuex.Store({
             if(!this.QIR.hasProperty(data,'color')){return false;}//0.9检查color
             if(!this.QIR.color16Check(data.color)){return false;}//0.10检查颜色
             if(this.QIR.hasProperty(data,'width')){//0.11检查width
-              let refWidth=this.QIR.widthCheck(data.width)
+              let refWidth=this.QIR.widthCheck(data.width);
               if(!refWidth){return false;}else {data.width=refWidth;}
             }
             if(this.QIR.hasProperty(data,'details')){//0.11检查details
@@ -796,7 +792,7 @@ export default new Vuex.Store({
             if(!this.QIR.hasProperty(data,'color')){return false;}//0.8检查color
             if(!this.QIR.color16Check(data.color)){return false;}//0.9检查颜色
             if(this.QIR.hasProperty(data,'width')){//0.10检查width
-              let refWidth=this.QIR.widthCheck(data.width)
+              let refWidth=this.QIR.widthCheck(data.width);
               if(!refWidth){return false;}else {data.width=refWidth;}
             }
             if(this.QIR.hasProperty(data,'details')){//0.11检查details
@@ -907,8 +903,8 @@ export default new Vuex.Store({
           }
         }
         link(){//连接服务器方法
-          this.socket=new WebSocket(this.url)
-          this.socket.onopen=(ev)=>this.onOpen(ev)
+          this.socket=new WebSocket(this.url);
+          this.socket.onopen=(ev)=>this.onOpen(ev);
           this.socket.onmessage=(ev)=>this.onMessage(ev);
           this.socket.onclose=(ev)=>this.onClose(ev);
           this.socket.onerror=(ev)=>this.onError(ev);
@@ -951,7 +947,7 @@ export default new Vuex.Store({
           try{
             window.logConfig.message.code-=1;
             window.logConfig.message.text=text;
-            window.logConfig.message.from='external:comprehensive';
+            window.logConfig.message.from='external:instructPipe';
             window.logConfig.message.type=type;
           }catch (e) {
             lock=true;
@@ -1033,7 +1029,7 @@ export default new Vuex.Store({
             case 'send_mapData':{//服务器发来的地图数据
               for (let i=0;i<jsonData.data.length;i++){
                 try{
-                  let [Ps,Pt,basePs,basePt]=[null,null,null,null]//point相关
+                  let [Ps,Pt,basePs,basePt]=[null,null,null,null];//point相关
                   Pt=JSON.parse(window.atob(jsonData.data[i].point));
                   basePt=JSON.parse(window.atob(jsonData.data[i].point));
                   Ps=JSON.parse(window.atob(jsonData.data[i].points));
@@ -1101,7 +1097,7 @@ export default new Vuex.Store({
                   }else {
                     jsonData.data[i].id=parseInt(jsonData.data[i].id);//hack
                     jsonData.data[i].members=JSON.parse(window.atob(jsonData.data[i].members));
-                    jsonData.data[i].structure=JSON.parse(window.atob(jsonData.data[i].structure))
+                    jsonData.data[i].structure=JSON.parse(window.atob(jsonData.data[i].structure));
                     res.push(jsonData.data[i]);
                   }
                 }
@@ -1138,7 +1134,7 @@ export default new Vuex.Store({
                 }
                 case 'line':{//新增线段数据广播
                   try{
-                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null]
+                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null];
                     try{
                       baseA=window.atob(jsonData.data.points);//将base64转化为普通字符
                       baseB=window.atob(jsonData.data.point);
@@ -1184,7 +1180,7 @@ export default new Vuex.Store({
                 }
                 case 'area':{//新增线段数据广播
                   try{//解析坐标
-                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null]
+                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null];
                     try{
                       baseA=window.atob(jsonData.data.points);
                       baseB=window.atob(jsonData.data.point);
@@ -1230,7 +1226,7 @@ export default new Vuex.Store({
                 }
                 case 'point':{//新增点数据广播
                   try{//解析坐标
-                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null]
+                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null];
                     try{
                       baseA=window.atob(jsonData.data.points);
                       baseB=window.atob(jsonData.data.point);
@@ -2163,7 +2159,7 @@ export default new Vuex.Store({
           try{
             window.logConfig.message.code-=1;
             window.logConfig.message.text=text;
-            window.logConfig.message.from='external:comprehensive';
+            window.logConfig.message.from='external:instructPipe';
             window.logConfig.message.type=type;
           }catch (e) {
             lock=true;
@@ -2171,6 +2167,925 @@ export default new Vuex.Store({
           if(lock){
             reset();
           }
+        }
+      },
+      tmpProof:class tmpProof{//templateCheck模板校验工具
+        $language='english';
+        constructor(language){
+          if(typeof this.$language==='string')this.$language=language;
+        }
+        /**
+         * 字符串数据类型
+        **/
+        Text(str) {
+          str=typeof str==='string'?str:'';
+          return '☍t'+str;
+        }
+        List(str){
+          str=typeof str==='string'?str:'';
+          return '☍l'+str;
+        }
+        Date(str){
+          str=typeof str==='string'?str:'';
+          return '☍d'+str;
+        }
+        Time(str){
+          str=typeof str==='string'?str:'';
+          return '☍m'+str;
+        }
+        Datetime(str){
+          str=typeof str==='string'?str:'';
+          return '☍e'+str;
+        }
+        Percent(str){
+          str=typeof str==='string'?str:'';
+          return '☍p'+str;
+        }
+        GetContent(str){//获取字符串类型数据的数据内容
+          return str.substr(2);
+        }
+        GetType(str){//获取字符串类型数据的数据类型
+          let tag=str.substring(0,2);
+          if        (tag==='☍t'){return 'text';}
+          else if(tag==='☍l'){return 'list';}
+          else if(tag==='☍d'){return 'date';}
+          else if(tag==='☍m'){return 'time';}
+          else if(tag==='☍e'){return 'datetime';}
+          else if(tag==='☍p'){return 'percent';}
+          else {return 'text';}//异常的没有数据符号的数据
+        }
+        /**
+         *转化相关函数
+         * 所有函数均会进行一次数据检查
+         * 所有参数均不包括数据类型符号
+         * 所有返回值不包括数据类型符号
+        **/
+        datetimeToDate(datetime){
+          if(this.isDatetime(datetime)){
+            return datetime.substring(0,10);
+          }else{
+            return '';
+          }
+        }
+        datetimeToTime(datetime){
+          if(this.isDatetime(datetime)){
+            return datetime.substr(11);
+          }else{
+            return '';
+          }
+        }
+        dateToDatetime(date){
+          if(this.isDate(date)){
+            return date+'T00:00:00';
+          }else {
+            return '';
+          }
+        }
+        dateToTime(date){
+          if(this.isDate(date)){
+            return '00:00:00';
+          }else{
+            return '';
+          }
+        }
+        timeToDatetime(time){
+          return '';
+        }
+        timeToDate(time){
+          return '';
+        }
+        /**
+         * 数据转化
+         * @param value | String|Number|Boolean|Null
+         * @param type | String
+         * @return {Object,String,Number,Boolean,Null}
+         **/
+        conversion(value,type){
+          /**
+           * 特殊情况处理
+           * (number类型的值可以为null)
+           * 若要转化为字符串类型的数据则返回对应空值
+           * 若要转化为number则返回源值
+           * 若要转化为bool则返回false
+           **/
+          if(value===null){
+            switch(type){
+              case 'text':{return this.Text();}
+              case 'datetime':{return this.Datetime();}
+              case 'date':{return this.Date();}
+              case 'time':{return this.Time();}
+              case 'list':{return this.List();}
+              case 'percent':{return this.Percent();}
+              case 'bool':{return false;}
+              case 'number':{return value;}
+              default:{return value;}
+            }
+          }
+          /**
+           * 数据类型检测
+           **/
+          let fail={state:false,message:'fail'};
+          let jsTypes=['string','number','boolean'];
+          let dtTypes=['text','datetime','date','time','list','percent','bool','number'];
+          let jsType=typeof value;//旧数据的js数据类型
+          let oldType;//源数据类型
+          let tag;//数据符号类型
+          let content;//数据内容
+          if(!jsTypes.includes(jsType))return fail;
+          if(!dtTypes.includes(type))return fail;
+          if(jsType==='string'){
+            tag=value.substring(0,2);
+            if        (tag==='☍t'){oldType='text';content=value.substr(2);}
+            else if(tag==='☍l'){oldType='list';content=value.substr(2);}
+            else if(tag==='☍d'){oldType='date';content=value.substr(2);}
+            else if(tag==='☍m'){oldType='time';content=value.substr(2);}
+            else if(tag==='☍e'){oldType='datetime';content=value.substr(2);}
+            else if(tag==='☍p'){oldType='percent';content=value.substr(2);}
+            else {oldType='text';content=value;}//异常的没有数据符号的字符串数据
+          }
+          else if(jsType==='number'){
+            oldType='number';
+          }
+          else if(jsType==='boolean'){
+            oldType='bool';
+          }
+          /**
+           * 转化内容
+           **/
+          switch (oldType){
+            case 'text':{
+              switch (type){
+                case 'text':{
+                  return value;//返回原值
+                }
+                case 'datetime':{
+                  if(this.isDatetime(content)){
+                    return this.Datetime(content);
+                  }else{
+                    return this.Datetime();
+                  }
+                }
+                case 'date':{
+                  if(this.isDate(content)){
+                    return this.Date(content);
+                  }else{
+                    return this.Date();
+                  }
+                }
+                case 'time':{
+                  if(this.isTime(content)){
+                    return this.Time(content);
+                  }else{
+                    return this.Time();
+                  }
+                }
+                case 'list':{
+                  return this.List(content);//保留源内容
+                }
+                case 'percent':{
+                  if(this.isPercent(content)){
+                    return this.Percent(content);//保留源内容
+                  }
+                  let number=Number(content)*100;
+                  if(this.isNumber(number)){
+                    return this.Percent(number+'%');
+                  }
+                  return this.Percent('0%');
+                }
+                case 'bool':{
+                  return content === '1' || content === '100%';
+                }
+                case 'number':{
+                  if(this.isPercent(content)){
+                    let number1=parseFloat(content)/100;//末尾包含%不能使用Number(content)
+                    if(this.isNumber(number1)){
+                      return number1;
+                    }else{
+                      return 0;
+                    }
+                  }
+                  let number2=Number(content);
+                  if(this.isNumber(number2)){
+                    return number2;
+                  }
+                  return 0;
+                }
+                default:{return this.Text();}
+              }
+            }
+            case 'datetime':{
+              switch(type){
+                case 'text':{return this.Text(content);}
+                case 'datetime':{return value;}//返回源值
+                case 'date':{return this.Date(this.datetimeToDate(content));}
+                case 'time':{return this.Time(this.datetimeToTime(content));}
+                case 'list':{return this.List(content);}
+                case 'percent':{return this.Percent();}
+                case 'bool':{return false;}
+                case 'number':{return 0;}
+                default:{return this.Datetime();}
+              }
+            }
+            case 'date':{
+              switch(type){
+                case 'text':{return this.Text(content);}
+                case 'datetime':{return this.Datetime(this.dateToDatetime(content));}
+                case 'date':{return value;}//返回源值
+                case 'time':{return this.Time(this.dateToTime(content));}
+                case 'list':{return this.List(content);}
+                case 'percent':{return this.Percent();}
+                case 'bool':{return false;}
+                case 'number':{return 0;}
+                default:{return this.Date();}
+              }
+            }
+            case 'time':{
+              switch(type){
+                case 'text':{return this.Text(content);}
+                case 'datetime':{return this.Datetime(this.timeToDatetime(content));}
+                case 'date':{return this.Date(this.timeToDate(content));}
+                case 'time':{return value;}//返回源值
+                case 'list':{return this.List(content);}
+                case 'percent':{return this.Percent();}
+                case 'bool':{return false;}
+                case 'number':{return 0;}
+                default:{return this.Time();}
+              }
+            }
+            case 'list':{
+              switch (type){
+                case 'text':{
+                  return this.Text(content);//保留源内容
+                }
+                case 'datetime':{
+                  if(this.isDatetime(content)){
+                    return this.Datetime(content);
+                  }else{
+                    return this.Datetime();
+                  }
+                }
+                case 'date':{
+                  if(this.isDate(content)){
+                    return this.Date(content);
+                  }else{
+                    return this.Date();
+                  }
+                }
+                case 'time':{
+                  if(this.isTime(content)){
+                    return this.Time(content);
+                  }else{
+                    return this.Time();
+                  }
+                }
+                case 'list':{
+                  return value;//返回原值
+                }
+                case 'percent':{
+                  if(this.isPercent(content)){
+                    return this.Percent(content);//保留源内容
+                  }
+                  let number=Number(content)*100;
+                  if(this.isNumber(number)){
+                    return this.Percent(number+'%');
+                  }
+                  return this.Percent('0%');
+                }
+                case 'bool':{
+                  return content === '1' || content === '100%';
+                }
+                case 'number':{
+                  if(this.isPercent(content)){
+                    let number1=parseFloat(content)/100;//末尾包含%不能使用Number(content)
+                    if(this.isNumber(number1)){
+                      return number1;
+                    }else{
+                      return 0;
+                    }
+                  }
+                  let number2=Number(content);
+                  if(this.isNumber(number2)){
+                    return number2;
+                  }
+                  return 0;
+                }
+                default:{return this.List();}
+              }
+            }
+            case 'percent':{
+              switch(type){
+                case 'text':{return this.Text(content);}
+                case 'datetime':{return this.Datetime();}
+                case 'date':{return this.Date();}
+                case 'time':{return this.Time();}
+                case 'list':{return this.List(content);}
+                case 'percent':{return value;}//返回源值
+                case 'bool':{return content === '100%';}
+                case 'number':{
+                  let number=parseFloat(content)/100;
+                  if(this.isNumber(number)){
+                    return number;
+                  }else {
+                    return 0;
+                  }
+                }
+                default:{return this.Percent();}
+              }
+            }
+            /**
+             * number bool 无 tag 和 content 值
+            **/
+            case 'number':{//数字转其他类型
+              /**
+               * 特殊情况
+               * NaN \ Infinity \ -Infinity
+               * 全部视作0
+               **/
+              if(isNaN(value) || value===Infinity || value===-Infinity)value=0;
+              switch(type){
+                case 'text':{
+                  return this.Text(value.toString());
+                }
+                case 'datetime':{
+                  return this.Datetime();
+                }
+                case 'date':{
+                  return this.Date();
+                }
+                case 'time':{
+                  return this.Time();
+                }
+                case 'list':{
+                  return this.List(value.toString());
+                }
+                case 'percent':{
+                  let number=value*100;
+                  if(number!==Infinity){
+                    return this.Percent(number+'%');
+                  }else {
+                    return this.Percent('0%');
+                  }
+                }
+                case 'bool':{
+                  return value===1;
+                }
+                case 'number':{
+                  return value;
+                }
+                default:{return 0;}
+              }
+            }
+            case 'bool':{//布尔转其他类型
+              switch (type){
+                case 'text':{
+                  return value?this.Text('1'):this.Text('0');
+                }
+                case 'datetime':{
+                  return this.Datetime();
+                }
+                case 'date':{
+                  return this.Date();
+                }
+                case 'time':{
+                  return this.Time();
+                }
+                case 'list':{
+                  return value?this.List('1'):this.List('0');
+                }
+                case 'percent':{
+                  return value?this.Percent('100%'):this.Percent('0%');
+                }
+                case 'number':{
+                  return value?1:0;
+                }
+                case 'bool':{
+                  return value;
+                }
+                default:{return false;}
+              }
+            }
+          }
+        }
+        /**
+         * check function 检查函数
+         **/
+        isValidTime(str){//检测字符串是否是时间格式-正确则返回true
+          const reg = /^☍m([0-1]?[0-9]|2[0-3]):([0-5]?[0-9])(:([0-5]?[0-9]))?$/;
+          return reg.test(str);
+        }
+        isTime(str){//isValidTime的变体，不检查类型符号
+          const reg = /^([0-1]?[0-9]|2[0-3]):([0-5]?[0-9])(:([0-5]?[0-9]))?$/;
+          return reg.test(str);
+        }
+        isValidDate(str){//检查一个字符串是否符合标准日期格式
+          const reg = /^☍d\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+          return reg.test(str);
+        }
+        isDate(str){//isValidDate的变体，不检查类型符号
+          const reg = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+          return reg.test(str);
+        }
+        isValidDatetime(str){//检查一个字符串是否符合标准时间格式
+          const reg = /^☍e\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+          return reg.test(str);
+        }
+        isDatetime(str){//isValidDatetime的变体，不检查类型符号
+          const reg = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+          return reg.test(str);
+        }
+        isAllowPercent(value){//检测字符串是否是百分数
+          const reg=/^☍p-?\d+(\.\d+)?%$/;
+          return reg.test(value);
+        }
+        isPercent(value){//isAllowPercent的变体，不检查类型符号
+          const reg=/^-?\d+(\.\d+)?%$/;
+          return reg.test(value);
+        }
+        isAllowList(value){//检测list字符串是否正确-正确则返回true
+          const reg = /^☍l(?!.*,.*,)(?=.*[^,]$)/;
+          return reg.test(value);
+        }
+        isAllowId(id){//检测模板id是否正确-正确则返回true
+          const reg=/^[0-9a-zA-Z]{8,14}$/;
+          return reg.test(id);
+        }
+        isIntegerP0(value){//判断一个数字是否为大于或等于0的整数-是则返回true
+          return Number.isInteger(value) && value>=0;
+        }
+        isIntegerP(value){//判断一个数字是否为正整数P:positive
+          return Number.isInteger(value) && value>0;
+        }
+        isInteger(value){//判断一个数字是否为整数
+          return Number.isInteger(value);
+        }
+        isNumber(value){//判断一个值是否为数字(不包含无限和NaN)
+          if(typeof value!=='number')return false;
+          if(isNaN(value))return false;
+          return !(value === -Infinity || value === Infinity);
+        }
+        isColor16(color){//检测一个字符串是否是标准的16进制颜色-正确则返回true
+          const regex=/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/;
+          return regex.test(color);
+        }
+        isAllowValueTyp(type,value){//依据type检测value(或default)是否是正确的type类型-正确则返回true
+          switch (type) {
+            case 'text':{
+              return typeof value==='string';
+            }
+            case 'long':{
+              return typeof value==='string';
+            }
+            case 'number':{
+              return typeof value === 'number';
+            }
+            case 'datetime':{
+              if(typeof value!=='string')return false;
+              return this.isValidDatetime(value);
+            }
+            case 'bool':{
+              return typeof value === 'boolean';
+            }
+            case 'list':{
+              if(typeof value!=='string')return false;
+              return this.isAllowList(value);
+            }
+            case 'percent':{
+              if(typeof value!=='string')return false;
+              return this.isAllowPercent(value);
+            }
+            case 'score':{
+              if(typeof value!=='number')return false;
+              if(value<0)return false;
+              return value <= 10;
+            }
+          }
+        }
+        isAllowMethod(type,method){//判断method是否为type允许使用的方法-正确则返回true
+          switch (type){
+            case 'long':{
+              return false;
+            }
+            case 'score':{
+              return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
+            }
+            case 'number':{
+              return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
+            }
+            case 'percent':{
+              return ['equ','nequ','gre','greq','les','lesq'].includes(method);
+            }
+            case 'datetime':{
+              return ['equ','nequ','gre','greq','les','lesq'].includes(method);
+            }
+            case 'bool':{
+              return ['equ','nequ'].includes(method);
+            }
+            case 'list':{
+              return ['equ','nequ'].includes(method);
+            }
+            case 'text':{
+              return ['equ','nequ'].includes(method);
+            }
+            default:{
+              return false;
+            }
+          }
+        }
+        isAllowValueTypL(type,value){//依据type检测value(或default)是否是type类型的数据以及长度是否合理-正确则返回true
+          switch (type) {
+            case 'text':{
+              if(typeof value!=='string')return false;
+              if(value.substring(0,2)!=='☍t')return false;
+              return value.length <= 2002;
+            }
+            case 'list':{
+              if(typeof value!=='string')return false;
+              return this.isAllowList(value);
+            }
+            case 'date':{
+              if(typeof value!=='string')return false;
+              return this.isValidDate(value);
+            }
+            case 'time':{
+              if(typeof value!=='string')return false;
+              return this.isValidTime(value);
+            }
+            case 'datetime':{
+              if(typeof value!=='string')return false;
+              return this.isValidDatetime(value);
+            }
+            case 'percent':{
+              if(typeof value!=='string')return false;
+              return this.isAllowPercent(value);
+            }
+            case 'number':{
+              if(typeof value!=='number')return false;
+              return value !== Infinity;
+            }
+            case 'bool':{
+              return typeof value === 'boolean';
+            }
+          }
+        }
+        isDetailsType(str){//检测str是否为模板属性规定以内的类型-正确则返回true
+          return ['text','number','datetime','date','time','bool','list','percent'].includes(str);
+        }
+        isNameDetails(obj){//检测是否obj是默认的name属性-正确则返回true
+          let obj1={
+            set:false,
+            name:'name',
+            default:'☍tunknown',
+            type:'text'
+          };
+          const keys1 = Object.keys(obj1);
+          const keys2 = Object.keys(obj);
+          if (keys1.length !== keys2.length) {
+            return false;
+          }
+          for (let key of keys1) {
+            if (obj1[key] !== obj[key]) {
+              return false;
+            }
+          }
+          return true;
+        }
+        /**isAllowBasis检查某个规则依据是否正确
+         * @param name string
+         * @param type string
+         * @param details array
+         * @return {boolean}
+         */
+        isAllowBasis(name,type,details){
+          const len=details.length;
+          for(let i=0;i<len;i++){
+            if(name===details[i].name && type===details[i].type){
+              return true;
+            }
+          }
+          return false;
+        }
+        codeExplain(code){//错误代码的解释
+          let english=this.$language==='english';
+          let A=code%100;//在第N项
+          let B=(code-A);
+          switch (B){
+            case 500:{return english?'Template is null':'模板为空';}
+            case 1000:{return english?'Template is not an object':'模板不是一个对象';}
+            case 2000:{return english?'Template missing id attribute':'模板缺失id属性';}//A layer property check
+            case 2100:{return english?'Template id value type error':'模板id值类型错误';}
+            case 2200:{return english?'Template id value cannot be empty':'模板id值不能为空字符';}
+            case 2300:{return english?'Template id does not comply with regulations':'模板id值不符合标准';}
+
+            case 4000:{return english?'Template missing name attribute':'模板缺失name属性';}
+            case 4100:{return english?'Template name value type error':'模板名称值类型错误';}
+            case 4200:{return english?'Template name value cannot be empty':'模板名称值不能为空字符';}
+
+            case 6000:{return english?'Template missing creator attribute':'模板缺失creator属性';}
+            case 6100:{return english?'Template creator value type error':'模板创建者值类型错误';}
+            case 6200:{return english?'Template creator value cannot be empty':'模板创建者值不能为空字符';}
+
+            case 8000:{return english?'Template missing modify attribute':'模板缺少modify属性';}
+            case 8100:{return english?'Template modify value type error':'模板编辑日期值类型错误';}
+            case 8200:{return english?'Template modify value cannot be empty':'模板编辑日期值不能为空';}
+            case 8300:{return english?'Template modify does not comply with regulations':'模板编辑日期值不符合标准';}
+
+            case 10000: { return english ? 'Template missing locked attribute' : '模板缺失locked属性'; }
+            case 10100: { return english ? 'Template locked value type error' : '模板locked值类型错误'; }
+
+            case 12000: { return english ? 'Template missing explain attribute' : '模板缺失explain属性'; }
+            case 12100: { return english ? 'Template explain value type error' : '模板描述信息值类型错误'; }
+
+            case 14000: { return english ? 'Template missing typeRule attribute' : '模板缺失typeRule属性'; } //typeRule property check
+            case 15000: { return english ? 'Template typeRule is not an object' : '模板typeRule不是一个对象'; }
+
+            case 16000: { return english ? 'TypeRule missing point attribute' : '类型规则缺失point属性'; }
+            case 17000: { return english ? 'TypeRule point value type error' : '类型规则point值类型错误'; }
+
+            case 18000: { return english ? 'TypeRule missing line attribute' : '类型规则缺失line属性'; }
+            case 19000: { return english ? 'TypeRule line value type error' : '类型规则line值类型错误'; }
+
+            case 20000: { return english ? 'TypeRule missing area attribute' : '类型规则缺失area属性'; }
+            case 21000: { return english ? 'TypeRule area value type error' : '类型规则area值类型错误'; }
+
+            case 22000: { return english ? 'TypeRule missing curve attribute' : '类型规则缺失curve属性'; }
+            case 23000: { return english ? 'TypeRule curve value type error' : '类型规则curve值类型错误'; }
+            case 24000: { return english ? 'TypeRule at least one must be allowed' : '类型规则至少需要允许一个'; }
+
+            case 30000: { return english ? 'Template missing detailsRule attribute' : '模板缺失detailsRule属性'; } //detailsRule property check
+            case 30100: { return english ? 'Template detailsRule is not an array' : '模板detailsRule不是一个数组'; }
+            case 30200: { return english ? 'Template detailsRule length cannot = 0' : '模板detailsRule长度不能为0'; }
+            case 30300: { return english ? 'Template detailsRule length cannot > 90' : '模板detailsRule长度不能大于90'; }
+            case 30400: { return english ? 'Template detailsRule first element type error' : '模板detailsRule第一个元素类型错误'; }
+            case 30500: { return english ? 'Template detailsRule first element value error' : '模板detailsRule第一个元素值错误'; }
+
+            case 31000: { return english ? 'Template detailsRule type error in:' + A + ' item' : '模板属性规则类型错误，在：' + A + '项'; }
+            case 32000: { return english ? 'DetailsRule missing set attribute in:' + A + ' item' : '属性规则缺失set属性，在：' + A + '项'; }
+            case 32100: { return english ? 'DetailsRule set value type error in:' + A + ' item' : '属性规则set值类型错误，在：' + A + '项'; }
+
+            case 33000: { return english ? 'DetailsRule missing name attribute in:' + A + ' item' : '属性规则缺失name属性，在：' + A + '项'; }
+            case 33100: { return english ? 'DetailsRule name value type error in:' + A + ' item' : '属性规则name值类型错误，在：' + A + '项'; }
+            case 33200: { return english ? 'DetailsRule name value cannot be empty in:' + A + ' item' : '属性规则name值不能为空，在：' + A + '项'; }
+            case 33300: { return english ? 'DetailsRule name value length cannot > 40 in:' + A + ' item' : '属性规则name值长度不能大于40，在：' + A + '项'; }
+            case 33400: { return english ? 'DetailsRule name cannot duplicated:'+A+' item': '属性规则name值不能重复，在：' + A + '项';}
+
+
+            case 35000: { return english ? 'DetailsRule missing type attribute in:' + A + ' item' : '属性规则缺失type属性，在：' + A + '项'; }
+            case 35100: { return english ? 'DetailsRule type value type error in:' + A + ' item' : '属性规则type值类型错误，在：' + A + '项'; }
+            case 35200: { return english ? 'DetailsRule type value undefined in:' + A + ' item' : '属性规则type值未定义，在：' + A + '项'; }
+
+
+            case 37000: { return english ? 'DetailsRule missing default attribute in:' + A + ' item' : '属性规则缺失default属性，在：' + A + '项'; }
+            case 37100: { return english ? 'DetailsRule default value type error in:' + A + ' item' : '属性规则default值类型错误，在：' + A + '项'; }
+
+            case 40000: { return english ? 'Template missing colorRule attribute' : '模板缺失colorRule属性'; } //colorRule property check
+            case 40100: { return english ? 'Template colorRule is not an object' : '模板颜色规则不是一个对象'; }
+            case 40200: { return english ? 'ColorRule missing basis attribute' : '颜色规则缺失basis属性'; }
+            case 40300: { return english ? 'ColorRule basis value type error' : '颜色规则basis值类型错误'; }
+            case 40400: { return english ? 'ColorRule missing type attribute' : '颜色规则缺失type属性'; }
+            case 40500: { return english ? 'ColorRule type value type error' : '颜色规则type值类型错误'; }
+            case 40600: { return english ? 'The attribute on which the color rule is based is invalid' : '颜色规则所依据的属性无效'; }
+            case 40700: { return english ? 'ColorRule missing condition attribute' : '颜色规则缺失condition属性'; }
+            case 40800: { return english ? 'ColorRule condition is not an array' : '颜色规则condition不是一个数组'; }
+            case 40900: { return english ? 'If the basis is empty, the type must be empty' : '如果basis为空，则type必须为空'; }
+            case 41000: { return english ? 'If the basis is empty, the condition must be an empty array' : '如果basis为空，则condition必须是一个空数组'; }
+            case 41100: { return english ? 'If the basis is not empty, the type cannot be empty' : '如果basis不为空，则type不能为空'; }
+            case 41200: { return english ? 'ColorRule type value not allowed' : '颜色规则type值不允许'; }
+            case 41300: { return english ? 'ColorRule item length cannot > 90' : '颜色规则数量不能大于90'; }
+
+            case 42000: { return english ? 'ColorRule item is not an object in:' + A + ' item' : '此条颜色规则不是一个对象，在：' + A + '项'; }
+            case 42100: { return english ? 'ColorRule item missing set attribute in:' + A + ' item' : '此条颜色规则缺失set属性，在：' + A + '项'; }
+            case 42200: { return english ? 'ColorRule item set value type error in:'+A+' item': '此条颜色规则set值类型错误，在：' + A + '项';}
+
+            case 43000: { return english ? 'ColorRule item missing color attribute in:' + A + ' item' : '此条颜色规则缺失color属性，在：' + A + '项'; }
+            case 43100: { return english ? 'ColorRule item color value type error in:' + A + ' item' : '此条颜色规则color值类型错误，在：' + A + '项'; }
+            case 43200: { return english ? 'ColorRule item color value format error in:' + A + ' item' : '此条颜色规则color值格式错误，在：' + A + '项'; }
+
+            case 44000: { return english ? 'ColorRule item missing method attribute in:' + A + ' item' : '此条颜色规则缺失method属性，在：' + A + '项'; }
+            case 44100: { return english ? 'ColorRule item method value type error in:' + A + ' item' : '此条颜色规则的method值类型错误，在：' + A + '项'; }
+            case 44200: { return english ? 'ColorRule item method not allowed in:' + A + ' item' : '此条颜色规则的method不合理，在：' + A + '项'; }
+
+            case 45000: { return english ? 'ColorRule item missing value attribute in:' + A + ' item' : '此条颜色规则缺失value属性，在：' + A + '项'; }
+            case 45100: { return english ? 'ColorRule item value type not allowed in:' + A + ' item' : '此条颜色规则的value类型不合理，在：' + A + '项'; }
+            case 45200: { return english ? 'ColorRule item value length cannot > 100 in:' + A + ' item' : '此条颜色规则的value字符长度不能大于100，在：' + A + '项'; }
+
+            case 50000: { return english ? 'Template missing widthRule attribute' : '模板缺失widthRule属性'; } //widthRule property check
+            case 50100: { return english ? 'Template widthRule is not an object' : '模板widthRule不是一个对象'; }
+            case 50200: { return english ? 'WidthRule missing basis attribute' : '宽度规则缺失basis属性'; }
+            case 50300: { return english ? 'WidthRule basis value type error' : '宽度规则basis值类型错误'; }
+            case 50400: { return english ? 'WidthRule missing type attribute' : '宽度规则缺失type属性'; }
+            case 50500: { return english ? 'WidthRule type value type error' : '宽度规则type值类型错误'; }
+            case 50600: { return english ? 'The attribute on which the width rule is based is invalid' : '宽度规则所依据的属性无效'; }
+            case 50700: { return english ? 'WidthRule missing condition attribute' : '宽度规则缺失condition属性'; }
+            case 50800: { return english ? 'WidthRule condition is not an array' : '宽度规则condition不是一个数组'; }
+            case 50900: { return english ? 'If the basis is empty, the type must be empty' : '宽度规则中，如果basis为空，则type必须为空'; }
+            case 51000: { return english ? 'If the basis is empty, the condition must be an empty array' : '宽度规则中，如果basis为空，则condition必须是一个空数组'; }
+            case 51100: { return english ? 'If the basis is not empty, the type cannot be empty' : '宽度规则中，如果basis不为空，则type不能为空'; }
+            case 51200: { return english ? 'WidthRule type value not allowed' : '宽度规则type值不合理'; }
+            case 51300: { return english ? 'WidthRule item length cannot > 90' : '宽度规则数量不能大于90'; }
+
+            case 52000: { return english ? 'WidthRule item is not an object in:' + A + ' item' : '此条宽度规则不是一个对象，在：' + A + '项'; }
+            case 52100: { return english ? 'WidthRule item missing set attribute in:' + A + ' item' : '此条宽度规则缺失set属性，在：' + A + '项'; }
+            case 52200: { return english ? 'WidthRule item set value type error in:'+A+' item' : '此条宽度规则set值类型错误，在：' + A + '项';}
+
+            case 53000: { return english ? 'WidthRule item missing width attribute in:' + A + ' item' : '此条宽度规则缺失width属性，在：' + A + '项'; }
+            case 53100: { return english ? 'WidthRule item width value type error in:' + A + ' item' : '此条宽度规则width值类型错误，在：' + A + '项'; }
+            case 53200: { return english ? 'WidthRule item width value must be integer in:' + A + ' item' : '此条宽度规则width值必须为整数，在：' + A + '项'; }
+
+            case 54000: { return english ? 'WidthRule item missing method attribute in:' + A + ' item' : '此条宽度规则缺失method属性，在：' + A + '项'; }
+            case 54100: { return english ? 'WidthRule item method value type error in:' + A + ' item' : '此条宽度规则的method值类型错误，在：' + A + '项'; }
+            case 54200: { return english ? 'WidthRule item method not allowed in:' + A + ' item' : '此条宽度规则的method不合理，在：' + A + '项'; }
+
+            case 55000: { return english ? 'WidthRule item missing value attribute in:' + A + ' item' : '此条宽度规则缺失value属性，在：' + A + '项'; }
+            case 55100: { return english ? 'WidthRule item value type not allowed in:' + A + ' item' : '此条宽度规则的value类型不合理，在：' + A + '项'; }
+            case 55200: { return english ? 'WidthRule item value length cannot > 100 in:' + A + ' item' : '此条宽度规则的value字符长度不能大于100，在：' + A + '项'; }
+          }
+        }
+        /**
+         * 模板检查
+         * @param template | Object
+         * @return {boolean,number}
+         */
+        tpCheck(template){//模板检查,若正常则返回true，否则返回其他错误的代码
+          if(template===null)return 500;
+          let arr=[];
+          let names=['name'];//details rule item.name
+          let len=0;
+          let count=0;
+          let cType='';//color rule type
+          let wType='';//width rule type
+          function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
+
+
+          if(!isObj(template))return 1000;
+
+
+          if(!Object.prototype.hasOwnProperty.call(template,'id'))return 2000;//A layer property check
+          if(typeof template.id!=='string')return 2100;
+          if(template.id==='')return 2200;
+          if(!this.isAllowId(template.id))return 2300;
+
+          if(!Object.prototype.hasOwnProperty.call(template,'name'))return 4000;
+          if(typeof template.name!=='string')return 4100;
+          if(template.name==='')return 4200;
+
+          if(!Object.prototype.hasOwnProperty.call(template,'creator'))return 6000;
+          if(typeof template.creator!=='string')return 6100;
+          if(template.creator==='')return 6200;
+
+          if(!Object.prototype.hasOwnProperty.call(template,'modify'))return 8000;
+          if(typeof template.modify!=='string')return 8100;
+          if(template.modify==='')return 8200;
+          if(!this.isDatetime(template.modify))return 8300;
+
+          if(!Object.prototype.hasOwnProperty.call(template,'locked'))return 10000;
+          if(typeof template.locked!=='boolean')return 10100;
+
+          if(!Object.prototype.hasOwnProperty.call(template,'explain'))return 12000;
+          if(typeof template.explain!=='string')return 12100;
+
+
+          if(!Object.prototype.hasOwnProperty.call(template,'typeRule'))return 14000;//typeRule property check
+          if(!isObj(template.typeRule))return 15000;
+          if(!Object.prototype.hasOwnProperty.call(template.typeRule,'point'))return 16000;
+          if(typeof template.typeRule.point!=='boolean')return 17000;
+          if(template.typeRule.point)count++;
+          if(!Object.prototype.hasOwnProperty.call(template.typeRule,'line'))return 18000;
+          if(typeof template.typeRule.line!=='boolean')return 19000;
+          if(template.typeRule.line)count++;
+          if(!Object.prototype.hasOwnProperty.call(template.typeRule,'area'))return 20000;
+          if(typeof template.typeRule.area!=='boolean')return 21000;
+          if(template.typeRule.area)count++;
+          if(!Object.prototype.hasOwnProperty.call(template.typeRule,'curve'))return 22000;
+          if(typeof template.typeRule.curve!=='boolean')return 23000;
+          if(template.typeRule.curve)count++;
+          if(count<=0){return 24000;}
+
+
+          if(!Object.prototype.hasOwnProperty.call(template,'detailsRule'))return 30000;//detailsRule property check
+          if(!Array.isArray(template.detailsRule))return 30100;
+          len=template.detailsRule.length;
+          arr=template.detailsRule;
+          if(len<=0)return 30200;
+          if(len>90)return 30300;
+          if(!isObj(arr[0]))return 30400;
+          if(!this.isNameDetails(arr[0]))return 30500;
+          for(let i=1;i<len;i++){
+            if(!isObj(arr[i])){
+              return 31000+i+1;
+            }else {
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 32000+i+1;
+              if(typeof arr[i].set!=='boolean')return 32100+i+1;
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'name'))return 33000+i+1;
+              if(typeof arr[i].name!=='string')return 33100+i+1;
+              if(arr[i].name==='')return 33200+i+1;
+              if(arr[i].name.length>40)return 33300+i+1;
+              if(names.includes(arr[i].name)){return 33400+i+1;}//检测重复属性
+              else{names.push(arr[i].name);}
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'type'))return 35000+i+1;
+              if(typeof arr[i].type!=='string')return 35100+i+1;
+              if(!this.isDetailsType(arr[i].type))return 35200+i+1;
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'default'))return 37000+i+1;
+              if(!this.isAllowValueTypL(arr[i].type,arr[i].default))return 37100+i+1;
+            }
+          }
+
+
+          if(!Object.prototype.hasOwnProperty.call(template,'colorRule'))return 40000;//colorRule property check
+          if(!isObj(template.colorRule))return 40100;
+          if(!Object.prototype.hasOwnProperty.call(template.colorRule,'basis'))return 40200;
+          if(typeof template.colorRule.basis!=='string')return  40300;
+          if(!Object.prototype.hasOwnProperty.call(template.colorRule,'type'))return 40400;
+          if(typeof template.colorRule.type!=='string')return  40500;
+          if(template.colorRule.basis!==''){
+          if(!this.isAllowBasis(template.colorRule.basis,template.colorRule.type,template.detailsRule))return 40600;
+          }
+
+          if(!Object.prototype.hasOwnProperty.call(template.colorRule,'condition'))return 40700;
+          if(!Array.isArray(template.colorRule.condition))return  40800;
+          if(template.colorRule.basis===''){//rule(A)
+            if(template.colorRule.type!=='')return 40900;
+            if(template.colorRule.condition.length!==0)return 41000;
+          }else{
+            if(template.colorRule.type==='')return 41100;
+            if(!this.isDetailsType(template.colorRule.type))return 41200;
+          }
+          len=template.colorRule.condition.length;
+          if(len>90)return 41300;//规则条例最多90条
+          arr=template.colorRule.condition;
+          cType=template.colorRule.type;
+          for(let i=0;i<len;i++){
+            if(!isObj(arr[i])){
+              return 42000+i+1;
+            }else {
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 42100+i+1;
+              if(typeof arr[i].set!=='boolean')return 42200+i+1;
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'color'))return 43000+i+1;
+              if(typeof arr[i].color!=='string')return 43100+i+1;
+              if(!this.isColor16(arr[i].color))return 43200+i+1;
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 44000+i+1;
+              if(typeof arr[i].method!=='string')return 44100+i+1;
+              if(!this.isAllowMethod(cType,arr[i].method))return 44200+i+1;
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 45000+i+1;
+              if(!this.isAllowValueTyp(cType,arr[i].value))return 45100+i+1;
+              if(typeof arr[i].value==='string'){//rule(E)
+                if(arr[i].value.length>100)return 45200+i+1;
+              }
+            }
+          }
+
+
+          if(!Object.prototype.hasOwnProperty.call(template,'widthRule'))return 50000;//widthRule property check
+          if(!isObj(template.widthRule))return 50100;
+          if(!Object.prototype.hasOwnProperty.call(template.widthRule,'basis'))return 50200;
+          if(typeof template.widthRule.basis!=='string')return  50300;
+          if(!Object.prototype.hasOwnProperty.call(template.widthRule,'type'))return 50400;
+          if(typeof template.widthRule.type!=='string')return  50500;
+          if(template.widthRule.basis!==''){
+          if(!this.isAllowBasis(template.widthRule.basis,template.widthRule.type,template.detailsRule))return 50600;
+          }
+
+          if(!Object.prototype.hasOwnProperty.call(template.widthRule,'condition'))return 50700;
+          if(!Array.isArray(template.widthRule.condition))return  50800;
+          if(template.widthRule.basis===''){//rule(A)
+            if(template.widthRule.type!=='')return 50900;
+            if(template.widthRule.condition.length!==0)return 51000;
+          }else{
+            if(template.widthRule.type==='')return 51100;
+            if(!this.isDetailsType(template.widthRule.type))return 51200;
+          }
+          len=template.widthRule.condition.length;
+          if(len>90)return 51300;//规则条例最多90条
+          arr=template.widthRule.condition;
+          wType=template.widthRule.type;
+          for(let i=0;i<len;i++){
+            if(!isObj(arr[i])){
+              return 52000+i+1;
+            }else {
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 52100+i+1;
+              if(typeof arr[i].set!=='boolean')return 52200+i+1;
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'width'))return 53000+i+1;
+              if(typeof arr[i].width!=='number')return 53100+i+1;
+              if(!this.isIntegerP(arr[i].width))return 53200+i+1;
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 54000+i+1;
+              if(typeof arr[i].method!=='string')return 54100+i+1;
+              if(!this.isAllowMethod(wType,arr[i].method))return 54200+i+1;
+
+              if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 55000+i+1;
+              if(!this.isAllowValueTyp(wType,arr[i].value))return 55100+i+1;
+              if(typeof arr[i].value==='string'){//rule(E)
+                if(arr[i].value.length>100)return 55200+i+1;
+              }
+            }
+          }
+          return true;
         }
       }
     },
@@ -2482,8 +3397,9 @@ export default new Vuex.Store({
       target:-1,
       targetNode:null,
     },
-    elementPanelConfig:{
-      hiddenElements:[],
+    elementPanelConfig:{//元素面板配置
+      hiddenElements:[],//隐藏的元素
+      createId:1,//创建图层-分组-子分组时的末尾防重复的递增ID
     },
     operationBoardConfig:{//元素右键操作面板的配置
       posX:null,
@@ -2507,6 +3423,45 @@ export default new Vuex.Store({
         'head_color': 'ffffff'
       }
     },
+    templateData:{
+      /**Read only data. If need to update, please renewal to a brand new object
+       * 只读的数据,如果需要更新,请直接引用新的对象
+       * The following is an example of template object
+       * 如下为模板对象示例
+      'id123abc456':{
+        id:'id123abc456',
+        name:'template',
+        creator:'name',
+        modify:'2020-04-05T01:01:01',
+        locked:false,
+        explain:'none',
+        typeRule:{
+          point:true,
+          line:true,
+          area:true,
+          curve:true
+        },
+        detailsRule:[
+          {
+            set:false,
+            name:'name',
+            default:'unknown',
+            type:'text'
+          }
+        ],
+        colorRule:{
+          basis:'',
+          type:'',
+          condition:[]
+        },
+        widthRule:{
+          basis:'',
+          type:'',
+          condition:[]
+        }
+      }
+      **/
+    }
   },
   getters: {
 
@@ -2563,7 +3518,7 @@ export default new Vuex.Store({
         showPos:[]
       };
     },
-    destroyComprehensive(state){//销毁综合对象
+    destroyInstructPipe(state){//销毁综合对象
       state.serverData.socket=undefined;
     },
     restoreMapConfig(state){//恢复默认地图配置
@@ -2761,25 +3716,20 @@ export default new Vuex.Store({
           let arr1=state.elementPanelConfig.hiddenElements;
           let arr2=product.data;
           let merged=arr1.concat(arr2);
-          let result=merged.filter((value,index,self)=>
-            self.findIndex(item=>item.id===value.id)===index
-          );
-          state.elementPanelConfig.hiddenElements=result;
+          state.elementPanelConfig.hiddenElements=merged.filter((value, index, self) => self.findIndex(item => item.id === value.id) === index);
           break;
         }
         case 'quit':{//集体退出
           let arr1=state.elementPanelConfig.hiddenElements;
           let arr2=product.data;
           let set=new Set(arr2.map(value=>value.id));
-          let result=arr1.filter(value=>!set.has(value.id));
-          state.elementPanelConfig.hiddenElements=result;
+          state.elementPanelConfig.hiddenElements=arr1.filter(value => !set.has(value.id));
           break;
         }
         case 'byTypeJoin':{//按类型集体加入
           let arr1=state.elementPanelConfig.hiddenElements.filter(item=>item.type!==product.by);
           let arr2=product.data;
-          let result=arr1.concat(arr2);
-          state.elementPanelConfig.hiddenElements=result;
+          state.elementPanelConfig.hiddenElements=arr1.concat(arr2);
           break;
         }
         case 'byTypeQuit':{//按类型集体退出

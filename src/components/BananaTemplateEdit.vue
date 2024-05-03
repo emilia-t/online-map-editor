@@ -6,9 +6,35 @@
       </div>
       <div class="templateContent">
         <div class="templateLeft">
-          <div class="templateSel" v-for="( nifty , index ) in niftyList">
-            <span class="nifty"       ref="nifty" @click="switchTemplateNifty(index+1)" v-if="templateNifty===index+1" v-text="nifty"></span>
-            <span class="unNifty"  ref="nifty" @click="switchTemplateNifty(index+1)" v-if="templateNifty!==index+1" v-text="nifty"></span>
+          <div class="templateSel">
+            <span :class="templateNifty===1?'nifty':'unNifty'" @click="switchTemplateNifty(1)">
+              <doc-book/>&nbsp;&nbsp;使用说明
+            </span>
+          </div>
+          <div class="templateSel">
+            <span :class="templateNifty===2?'nifty':'unNifty'" @click="switchTemplateNifty(2)">
+              <information-state/>&nbsp;&nbsp;信息状态
+            </span>
+          </div>
+          <div class="templateSel">
+            <span :class="templateNifty===3?'nifty':'unNifty'" @click="switchTemplateNifty(3)">
+              <various-shapes/>&nbsp;&nbsp;基本类型
+            </span>
+          </div>
+          <div class="templateSel">
+            <span :class="templateNifty===4?'nifty':'unNifty'" @click="switchTemplateNifty(4)">
+              <rule-list/>&nbsp;&nbsp;属性规则
+            </span>
+          </div>
+          <div class="templateSel">
+            <span :class="templateNifty===5?'nifty':'unNifty'" @click="switchTemplateNifty(5)">
+              <rule-list/>&nbsp;&nbsp;颜色规则
+            </span>
+          </div>
+          <div class="templateSel">
+            <span :class="templateNifty===6?'nifty':'unNifty'" @click="switchTemplateNifty(6)">
+              <rule-list/>&nbsp;&nbsp;宽度规则
+            </span>
           </div>
         </div>
         <div class="templateRight">
@@ -56,33 +82,33 @@
           <div class="templateNifty" v-if="templateNifty===2">
             <div class="TContent" >
               <div class="statusList cursorDefault">
-                <span class="ListLeft">当前状态</span>
-                <span class="ListRight" style="cursor:pointer" @click.stop="tpManualCheck()">{{templateStatus}}</span>
+                <div class="ListLeft">当前状态</div>
+                <div class="ListRight" style="cursor:pointer" @click.stop="tpManualCheck()">{{templateStatus}}</div>
               </div>
               <div class="statusList cursorDefault">
-                <span class="ListLeft">锁定状态</span>
-                <span class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="!editTemplate.locked">未锁定(点击锁定)</span>
-                <span class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="editTemplate.locked">已锁定(点击解锁)</span>
+                <div class="ListLeft">锁定状态</div>
+                <div class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="!editTemplate.locked">未锁定(点击锁定)</div>
+                <div class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="editTemplate.locked">已锁定(点击解锁)</div>
               </div>
               <div class="statusList">
-                <span class="ListLeft cursorDefault">模板名称</span>
-                <span class="ListRight">
+                <div class="ListLeft cursorDefault">模板名称</div>
+                <div class="ListRight">
                   <input class="statusInput" type="text" placeholder="未命名模板" v-model="editTemplate.name" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
-                </span>
+                </div>
               </div>
               <div class="statusList">
-                <span class="ListLeft cursorDefault">描述信息</span>
-                <span class="ListRight">
-                  <input class="statusInput" type="text" placeholder="空的描述信息" v-model="editTemplate.explain" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
-                </span>
+                <div class="ListLeft cursorDefault">描述信息</div>
+                <div class="ListRight">
+                  <textarea class="statusInput" type="text" placeholder="空的描述信息" v-model="editTemplate.explain" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                </div>
               </div>
               <div class="statusList cursorDefault">
-                <span class="ListLeft">创建者</span>
-                <span class="ListRight">{{editTemplate.creator}}</span>
+                <div class="ListLeft">创建者</div>
+                <div class="ListRight">{{editTemplate.creator}}</div>
               </div>
               <div class="statusList cursorDefault">
-                <span class="ListLeft">修改日期</span>
-                <span class="ListRight">{{editTemplate.modify}}</span>
+                <div class="ListLeft">修改日期</div>
+                <div class="ListRight">{{editTemplate.modify}}</div>
               </div>
               <div class="statusList cursorDefault">
                 <div class="ListLeft">应用规则一览</div>
@@ -173,15 +199,12 @@
                   设置属性规则
                 </div>
                 <div class="setExplain">
-                  在下方的表格中，点击填写或修改元素的属性规则。注意：在点击“应用”之前都可以再次修改以下规则，一旦点击了“应用”之后，不符合以下属性规则的元素将会被强制修改。另外，如果属性名存在重复，则只保留最初的一条。
+                  在下方的表格中，点击填写或修改元素的属性规则。注意：在点击“应用”之前都可以再次修改以下规则，一旦点击了“应用”之后，不符合以下属性规则的元素将会被强制修改。另外，属性的名称不能为空，也不能重复。
                 </div>
                 <div class="detailsSheet">
                   <div class="SheetRow RowTitle">
-                    <div class="SheetCo0" title="点击切换为删除模式" @click="switchDelMod1=true" v-show="!switchDelMod1">
-                      <trash-can></trash-can>
-                    </div>
-                    <div class="SheetCo0" title="点击切换为排序模式" @click="switchDelMod1=false" v-show="switchDelMod1">
-                      <arrow-up></arrow-up>
+                    <div class="SheetCo10">
+                      操作
                     </div>
                     <div class="SheetCo1">
                       属性名
@@ -192,71 +215,76 @@
                     <div class="SheetCo3">
                       类型
                     </div>
-                    <div class="SheetCo4">
-                      长度
-                    </div>
-                    <div class="SheetCo5">
-                      为空
-                    </div>
                   </div>
-                  <div class="SheetRow RowText" v-for="(item,index) in this.editTemplate.detailsRule">
-                    <div class="SheetCo0">
-                      <span @click.stop="detailsUp(index)" v-show="!switchDelMod1"><arrow-up></arrow-up></span>
-                      <span @click.stop="detailsDown(index)" v-show="!switchDelMod1"><arrow-down></arrow-down></span>
-                      <span @click.stop="deleteDetails(index)" v-show="switchDelMod1"><trash-can></trash-can></span>
-                    </div>
-                    <div class="SheetCo1">
-                      <input class="SheetInput" type="text" v-model="item.name" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
-                    </div>
-                    <div class="SheetCo2">
-                      <input class="SheetInput" type="text" v-model="item.default" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
-                    </div>
-                    <div class="SheetCo3" v-if="item.name!=='name'">
-                      <div class="lopCo3" v-show="item.set">
-                        <div class="listCo3">
-                          <div class="itemCo3" :class="item.type==='text'?'pickCo3':''" @click.stop="()=>{item.type='text';item.length=100;item.set=false}">文本</div>
-                          <div class="itemCo3" :class="item.type==='long'?'pickCo3':''" @click.stop="()=>{item.type='long';item.length=1000;item.set=false}">长文本</div>
-                          <div class="itemCo3" :class="item.type==='number'?'pickCo3':''" @click.stop="()=>{item.type='number';item.length=14;item.set=false}">数字</div>
-                          <div class="itemCo3" :class="item.type==='date'?'pickCo3':''" @click.stop="()=>{item.type='date';item.length=0;item.set=false}">日期</div>
-                          <div class="itemCo3" :class="item.type==='bool'?'pickCo3':''" @click.stop="()=>{item.type='bool';item.length=0;item.set=false}">布尔</div>
-                          <div class="itemCo3" :class="item.type==='list'?'pickCo3':''" @click.stop="()=>{item.type='list';item.length=0;item.set=false}">列表</div>
-                          <div class="itemCo3" :class="item.type==='percent'?'pickCo3':''" @click.stop="()=>{item.type='percent';item.length=0;item.set=false}">百分比</div>
-                          <div class="itemCo3" :class="item.type==='score'?'pickCo3':''" @click.stop="()=>{item.type='score';item.length=10;item.set=false}">评分</div>
-                          <div class="itemCo3" style="color:#1ba903" @click.stop="()=>{item.set=false}">返回</div>
+                  <div class="SheetRow RowText" :class="index===editTemplate.detailsRule.length-1?'lastRow':''" v-for="(item,index) in editTemplate.detailsRule">
+                    <div class="rowTextOut" v-if="item.name==='name'">
+                      <div class="SheetCo0">
+                        <span/>
+                      </div>
+                      <div class="SheetCo0">
+                        <span/>
+                      </div>
+                      <div class="SheetCo0">
+                        <span/>
+                      </div>
+                      <div class="SheetCo1">
+                        <input class="SheetInput" type="text" value="name" disabled="disabled"/>
+                      </div>
+                      <div class="SheetCo2">
+                        <input class="SheetInput" type="text" value="unknown" disabled="disabled"/>
+                      </div>
+                      <div class="SheetCo3">
+                        <div class="inputCo3">text</div>
+                        <div class="iconCo3" @click.stop="alertTip('默认字段无法更改类型')">
+                          <dropdown-button/>
                         </div>
                       </div>
-                      <div class="inputCo3" v-show="!item.set">
-                        {{item.type}}
-                      </div>
-                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
-                        <dropdown-button></dropdown-button>
-                      </div>
-                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
-                        <dropdown-button></dropdown-button>
-                      </div>
                     </div>
-                    <div class="SheetCo3" v-if="item.name==='name'">
-                      <div class="lopCo3" v-show="item.set">
-                        <div class="listCo3">
-                          <div class="itemCo3" :class="item.type==='text'?'pickCo3':''" @click.stop="()=>{item.type='text';item.set=false}">文本</div>
-                          <div class="itemCo3" style="color:#1ba903" @click.stop="()=>{item.set=false}">返回</div>
+                    <div class="rowTextOut" v-if="item.name!=='name'">
+                      <div class="SheetCo0">
+                        <span @click.stop="deleteDetails(index)"><trash-can/></span>
+                      </div>
+                      <div class="SheetCo0">
+                        <span @click.stop="detailsUp(index)"><arrow-up/></span>
+                      </div>
+                      <div class="SheetCo0">
+                        <span @click.stop="detailsDown(index)"><arrow-down/></span>
+                      </div>
+                      <div class="SheetCo1">
+                        <input class="SheetInput" type="text" v-model="item.name"
+                               :disabled="disabledA(item)"
+                               @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      </div>
+                      <div class="SheetCo2">
+                        <pomelo-input :type="item.type" :value="item.default" :disabled="editTemplate.locked" :item="item" @inputChanged="detailsDefaultChanged"/>
+                      </div>
+                      <div class="SheetCo3" v-if="disabledA(item)">
+                        <div class="inputCo3" v-text="item.type"></div>
+                        <div class="iconCo3"></div>
+                      </div>
+                      <div class="SheetCo3" v-if="!disabledA(item)">
+                        <div class="lopCo3" v-show="item.set">
+                          <div class="listCo3">
+                            <div class="itemCo3" :class="item.type==='text'?'pickCo3':''" @click.stop="()=>{       item.type='text';             item.set=false;   item.default='☍tunknown'}">文本</div>
+                            <div class="itemCo3" :class="item.type==='number'?'pickCo3':''" @click.stop="()=>{item.type='number';      item.set=false;   item.default=0}">数字</div>
+                            <div class="itemCo3" :class="item.type==='bool'?'pickCo3':''" @click.stop="()=>{     item.type='bool';             item.set=false;   item.default=false}">布尔</div>
+                            <div class="itemCo3" :class="item.type==='list'?'pickCo3':''" @click.stop="()=>{        item.type='list';                item.set=false;   item.default='☍lunknown'}">列表</div>
+                            <div class="itemCo3" :class="item.type==='percent'?'pickCo3':''" @click.stop="()=>{item.type='percent';       item.set=false;   item.default='☍p0%'}">百分比</div>
+                            <div class="itemCo3" :class="item.type==='datetime'?'pickCo3':''" @click.stop="()=>{item.type='datetime';  item.set=false;   item.default='☍e2020-01-01T00:00:00'}">日期时间</div>
+                            <div class="itemCo3" :class="item.type==='date'?'pickCo3':''" @click.stop="()=>{     item.type='date';             item.set=false;   item.default='☍d2020-01-01'}">日期</div>
+                            <div class="itemCo3" :class="item.type==='time'?'pickCo3':''" @click.stop="()=>{     item.type='time';             item.set=false;   item.default='☍m00:00:00'}">时间</div>
+                            <div class="itemCo3" style="color:#1ba903" @click.stop="item.set=false">返回</div>
+                          </div>
+                        </div>
+                        <div class="inputCo3" v-show="!item.set" v-text="item.type">
+                        </div>
+                        <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
+                          <dropdown-button/>
+                        </div>
+                        <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
+                          <dropdown-button/>
                         </div>
                       </div>
-                      <div class="inputCo3" v-show="!item.set">
-                        {{item.type}}
-                      </div>
-                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
-                        <dropdown-button></dropdown-button>
-                      </div>
-                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
-                        <dropdown-button></dropdown-button>
-                      </div>
-                    </div>
-                    <div class="SheetCo4">
-                      <input class="SheetInput" type="number" v-model.number="item.length" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
-                    </div>
-                    <div class="SheetCo5">
-                      <input type="checkbox" :checked="item.empty" v-model="item.empty" :disabled="editTemplate.locked || item.name==='name'" @focus="onFocusMode()" @blur="noFocusMode()"/>
                     </div>
                   </div>
                   <div class="SheetRow">
@@ -282,10 +310,24 @@
                   点击下方按钮选择其中一个属性作为颜色的依据。
                 </div>
                 <div class="setChoice">
-                  <select name="colorsAoe" v-model="editTemplate.colorRule.basis" :disabled="editTemplate.locked" :title="'当前依据属性类型：'+editTemplate.colorRule.type" @change="changeColorRuleBasis()">
-                    <option :value="item.name" v-if="item.type!=='long' && item.name!==''" v-for="item in editTemplate.detailsRule">{{item.name}}</option>
-                  </select>
-                  <br/>
+                  <div v-text="editTemplate.colorRule.basis===''?'请选择':editTemplate.colorRule.basis">
+                  </div>
+                  <div class="basisCo2" v-show="setColorBasis">
+                    <div class="basisCo3" v-for="item in editTemplate.detailsRule"
+                         v-text="item.name"
+                         :class="item.name===editTemplate.colorRule.basis?'pickCo3':''"
+                         @click.stop="changeColorRuleBasis(item.name,item.type)"
+                         v-if="item.name!=='' && item.type!=='long'">
+                    </div>
+                    <div class="basisCo3" style="color:#1ba903" @click.stop="setColorBasis=false">返回</div>
+                    <div class="basisCo3" style="color:#1ba903" @click.stop="restoreColorRule()">重置</div>
+                  </div>
+                  <div class="iconCo3" @click="setColorBasis=true" v-show="!setColorBasis && editTemplate.locked===false">
+                    <dropdown-button custom="transform:translateX(2px)"/>
+                  </div>
+                  <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
+                    <dropdown-button custom="transform:translateX(2px)"/>
+                  </div>
                 </div>
                 <div class="setTitle">
                   条件规则
@@ -295,14 +337,11 @@
                 </div>
                 <div class="detailsSheet">
                   <div class="SheetRow RowTitle">
-                    <div class="SheetCo0" title="点击切换为删除模式" @click="switchDelMod2=true" v-show="!switchDelMod2">
-                      <trash-can></trash-can>
-                    </div>
-                    <div class="SheetCo0" title="点击切换为排序模式" @click="switchDelMod2=false" v-show="switchDelMod2">
-                      <arrow-up></arrow-up>
+                    <div class="SheetCo10">
+                      操作
                     </div>
                     <div class="SheetCo7">
-                      类型
+                      方法
                     </div>
                     <div class="SheetCo8">
                       参数
@@ -311,11 +350,15 @@
                       颜色
                     </div>
                   </div>
-                  <div class="SheetRow RowText" v-for="(item,index) in editTemplate.colorRule.condition">
+                  <div class="SheetRow RowText"  :class="index===editTemplate.colorRule.condition.length-1?'lastRow':''" v-for="(item,index) in editTemplate.colorRule.condition">
                     <div class="SheetCo0">
-                      <span @click.stop="colorUp(index)" v-show="!switchDelMod2"><arrow-up></arrow-up></span>
-                      <span @click.stop="colorDown(index)" v-show="!switchDelMod2"><arrow-down></arrow-down></span>
-                      <span @click.stop="deleteColor(index)" v-show="switchDelMod2"><trash-can></trash-can></span>
+                      <span @click.stop="deleteColor(index)"><trash-can/></span>
+                    </div>
+                    <div class="SheetCo0">
+                      <span @click.stop="colorUp(index)"><arrow-up/></span>
+                    </div>
+                    <div class="SheetCo0">
+                      <span @click.stop="colorDown(index)"><arrow-down/></span>
                     </div>
                     <div class="SheetCo7">
                       <div class="lopCo3" v-show="item.set">
@@ -328,14 +371,14 @@
                         {{item.method}}
                       </div>
                       <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
-                        <dropdown-button></dropdown-button>
+                        <dropdown-button/>
                       </div>
                       <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
-                        <dropdown-button></dropdown-button>
+                        <dropdown-button/>
                       </div>
                     </div>
                     <div class="SheetCo8">
-                      <input class="SheetInput" type="text" v-model="item.value" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <pomelo-input :type="editTemplate.colorRule.type" :value="item.value" :disabled="editTemplate.locked" :item="item" @inputChanged="detailsValueChanged"/>
                     </div>
                     <div class="SheetCo9">
                       <input class="inpCo9" type="color" v-model="item.color" :disabled="editTemplate.locked"/>
@@ -370,10 +413,24 @@
                   点击下方按钮选择其中一个属性作为宽度的依据。
                 </div>
                 <div class="setChoice">
-                  <select name="colorsAoe" v-model="editTemplate.widthRule.basis" :disabled="editTemplate.locked" :title="'当前依据属性类型：'+editTemplate.widthRule.type" @change="changeWidthRuleBasis()">
-                    <option :value="item.name" v-if="item.type!=='long' && item.name!==''" v-for="item in editTemplate.detailsRule">{{item.name}}</option>
-                  </select>
-                  <br/>
+                  <div v-text="editTemplate.widthRule.basis===''?'请选择':editTemplate.widthRule.basis">
+                  </div>
+                  <div class="basisCo2" v-show="setWidthBasis">
+                    <div class="basisCo3" v-for="item in editTemplate.detailsRule"
+                         v-text="item.name"
+                         :class="item.name===editTemplate.widthRule.basis?'pickCo3':''"
+                         @click.stop="changeWidthRuleBasis(item.name,item.type)"
+                         v-if="item.name!=='' && item.type!=='long'">
+                    </div>
+                    <div class="basisCo3" style="color:#1ba903" @click.stop="setWidthBasis=false">返回</div>
+                    <div class="basisCo3" style="color:#1ba903" @click.stop="restoreWidthRule()">重置</div>
+                  </div>
+                  <div class="iconCo3" @click="setWidthBasis=true" v-show="!setWidthBasis && editTemplate.locked===false">
+                    <dropdown-button custom="margin-left:2px"/>
+                  </div>
+                  <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
+                    <dropdown-button custom="margin-left:2px"/>
+                  </div>
                 </div>
                 <div class="setTitle">
                   条件规则
@@ -383,11 +440,8 @@
                 </div>
                 <div class="detailsSheet">
                   <div class="SheetRow RowTitle">
-                    <div class="SheetCo0" title="点击切换为删除模式" @click="switchDelMod3=true" v-show="!switchDelMod3">
-                      <trash-can></trash-can>
-                    </div>
-                    <div class="SheetCo0" title="点击切换为排序模式" @click="switchDelMod3=false" v-show="switchDelMod3">
-                      <arrow-up></arrow-up>
+                    <div class="SheetCo10">
+                      操作
                     </div>
                     <div class="SheetCo7">
                       类型
@@ -399,11 +453,15 @@
                       宽度
                     </div>
                   </div>
-                  <div class="SheetRow RowText" v-for="(item,index) in editTemplate.widthRule.condition">
+                  <div class="SheetRow RowText" :class="index===editTemplate.widthRule.condition.length-1?'lastRow':''" v-for="(item,index) in editTemplate.widthRule.condition">
                     <div class="SheetCo0">
-                      <span @click.stop="widthUp(index)" v-show="!switchDelMod3"><arrow-up></arrow-up></span>
-                      <span @click.stop="widthDown(index)" v-show="!switchDelMod3"><arrow-down></arrow-down></span>
-                      <span @click.stop="deleteWidth(index)" v-show="switchDelMod3"><trash-can></trash-can></span>
+                      <span @click.stop="deleteWidth(index)"><trash-can/></span>
+                    </div>
+                    <div class="SheetCo0">
+                      <span @click.stop="widthUp(index)"><arrow-up/></span>
+                    </div>
+                    <div class="SheetCo0">
+                      <span @click.stop="widthDown(index)"><arrow-down/></span>
                     </div>
                     <div class="SheetCo7">
                       <div class="lopCo3" v-show="item.set">
@@ -416,14 +474,14 @@
                         {{item.method}}
                       </div>
                       <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
-                        <dropdown-button></dropdown-button>
+                        <dropdown-button/>
                       </div>
                       <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
-                        <dropdown-button></dropdown-button>
+                        <dropdown-button/>
                       </div>
                     </div>
                     <div class="SheetCo8">
-                      <input class="SheetInput" type="text" v-model="item.value" :disabled="editTemplate.locked" @focus="onFocusMode()" @blur="noFocusMode()"/>
+                      <pomelo-input :type="editTemplate.widthRule.type" :value="item.value" :disabled="editTemplate.locked" :item="item" @inputChanged="detailsValueChanged"/>
                     </div>
                     <div class="SheetCo9">
                       <input class="inpCo9" type="number" min="2" max="15" v-model.number="item.width" :disabled="editTemplate.locked"/>
@@ -449,10 +507,10 @@
         </div>
       </div>
       <div class="templateBottom">
-        <button @click.stop="niftyBack()">Back</button>
-        <button @click.stop="niftyNext()">Next</button>
-        <button @click.stop="closeAndCancel()">Cancel</button>
-        <button @click.stop="submitEdit()">Submit</button>
+        <button @click.stop="niftyBack()">上一步</button>
+        <button @click.stop="niftyNext()">下一步</button>
+        <button @click.stop="closeAndCancel()">取消</button>
+        <button @click.stop="submitEdit()">应用</button>
       </div>
     </div>
     <div class="templateMenuClose"  @click.stop="closeAndCancel()"  v-if="templateShow">
@@ -468,15 +526,21 @@
 </template>
 
 <script>
-import ArrowDown from "./svgValidIcons/arrowDown";
-import ArrowUp from "./svgValidIcons/arrowUp";
-import DropdownButton from "./svgValidIcons/dropdownButton";
-import TrashCan from "./svgValidIcons/trashCan";
-import PomeloConfirm from "./PomeloConfirm";
-export default {
+  import PomeloInput from "./PomeloInput";
+  import ArrowDown from "./svgValidIcons/arrowDown";
+  import ArrowUp from "./svgValidIcons/arrowUp";
+  import DropdownButton from "./svgValidIcons/dropdownButton";
+  import TrashCan from "./svgValidIcons/trashCan";
+  import PomeloConfirm from "./PomeloConfirm";
+  import DocBook from "./svgValidIcons/40X/docBook";
+  import InformationState from "./svgValidIcons/40X/informationState";
+  import VariousShapes from "./svgValidIcons/40X/variousShapes";
+  import RuleList from "./svgValidIcons/40X/ruleList";
+
+  export default {
   name: "BananaTemplateEdit",
-  components:{
-    DropdownButton,ArrowUp,ArrowDown,TrashCan,PomeloConfirm
+  components:{DocBook,InformationState,VariousShapes,RuleList,
+    DropdownButton,ArrowUp,ArrowDown,TrashCan,PomeloConfirm,PomeloInput
   },
   data(){
     return{
@@ -495,17 +559,13 @@ export default {
         '#333333','#000000'],
       templateShow:false,//模板设置显示
       templateNifty:1,//模板左侧显示页序号
-      niftyList:[
-        '模板使用方法','模板状态','设置基本类型',
-        '设置属性规则', '设置颜色规则','设置宽度规则'
-      ],
       localTemplate:[//本地模板
         {
           use:false,
           id:'100000',
           name:'空的模板',
           creator:'Emilia-t',
-          modify:'Wed Mar 06 2024 07:50:50 GMT+0800',
+          modify:'2024-04-16T00:00:00',
           locked:true,
           explain:'空的模板',
           viewColor:'#2c2d2c',//可视化模板样式
@@ -516,19 +576,15 @@ export default {
           viewRadius:'2px',
           typeRule:{point:true,line:true,area:true,curve:true},//模板规则
           detailsRule:[
-            {set:false,name:'name',default:'unknown',type:'text',length:100,empty:true}
+            {set:false,name:'name',default:'☍tunknown',type:'text'}
           ],
           colorRule:{
             basis:'',type:'',
-            condition:[
-
-            ]
+            condition:[]
           },
           widthRule:{
             basis:'',type:'',
-            condition:[
-
-            ]
+            condition:[]
           }
         },
         {
@@ -536,7 +592,7 @@ export default {
           id:'111111',
           name:'标准的模板',
           creator:'Emilia-t',
-          modify:'Wed Mar 06 2024 07:50:50 GMT+0800',
+          modify:'2024-04-16T00:00:00',
           locked:true,
           explain:'标准的模板',
           viewColor:'#2c2d2c',//可视化模板样式
@@ -547,11 +603,11 @@ export default {
           viewRadius:'2px',
           typeRule:{point:true,line:true,area:true,curve:true},//模板规则
           detailsRule:[
-            {set:false,name:'name',default:'unknown',type:'text',length:100,empty:true},
-            {set:false,name:'grade',default:'unknown',type:'text',length:100,empty:true},
-            {set:false,name:'region',default:'unknown',type:'text',length:100,empty:true},
-            {set:false,name:'address',default:'unknown',type:'text',length:100,empty:true},
-            {set:false,name:'telephone',default:'unknown',type:'text',length:100,empty:true}
+            {set:false,name:'name',default:'☍tunknown',type:'text'},
+            {set:false,name:'grade',default:'☍tunknown',type:'text'},
+            {set:false,name:'region',default:'☍tunknown',type:'text'},
+            {set:false,name:'address',default:'☍tunknown',type:'text'},
+            {set:false,name:'telephone',default:'☍tunknown',type:'text'}
           ],
           colorRule:{
             basis:'grade',
@@ -563,59 +619,11 @@ export default {
             ]
           },
           widthRule:{
-            basis:'region',
-            type:'text',
-            condition: [
-              {set: false, method: 'equ', value: 'inside', width: 6},
-              {set: false, method: 'equ', value: 'inside', width: 2}
-            ]
+            basis:'',
+            type:'',
+            condition: []
           }
-        },
-        {
-          use:false,
-          id:'222222',
-          name:'公共园区模板(next_)',
-          creator:'Emilia-t',
-          modify:'Wed Mar 06 2024 07:50:50 GMT+0800',
-          locked:true,
-          explain:'公共园区模板',
-          viewColor:'#047804',//可视化模板样式
-          viewFontSize:'14px',
-          viewBackground:'#afffd0',
-          viewBoxShadow:'0px 0px 5px #a2cb4c',
-          viewBorder:'1px solid #e1e1e1',
-          viewRadius:'2px',
-        },
-        {
-          use:false,
-          id:'333333',
-          name:'铁路交通模板',
-          creator:'Emilia-t',
-          modify:'Wed Mar 06 2024 07:50:50 GMT+0800',
-          locked:true,
-          explain:'铁路交通模板',
-          viewColor:'#ffffff',//可视化模板样式
-          viewFontSize:'14px',
-          viewBackground:'#5e5e5e',
-          viewBoxShadow:'0px 0px 5px #909090',
-          viewBorder:'1px dashed #ffffff',
-          viewRadius:'2px',
-        },
-        {
-          use:false,
-          id:'444444',
-          name:'旅游景点模板',
-          creator:'Emilia-t',
-          modify:'Wed Mar 06 2024 07:50:50 GMT+0800',
-          locked:true,
-          explain:'旅游景点模板',
-          viewColor:'#b58f02',//可视化模板样式
-          viewFontSize:'14px',
-          viewBackground:'#ffeac8',
-          viewBoxShadow:'0px 0px 5px #f8d2d2',
-          viewBorder:'1px solid #ffe7e7',
-          viewRadius:'2px',
-        },
+        }
       ],
       taskCode:0,
       editTemplate:{
@@ -635,9 +643,9 @@ export default {
           {
             set:false,
             name:'name',
-            default:'unknown',
+            default:'☍tunknown',
             type:'text',
-            length:100,
+            length:2000,
             empty:true
           }
         ],
@@ -652,18 +660,24 @@ export default {
           condition:[]
         }
       },
-      switchDelMod1:false,
-      switchDelMod2:false,
-      switchDelMod3:false,
       firmView:false,//确认菜单
       firmPlan:{},
       firmMessage:'',
+      tmpProof:null,
+      setColorBasis:false,
+      setWidthBasis:false
     }
   },
-  mounted() {
-
+  mounted(){
+    this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
   },
   methods:{
+    detailsDefaultChanged(data){
+      data.item.default=data.value;
+    },
+    detailsValueChanged(data){
+      data.item.value=data.value;
+    },
     niftyBack(){//上一步骤
       if(this.templateNifty===1)return false;
       this.templateNifty--
@@ -672,87 +686,30 @@ export default {
       if(this.templateNifty===6)return false;
       this.templateNifty++
     },
-    handleConfirm(plan){//一些需要再次确认才能执行的操作
-      if(!plan.state){//取消执行
-        this.firmView=false;//关闭确认菜单
-        return false;
-      }
-      this.firmView=false;//关闭确认菜单
-      let method=plan.method;
-      let value=plan.value;
-      switch(method){
-        case 'useLocalTemplate':{//使用本地模板覆盖之前的模板
-          this.localTemplate.forEach((item)=>{
-            item.use=item.id===value;
-            if(item.id===value){
-              item.use=true;
-              this.editTemplate.name=item.name;
-              this.editTemplate.locked=item.locked;
-              this.editTemplate.explain=item.explain;
-              this.editTemplate.typeRule=item.typeRule;
-              this.editTemplate.detailsRule=item.detailsRule;
-              this.editTemplate.colorRule=item.colorRule;
-              this.editTemplate.widthRule=item.widthRule;
-            }else {
-              item.use=false;
-            }
-          });
-          break;
-        }
-        case 'submitEdit':{
-          let creator=this.userName+'('+this.userEmail+')';
-          let time=this.getFormattedDate();
-          if(this.editTemplate.creator==='' || this.editTemplate.creator===null){
-            this.editTemplate.creator=creator;
-          }
-          this.editTemplate.modify=time;
-          let template=this.editTemplate;
-          let ckCode=this.tpCheck(template);
-          if(ckCode!==true){
-            let text='';
-            text=this.codeExplain(ckCode,false);
-            this.$store.commit('setCoLogMessage',{text:text,from:'internal:BananaTemplateEdit',type:'tip'});
-            return false;
-          }else {
-            let product={
-              template,
-              code:this.taskCode
-            };
-            this.$store.commit('setCoTemplateSubmit',product);
-            this.$store.commit('setCoLogMessage',{text:'模板更新已提交',from:'internal:BananaTemplateEdit',type:'tip'});
-            this.templateShow=false;
-            this.resetUI();
-          }
-          break;
-        }
-      }
-    },
     resetUI(){//还原部分UI界面
       this.templateNifty=1;//还原模板设置页面左侧的按钮
+      this.setColorBasis=false;
+      this.setWidthBasis=false;
       for(let i=0;i<this.localTemplate.length;i++){//还原快速应用模板的界面
         this.localTemplate[i].use=false;
       }
     },
     getFormattedDate() {//获取模板时间
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const date = new Date();
-       const day = days[date.getDay()];
-      const month = months[date.getMonth()];
-      const dayOfMonth = date.getDate();
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = String(date.getSeconds()).padStart(2, '0');
-      const timeZoneOffset = -date.getTimezoneOffset();// 获取时区偏移量，转换为小时
-      const offsetSign = timeZoneOffset >= 0 ? '+' : '-';
-      const offsetHours = String(Math.floor(Math.abs(timeZoneOffset) / 60)).padStart(2, '0');
-      const offsetMinutes = String(Math.abs(timeZoneOffset) % 60).padStart(2, '0');
-      const timeZone = `GMT${offsetSign}${offsetHours}${offsetMinutes}`;
-      return `${day} ${month} ${dayOfMonth.toString().padStart(2, '0')} ${year} ${hours}:${minutes}:${seconds} ${timeZone}`;
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份是从0开始的
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     },
     lockUnlock(){
       this.editTemplate.locked=!this.editTemplate.locked;
+      if(this.editTemplate.locked){
+        this.setWidthBasis=false;
+        this.setColorBasis=false;
+      }
     },
     submitEdit(){
       let s1=JSON.stringify(this.editTemplate);
@@ -765,79 +722,180 @@ export default {
       this.firmMessage='即将更新模板，是否要继续？';
       this.firmView=true;//呼出确认菜单
     },
-    changeWidthRuleBasis(){
-      if(this.editTemplate.widthRule.basis===null
-        || this.editTemplate.widthRule.basis===''
-      ){
-        return false;
-      }
-      let type='text';
-      let basis=this.editTemplate.widthRule.basis;
-      let len=this.editTemplate.detailsRule.length;
-      for(let i=0;i<len;i++){//调整widthRule.type
-        if(basis===this.editTemplate.detailsRule[i].name){
-          type=this.editTemplate.detailsRule[i].type;
-          break;
-        }
-      }
-      this.editTemplate.widthRule.type=type;
-      let condition=[];
-      len=this.editTemplate.widthRule.condition.length;
-      for(let q=0;q<len;q++){//过滤不可用的规则
-        if(type==='bool' || type==='list' || type==='text'){
-          if(this.editTemplate.widthRule.condition[q].method==='equ' || this.editTemplate.widthRule.condition[q].method==='nequ'){
-            condition.push(this.editTemplate.widthRule.condition[q]);
-          }
-        }
-        else if(type==='percent' || type==='date'){
-          if(this.editTemplate.widthRule.condition[q].method==='equ' || this.editTemplate.widthRule.condition[q].method==='nequ'
-            || this.editTemplate.widthRule.condition[q].method==='gre' || this.editTemplate.widthRule.condition[q].method==='greq'
-            || this.editTemplate.widthRule.condition[q].method==='les' || this.editTemplate.widthRule.condition[q].method==='lesq'
-          ){
-            condition.push(this.editTemplate.widthRule.condition[q]);
-          }
-        }else if(type==='score' || type==='number'){
-          condition.push(this.editTemplate.widthRule.condition[q]);
-        }
-      }
-      this.editTemplate.widthRule.condition=condition;
+    changeWidthRuleBasis(basis,type){//宽度依据重新选择后的事件
+      this.setWidthBasis=false;//关闭依据选框
+      this.firmPlan={method:'changeWidthRuleBasis',value:{basis,type}};
+      this.firmMessage='更换依据会清除部分宽度规则，是否要继续？';
+      this.firmView=true;//呼出确认菜单
     },
-    changeColorRuleBasis(){
-      if(this.editTemplate.colorRule.basis===null
-      || this.editTemplate.colorRule.basis===''
-      ){
-        return false;
-      }
-      let type='text';
-      let basis=this.editTemplate.colorRule.basis;
-      let len=this.editTemplate.detailsRule.length;
-      let condition=[];
-      for(let i=0;i<len;i++){//调整colorRule.type
-        if(basis===this.editTemplate.detailsRule[i].name){
-          type=this.editTemplate.detailsRule[i].type;
-          break;
-        }
-      }
-      this.editTemplate.colorRule.type=type;
-      len=this.editTemplate.colorRule.condition.length;
-      for(let q=0;q<len;q++){//过滤不可用的规则
-        if(type==='bool' || type==='list' || type==='text'){
-          if(this.editTemplate.colorRule.condition[q].method==='equ' || this.editTemplate.colorRule.condition[q].method==='nequ'){
-            condition.push(this.editTemplate.colorRule.condition[q]);
+    changeColorRuleBasis(basis,type){//颜色依据重新选择后的事件
+      this.setColorBasis=false;//关闭依据选框
+      this.firmPlan={method:'changeColorRuleBasis',value:{basis,type}};
+      this.firmMessage='更换依据会清除部分颜色规则，是否要继续？';
+      this.firmView=true;//呼出确认菜单
+    },
+    restoreWidthRule(){//重置宽度规则
+      this.setWidthBasis=false;//关闭依据选框
+      this.firmPlan={method:'restoreWidthRule',value:null};
+      this.firmMessage='重置依据会清除所有宽度规则，是否要继续？';
+      this.firmView=true;//呼出确认菜单
+    },
+    restoreColorRule(){//重置颜色规则
+      this.setColorBasis=false;//关闭依据选框
+      this.firmPlan={method:'restoreColorRule',value:null};
+      this.firmMessage='重置依据会清除所有颜色规则，是否要继续？';
+      this.firmView=true;//呼出确认菜单
+    },
+    handleConfirm(plan){//一些需要再次确认才能执行的操作
+      let method=plan.method;
+      let value=plan.value;//确认执行时的操作
+      if(plan.state){//确认执行时的操作
+        this.firmView=false;//关闭确认菜单
+        switch(method){
+          case 'useLocalTemplate':{//使用本地模板覆盖之前的模板
+            this.localTemplate.forEach((item)=>{
+              item.use=item.id===value;
+              if(item.id===value){
+                item.use=true;
+                this.editTemplate.name=item.name;
+                this.editTemplate.locked=item.locked;
+                this.editTemplate.explain=item.explain;
+                this.editTemplate.typeRule=item.typeRule;
+                this.editTemplate.detailsRule=item.detailsRule;
+                this.editTemplate.colorRule=item.colorRule;
+                this.editTemplate.widthRule=item.widthRule;
+              }else {
+                item.use=false;
+              }
+            });
+            break;
+          }
+          case 'submitEdit':{
+            let creator=this.userName+'('+this.userEmail+')';
+            let time=this.getFormattedDate();
+            if(this.editTemplate.creator==='' || this.editTemplate.creator===null){
+              this.editTemplate.creator=creator;
+            }
+            this.editTemplate.modify=time;
+            let template=this.editTemplate;
+            let ckCode=this.tmpProof.tpCheck(template);
+            if(ckCode!==true){
+              let text='';
+              text=this.tmpProof.codeExplain(ckCode);
+              this.$store.commit('setCoLogMessage',{text:text,from:'internal:BananaTemplateEdit',type:'tip'});
+              return false;
+            }else {
+              let product={
+                template,
+                code:this.taskCode
+              };
+              this.$store.commit('setCoTemplateSubmit',product);
+              this.$store.commit('setCoLogMessage',{text:'模板更新已提交',from:'internal:BananaTemplateEdit',type:'tip'});
+              this.templateShow=false;
+              this.resetUI();
+            }
+            break;
+          }
+          case 'changeColorRuleBasis':{
+            let basis=value.basis;
+            let type=value.type;
+            let condition=[];
+            let len=0;
+            this.editTemplate.colorRule.type=type;
+            this.editTemplate.colorRule.basis=basis;
+            /**
+             * 过滤不可用的规则
+             **/
+            len=this.editTemplate.colorRule.condition.length;
+            for(let q=0;q<len;q++){
+              if(type==='bool' || type==='list' || type==='text'){
+                if(this.editTemplate.colorRule.condition[q].method==='equ' || this.editTemplate.colorRule.condition[q].method==='nequ'){
+                  condition.push(this.editTemplate.colorRule.condition[q]);
+                }
+              }
+              else if(type==='percent' || type==='datetime' || type==='date' || type==='time'){
+                if(this.editTemplate.colorRule.condition[q].method==='equ' || this.editTemplate.colorRule.condition[q].method==='nequ'
+                  || this.editTemplate.colorRule.condition[q].method==='gre' || this.editTemplate.colorRule.condition[q].method==='greq'
+                  || this.editTemplate.colorRule.condition[q].method==='les' || this.editTemplate.colorRule.condition[q].method==='lesq'
+                ){
+                  condition.push(this.editTemplate.colorRule.condition[q]);
+                }
+              }else if(type==='number'){
+                condition.push(this.editTemplate.colorRule.condition[q]);
+              }
+            }
+            /**
+             * 转化旧规则中的value值
+             **/
+            len=condition.length;
+            for(let s=0;s<len;s++){
+              let oldV=condition[s].value;
+              let newV=this.tmpProof.conversion(oldV,type);
+              condition[s].value=newV;
+            }
+            this.editTemplate.colorRule.condition=condition;
+            break;
+          }
+          case 'changeWidthRuleBasis':{
+            let basis=value.basis;
+            let type=value.type;
+            let condition=[];
+            let len=0;
+            this.editTemplate.widthRule.type=type;
+            this.editTemplate.widthRule.basis=basis;
+            /**
+             * 过滤不可用的规则
+             **/
+            len=this.editTemplate.widthRule.condition.length;
+            for(let q=0;q<len;q++){
+              if(type==='bool' || type==='list' || type==='text'){
+                if(this.editTemplate.widthRule.condition[q].method==='equ' || this.editTemplate.widthRule.condition[q].method==='nequ'){
+                  condition.push(this.editTemplate.widthRule.condition[q]);
+                }
+              }
+              else if(type==='percent' || type==='datetime' || type==='date' || type==='time'){
+                if(this.editTemplate.widthRule.condition[q].method==='equ' || this.editTemplate.widthRule.condition[q].method==='nequ'
+                  || this.editTemplate.widthRule.condition[q].method==='gre' || this.editTemplate.widthRule.condition[q].method==='greq'
+                  || this.editTemplate.widthRule.condition[q].method==='les' || this.editTemplate.widthRule.condition[q].method==='lesq'
+                ){
+                  condition.push(this.editTemplate.widthRule.condition[q]);
+                }
+              }else if(type==='number'){
+                condition.push(this.editTemplate.widthRule.condition[q]);
+              }
+            }
+            /**
+             * 转化旧规则中的value值
+             **/
+            len=condition.length;
+            for(let s=0;s<len;s++){
+              let oldV=condition[s].value;
+              let newV=this.tmpProof.conversion(oldV,type);
+              condition[s].value=newV;
+            }
+            this.editTemplate.widthRule.condition=condition;
+            break;
+          }
+          case 'restoreColorRule':{
+            this.editTemplate.colorRule.basis='';
+            this.editTemplate.colorRule.type='';
+            this.editTemplate.colorRule.condition.length=0;
+            break;
+          }
+          case 'restoreWidthRule':{
+            this.editTemplate.widthRule.basis='';
+            this.editTemplate.widthRule.type='';
+            this.editTemplate.widthRule.condition.length=0;
+            break;
           }
         }
-        else if(type==='percent' || type==='date'){
-          if(this.editTemplate.colorRule.condition[q].method==='equ' || this.editTemplate.colorRule.condition[q].method==='nequ'
-          || this.editTemplate.colorRule.condition[q].method==='gre' || this.editTemplate.colorRule.condition[q].method==='greq'
-          || this.editTemplate.colorRule.condition[q].method==='les' || this.editTemplate.colorRule.condition[q].method==='lesq'
-          ){
-            condition.push(this.editTemplate.colorRule.condition[q]);
-          }
-        }else if(type==='score' || type==='number'){
-          condition.push(this.editTemplate.colorRule.condition[q]);
+      }
+      else{//取消执行时的操作
+        this.firmView=false;//关闭确认菜单
+        switch(method){
+
         }
       }
-      this.editTemplate.colorRule.condition=condition;
     },
     onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
@@ -943,12 +1001,21 @@ export default {
       if(index>=this.editTemplate.detailsRule.length || index<0){
         return false;
       }
+      const Name=this.editTemplate.detailsRule[index].name;
       if(this.editTemplate.detailsRule.length<=1){
         this.$store.commit('setCoLogMessage',{text:'至少需要保留一个属性',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
-      if(this.editTemplate.detailsRule[index].name==='name'){
+      if(Name==='name'){
         this.$store.commit('setCoLogMessage',{text:'不能删除name属性',from:'internal:BananaTemplateEdit',type:'tip'});
+        return false;
+      }
+      if(Name===this.editTemplate.colorRule.basis && Name!==''){
+        this.$store.commit('setCoLogMessage',{text:'无法删除，因为颜色规则依据此属性',from:'internal:BananaTemplateEdit',type:'tip'});
+        return false;
+      }
+      if(Name===this.editTemplate.widthRule.basis && Name!==''){
+        this.$store.commit('setCoLogMessage',{text:'无法删除，因为宽度规则依据此属性',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
       this.editTemplate.detailsRule.splice(index,1);
@@ -967,7 +1034,7 @@ export default {
     },
     detailsUp(index){
       if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
-      if(index===0){
+      if(index<=1){
         this.$store.commit('setCoLogMessage',{text:'已经在最上方了',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
@@ -982,29 +1049,57 @@ export default {
       let obj=Object.create(null);
       obj.set=false;
       obj.name='';
-      obj.default='unknown';
+      obj.default='☍tunknown';
       obj.type='text';
-      obj.length=100;
-      obj.empty=true;
       this.editTemplate.detailsRule.push(obj);
     },
     addWidthRule(){
       if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
-      if(this.editTemplate.widthRule.basis===null || this.editTemplate.widthRule.method===null){this.alertTip('请先选择宽度依据');return false;}
+      if(this.editTemplate.widthRule.basis===null || this.editTemplate.widthRule.type===null){this.alertTip('请先选择宽度依据');return false;}
+      if(this.editTemplate.widthRule.basis==='' || this.editTemplate.widthRule.type===''){this.alertTip('请先选择宽度依据');return false;}
       let obj=Object.create(null);
+      let wType='';
+      wType=this.editTemplate.widthRule.type;
+      if(wType==='long'){//依据颜色依据类型给定默认value
+        this.alertTip('此颜色依据类型不支持，请选择其他依据');return false;
+      }else if(wType==='text' || wType==='list'){
+        obj.value='unknown';
+      }else if(wType==='score' || wType==='number'){
+        obj.value=0;
+      }else if(wType==='percent'){
+        obj.value='0%';
+      }else if(wType==='datetime'){
+        obj.value='Sat Jan 01 2000 08:01:01 GMT+8';
+      }else if(wType==='bool'){
+        obj.value=false;
+      }
       obj.set=false;
       obj.method='equ';
-      obj.value='0';
       obj.width=2;
       this.editTemplate.widthRule.condition.push(obj);
     },
     addColorRule(){
       if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
-      if(this.editTemplate.colorRule.basis===null || this.editTemplate.colorRule.method===null){this.alertTip('请先选择颜色依据');return false;}
+      if(this.editTemplate.colorRule.basis===null || this.editTemplate.colorRule.type===null){this.alertTip('请先选择颜色依据');return false;}
+      if(this.editTemplate.colorRule.basis==='' || this.editTemplate.colorRule.type===''){this.alertTip('请先选择颜色依据');return false;}
       let obj=Object.create(null);
+      let cType='';
+      cType=this.editTemplate.colorRule.type;
+      if(cType==='long'){//依据颜色依据类型给定默认value
+        this.alertTip('此颜色依据类型不支持，请选择其他依据');return false;
+      }else if(cType==='text' || cType==='list'){
+        obj.value='unknown';
+      }else if(cType==='score' || cType==='number'){
+        obj.value=0;
+      }else if(cType==='percent'){
+        obj.value='0%';
+      }else if(cType==='datetime'){
+        obj.value='Sat Jan 01 2000 08:01:01 GMT+8';
+      }else if(cType==='bool'){
+        obj.value=false;
+      }
       obj.set=false;
       obj.method='equ';
-      obj.value='0';
       obj.color='#000000';
       this.editTemplate.colorRule.condition.push(obj);
     },
@@ -1036,484 +1131,50 @@ export default {
       this.$store.commit('setCoLogMessage',{text:'暂不支持修复',from:'internal:BananaTemplateEdit',type:'warn'});
     },
     tpManualCheck(){
-      let checkCode=this.tpCheck(this.editTemplate);
+      let checkCode=this.tmpProof.tpCheck(this.editTemplate);
       if(checkCode!==true){
         let text='';
-        text=this.codeExplain(checkCode);
+        text=this.tmpProof.codeExplain(checkCode);
         this.$store.commit('setCoLogMessage',{text:'模板存在异常：'+text,from:'internal:BananaTemplateEdit',type:'warn'});
         this.tpRepair();
       }else {
         this.$store.commit('setCoLogMessage',{text:'模板检查结果：正常',from:'internal:BananaTemplateEdit',type:'tip'});
       }
     },
-    /**
-     * tpCheck
-    */
-    isInteger(value){//判断一个数字是否为正整数
-      return Number.isInteger(value) && value>0;
-    },
-    isColor16(color){//检测一个字符串是否是标准的16进制颜色-正确则返回true
-      const regex=/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/;
-      return regex.test(color);
-    },
-    isAllowValueTyp(type,value){//依据type检测value(或default)是否是正确的type类型-正确则返回true
+    maxLength2Type(type){//依据属性类型返回该属性的最大长度
       switch (type) {
-        case 'text':{
-          return typeof value==='string';
-        }
-        case 'long':{
-          return typeof value==='string';
-        }
-        case 'number':{
-          return typeof value === 'number';
-        }
-        case 'date':{
-          return typeof value === 'string';
-        }
-        case 'bool':{
-          return typeof value === 'boolean';
-        }
-        case 'list':{
-          return typeof value === 'string';
-        }
-        case 'percent':{
-          if(typeof value!=='string')return false;
-          const reg=/^\d+(\.\d+)?%$/;
-          return reg.test(value);
-        }
-        case 'score':{
-          if(typeof value!=='number')return false;
-        }
+        case 'text':return 100;
+        case 'long':return 1000;
+        case 'number':return 0;
+        case 'datetime':return 0;
+        case 'bool':return 0;
+        case 'list':return 0;
+        case 'percent':return 0;
+        case 'score':return 10;
       }
     },
-    isAllowMethod(type,method){//判断method是否为type允许使用的方法-正确则返回true
-      switch (type){
-        case 'long':{
-          return false;
-        }
-        case 'score':{
-          return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
-        }
-        case 'number':{
-          return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
-        }
-        case 'percent':{
-          return ['equ','nequ','gre','greq','les','lesq'].includes(method);
-        }
-        case 'date':{
-          return ['equ','nequ','gre','greq','les','lesq'].includes(method);
-        }
-        case 'bool':{
-          return ['equ','nequ'].includes(method);
-        }
-        case 'list':{
-          return ['equ','nequ'].includes(method);
-        }
-        case 'text':{
-          return ['equ','nequ'].includes(method);
-        }
-        default:{
-          return false;
-        }
-      }
-    },
-    isAllowValueTypL(type,length,value){//依据type length检测value(或default)是否是type类型的数据以及长度是否合理-正确则返回true
+    input2Type(type){//依据Type类型判断输入框应该是数字(1)还是文本(2)还是checkbox(3)
       switch (type) {
-        case 'text':{
-          if(typeof value!=='string')return false;
-          return value.length <= length;
-        }
-        case 'long':{
-          if(typeof value!=='string')return false;
-          return value.length <= length;
-        }
-        case 'number':{
-          return typeof value === 'number';
-        }
-        case 'date':{
-          return typeof value === 'string';
-        }
-        case 'bool':{
-          return typeof value === 'boolean';
-        }
-        case 'list':{
-          return typeof value === 'string';
-        }
-        case 'percent':{
-          if(typeof value!=='string')return false;
-          const reg=/^\d+(\.\d+)?%$/;
-          return reg.test(value);
-        }
-        case 'score':{
-          if(typeof value!=='number')return false;
-          return value <= length;
-        }
+        case 'datetime':return 4;
+        case 'bool':return 3;
+        case 'text':return 2;
+        case 'long':return 2;
+        case 'list':return 2;
+        case 'percent':return 2;
+        case 'number':return 1;
+        case 'score':return 1;
       }
     },
-    isAllowTypeLen(type,num){//检测num是否超过type规定的最大长度-正确则返回true
-      if(num<0)return false;
-      switch (type) {
-        case 'text':{
-          return num <= 100;
-        }
-        case 'long':{
-          return num <= 1000;
-        }
-        case 'score':{
-          return num <= 10;
-        }
-        default:{
-          return num === 0;
-        }
-      }
+    disabledA(item){
+      if(this.editTemplate.locked)return true;
+      if(item.name===this.editTemplate.colorRule.basis && item.name!=='')return true;
+      return item.name === this.editTemplate.widthRule.basis && item.name !== '';
     },
-    isDetailsType(str){//检测str是否为模板属性规定以内的类型-正确则返回true
-      return ['text','long','number','date','bool','list','percent','score'].includes(str);
-    },
-    isNameDetails(obj){//检测是否obj是默认的name属性-正确则返回true
-      let obj1={
-        set:false,
-        name:'name',
-        default:'unknown',
-        type:'text',
-        length:100,
-        empty:true
-      };
-     const keys1 = Object.keys(obj1);
-      const keys2 = Object.keys(obj);
-      if (keys1.length !== keys2.length) {
-       return false;
-     }
-      for (let key of keys1) {
-        if (obj1[key] !== obj[key]) {
-         return false;
-        }
-     }
-      return true;
-    },
-    codeExplain(code,english){//错误代码的解释
-      let A=code%100;
-      let B=(code-A);
-      switch (B){
-        case 500:{return english?'Template is null':'模板为空';}
-        case 1000:{return english?'Template is not an object':'模板不是一个对象';}
-        case 2000:{return english?'Template missing id attribute':'模板缺失id属性';}//A layer property check
-        case 2100:{return english?'Template id value type error':'模板id值类型错误';}
-        case 2200:{return english?'Template id value cannot be empty':'模板id值不能为空字符';}
-
-        case 4000:{return english?'Template missing name attribute':'模板缺失name属性';}
-        case 4100:{return english?'Template name value type error':'模板名称值类型错误';}
-        case 4200:{return english?'Template name value cannot be empty':'模板名称值不能为空字符';}
-
-        case 6000:{return english?'Template missing creator attribute':'模板缺失creator属性';}
-        case 6100:{return english?'Template creator value type error':'模板创建者值类型错误';}
-        case 6200:{return english?'Template creator value cannot be empty':'模板创建者值不能为空字符';}
-
-        case 8000:{return english?'Template missing modify attribute':'模板缺少modify属性';}
-        case 8100:{return english?'Template modify value type error':'模板编辑日期值类型错误';}
-        case 8200:{return english?'Template modify value cannot be empty':'模板编辑日期值不能为空';}
-
-        case 10000: { return english ? 'Template missing locked attribute' : '模板缺失locked属性'; }
-        case 10100: { return english ? 'Template locked value type error' : '模板locked值类型错误'; }
-
-        case 12000: { return english ? 'Template missing explain attribute' : '模板缺失explain属性'; }
-        case 12100: { return english ? 'Template explain value type error' : '模板描述信息值类型错误'; }
-
-        case 14000: { return english ? 'Template missing typeRule attribute' : '模板缺失typeRule属性'; } //typeRule property check
-        case 15000: { return english ? 'Template typeRule is not an object' : '模板typeRule不是一个对象'; }
-
-        case 16000: { return english ? 'TypeRule missing point attribute' : '类型规则缺失point属性'; }
-        case 17000: { return english ? 'TypeRule point value type error' : '类型规则point值类型错误'; }
-
-        case 18000: { return english ? 'TypeRule missing line attribute' : '类型规则缺失line属性'; }
-        case 19000: { return english ? 'TypeRule line value type error' : '类型规则line值类型错误'; }
-
-        case 20000: { return english ? 'TypeRule missing area attribute' : '类型规则缺失area属性'; }
-        case 21000: { return english ? 'TypeRule area value type error' : '类型规则area值类型错误'; }
-
-        case 22000: { return english ? 'TypeRule missing curve attribute' : '类型规则缺失curve属性'; }
-        case 23000: { return english ? 'TypeRule curve value type error' : '类型规则curve值类型错误'; }
-        case 24000: { return english ? 'TypeRule at least one must be allowed' : '类型规则至少需要允许一个'; }
-
-        case 30000: { return english ? 'Template missing detailsRule attribute' : '模板缺失detailsRule属性'; } //detailsRule property check
-        case 30100: { return english ? 'Template detailsRule is not an array' : '模板detailsRule不是一个数组'; }
-        case 30200: { return english ? 'Template detailsRule length cannot = 0' : '模板detailsRule长度不能为0'; }
-        case 30300: { return english ? 'Template detailsRule length cannot > 90' : '模板detailsRule长度不能大于90'; }
-        case 30400: { return english ? 'Template detailsRule first element type error' : '模板detailsRule第一个元素类型错误'; }
-        case 30500: { return english ? 'Template detailsRule first element value error' : '模板detailsRule第一个元素值错误'; }
-
-        case 31000: { return english ? 'Template detailsRule type error in:' + A + ' item' : '模板属性规则类型错误，在：' + A + '项'; }
-        case 32000: { return english ? 'DetailsRule missing set attribute in:' + A + ' item' : '属性规则缺失set属性，在：' + A + '项'; }
-        case 32100: { return english ? 'DetailsRule set value type error in:' + A + ' item' : '属性规则set值类型错误，在：' + A + '项'; }
-
-        case 33000: { return english ? 'DetailsRule missing name attribute in:' + A + ' item' : '属性规则缺失name属性，在：' + A + '项'; }
-        case 33100: { return english ? 'DetailsRule name value type error in:' + A + ' item' : '属性规则name值类型错误，在：' + A + '项'; }
-        case 33200: { return english ? 'DetailsRule name value cannot be empty in:' + A + ' item' : '属性规则name值不能为空，在：' + A + '项'; }
-        case 33300: { return english ? 'DetailsRule name value length cannot > 40 in:' + A + ' item' : '属性规则name值长度不能大于40，在：' + A + '项'; }
-        case 33400: { return english ? 'DetailsRule name cannot duplicated:'+A+' item': '属性规则name值不能重复，在：' + A + '项';}
-
-        case 34000: { return english ? 'DetailsRule missing empty attribute in:' + A + ' item' : '属性规则缺失empty属性，在：' + A + '项'; }
-        case 34100: { return english ? 'DetailsRule empty value type error in:' + A + ' item' : '属性规则empty值类型错误，在：' + A + '项'; }
-
-        case 35000: { return english ? 'DetailsRule missing type attribute in:' + A + ' item' : '属性规则缺失type属性，在：' + A + '项'; }
-        case 35100: { return english ? 'DetailsRule type value type error in:' + A + ' item' : '属性规则type值类型错误，在：' + A + '项'; }
-        case 35200: { return english ? 'DetailsRule type value undefined in:' + A + ' item' : '属性规则type值未定义，在：' + A + '项'; }
-
-        case 36000: { return english ? 'DetailsRule missing length attribute in:' + A + ' item' : '属性规则缺失length属性，在：' + A + '项'; }
-        case 36100: { return english ? 'DetailsRule length value type error in:' + A + ' item' : '属性规则length值类型错误，在：' + A + '项'; }
-        case 36200: { return english ? 'Exceeded the allowed detailsRule length value in:' + A + ' item' : 'length超出允许的长度值，在：' + A + '项'; }
-
-        case 37000: { return english ? 'DetailsRule missing default attribute in:' + A + ' item' : '属性规则缺失default属性，在：' + A + '项'; }
-        case 37100: { return english ? 'DetailsRule default value type error in:' + A + ' item' : '属性规则default值类型错误，在：' + A + '项'; }
-
-        case 40000: { return english ? 'Template missing colorRule attribute' : '模板缺失colorRule属性'; } //colorRule property check
-        case 40100: { return english ? 'Template colorRule is not an object' : '模板颜色规则不是一个对象'; }
-        case 40200: { return english ? 'ColorRule missing basis attribute' : '颜色规则缺失basis属性'; }
-        case 40300: { return english ? 'ColorRule basis value type error' : '颜色规则basis值类型错误'; }
-        case 40400: { return english ? 'ColorRule missing type attribute' : '颜色规则缺失type属性'; }
-        case 40500: { return english ? 'ColorRule type value type error' : '颜色规则type值类型错误'; }
-        case 40600: { return english ? 'ColorRule missing condition attribute' : '颜色规则缺失condition属性'; }
-        case 40700: { return english ? 'ColorRule condition is not an array' : '颜色规则condition不是一个数组'; }
-        case 40800: { return english ? 'If the basis is empty, the type must be empty' : '如果basis为空，则type必须为空'; }
-        case 40900: { return english ? 'If the basis is empty, the condition must be an empty array' : '如果basis为空，则condition必须是一个空数组'; }
-        case 41000: { return english ? 'If the basis is not empty, the type cannot be empty' : '如果basis不为空，则type不能为空'; }
-        case 41100: { return english ? 'ColorRule type value not allowed' : '颜色规则type值不允许'; }
-        case 41200: { return english ? 'ColorRule item length cannot > 90' : '颜色规则数量不能大于90'; }
-
-        case 42000: { return english ? 'ColorRule item is not an object in:' + A + ' item' : '此条颜色规则不是一个对象，在：' + A + '项'; }
-        case 42100: { return english ? 'ColorRule item missing set attribute in:' + A + ' item' : '此条颜色规则缺失set属性，在：' + A + '项'; }
-        case 42200: { return english ? 'ColorRule item set value type error in:'+A+' item': '此条颜色规则set值类型错误，在：' + A + '项';}
-
-        case 43000: { return english ? 'ColorRule item missing color attribute in:' + A + ' item' : '此条颜色规则缺失color属性，在：' + A + '项'; }
-        case 43100: { return english ? 'ColorRule item color value type error in:' + A + ' item' : '此条颜色规则color值类型错误，在：' + A + '项'; }
-        case 43200: { return english ? 'ColorRule item color value format error in:' + A + ' item' : '此条颜色规则color值格式错误，在：' + A + '项'; }
-
-        case 44000: { return english ? 'ColorRule item missing method attribute in:' + A + ' item' : '此条颜色规则缺失method属性，在：' + A + '项'; }
-        case 44100: { return english ? 'ColorRule item method value type error in:' + A + ' item' : '此条颜色规则的method值类型错误，在：' + A + '项'; }
-        case 44200: { return english ? 'ColorRule item method not allowed in:' + A + ' item' : '此条颜色规则的method不合理，在：' + A + '项'; }
-
-        case 45000: { return english ? 'ColorRule item missing value attribute in:' + A + ' item' : '此条颜色规则缺失value属性，在：' + A + '项'; }
-        case 45100: { return english ? 'ColorRule item value type not allowed in:' + A + ' item' : '此条颜色规则的value类型不合理，在：' + A + '项'; }
-        case 45200: { return english ? 'ColorRule item value length cannot > 100 in:' + A + ' item' : '此条颜色规则的value字符长度不能大于100，在：' + A + '项'; }
-
-        case 50000: { return english ? 'Template missing widthRule attribute' : '模板缺失widthRule属性'; } //widthRule property check
-        case 50100: { return english ? 'Template widthRule is not an object' : '模板widthRule不是一个对象'; }
-        case 50200: { return english ? 'WidthRule missing basis attribute' : '宽度规则缺失basis属性'; }
-        case 50300: { return english ? 'WidthRule basis value type error' : '宽度规则basis值类型错误'; }
-        case 50400: { return english ? 'WidthRule missing type attribute' : '宽度规则缺失type属性'; }
-        case 50500: { return english ? 'WidthRule type value type error' : '宽度规则type值类型错误'; }
-        case 50600: { return english ? 'WidthRule missing condition attribute' : '宽度规则缺失condition属性'; }
-        case 50700: { return english ? 'WidthRule condition is not an array' : '宽度规则condition不是一个数组'; }
-        case 50800: { return english ? 'If the basis is empty, the type must be empty' : '宽度规则中，如果basis为空，则type必须为空'; }
-        case 50900: { return english ? 'If the basis is empty, the condition must be an empty array' : '宽度规则中，如果basis为空，则condition必须是一个空数组'; }
-        case 51000: { return english ? 'If the basis is not empty, the type cannot be empty' : '宽度规则中，如果basis不为空，则type不能为空'; }
-        case 51100: { return english ? 'WidthRule type value not allowed' : '宽度规则type值不合理'; }
-        case 51200: { return english ? 'WidthRule item length cannot > 90' : '宽度规则数量不能大于90'; }
-
-        case 52000: { return english ? 'WidthRule item is not an object in:' + A + ' item' : '此条宽度规则不是一个对象，在：' + A + '项'; }
-        case 52100: { return english ? 'WidthRule item missing set attribute in:' + A + ' item' : '此条宽度规则缺失set属性，在：' + A + '项'; }
-        case 52200: { return english ? 'WidthRule item set value type error in:'+A+' item' : '此条宽度规则set值类型错误，在：' + A + '项';}
-
-        case 53000: { return english ? 'WidthRule item missing width attribute in:' + A + ' item' : '此条宽度规则缺失width属性，在：' + A + '项'; }
-        case 53100: { return english ? 'WidthRule item width value type error in:' + A + ' item' : '此条宽度规则width值类型错误，在：' + A + '项'; }
-        case 53200: { return english ? 'WidthRule item width value must be integer in:' + A + ' item' : '此条宽度规则width值必须为整数，在：' + A + '项'; }
-
-        case 54000: { return english ? 'WidthRule item missing method attribute in:' + A + ' item' : '此条宽度规则缺失method属性，在：' + A + '项'; }
-        case 54100: { return english ? 'WidthRule item method value type error in:' + A + ' item' : '此条宽度规则的method值类型错误，在：' + A + '项'; }
-        case 54200: { return english ? 'WidthRule item method not allowed in:' + A + ' item' : '此条宽度规则的method不合理，在：' + A + '项'; }
-
-        case 55000: { return english ? 'WidthRule item missing value attribute in:' + A + ' item' : '此条宽度规则缺失value属性，在：' + A + '项'; }
-        case 55100: { return english ? 'WidthRule item value type not allowed in:' + A + ' item' : '此条宽度规则的value类型不合理，在：' + A + '项'; }
-        case 55200: { return english ? 'WidthRule item value length cannot > 100 in:' + A + ' item' : '此条宽度规则的value字符长度不能大于100，在：' + A + '项'; }
-      }
-    },
-    tpCheck(template){//模板检查,若正常则返回true，否则返回其他错误的代码
-      if(template===null)return 500;
-      let arr=[];
-      let names=['name'];
-      let len=0;
-      let count=0;
-      let cType='';
-      let wType='';
-      function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
-
-
-      if(!isObj(template))return 1000;
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'id'))return 2000;//A layer property check
-      if(typeof template.id!=='string')return 2100;
-      if(template.id==='')return 2200;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'name'))return 4000;
-      if(typeof template.name!=='string')return 4100;
-      if(template.name==='')return 4200;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'creator'))return 6000;
-      if(typeof template.creator!=='string')return 6100;
-      if(template.creator==='')return 6200;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'modify'))return 8000;
-      if(typeof template.modify!=='string')return 8100;
-      if(template.modify==='')return 8200;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'locked'))return 10000;
-      if(typeof template.locked!=='boolean')return 10100;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'explain'))return 12000;
-      if(typeof template.explain!=='string')return 12100;
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'typeRule'))return 14000;//typeRule property check
-      if(!isObj(template.typeRule))return 15000;
-      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'point'))return 16000;
-      if(typeof template.typeRule.point!=='boolean')return 17000;
-      if(template.typeRule.point)count++;
-      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'line'))return 18000;
-      if(typeof template.typeRule.line!=='boolean')return 19000;
-      if(template.typeRule.line)count++;
-      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'area'))return 20000;
-      if(typeof template.typeRule.area!=='boolean')return 21000;
-      if(template.typeRule.area)count++;
-      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'curve'))return 22000;
-      if(typeof template.typeRule.curve!=='boolean')return 23000;
-      if(template.typeRule.curve)count++;
-      if(count<=0){return 24000;}
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'detailsRule'))return 30000;//detailsRule property check
-      if(!Array.isArray(template.detailsRule))return 30100;
-      len=template.detailsRule.length;
-      arr=template.detailsRule;
-      if(len<=0)return 30200;
-      if(len>90)return 30300;
-      if(!isObj(arr[0]))return 30400;
-      if(!this.isNameDetails(arr[0]))return 30500;
-      for(let i=1;i<len;i++){
-        if(!isObj(arr[i])){
-          return 31000+i;
-        }else {
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 32000+i;
-          if(typeof arr[i].set!=='boolean')return 32100+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'name'))return 33000+i;
-          if(typeof arr[i].name!=='string')return 33100+i;
-          if(arr[i].name==='')return 33200+i;
-          if(arr[i].name.length>40)return 33300+i;
-          if(names.includes(arr[i].name)){return 33400+i}//检测重复属性
-          else{names.push(arr[i].name);}
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'empty'))return 34000+i;
-          if(typeof arr[i].empty!=='boolean')return 34100+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'type'))return 35000+i;
-          if(typeof arr[i].type!=='string')return 35100+i;
-          if(!this.isDetailsType(arr[i].type))return 35200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'length'))return 36000+i;
-          if(typeof arr[i].length!=='number')return 36100+i;
-          if(!this.isAllowTypeLen(arr[i].type,arr[i].length))return 36200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'default'))return 37000+i;
-          if(!this.isAllowValueTypL(arr[i].type,arr[i].length,arr[i].default))return 37100+i;
-        }
-      }
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'colorRule'))return 40000;//colorRule property check
-      if(!isObj(template.colorRule))return 40100;
-      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'basis'))return 40200;
-      if(typeof template.colorRule.basis!=='string')return  40300;
-      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'type'))return 40400;
-      if(typeof template.colorRule.type!=='string')return  40500;
-      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'condition'))return 40600;
-      if(!Array.isArray(template.colorRule.condition))return  40700;
-      if(template.colorRule.basis===''){//rule(A)
-        if(template.colorRule.type!=='')return 40800;
-        if(template.colorRule.condition.length!==0)return 40900;
-      }else{
-        if(template.colorRule.type==='')return 41000;
-        if(!this.isDetailsType(template.colorRule.type))return 41100;
-      }
-      len=template.colorRule.condition.length;
-      if(len>90)return 41200;//规则条例最多90条
-      arr=template.colorRule.condition;
-      cType=template.colorRule.type;
-      for(let i=0;i<len;i++){
-        if(!isObj(arr[i])){
-          return 42000+i;
-        }else {
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 42100+i;
-          if(typeof arr[i].set!=='boolean')return 42200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'color'))return 43000+i;
-          if(typeof arr[i].color!=='string')return 43100+i;
-          if(!this.isColor16(arr[i].color))return 43200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 44000+i;
-          if(typeof arr[i].method!=='string')return 44100+i;
-          if(!this.isAllowMethod(cType,arr[i].method))return 44200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 45000+i;
-          if(!this.isAllowValueTyp(cType,arr[i].value))return 45100+i;
-          if(typeof arr[i].value==='string'){//rule(E)
-            if(arr[i].value.length>100)return 45200+i;
-          }
-        }
-      }
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'widthRule'))return 50000;//widthRule property check
-      if(!isObj(template.widthRule))return 50100;
-      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'basis'))return 50200;
-      if(typeof template.widthRule.basis!=='string')return  50300;
-      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'type'))return 50400;
-      if(typeof template.widthRule.type!=='string')return  50500;
-      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'condition'))return 50600;
-      if(!Array.isArray(template.widthRule.condition))return  50700;
-      if(template.widthRule.basis===''){//rule(A)
-        if(template.widthRule.type!=='')return 50800;
-        if(template.widthRule.condition.length!==0)return 50900;
-      }else{
-        if(template.widthRule.type==='')return 51000;
-        if(!this.isDetailsType(template.widthRule.type))return 51100;
-      }
-      len=template.widthRule.condition.length;
-      if(len>90)return 51200;//规则条例最多90条
-      arr=template.widthRule.condition;
-      wType=template.widthRule.type;
-      for(let i=0;i<len;i++){
-        if(!isObj(arr[i])){
-          return 52000+i;
-        }else {
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 52100+i;
-          if(typeof arr[i].set!=='boolean')return 52200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'width'))return 53000+i;
-          if(typeof arr[i].width!=='number')return 53100+i;
-          if(!this.isInteger(arr[i].width))return 53200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 54000+i;
-          if(typeof arr[i].method!=='string')return 54100+i;
-          if(!this.isAllowMethod(wType,arr[i].method))return 54200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 55000+i;
-          if(!this.isAllowValueTyp(wType,arr[i].value))return 55100+i;
-          if(typeof arr[i].value==='string'){//rule(E)
-            if(arr[i].value.length>100)return 55200+i;
-          }
-        }
-      }
-      return true;
-    },
-    /**
-     * tpCheck
-     */
   },
   computed:{
     templateStatus(){
       if(this.editTemplate===null)return '空的';
-      if(this.tpCheck(this.editTemplate)===true)return '正常(点击检查)';
+      if(this.tmpProof.tpCheck(this.editTemplate)===true)return '正常(点击检查)';
       return '异常(点击修复)';
     },
     userName(){
@@ -1703,22 +1364,25 @@ export default {
         case 'text':{
           return {'equ':'等于','nequ':'不等于'};
         }
-        case 'bool':{
-          return {'equ':'等于','nequ':'不等于'};
-        }
         case 'list':{
           return {'equ':'等于','nequ':'不等于'};
         }
+        case 'bool':{
+          return {'equ':'等于','nequ':'不等于'};
+        }
+        case 'time':{
+          return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于'};
+        }
         case 'date':{
+          return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于'};
+        }
+        case 'datetime':{
           return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于'};
         }
         case 'percent':{
           return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于'};
         }
         case 'number':{
-          return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于','mod0':'模等于0','nmod0':'模不等于0'};
-        }
-        case 'score':{
           return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于','mod0':'模等于0','nmod0':'模不等于0'};
         }
         default:{
@@ -1731,22 +1395,25 @@ export default {
         case 'text':{
           return {'equ':'等于','nequ':'不等于'};
         }
-        case 'bool':{
-          return {'equ':'等于','nequ':'不等于'};
-        }
         case 'list':{
           return {'equ':'等于','nequ':'不等于'};
         }
+        case 'bool':{
+          return {'equ':'等于','nequ':'不等于'};
+        }
+        case 'time':{
+          return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于'};
+        }
         case 'date':{
+          return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于'};
+        }
+        case 'datetime':{
           return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于'};
         }
         case 'percent':{
           return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于'};
         }
         case 'number':{
-          return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于','mod0':'模等于0','nmod0':'模不等于0'};
-        }
-        case 'score':{
           return {'equ':'等于','nequ':'不等于','gre':'大于','greq':'大于等于','les':'小于','lesq':'小于等于','mod0':'模等于0','nmod0':'模不等于0'};
         }
         default:{
@@ -1769,7 +1436,7 @@ export default {
     /**
      * @return {object|null}
      */
-    EditTemplate(){
+    cEditTemplate(){
       return this.$store.state.templateConfig.editTemplate;
     },
     /**
@@ -1788,8 +1455,10 @@ export default {
   watch:{
     TaskCode(){
       if(this.TemplateShow){
-        let ID=this.createTemplateId();
-        let Empty={
+        let ID;
+        do{ID=this.createTemplateId();}
+        while(Object.prototype.hasOwnProperty.call(this.$store.state.templateData,ID));
+        let Empty={//空模板对象
           id:ID,
           name:'',
           creator:'',
@@ -1797,14 +1466,14 @@ export default {
           locked:false,
           explain:'none',
           typeRule:{point:true, line:true, area:true, curve:true},
-          detailsRule:[{set:false, name:'name', default:'unknown', type:'text', length:100, empty:true}],
+          detailsRule:[{set:false, name:'name', default:'☍tunknown', type:'text'}],
           colorRule:{basis:'', type:'', condition:[]},
           widthRule:{basis:'', type:'', condition:[]}
         };
         this.templateShow=true;
-        if(this.EditTemplate!==null){//传入模板不为空
-          if(this.tpCheck(this.EditTemplate)){//传入模板通过检查
-            this.editTemplate=this.EditTemplate;
+        if(this.cEditTemplate!==null){//传入模板不为空
+          if(this.tmpProof.tpCheck(this.cEditTemplate)){//传入模板通过检查
+            this.editTemplate=JSON.parse(JSON.stringify(this.cEditTemplate));//拷贝源数据避免模板编辑影响源
             this.taskCode=this.TaskCode;
           }else {
             this.editTemplate=Empty;
@@ -1823,6 +1492,43 @@ export default {
 </script>
 
 <style scoped>
+.basisCo2{
+  user-select:none;
+  width: auto;
+  position: absolute;
+  background: white;
+  box-shadow: 0px 0px 6px #c2c2c2;
+  border-radius: 4px;
+}
+.basisCo3{
+  cursor: default;
+  width: auto;
+  height: 26px;
+  padding: 2px 15px;
+  font-size: 14px;
+  background: #ffffff;
+  border-radius: 0px;
+  position: relative;
+  right: 0px;
+  top: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.basisCo3:hover{
+  background: #f7f7f7;
+}
+.rowTextOut{
+  width: inherit;
+  height: inherit;
+  display: inherit;
+  flex-direction: inherit;
+  flex-wrap: inherit;
+  justify-content: inherit;
+  align-items: inherit;
+
+}
 button{
   cursor: pointer;
   -webkit-appearance: none;
@@ -1863,15 +1569,15 @@ button:active{
   left: 0px;
 }
 .templateMenu{
-  width: calc(50% - 30px);
-  min-width: 690px;
-  height: 60%;
-  min-height: 410px;
+  width: calc(58% - 30px);
+  min-width: 780px;
+  height: 70%;
+  min-height: 540px;
   background: #ffffff;
   position: fixed;
   z-index: 558;
-  top: -5%;
-  left: 25%;
+  top: 14%;
+  left: 21%;
   padding: 0px 15px;
   border-radius: 5px;
 }
@@ -1880,16 +1586,19 @@ button:active{
   color: #466fe7;
   user-select: none;
   cursor: default;
+  border: none!important;
 }
 .RowText{
   font-size: 14px;
   color: #000000;
+  border-top: 1px solid #a5a5a5;
+  border-left: 1px solid #a5a5a5;
+  border-right: 1px solid #a5a5a5;
 }
-.RowText:nth-child(odd){
-  background: #ffffff;
-}
-.RowText:nth-child(even){
-  background: #f5f5f5;
+.lastRow{
+  border-bottom: 1px solid #a5a5a5;
+  border-left: 1px solid #a5a5a5;
+  border-right: 1px solid #a5a5a5;
 }
 .RowEmpty{
   width: 100%;
@@ -1933,6 +1642,7 @@ button:active{
 }
 .statusInput{
   width: 92%;
+  box-sizing: content-box;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1940,13 +1650,14 @@ button:active{
   padding: 0px 0px 2px 0px;
   height:auto;
   border: none;
-  -webkit-transition: all .3s linear;
-  transition: all .3s linear;
   color: #000;
   font-weight: 400;
   -webkit-appearance: none;
   outline: none;
-  text-align: center;
+}
+.statusInput:hover{
+  cursor: text;
+  background: #fafafa;
 }
 input[disabled]{
   background-image: url('svgValidIcons/InputLockBackground.svg');
@@ -1979,6 +1690,8 @@ input[disabled]{
 .SheetInput:focus{
   border-bottom: 1px solid rgba(0, 0, 0, 0.55);
 }
+
+
 .SheetCo0 span{
   width: 100%;
   height: 50%;
@@ -1989,8 +1702,16 @@ input[disabled]{
   font-size: 13px;
   font-weight: 100;
 }
+.SheetCo10{
+  width: 9%;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 .SheetCo0{
-  width: 5%;
+  width: 3%;
   height: 40px;
   display: flex;
   flex-direction: column;
@@ -1998,14 +1719,14 @@ input[disabled]{
   align-items: center;
 }
 .SheetCo1{
-  width: 25%;
+  width: 31%;
   height: 40px;
   display: flex;
   justify-content: start;
   align-items: center;
 }
 .SheetCo2{
-  width:33%;
+  width:40%;
   height: 40px;
   display: flex;
   justify-content: start;
@@ -2014,6 +1735,9 @@ input[disabled]{
 .pickCo3{/*used*/
   background: #e6e6e6;
 }
+.pickCo3:hover{/*used*/
+  background:#e6e6e6;
+}
 .itemCo3{
   width: 100%;
   height: 30px;
@@ -2021,6 +1745,9 @@ input[disabled]{
   justify-content: center;
   align-items: center;
   cursor: default;
+}
+.itemCo3:hover{
+  background: #f7f7f7;
 }
 .lopCo3{
   width:100%;
@@ -2065,21 +1792,6 @@ input[disabled]{
   justify-content: center;
   align-items: center;
 }
-.SheetCo4{
-  width: 10%;
-  margin-left: 2%;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.SheetCo5{
-  width: 8%;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 .SheetCo7{
   width: 14%;
   height: 40px;
@@ -2095,7 +1807,7 @@ input[disabled]{
   align-items: center;
 }
 .SheetCo9{
-  width: 56%;
+  width: 50%;
   height: 40px;
   display: flex;
   justify-content: center;
@@ -2109,7 +1821,7 @@ input[disabled]{
 }
 .colCo9{
   width: calc(100% - 55px - 10px);
-  height: 21px;
+  height: 50px;
   overflow: hidden;
   padding: 0px 0px;
   display: flex;
@@ -2143,10 +1855,6 @@ input[disabled]{
   align-items: center;
   cursor: default;
 }
-.colCo9:hover{
-  height: auto !important;
-  width: 100% !important;
-}
 .lisCo9{
   width: 15px;
   height: 15px;
@@ -2154,13 +1862,16 @@ input[disabled]{
 }
 .SheetRow{
   width: 100%;
-  height: 40px;
-  margin: 4px 0px;
+  height: 60px;
+  margin: 0px 0px;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: center;
+}
+.SheetRow:last-child{
+  margin-top:10px;
 }
 .detailsSheet{
   width: 100%;
@@ -2264,9 +1975,10 @@ input[disabled]{
   align-items: center;
 }
 .setList{
-  width: 100%;
+  width: calc(100% - 10px);
   height: auto;
   padding: 10px 0px 10px 0px;
+  margin-right: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2286,12 +1998,11 @@ input[disabled]{
 }
 .statusList{
   width: 100%;
+  padding: 20px 0px;
   height: auto;
-  padding: 10px 0px;
   display: flex;
   flex-direction: row;
   justify-content: center;
-  border-bottom: 1px solid #838383;
 }
 .ListLeft{
   display: flex;
@@ -2301,23 +2012,18 @@ input[disabled]{
   width: 180px;
   height: 100%;
 }
-.ListRight{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: calc(100% - 180px);
-  height: auto;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
 .ListRightText{
-  width: 100%;
+  width: calc(100%);
+}
+.ListRight{
+  width: calc(100% - 180px);
   height: auto;
   display: flex;
   flex-direction: column;
   justify-content: start;
   align-items: start;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .ListRightColor{
   width: 100%;
@@ -2431,14 +2137,14 @@ input[disabled]{
   width: 180px;
   height: calc(100% - 5px);
   padding-top: 5px;
-  background: #f8f8f8;
-  box-shadow: 0px 0px 10px #d8d8d8;
+  background: #ffffff;
+  box-shadow: 0px 0px 6px #e6e6e6;
   user-select: none;
 }
 .templateRight{
-  width: calc(100% - 180px - 40px);
-  height: calc(100% - 40px);
-  padding: 20px;
+  width: calc(100% - 180px - 20px);
+  height: 100%;
+  padding: 0px 0px 0px 20px;
 }
 .templateBottom{
   width: 100%;
@@ -2457,7 +2163,6 @@ input[disabled]{
 }
 .templateSel{
   width: calc(100% - 20px);
-  margin: 0px 10px;
   display: flex;
   flex-direction: row;
   justify-content: start;
@@ -2465,14 +2170,12 @@ input[disabled]{
   height: 50px;
   font-size: 16px;
   font-weight: 400;
+  margin: 20px 10px;
 }
 .templateSel span{
   width: calc(100% - 5px);
-  height: 30px;
-  border-width: 1px;
-  border-style: solid ;
+  height: 50px;
   padding-left: 5px;
-  border-radius: 2px;
   display: flex;
   flex-direction: row;
   justify-content: start;
@@ -2481,29 +2184,26 @@ input[disabled]{
   transition: 0.4s !important;
 }
 .templateSel span:hover{
-  background: #f6fdff !important;;
-  border-color: #9ee9ff !important;;
-  color: #00bcd4 !important;;
+  background: #d7e3ff !important;;
+  color: #0b45d4 !important;;
 }
 .nifty{
+  box-shadow: 1px 1px 10px #ececec;
   animation: niftyEd 0.4s forwards;
 }
 .unNifty{
   background: #ffffff;
-  border-color: #c7c7c7;
   color: #717171;
 }
 @keyframes niftyEd {
   from{
     background: #ffffff;
-    border-color: #c7c7c7;
     color: #717171;
   }
   to{
     transform: scale(1.2);
-    background: #f6fdff;
-    border-color: #9ee9ff;
-    color: #00bcd4;
+    background: #d7e3ff;
+    color: #0b45d4;
   }
 }
 </style>

@@ -2,9 +2,9 @@
   <div class="elementPanelLayer" v-show="this.$store.state.userSettingConfig.openElementPanel">
     <div class="panelHead">
       <div class="headTitle">
-        <span v-text="this.$store.state.serverData.socket.config.name"></span>
+        <span v-text="this.$store.state.serverData.socket.config.name"/>
         <div class="headTitleMore" @click.stop="switchMapMoreActions()">
-          <more></more>
+          <more/>
         </div>
         <div class="mapMoreActionsClose" @contextmenu.prevent="void 1" @click.stop="switchMapMoreActions()" v-show="mapMoreActionsOpen">
         </div>
@@ -24,18 +24,18 @@
         Test Mode
       </div>
       <div class="headText">
-        上次修改时间&nbsp;&nbsp;&nbsp;<span v-text="this.$store.state.serverData.socket.lastEdit"></span>
+        上次修改时间&nbsp;&nbsp;&nbsp;<span v-text="this.$store.state.serverData.socket.lastEdit"/>
       </div>
     </div>
     <div class="panelButton">
       <div class="buttonBox">
-        <add-new-group></add-new-group>
-        <div class="buttonBoxText" @click="addNewGroupLayer()">
+        <add-new-group/>
+        <div class="buttonBoxText" @click="createGroupLayer()">
           新建分组图层
         </div>
       </div>
       <div class="buttonBox">
-        <sun-active></sun-active>
+        <sun-active/>
         <div class="buttonBoxText">
           活动图层
         </div>
@@ -46,12 +46,12 @@
         <div class="eyebrow">
           <div class="eyebrowLeft">
             <div class="previewEyeL">
-              <sun-active></sun-active>
+              <sun-active/>
             </div>
             <span class="cursorDefault">默认图层-只读</span>
           </div>
           <div class="eyebrowRight" @click.stop="switchDefaultLayerActions()">
-            <more custom="cursor:pointer;transform:translate(3px,1px)"></more>
+            <more custom="cursor:pointer;transform:translate(3px,1px)"/>
           </div>
           <div class="layerMoreActionsClose" @contextmenu.prevent="void 1" @click.stop="switchDefaultLayerActions()" v-show="defaultLayerActionsOpen">
           </div>
@@ -65,129 +65,129 @@
           <div class="memberTeamName" @contextmenu.prevent="void 1">
             <div class="memberTeamNameL">
               <div class="expandMoreL" @click.stop="expandDefaultPoint()" v-show="!defaultLayerPoint">
-                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"></expand-more>
+                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"/>
               </div>
               <div class="expandMoreL" @click.stop="expandDefaultPoint()" v-show="defaultLayerPoint">
-                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"></expand-more>
+                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"/>
               </div>
               <span>Point</span>
             </div>
             <div class="memberTeamNameR" title="隐藏操作仅对您可见">
               <div class="memberRightEyeA" @click.stop="hiddenAllPoint()" v-show="!allPointHideState">
-                <eye-visible custom="cursor:pointer"></eye-visible>
+                <eye-visible custom="cursor:pointer"/>
               </div>
               <div class="memberRightEyeC" @click.stop="unhiddenAllPoint()" v-show="allPointHideState">
-                <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                <eye-not-visible custom="cursor:pointer"/>
               </div>
             </div>
           </div>
           <div class="memberTeamBox" v-for="item in PointData" :key="item.id" v-show="defaultLayerPoint">
             <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
               <div class="memberLeft" @click="locateToElement(item)">
-                <point :custom="'fill:#'+item.color+';transform:translate(-2px,0px)'"></point>
-                <span class="memberName" v-text="getItemName(item)"></span>
+                <point :custom="'fill:#'+item.color+';transform:translate(-2px,0px)'"/>
+                <span class="memberName" v-text="getItemName(item)"/>
               </div>
               <div :ref="'memberRightEye'+item.id">
                 <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-visible custom="cursor:pointer"></eye-visible>
+                  <eye-visible custom="cursor:pointer"/>
                 </div>
                 <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                  <eye-not-visible custom="cursor:pointer"/>
                 </div>
               </div>
             </div>
             <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
               <div class="memberPick">
-                <span class="memberSpanA"></span><span>正在编辑形状</span>
+                <span class="memberSpanA"/><span>正在编辑形状</span>
               </div>
               <div class="memberSelect">
-                <span class="memberSpanA"></span><span>正在编辑属性</span>
+                <span class="memberSpanA"/><span>正在编辑属性</span>
               </div>
             </div>
           </div>
           <div class="memberTeamName" @contextmenu.prevent="void 1">
             <div class="memberTeamNameL">
               <div class="expandMoreL" @click.stop="expandDefaultLine()" v-show="!defaultLayerLine">
-                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"></expand-more>
+                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"/>
               </div>
               <div class="expandMoreL" @click.stop="expandDefaultLine()" v-show="defaultLayerLine">
-                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"></expand-more>
+                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"/>
               </div>
               <span>Line</span>
             </div>
             <div class="memberTeamNameR" title="隐藏操作仅对您可见">
               <div class="memberRightEyeA" @click.stop="hiddenAllLine()" v-show="!allLineHideState">
-                <eye-visible custom="cursor:pointer"></eye-visible>
+                <eye-visible custom="cursor:pointer"/>
               </div>
               <div class="memberRightEyeC" @click.stop="unhiddenAllLine()" v-show="allLineHideState">
-                <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                <eye-not-visible custom="cursor:pointer"/>
               </div>
             </div>
           </div>
           <div class="memberTeamBox" v-for="item in PolyLineData" :key="item.id" v-show="defaultLayerLine">
             <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
               <div class="memberLeft" @click="locateToElement(item)">
-                <segment-line :custom="'fill:#'+item.color+';transform:translateX(-5px);'"></segment-line>
-                <span class="memberName" v-text="getItemName(item)"></span>
+                <segment-line :custom="'fill:#'+item.color+';transform:translateX(-5px);'"/>
+                <span class="memberName" v-text="getItemName(item)"/>
               </div>
               <div :ref="'memberRightEye'+item.id">
                 <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-visible custom="cursor:pointer"></eye-visible>
+                  <eye-visible custom="cursor:pointer"/>
                 </div>
                 <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                  <eye-not-visible custom="cursor:pointer"/>
                 </div>
               </div>
             </div>
             <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
               <div class="memberPick">
-                <span class="memberSpanA"></span><span>正在编辑形状</span>
+                <span class="memberSpanA"/><span>正在编辑形状</span>
               </div>
               <div class="memberSelect">
-                <span class="memberSpanA"></span><span>正在编辑属性</span>
+                <span class="memberSpanA"/><span>正在编辑属性</span>
               </div>
             </div>
           </div>
           <div class="memberTeamName" @contextmenu.prevent="void 1">
             <div class="memberTeamNameL">
               <div class="expandMoreL" @click.stop="expandDefaultArea()" v-show="!defaultLayerArea">
-                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"></expand-more>
+                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"/>
               </div>
               <div class="expandMoreL" @click.stop="expandDefaultArea()" v-show="defaultLayerArea">
-                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"></expand-more>
+                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"/>
               </div>
               <span>Area</span>
             </div>
             <div class="memberTeamNameR" title="隐藏操作仅对您可见">
               <div class="memberRightEyeA" @click.stop="hiddenAllArea()" v-show="!allAreaHideState">
-                <eye-visible custom="cursor:pointer"></eye-visible>
+                <eye-visible custom="cursor:pointer"/>
               </div>
               <div class="memberRightEyeC" @click.stop="unhiddenAllArea()" v-show="allAreaHideState">
-                <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                <eye-not-visible custom="cursor:pointer"/>
               </div>
             </div>
           </div>
           <div class="memberTeamBox" v-for="item in AreaData" :key="item.id" v-show="defaultLayerArea">
             <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
               <div class="memberLeft" @click="locateToElement(item)">
-                <region :custom="'fill:#'+item.color+';transform:translateX(-5px);'"></region>
-                <span class="memberName" v-text="getItemName(item)"></span>
+                <region :custom="'fill:#'+item.color+';transform:translateX(-5px);'"/>
+                <span class="memberName" v-text="getItemName(item)"/>
               </div>
               <div :ref="'memberRightEye'+item.id">
                 <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-visible custom="cursor:pointer"></eye-visible>
+                  <eye-visible custom="cursor:pointer"/>
                 </div>
                 <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+                  <eye-not-visible custom="cursor:pointer"/>
                 </div>
               </div>
             </div>
             <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
               <div class="memberPick">
-                <span class="memberSpanA"></span><span>编辑形状中</span>
+                <span class="memberSpanA"/><span>编辑形状中</span>
               </div>
               <div class="memberSelect">
-                <span class="memberSpanA"></span><span>编辑属性中</span>
+                <span class="memberSpanA"/><span>编辑属性中</span>
               </div>
             </div>
           </div>
@@ -210,10 +210,10 @@
       <div class="searchViewBox" v-show="searchShowView">
         <div class="searchView" v-show="searchFind">
           <div class="searchItem" @click="locateToElement(item)" v-for="item in searchResult" :title="'ID'+item.id">
-            <point :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='point'"></point>
-            <segment-line :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='line'"></segment-line>
-            <region :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='area'"></region>
-            <span class="memberName" v-text="getItemName(item)"></span>
+            <point :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='point'"/>
+            <segment-line :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='line'"/>
+            <region :custom="'fill:#'+item.color+';margin:0px 4px'" v-if="item.type==='area'"/>
+            <span class="memberName" v-text="getItemName(item)"/>
           </div>
         </div>
         <div class="searchView" v-show="!searchFind">
@@ -225,10 +225,10 @@
 
         </div>
         <div class="searchIcon" @click="resetSearch()">
-          <reset-refresh custom="transform:translate(2px,0px);"></reset-refresh>
+          <reset-refresh custom="transform:translate(2px,0px);"/>
         </div>
         <div class="searchIcon" @click="search()">
-          <search custom="transform:translate(1px,2px);"></search>
+          <search custom="transform:translate(1px,2px);"/>
         </div>
       </div>
     </div>
@@ -245,7 +245,7 @@
         </orange-group-list>
       </div>
     </div>
-    <banana-template-edit></banana-template-edit>
+    <banana-template-edit/>
   </div>
 </template>
 <script>
@@ -453,22 +453,14 @@ export default {
       this.adjustOrderTemplate.id=template.id;
     },
     getFormattedDate() {//获取模板时间
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const date = new Date();
-      const day = days[date.getDay()];
-      const month = months[date.getMonth()];
-      const dayOfMonth = date.getDate();
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = String(date.getSeconds()).padStart(2, '0');
-      const timeZoneOffset = -date.getTimezoneOffset();// 获取时区偏移量，转换为小时
-      const offsetSign = timeZoneOffset >= 0 ? '+' : '-';
-      const offsetHours = String(Math.floor(Math.abs(timeZoneOffset) / 60)).padStart(2, '0');
-      const offsetMinutes = String(Math.abs(timeZoneOffset) % 60).padStart(2, '0');
-      const timeZone = `GMT${offsetSign}${offsetHours}${offsetMinutes}`;
-      return `${day} ${month} ${dayOfMonth.toString().padStart(2, '0')} ${year} ${hours}:${minutes}:${seconds} ${timeZone}`;
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份是从0开始的
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     },
     createTemplateId(){//创建模板ID
       const validChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -481,15 +473,15 @@ export default {
       });
       return result;
     },
-    addNewGroupLayer(){//添加新的分组图层：1.构建基础结构，2：上传
-      function randomNumber() {
-        const min = 100000;
-        const max = 999999;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
-      let newLayerName='layer-'+randomNumber();
+    createGroupLayer(){//添加新的分组图层：1.构建基础结构，2：上传
+      function randomNumber6(){const min=100000;const max=999999;return Math.floor(Math.random()*(max-min+1))+min;}
+      let random6=randomNumber6();
+      let createId=this.$store.state.elementPanelConfig.createId++;
+      let newLayerName='layer-'+random6+createId;
       let time=this.getFormattedDate();
-      let ID=this.createTemplateId();
+      let ID;
+      do{ID=this.createTemplateId();}
+      while(Object.prototype.hasOwnProperty.call(this.$store.state.templateData,ID));
       let creator=this.userName+'('+this.userEmail+')';
       let defaultGroupLayer={
         members:{'0':0},//不能为空对象
@@ -504,7 +496,7 @@ export default {
               locked:false,
               explain:'none',
               typeRule:{point:true, line:true, area:true, curve:true},
-              detailsRule:[{set:false, name:'name', default:'unknown', type:'text', length:100, empty:true}],
+              detailsRule:[{set:false, name:'name', default:'☍tunknown', type:'text'}],
               colorRule:{basis:'', type:'', condition:[]},
               widthRule:{basis:'', type:'', condition:[]
               }

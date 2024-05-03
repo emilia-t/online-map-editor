@@ -70,12 +70,6 @@
         <div class="menuList" @click="createGroupAtBottom()">
           在底部新建分组
         </div>
-        <div class="menuList" title="按颜色分组会删除所有子分组" @click="groupByColorType('color')">
-          按颜色重新分组
-        </div>
-        <div class="menuList" title="按类型分组会删除所有子分组" @click="groupByColorType('type')">
-          按类型重新分组
-        </div>
         <div class="menuList" title="删除此分组会同时删除组内元素" @click="deleteGroup()" v-if="this.level!==1">
           删除分组与元素
         </div>
@@ -157,6 +151,7 @@ export default {
       firmView:false,//确认菜单
       firmPlan:{},
       firmMessage:'',
+      tmpProof:null,
     }
   },
   props:{
@@ -231,7 +226,7 @@ export default {
     }
   },
   mounted() {
-
+    this.startSetting();
   },
   created() {
     this.unwatch=this.$watch('pickLayerId',(newValue)=>{//设置第一个分组图层的行为
@@ -240,7 +235,7 @@ export default {
         let stu1=this.structure[1];
         if(typeof stu1==='object' && !Array.isArray(stu1)){
           if(Object.prototype.hasOwnProperty.call(stu1,'template')){
-            if(this.tpCheck(stu1.template)){//通过安全检查后应用此模板
+            if(this.tmpProof.tpCheck(stu1.template)){//通过安全检查后应用此模板
               this.$store.commit('setCoTemplateUse',this.structure[1].template);
             }else {
               this.$store.commit('setCoLogMessage',{text:'警告！当前选中分组存在异常，无法应用模板',from:'internal:OrangeGroupStructure',type:'warn'});
@@ -252,6 +247,27 @@ export default {
     });
   },
   methods:{
+    startSetting(){
+      this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
+      this.bindTemplate();
+    },
+    bindTemplate(){//挂载模板数据到store
+      let stu1=this.structure[1];
+      let temp;
+      let id;
+      if(typeof stu1==='object' && !Array.isArray(stu1) && stu1!==null){
+        temp=JSON.parse(JSON.stringify(stu1.template));
+        if(typeof temp==='object' && !Array.isArray(temp) && temp!==null){
+          if(this.tmpProof.tpCheck(temp)){
+            id=temp.id;
+            this.$store.state.templateData[id]=temp;
+          }
+        }
+      }
+      if(this.tmpProof.tpCheck()){
+
+      }
+    },
     openRename(){
       this.renameShow=true;
       this.memberHeadMenu.show=false;
@@ -263,7 +279,7 @@ export default {
       let stu1=this.structure[1];
       if(typeof stu1==='object' && !Array.isArray(stu1)){
         if(Object.prototype.hasOwnProperty.call(stu1,'template')){
-          if(this.tpCheck(stu1.template)){//通过安全检查后应用此模板
+          if(this.tmpProof.tpCheck(stu1.template)){//通过安全检查后应用此模板
             this.$store.commit('setCoTemplateUse',this.structure[1].template);
           }else {
             this.$store.commit('setCoLogMessage',{text:'警告！当前选中分组存在异常，无法应用模板',from:'internal:OrangeGroupStructure',type:'warn'});
@@ -327,62 +343,6 @@ export default {
     },
     alertTip(text){
       this.$store.commit('setCoLogMessage',{text:text,from:'internal:OrangeGroupStructure',type:'warn'});
-    },
-    groupByColorType(select){
-      function dimensionReduce(arr){//降维数组
-        return arr.reduce((result,value)=>{
-          if (Array.isArray(value)){
-            result.push(...dimensionReduce(value.slice(2)));
-          }else{
-            result.push(value);
-          }
-          return result;
-        },[]);
-      }
-      function convertAndSort(groupObj) {//将图层对象转化为数组结构的图层并排序
-        let colorArray=Object.entries(groupObj).map(([key,value])=>[key,{template:null},...value]);//先
-        colorArray.sort((former,latter)=>{return latter.length-former.length});//前者大于后者则排在前
-        return colorArray;
-      }
-      let oldStructure=JSON.parse(JSON.stringify(this.structure));
-      let structure=dimensionReduce(oldStructure);
-      let Len=structure.length;
-      let groupObj={};//{"color[00ff00]":[id,id,...]} || {"type[point]":[id,id,...]}
-      let newStructure=[];
-      for(let i=2;i<Len;i++){
-        let element=this.layer.members[structure[i]];
-        let Name='all';
-        if(select==='color'){
-          Name='Color'+element.color;
-        }else if(select==='type'){
-          Name=element.type;
-        }
-        if(!groupObj.hasOwnProperty(Name)){
-          groupObj[Name]=[];
-          groupObj[Name].push(structure[i]);
-        }else {
-          groupObj[Name].push(structure[i]);
-        }
-      }
-      newStructure=convertAndSort(groupObj);
-      newStructure.unshift(oldStructure[0],oldStructure[1]);
-      if(this.level===1){//在根节点操作则不用附加旧数据
-        this.$store.state.serverData.socket.broadcastUpdateLayerData(
-          {
-            id:this.layer.id,
-            structure:newStructure,
-          }
-        );
-      }else {//附加旧数据
-        newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),newStructure);
-        this.$store.state.serverData.socket.broadcastUpdateLayerData(
-          {
-            id:this.layer.id,
-            structure:newStructure,
-          }
-        );
-      }
-      this.memberHeadMenu.show=false;
     },
     pickChildGroupRequest(){
       this.$emit('pickChildGroupRequest',this.route);
@@ -630,22 +590,14 @@ export default {
       this.firmView=true;//呼出确认菜单
     },
     getFormattedDate() {//获取模板时间
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const date = new Date();
-      const day = days[date.getDay()];
-      const month = months[date.getMonth()];
-      const dayOfMonth = date.getDate();
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = String(date.getSeconds()).padStart(2, '0');
-      const timeZoneOffset = -date.getTimezoneOffset();// 获取时区偏移量，转换为小时
-      const offsetSign = timeZoneOffset >= 0 ? '+' : '-';
-      const offsetHours = String(Math.floor(Math.abs(timeZoneOffset) / 60)).padStart(2, '0');
-      const offsetMinutes = String(Math.abs(timeZoneOffset) % 60).padStart(2, '0');
-      const timeZone = `GMT${offsetSign}${offsetHours}${offsetMinutes}`;
-      return `${day} ${month} ${dayOfMonth.toString().padStart(2, '0')} ${year} ${hours}:${minutes}:${seconds} ${timeZone}`;
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份是从0开始的
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     },
     createTemplateId(){//创建模板ID
       const validChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -659,10 +611,15 @@ export default {
       return result;
     },
     createGroupAtTop(){//在此分组顶部新增子分组
+      function randomNumber6(){const min=100000;const max=999999;return Math.floor(Math.random()*(max-min+1))+min;}
+      let random6=randomNumber6();
+      let createId=this.$store.state.elementPanelConfig.createId++;
       let groupLayerId=this.layer.id;
-      let newGroupName='G'+this.randomNumber8();
+      let newGroupName='G-'+random6+createId;
       let time=this.getFormattedDate();
-      let ID=this.createTemplateId();
+      let ID;
+      do{ID=this.createTemplateId();}
+      while(Object.prototype.hasOwnProperty.call(this.$store.state.templateData,ID));
       let creator=this.userName+'('+this.userEmail+')';
       let newGroup=[
         newGroupName,
@@ -675,7 +632,7 @@ export default {
             locked:false,
             explain:'none',
             typeRule:{point:true, line:true, area:true, curve:true},
-            detailsRule:[{set:false, name:'name', default:'unknown', type:'text', length:100, empty:true}],
+            detailsRule:[{set:false, name:'name', default:'☍tunknown', type:'text'}],
             colorRule:{basis:'', type:'', condition:[]},
             widthRule:{basis:'', type:'', condition:[]
             }
@@ -693,10 +650,15 @@ export default {
       this.memberHeadMenu.show=false;
     },
     createGroupAtBottom(){//在此分组底部新增子分组
+      function randomNumber6(){const min=100000;const max=999999;return Math.floor(Math.random()*(max-min+1))+min;}
+      let random6=randomNumber6();
+      let createId=this.$store.state.elementPanelConfig.createId++;
       let groupLayerId=this.layer.id;
-      let newGroupName='G'+this.randomNumber8();
+      let newGroupName='G-'+random6+createId;
       let time=this.getFormattedDate();
-      let ID=this.createTemplateId();
+      let ID;
+      do{ID=this.createTemplateId();}
+      while(Object.prototype.hasOwnProperty.call(this.$store.state.templateData,ID));
       let creator=this.userName+'('+this.userEmail+')';
       let newGroup=[
         newGroupName,
@@ -709,7 +671,7 @@ export default {
             locked:false,
             explain:'none',
             typeRule:{point:true, line:true, area:true, curve:true},
-            detailsRule:[{set:false, name:'name', default:'unknown', type:'text', length:100, empty:true}],
+            detailsRule:[{set:false, name:'name', default:'☍tunknown', type:'text'}],
             colorRule:{basis:'', type:'', condition:[]},
             widthRule:{basis:'', type:'', condition:[]
             }
@@ -1093,333 +1055,6 @@ export default {
     inHiddenElements(id){
       return this.mapHiddenElements.has(id);
     },
-    /**
-     * tpCheck
-     */
-    isInteger(value){//判断一个数字是否为正整数
-      return Number.isInteger(value) && value>0;
-    },
-    isColor16(color){//检测一个字符串是否是标准的16进制颜色-正确则返回true
-      const regex=/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/;
-      return regex.test(color);
-    },
-    isAllowValueTyp(type,value){//依据type检测value(或default)是否是正确的type类型-正确则返回true
-      switch (type) {
-        case 'text':{
-          return typeof value==='string';
-        }
-        case 'long':{
-          return typeof value==='string';
-        }
-        case 'number':{
-          return typeof value === 'number';
-        }
-        case 'date':{
-          return typeof value === 'string';
-        }
-        case 'bool':{
-          return typeof value === 'boolean';
-        }
-        case 'list':{
-          return typeof value === 'string';
-        }
-        case 'percent':{
-          if(typeof value!=='string')return false;
-          const reg=/^\d+(\.\d+)?%$/;
-          return reg.test(value);
-        }
-        case 'score':{
-          if(typeof value!=='number')return false;
-        }
-      }
-    },
-    isAllowMethod(type,method){//判断method是否为type允许使用的方法-正确则返回true
-      switch (type){
-        case 'long':{
-          return false;
-        }
-        case 'score':{
-          return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
-        }
-        case 'number':{
-          return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
-        }
-        case 'percent':{
-          return ['equ','nequ','gre','greq','les','lesq'].includes(method);
-        }
-        case 'date':{
-          return ['equ','nequ','gre','greq','les','lesq'].includes(method);
-        }
-        case 'bool':{
-          return ['equ','nequ'].includes(method);
-        }
-        case 'list':{
-          return ['equ','nequ'].includes(method);
-        }
-        case 'text':{
-          return ['equ','nequ'].includes(method);
-        }
-        default:{
-          return false;
-        }
-      }
-    },
-    isAllowValueTypL(type,length,value){//依据type length检测value(或default)是否是type类型的数据以及长度是否合理-正确则返回true
-      switch (type) {
-        case 'text':{
-          if(typeof value!=='string')return false;
-          return value.length <= length;
-        }
-        case 'long':{
-          if(typeof value!=='string')return false;
-          return value.length <= length;
-        }
-        case 'number':{
-          return typeof value === 'number';
-        }
-        case 'date':{
-          return typeof value === 'string';
-        }
-        case 'bool':{
-          return typeof value === 'boolean';
-        }
-        case 'list':{
-          return typeof value === 'string';
-        }
-        case 'percent':{
-          if(typeof value!=='string')return false;
-          const reg=/^\d+(\.\d+)?%$/;
-          return reg.test(value);
-        }
-        case 'score':{
-          if(typeof value!=='number')return false;
-          return value <= length;
-        }
-      }
-    },
-    isAllowTypeLen(type,num){//检测num是否超过type规定的最大长度-正确则返回true
-      if(num<0)return false;
-      switch (type) {
-        case 'text':{
-          return num <= 100;
-        }
-        case 'long':{
-          return num <= 1000;
-        }
-        case 'score':{
-          return num <= 10;
-        }
-        default:{
-          return num === 0;
-        }
-      }
-    },
-    isDetailsType(str){//检测str是否为模板属性规定以内的类型-正确则返回true
-      return ['text','long','number','date','bool','list','percent','score'].includes(str);
-    },
-    isNameDetails(obj){//检测是否obj是默认的name属性-正确则返回true
-      let obj1={
-        set:false,
-        name:'name',
-        default:'unknown',
-        type:'text',
-        length:100,
-        empty:true
-      };
-      const keys1 = Object.keys(obj1);
-      const keys2 = Object.keys(obj);
-      if (keys1.length !== keys2.length) {
-        return false;
-      }
-      for (let key of keys1) {
-        if (obj1[key] !== obj[key]) {
-          return false;
-        }
-      }
-      return true;
-    },
-    tpCheck(template){//模板检查,若正常则返回true，否则返回其他错误的代码
-      if(template===null)return 500;
-      let arr=[];
-      let names=['name'];
-      let len=0;
-      let count=0;
-      let cType='';
-      let wType='';
-      function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
-
-
-      if(!isObj(template))return 1000;
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'id'))return 2000;//A layer property check
-      if(typeof template.id!=='string')return 2100;
-      if(template.id==='')return 2200;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'name'))return 4000;
-      if(typeof template.name!=='string')return 4100;
-      if(template.name==='')return 4200;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'creator'))return 6000;
-      if(typeof template.creator!=='string')return 6100;
-      if(template.creator==='')return 6200;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'modify'))return 8000;
-      if(typeof template.modify!=='string')return 8100;
-      if(template.modify==='')return 8200;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'locked'))return 10000;
-      if(typeof template.locked!=='boolean')return 10100;
-
-      if(!Object.prototype.hasOwnProperty.call(template,'explain'))return 12000;
-      if(typeof template.explain!=='string')return 12100;
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'typeRule'))return 14000;//typeRule property check
-      if(!isObj(template.typeRule))return 15000;
-      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'point'))return 16000;
-      if(typeof template.typeRule.point!=='boolean')return 17000;
-      if(template.typeRule.point)count++;
-      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'line'))return 18000;
-      if(typeof template.typeRule.line!=='boolean')return 19000;
-      if(template.typeRule.line)count++;
-      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'area'))return 20000;
-      if(typeof template.typeRule.area!=='boolean')return 21000;
-      if(template.typeRule.area)count++;
-      if(!Object.prototype.hasOwnProperty.call(template.typeRule,'curve'))return 22000;
-      if(typeof template.typeRule.curve!=='boolean')return 23000;
-      if(template.typeRule.curve)count++;
-      if(count<=0){return 24000;}
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'detailsRule'))return 30000;//detailsRule property check
-      if(!Array.isArray(template.detailsRule))return 30100;
-      len=template.detailsRule.length;
-      arr=template.detailsRule;
-      if(len<=0)return 30200;
-      if(len>90)return 30300;
-      if(!isObj(arr[0]))return 30400;
-      if(!this.isNameDetails(arr[0]))return 30500;
-      for(let i=1;i<len;i++){
-        if(!isObj(arr[i])){
-          return 31000+i;
-        }else {
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 32000+i;
-          if(typeof arr[i].set!=='boolean')return 32100+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'name'))return 33000+i;
-          if(typeof arr[i].name!=='string')return 33100+i;
-          if(arr[i].name==='')return 33200+i;
-          if(arr[i].name.length>40)return 33300+i;
-          if(names.includes(arr[i].name)){return 33400+i}//检测重复属性
-          else{names.push(arr[i].name);}
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'empty'))return 34000+i;
-          if(typeof arr[i].empty!=='boolean')return 34100+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'type'))return 35000+i;
-          if(typeof arr[i].type!=='string')return 35100+i;
-          if(!this.isDetailsType(arr[i].type))return 35200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'length'))return 36000+i;
-          if(typeof arr[i].length!=='number')return 36100+i;
-          if(!this.isAllowTypeLen(arr[i].type,arr[i].length))return 36200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'default'))return 37000+i;
-          if(!this.isAllowValueTypL(arr[i].type,arr[i].length,arr[i].default))return 37100+i;
-        }
-      }
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'colorRule'))return 40000;//colorRule property check
-      if(!isObj(template.colorRule))return 40100;
-      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'basis'))return 40200;
-      if(typeof template.colorRule.basis!=='string')return  40300;
-      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'type'))return 40400;
-      if(typeof template.colorRule.type!=='string')return  40500;
-      if(!Object.prototype.hasOwnProperty.call(template.colorRule,'condition'))return 40600;
-      if(!Array.isArray(template.colorRule.condition))return  40700;
-      if(template.colorRule.basis===''){//rule(A)
-        if(template.colorRule.type!=='')return 40800;
-        if(template.colorRule.condition.length!==0)return 40900;
-      }else{
-        if(template.colorRule.type==='')return 41000;
-        if(!this.isDetailsType(template.colorRule.type))return 41100;
-      }
-      len=template.colorRule.condition.length;
-      if(len>90)return 41200;//规则条例最多90条
-      arr=template.colorRule.condition;
-      cType=template.colorRule.type;
-      for(let i=0;i<len;i++){
-        if(!isObj(arr[i])){
-          return 42000+i;
-        }else {
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 42100+i;
-          if(typeof arr[i].set!=='boolean')return 42200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'color'))return 43000+i;
-          if(typeof arr[i].color!=='string')return 43100+i;
-          if(!this.isColor16(arr[i].color))return 43200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 44000+i;
-          if(typeof arr[i].method!=='string')return 44100+i;
-          if(!this.isAllowMethod(cType,arr[i].method))return 44200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 45000+i;
-          if(!this.isAllowValueTyp(cType,arr[i].value))return 45100+i;
-          if(typeof arr[i].value==='string'){//rule(E)
-            if(arr[i].value.length>100)return 45200+i;
-          }
-        }
-      }
-
-
-      if(!Object.prototype.hasOwnProperty.call(template,'widthRule'))return 50000;//widthRule property check
-      if(!isObj(template.widthRule))return 50100;
-      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'basis'))return 50200;
-      if(typeof template.widthRule.basis!=='string')return  50300;
-      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'type'))return 50400;
-      if(typeof template.widthRule.type!=='string')return  50500;
-      if(!Object.prototype.hasOwnProperty.call(template.widthRule,'condition'))return 50600;
-      if(!Array.isArray(template.widthRule.condition))return  50700;
-      if(template.widthRule.basis===''){//rule(A)
-        if(template.widthRule.type!=='')return 50800;
-        if(template.widthRule.condition.length!==0)return 50900;
-      }else{
-        if(template.widthRule.type==='')return 51000;
-        if(!this.isDetailsType(template.widthRule.type))return 51100;
-      }
-      len=template.widthRule.condition.length;
-      if(len>90)return 51200;//规则条例最多90条
-      arr=template.widthRule.condition;
-      wType=template.widthRule.type;
-      for(let i=0;i<len;i++){
-        if(!isObj(arr[i])){
-          return 52000+i;
-        }else {
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'set'))return 52100+i;
-          if(typeof arr[i].set!=='boolean')return 52200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'width'))return 53000+i;
-          if(typeof arr[i].width!=='number')return 53100+i;
-          if(!this.isInteger(arr[i].width))return 53200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'method'))return 54000+i;
-          if(typeof arr[i].method!=='string')return 54100+i;
-          if(!this.isAllowMethod(wType,arr[i].method))return 54200+i;
-
-          if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 55000+i;
-          if(!this.isAllowValueTyp(wType,arr[i].value))return 55100+i;
-          if(typeof arr[i].value==='string'){//rule(E)
-            if(arr[i].value.length>100)return 55200+i;
-          }
-        }
-      }
-      return true;
-    },
-    /**
-     * tpCheck
-     */
   },
   computed:{
     ...mapState({
@@ -1594,7 +1229,7 @@ export default {
           let stu1=this.structure[1];
           if(typeof stu1==='object' && !Array.isArray(stu1)){
             if(Object.prototype.hasOwnProperty.call(stu1,'template')){
-              if(this.tpCheck(stu1.template)){//通过安全检查后应用此模板
+              if(this.tmpProof.tpCheck(stu1.template)){//通过安全检查后应用此模板
                 this.$store.commit('setCoTemplateUse',this.structure[1].template);
               }else {
                 this.$store.commit('setCoLogMessage',{text:'警告！当前选中分组存在异常，无法应用模板',from:'internal:OrangeGroupStructure',type:'warn'});

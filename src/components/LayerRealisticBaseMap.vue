@@ -35,7 +35,7 @@ export default {
           option.scaling=this.$store.state.baseMapConfig.options.scaling;
           this.A1Cache.x=this.A1.x;//初始化A1cache
           this.A1Cache.y=this.A1.y;
-          this.$store.state.baseMapConfig.baseMap=new this.$store.state.classList.realisticBaseMap(this.$refs.baseMap,option);
+          this.$store.state.baseMapConfig.baseMap=new this.$store.state.classList.realisticTile(this.$refs.baseMap,option);
           this.moveStart();
           this.moveEnd();
         }

@@ -834,8 +834,8 @@ export default {
   font-size: 14px;
   font-weight: 400;
   padding: 10px 14px;
-  border-bottom: 1px solid #e5e5e5;
-  border-top: 1px solid #e5e5e5;
+  border-bottom: 1px solid #f4f4f4;
+  border-top: 1px solid #f4f4f4;
   position: relative;
 }
 .groupLayerNameBox{
