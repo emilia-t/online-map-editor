@@ -70,8 +70,8 @@
         <hr class="style-one"/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">总是隐藏默认分组图层</span>
-            <span class="spansB">修改此项后将隐藏默认分组图层</span>
+            <span class="spansA">总是隐藏默认图层</span>
+            <span class="spansB">修改此项后将隐藏默认图层</span>
           </div>
           <div class="switchOut" ref="DS06" @click="DS06($event)"><div ref="DS06_1" class="circle"></div></div>
         </div>

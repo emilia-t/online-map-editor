@@ -1,8 +1,8 @@
 <template>
 <div class="OrangeIconsCustom">
   <div class="iconBox" v-for="icon in icons" :key="icon.serial" @click="callBack(icon)" @mousedown="selectStart($event)">
-    <img v-if="selected!==icon.serial" class="icon" :src="'../../static/icons/'+icon.icon" alt="" :title="icon.name"/>
-    <img v-if="selected===icon.serial" class="selected" :src="'../../static/icons/'+icon.icon" alt="" :title="icon.name"/>
+    <img v-if="selected!==icon.serial" class="icon" :src="imgSrc(icon.icon)" alt="" :title="icon.name"/>
+    <img v-if="selected===icon.serial" class="selected" :src="imgSrc(icon.icon)" alt="" :title="icon.name"/>
   </div>
 </div>
 </template>
@@ -14,8 +14,8 @@ export default {
     return{
       icons:[
         {
-          'name':'默认',
-          'icon':'usualIcon000.png',
+          'name':'不使用',
+          'icon':null,
           'serial':0
         },
         {
@@ -32,7 +32,12 @@ export default {
           'name':'正确',
           'icon':'usualIcon003.png',
           'serial':3
-        }
+        },
+        {
+          'name':'兴趣点',
+          'icon':'usualIcon004.png',
+          'serial':4
+        },
       ],
       selected:0,
     }
@@ -47,7 +52,14 @@ export default {
         return false;
       }
       this.$emit('OrangeIconsCustomMousedown','');
-    }
+    },
+    imgSrc(icon){
+      if(icon===null){
+        return '../../static/icons/usualIcon000.png';
+      }else{
+        return '../../static/icons/'+icon;
+      }
+    },
   }
 }
 </script>
@@ -67,24 +79,24 @@ export default {
   width: 22px;
   height: 22px;
   margin: 4px;
-  border-radius: 11px;
+  border-radius: 13px;
   background: #757575;
 }
 .icon{
-  width: inherit;
-  height: inherit;
+  width: calc(100% + 2px);/*防溢出*/
+  height: calc(100% + 2px);
+  transform: translateX(-1px) translateY(-1px);
   border-radius: inherit;
   transition: 0.4s;
 }
 .icon:hover{
-  background: #0288d1;
-  transform: scale(1.25);
+  box-shadow: 0px 0px 4px #0288d1;
 }
 .selected{
-  width: inherit;
-  height: inherit;
+  width: calc(100% + 2px);/*防溢出*/
+  height: calc(100% + 2px);
+  transform: translateX(-1px) translateY(-1px);
   border-radius: inherit;
-  transform: scale(1.25);
-  background: #0288d1;
+  box-shadow: 0px 0px 8px #0067ff;
 }
 </style>

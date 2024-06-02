@@ -232,19 +232,6 @@
         </div>
       </div>
     </div>
-    <div class="rightClickMenuClose" @contextmenu.prevent="void 1" @click.stop="itemContextmenuClose()" v-show="itemMenuConfig.show"></div>
-    <div class="rightClickMenu" :style="itemContextmenuPos" v-show="itemMenuConfig.show">
-      <div class="menuListBox">
-        <div class="menuList">
-          添加到图层
-        </div>
-      </div>
-      <div class="menuGroupListBox">
-        <orange-group-list :level="1" :structure="groupLayerStructure"
-                           @OrangeGroupListCall="addToGroupLayer">
-        </orange-group-list>
-      </div>
-    </div>
     <banana-template-edit/>
   </div>
 </template>
@@ -294,12 +281,6 @@ export default {
       defaultLayerPoint:true,//默认图层中的point组展开状态
       defaultLayerLine:true,
       defaultLayerArea:true,
-      itemMenuConfig:{
-        target:null,
-        show:false,
-        x:null,
-        y:null,
-      },
       adjustOrderTemplate:{
         agree:false,
         code:null,
@@ -309,12 +290,11 @@ export default {
         agree:false,//通过与否
         code:null,//校验码
         stage:null,//提交阶段
-        type:null,//插入元素的类型
         pattern:null,//插入的模式 up | down | join
-        idA:-1,//活动id
-        layerA:-1,//活动图层
-        idB:-1,//被动id | join -> group route
-        layerB:-1,//被动图层
+        elementA:-1,//活动id
+        templateA:-1,//活动a的所属模板id
+        elementB:-1,//被动id
+        templateB:-1,//被动b的所属模板id
       },
       pickLayerTemplate:{
         agree:false,
@@ -328,7 +308,7 @@ export default {
       if(newValue.length>0){//自动选中第一个图层
         setTimeout(()=>{
           this.pickLayerTemplate.id=newValue[0];
-        },0);
+        },5);
       }
       this.unwatch();//仅执行一次
     });
@@ -411,33 +391,31 @@ export default {
         case 'ready':{
           this.adjustItemOrderTemplate.agree=false;
           this.adjustItemOrderTemplate.code=template.code;
-          this.adjustItemOrderTemplate.type=template.type;
           this.adjustItemOrderTemplate.stage=template.stage;
-          this.adjustItemOrderTemplate.idA=template.idA;
-          this.adjustItemOrderTemplate.layerA=template.layerA;
+          this.adjustItemOrderTemplate.elementA=template.elementA;
+          this.adjustItemOrderTemplate.templateA=template.templateA;
           break;
         }
         case 'confirm':{
           this.adjustItemOrderTemplate.agree=true;
           this.adjustItemOrderTemplate.code=template.code;
           this.adjustItemOrderTemplate.stage=template.stage;
-          this.adjustItemOrderTemplate.type=template.type;
           this.adjustItemOrderTemplate.pattern=template.pattern;
-          this.adjustItemOrderTemplate.idA=template.idA;
-          this.adjustItemOrderTemplate.layerA=template.layerA;
-          this.adjustItemOrderTemplate.idB=template.idB;
-          this.adjustItemOrderTemplate.layerB=template.layerB;
+          this.adjustItemOrderTemplate.elementA=template.elementA;
+          this.adjustItemOrderTemplate.templateA=template.templateA;
+          this.adjustItemOrderTemplate.elementB=template.elementB;
+          this.adjustItemOrderTemplate.templateB=template.templateB;
           break;
         }
         case 'cancel':{
           this.adjustItemOrderTemplate.agree=false;
           this.adjustItemOrderTemplate.code=template.code;
-          this.adjustItemOrderTemplate.type=template.type;
           this.adjustItemOrderTemplate.stage=template.stage;
-          this.adjustItemOrderTemplate.idA=-1;
-          this.adjustItemOrderTemplate.layerA=-1;
-          this.adjustItemOrderTemplate.idB=-1;
-          this.adjustItemOrderTemplate.layerB=-1;
+          this.adjustItemOrderTemplate.pattern=null;
+          this.adjustItemOrderTemplate.elementA=-1;
+          this.adjustItemOrderTemplate.templateA=-1;
+          this.adjustItemOrderTemplate.elementB=-1;
+          this.adjustItemOrderTemplate.templateB=-1;
           break;
         }
       }
@@ -473,168 +451,8 @@ export default {
       });
       return result;
     },
-    createGroupLayer(){//添加新的分组图层：1.构建基础结构，2：上传
-      function randomNumber6(){const min=100000;const max=999999;return Math.floor(Math.random()*(max-min+1))+min;}
-      let random6=randomNumber6();
-      let createId=this.$store.state.elementPanelConfig.createId++;
-      let newLayerName='layer-'+random6+createId;
-      let time=this.getFormattedDate();
-      let ID;
-      do{ID=this.createTemplateId();}
-      while(Object.prototype.hasOwnProperty.call(this.$store.state.templateData,ID));
-      let creator=this.userName+'('+this.userEmail+')';
-      let defaultGroupLayer={
-        members:{'0':0},//不能为空对象
-        structure:[
-          newLayerName,
-          {
-            template:{//初始给定空模板对象
-              id:ID,
-              name:'template',
-              creator,
-              modify:time,
-              locked:false,
-              explain:'none',
-              typeRule:{point:true, line:true, area:true, curve:true},
-              detailsRule:[{set:false, name:'name', default:'☍tunknown', type:'text'}],
-              colorRule:{basis:'', type:'', condition:[]},
-              widthRule:{basis:'', type:'', condition:[]
-              }
-            }
-          }
-        ]
-      };
-      this.$store.state.serverData.socket.broadcastCreateGroupLayer(defaultGroupLayer);
-    },
-    addToGroupLayer(data){//从默认图层上添加元素到自定义图层中
-      let addId=parseInt(this.itemMenuConfig.target.id);
-      let routeArr=data.split('⇉');//要添加到具体哪个图层的路径
-      routeArr=routeArr.filter((item)=>{return item!==''});
-      routeArr.reverse();
-      let groupLayerId=null;
-      let oldStructure=null;
-      let mixMembers=null;
-      const typeMapping={point:1,line:2,area:3,curve:4};
-      for(let key in this.groupLayers){
-        if(this.groupLayers[key].structure[0]===routeArr[0]){
-          if(this.groupLayers[key].members[addId]!==undefined){
-            this.$store.commit('setCoLogMessage',{text:'此图层已存在此元素',from:'internal:LayerElementPanel',type:'tip'});
-            return false;
-          }else {
-            groupLayerId=this.groupLayers[key].id;
-            oldStructure=JSON.parse(JSON.stringify(this.groupLayers[key].structure));
-            mixMembers=Object.keys(this.groupLayers[key].members).reduce((result,KEY)=>{
-              result[KEY]=typeMapping[this.groupLayers[key].members[KEY].type];
-              return result;
-            },{});
-          }
-          break;
-        }
-      }
-      if(groupLayerId===null){
-        this.$store.commit('setCoLogMessage',{text:'无法找到对应图层',from:'internal:LayerElementPanel',type:'tip'});
-        return false;
-      }
-      if(oldStructure===undefined || oldStructure===null){
-        this.$store.commit('setCoLogMessage',{text:'图层结构解析错误',from:'internal:LayerElementPanel',type:'tip'});
-        return false;
-      }
-      if(mixMembers===undefined || mixMembers===null){
-        this.$store.commit('setCoLogMessage',{text:'图层成员解析错误',from:'internal:LayerElementPanel',type:'tip'});
-        return false;
-      }
-      mixMembers[addId]=typeMapping[this.itemMenuConfig.target.type];
-      let newStructure=this.structureUnshiftByItem(oldStructure,routeArr,addId);
-      this.$store.state.serverData.socket.broadcastUpdateLayerData(
-        {
-          id:groupLayerId,
-          structure:newStructure,
-          members:mixMembers
-        }
-      );
-      this.itemMenuConfig.show=false;
-    },
-    /**依据图层路由和图层结构插入值
-     * @return false|mixed
-     * @param structure | array
-     * @param route | array
-     * @param value | int
-     */
-    structureUnshiftByItem(structure,route,value){
-      if (route.length===1){//路由的尽头
-        structure.splice(2,0,value);
-        return structure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        let Len=structure.length;
-        for (let i=0;i<Len;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureUnshiftByItem(structure[i],nextRoute,value);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return structure;
-    },
-    /**依据图层路由和图层结构删除值
-     * @return false|mixed
-     * @param structure
-     * @param route
-     * @param value
-     */
-    structureRemoveByItem(structure,route,value){
-      if (route.length===1){//路由的尽头
-        structure.remove(value);
-        return structure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        for (let i=0;i<structure.length;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureRemoveByItem(structure[i],nextRoute,value);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return structure;
-    },
-    /**依据图层路由和图层结构在头部加入值
-     * @return false|mixed
-     * @param structure | array
-     * @param route | array
-     * @param value | int
-     */
-    structureJoinByItem(structure,route,value){
-      if (route.length===1){//路由的尽头
-        structure.splice(2,0,value);
-        return structure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        for (let i=0;i<structure.length;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureJoinByItem(structure[i],nextRoute,value);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return structure;
-    },
-    itemContextmenuClose(){//关闭元素右键添加至自定义图层菜单
-      this.itemMenuConfig.show=false;
-      this.itemMenuConfig.target=null;
-      this.itemMenuConfig.x=null;
-      this.itemMenuConfig.y=null;
-    },
-    itemContextmenuOpen(ev,item){//打开元素右键添加至自定义图层菜单
-      this.itemMenuConfig.target=item;
-      this.itemMenuConfig.show=true;
-      this.itemMenuConfig.x=ev.x;
-      this.itemMenuConfig.y=ev.y;
+    createGroupLayer(){//添加新的分组图层
+      this.$store.state.serverData.socket.broadcastCreateGroupLayer();
     },
     expandAllDefaultGroup(){//展开或关闭所有分组
       this.switchDefaultLayerActions();
@@ -814,11 +632,14 @@ export default {
         return unknown;
       }
       for(let i=0;i<item.details.length;i++){
-        if(item.details[i].key==='名称' || item.details[i].key==='name'){
-          if(item.details[i].value===''){
+        if(item.details[i].key==='name'){
+          let value=item.details[i].value+'';
+          let content=value.substr(2);
+          if(content===''){
             return unknown;
+          }else {
+            return content;
           }
-          return item.details[i].value;
         }
       }
       return unknown;
@@ -826,6 +647,11 @@ export default {
     getMapLayer(){
       this.$store.state.serverData.socket.getMapLayer();
     },
+
+    /**成员映射
+     *  由{id:num}
+     *  变为{id:{element object}}
+     **/
     deconstructMembers(members){
       let ref={};
       Object.keys(members).forEach(item=>{
@@ -871,6 +697,13 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    lastPSEndId(){//array element id list
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.lastPSEndId;
+      }else{
+        return [];
+      }
+    },
     userName(){
       if(this.$store.state.serverData.socket!==undefined){
         if(this.$store.state.serverData.socket.userData!==null){
@@ -897,36 +730,6 @@ export default {
       let map=new Map();
       this.hiddenElements.forEach(value=>map.set(value.id,true));
       return map;
-    },
-    groupLayerStructure(){//提取分组图层的每层的名称
-      let ref=[];
-      for(let key in this.groupLayers){
-        ref.push(extractFirstName(this.groupLayers[key].structure));
-      }
-      function extractFirstName(arr){//提取每个分组的名字
-        return arr.map(item=>{
-          if (Array.isArray(item)){
-            return extractFirstName(item);
-          } else {
-            return item;
-          }
-        }).filter((item,index)=>
-          (
-            index===0||Array.isArray(item)
-          )
-          &&!
-            (
-              Array.isArray(item)&&item.length===0
-            )
-        );
-      }
-      return ref;
-    },
-    itemContextmenuPos(){
-      return {
-        left:this.itemMenuConfig.x+'px',
-        top:this.itemMenuConfig.y+'px',
-      }
     },
     expandAllDefaultState(){
       return this.defaultLayerPoint === true && this.defaultLayerLine === true && this.defaultLayerArea === true;
@@ -1054,6 +857,14 @@ export default {
     }
   },
   watch:{
+    lastPSEndId:{
+      handler(newValue){
+        if(newValue.includes(this.$store.state.detailsPanelConfig.target)){//如果当前编辑的元素在被清除选中要素列表中则清除属性面板
+          this.$store.state.detailsPanelConfig.target=-1;
+          this.$store.state.detailsPanelConfig.data={point:{x:null,y:null}};
+        }
+      }
+    },
     pickElements:{
       handler(newValue,oldValue){
         if(!this.showDefaultLayer){return false;}

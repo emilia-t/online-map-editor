@@ -17,13 +17,13 @@
             </div>
           </div>
           <div class="iStySlide">
-            <orange-icons-custom @OrangeIconsCustomCall="iconsHandle"></orange-icons-custom>
+            <orange-icons-custom @OrangeIconsCustomCall="iconsHandle"/>
           </div>
           <div class="iStyP">
             <div class="iStyName">挑选颜色</div>
             <div class="iStyView" title="当前颜色" :style="styleColor"></div>
             <div class="iStyName">自选颜色</div>
-            <orange-color-palette @OrangeColorPaletteCall="paletteHandle" class="iStyInput" :default="'#'+color"></orange-color-palette>
+            <orange-color-palette @OrangeColorPaletteCall="paletteHandle" class="iStyInput" :default="'#'+color"/>
           </div>
           <div class="iStyColors"><!--选择区域-->
             <div class="iStyColor" v-for="color in colors" :style="'background:#'+color" @click="paletteHandle(color)"></div>
@@ -33,33 +33,30 @@
             <div class="iStyWidth" title="当前宽度">{{width}}</div>
           </div>
           <div class="iStySlide">
-            <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :div-style="'width:267px;left:-92px;top:34%'" max="15" min="2" :default="width"></orange-slide-block>
+            <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :div-style="'width:267px;left:-92px;top:34%'"
+                                max="15" min="2" :default="width"/>
           </div>
         </div>
       </div>
       <div class="item iAttribute"><!--属性编辑，区域、名称、类型....-->
         <div class="iTitle">
-          编辑属性
+          属性编辑
         </div>
         <div class="iAttContent"><!--内容-->
           <div class="iAttItem" v-for="detail in details">
-            <div class="keyTips">将在您上传后同步</div>
             <div class="leftProperty">
-              <input @input="keyCheck($event)" @focus="onFocusMode()" @blur="noFocusMode()" contenteditable="true" v-model:value="detail.key" maxlength="24"/>
-              <img src="../../static/downInsert.png" alt="downInsert" class="icon15" title="向下插入" @click="downInsertDetail(detail.key)">
-              <img src="../../static/upInsert.png" alt="upInsert" class="icon15" title="向上插入" @click="upInsertDetail(detail.key)">
-              <img src="../../static/delete.png" alt="deleteButton" class="icon15" title="删除此行" @click="deleteRow(detail.key)">
+              {{detail.key}}
             </div>
             <div class="rightValue">
               <img src="../../static/keyToValue.png" class="keyToValue" alt="keyToValue"/>
-              <textarea @focus="onFocusMode()" @blur="noFocusMode()" contenteditable="true" v-model:value="detail.value"></textarea>
+              <pomelo-input :value="getContent(detail.value)" :type="getType(detail.value)" :item="detail" @inputChanged="detailsChanged"/>
             </div>
           </div>
         </div>
       </div>
     </div>
     <div class="bottomButtons mouseType1"><!--底部按钮-->
-      <div class="bottomButton" @click="cancelEdit($event)">重置</div>
+      <div class="bottomButton" @click="cancelEdit($event)">取消</div>
       <div class="bottomButton" @click="submitEdit($event)">上传</div>
     </div>
   </div>
@@ -69,40 +66,22 @@
 import OrangeIconsCustom from "./OrangeIconsCustom";
 import OrangeColorPalette from "./OrangeColorPalette";
 import OrangeSlideBlock from "./OrangeSlideBlock";
+import PomeloInput from "./PomeloInput";
 export default {
   name: "BananaPointAttributeBoard",
-  components:{OrangeSlideBlock,OrangeColorPalette,OrangeIconsCustom},
+  components:{OrangeSlideBlock,OrangeColorPalette,OrangeIconsCustom,PomeloInput},
   data(){
     return {
       id:"-1",
       color:"000000",
       width:5,
       point:{x:0,y:0},
-      custom:{
-        color:null,
-        icon:null,
-        width:null
-      },
-      details:[
-        {"key":"名称","value":"点"},
-        {"key":"地址","value":""},
-        {"key":"类型","value":""},
-        {"key":"区域","value":""},
-        {"key":"备注","value":""}
-      ],
-      theConfig:{
-        selectNum:-1
-      },
-      cache:{
-        name:"",
-        color:"",
-        details:[]
-      },
-      tempId:1,
+      details:[],
+      custom:{icon:null,tmpId:null},
       show:false,
       colors:['cc0066','ff6666','ff6600','ffcc33','ffff00','99cc33','66cc33','009966','009999','0099cc','333399','993399','666633',
         '993300','ff6600','ffcc00','996600','669933','006633','006699','333366','6633cc','cccccc','666666','333333','000000'],
-      insertCount:1,
+      tmpProof:null,
     }
   },
   props:{
@@ -120,76 +99,20 @@ export default {
   },
   methods:{
     startSetting(){//初始设置
-      this.cache.name=this.name;//拷贝
-      this.cache.color=this.color;
-      this.cache.details=JSON.parse(JSON.stringify(this.details));
+      this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
       this.waterDropletEvent();
     },
-    keyCheck(ev){
-      let lock=false;
-      let nowValue=ev.target.value;
-      let count=0;
-      if(nowValue===''){
-        ev.target.parentElement.parentElement.firstChild.innerText='不能重复或为空';
-        ev.target.parentElement.parentElement.firstChild.style.display='block';
-        lock=true;
-      }
-      for(let i=0;i<this.details.length;i++){
-        if(nowValue===this.details[i].key){
-          count++;
-          if(count>=2){
-            setTimeout(()=>ev.target.value='',50);
-            ev.target.parentElement.parentElement.firstChild.innerText='不能重复或为空';
-            ev.target.parentElement.parentElement.firstChild.style.display='block';
-            lock=true;
-            break;
-          }
-        }
-      }
-      if(lock===false){
-        ev.target.parentElement.parentElement.firstChild.innerText='';
-        ev.target.parentElement.parentElement.firstChild.style.display='none';
-      }
+    detailsChanged(data){
+      data.item.value=data.value;
     },
-    downInsertDetail(key){
-      let index=-1;
-      for(let i=0;i<this.details.length;i++){
-        if(this.details[i].key==key){
-          index=i+1;
-          break;
-        }
-      }
-      if(index!==-1){
-        let newRow={'key':'名'+this.insertCount,'value':'值'};
-        this.details.splice(index,0,newRow);
-      }
-      this.insertCount++;
+    getContent(value){
+      if(this.tmpProof===null)return '';
+      return value;
     },
-    upInsertDetail(key){
-      let index=-1;
-      for(let i=0;i<this.details.length;i++){
-        if(this.details[i].key==key){
-          index=i+1;
-          break;
-        }
-      }
-      if(index!==-1){
-        let newRow={'key':'名'+this.insertCount,'value':'值'};
-        this.details.splice(index-1,0,newRow);
-      }
-      this.insertCount++;
-    },
-    deleteRow(key){
-      let index=-1;
-      for(let i=0;i<this.details.length;i++){
-        if(this.details[i].key==key){
-          index=i+1;
-          break;
-        }
-      }
-      if(index!==-1){
-        this.details.splice(index-1,1);
-      }
+    getType(value){
+      if(this.tmpProof===null)return 'text';
+      let v=this.tmpProof.GetType(value);
+      return v==='list'?'listEdit':v;
     },
     waterDropletEvent(){
       this.$refs.waterDroplet.addEventListener('click',(ev)=>{
@@ -210,20 +133,30 @@ export default {
     },
     paletteHandle(data){
       this.color=data;
-      this.custom.color='#'+data;
     },
     sliderHandle(data){
       this.width=data;
-      this.custom.width=data;
     },
     iconsHandle(data){
       this.custom.icon=data;
     },
-    submitEdit(ev){//提交-更新缓存-同时上传数据
-      this.cache.name=this.name;
-      this.cache.color=this.color;
-      this.cache.details=JSON.parse(JSON.stringify(this.details));
-      this.cache.custom=JSON.parse(JSON.stringify(this.custom));
+    submitEdit(){//提交-更新缓存-同时上传数据
+      /**
+       * name check
+       **/
+      let name='';
+      for(let i=0;i<this.details.length;i++){
+        if(this.details[i].key==='name'){
+          name=this.details[i].value;break;
+        }
+      }
+      if(name==='' || name==='☍t'){
+        this.$store.commit('setCoLogMessage',{text:'名称不能为空，请输入名称',from:'internal:BananaPointAttributeBoard',type:'tip'});
+        return false;
+      }
+      /**
+       * name check end
+       **/
       let localId=this.$store.state.serverData.socket.localId--;
       let obj={
         id:localId,
@@ -232,35 +165,72 @@ export default {
         color:this.color,
         width:this.width,
         details:this.details,
-        custom:null,
+        custom:{
+          icon:null,
+          tmpId:null,
+        },
       };
-      if(this.custom.icon!==null){
-        obj.custom=this.custom;
+      if(typeof this.custom.icon==='string'){//icon添加
+        obj.custom.icon=this.custom.icon;
+      }else {
+        obj.custom.icon=null;
       }
+      if(this.$store.state.templateData.hasOwnProperty(this.useTpId)){//检查是否存在此模板
+        obj.custom.tmpId=this.useTpId;
+      }else{
+        this.$store.commit('setCoLogMessage',{text:'添加失败，因为对应的模板'+this.useTpId+'不存在，请联系管理员',from:'internal:BananaPointAttributeBoard',type:'error'});
+        return false;
+      }
+      /**
+       * updating
+       **/
       let recordObj={
         type:'upload',
         class:'point',
         id:localId,
+        tmpId:obj.custom.tmpId
       };
-      this.details=[
-        {"key":"名称","value":"点"+this.$store.state.serverData.socket.localId},
-        {"key":"地址","value":""},
-        {"key":"类型","value":""},
-        {"key":"区域","value":""},
-        {"key":"备注","value":""}
-      ];
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastSendPoint(obj);
       this.show=false;
       this.$root.sendInstruct('addNewPointEnd');
+      this.resetDetails();
     },
-    cancelEdit(ev){//取消
-      this.name=this.cache.name;
-      this.color=this.cache.color;
-      this.details=JSON.parse(JSON.stringify(this.cache.details));
+    cancelEdit(){//取消
+      this.width=5;
+      this.resetCustom();
+      this.resetDetails();
+      this.$root.sendInstruct('addNewPointEnd');
+    },
+    resetCustom(){
+      this.custom={
+        icon:null,
+        tmpId:null,
+      };
+    },
+    resetDetails(){
+      let newValue=this.useDetailsRule;
+      let len=newValue.length;
+      let Details=[];//key=>value
+      for(let i=0;i<len;i++){
+        let key=newValue[i].name;
+        let value=newValue[i].default;
+        let obj={
+          "key":key,
+          "value":value
+        };
+        Details.push(obj);
+      }
+      this.details=Details;
     },
   },
   computed:{
+    useDetailsRule(){
+      return this.$store.state.templateConfig.useDetailsRule;
+    },
+    useTpId(){
+      return this.$store.state.templateConfig.useTpId;
+    },
     styleColor(){
       if(this.color){
         return 'background:#'+this.color;
@@ -271,6 +241,9 @@ export default {
     browserSize(){
       return this.$store.state.mapConfig.browser;
     },
+    /**
+     * @return {string}
+     */
     BoardPos(){
       let [Sl,St]=[this.StyleLeft,this.StyleTop];
       if(Sl>this.browserSize.width-325){
@@ -279,10 +252,27 @@ export default {
       if(St>this.browserSize.height-425){
         St=this.browserSize.height-435;
       }
-      return "left:"+Sl+"px;top:"+St+"px"
+      return "left:"+Sl+"px;top:"+St+"px";
     },
   },
   watch:{
+    useDetailsRule:{
+      handler(newValue){
+        let len=newValue.length;
+        let Details=[];//key=>value
+        for(let i=0;i<len;i++){
+          let key=newValue[i].name;
+          let value=newValue[i].default;
+          let obj={
+            "key":key,
+            "value":value
+          };
+          Details.push(obj);
+        }
+        this.details=Details;
+      },
+      deep:true
+    },
     BoardPos:{//被移动位置时触发
       handler(newValue){
         this.show=true;
@@ -300,7 +290,6 @@ export default {
     },
     width:{
       handler(newValue,oldValue){//检测宽度格式是否正确
-        function isNumber(input) {return /^\d+$/.test(input);}
         let Exp=/^(6[0-4]|[1-5]\d|\d)$/;
         if(Exp.test(newValue)===false){
           if(newValue!==''){
@@ -310,6 +299,12 @@ export default {
           this.$store.state.mapConfig.tempPoint.width=newValue;
         }
       }
+    },
+    custom:{
+      handler(newValue){
+        this.$store.state.mapConfig.tempPoint.custom=newValue;
+      },
+      deep:true
     }
   }
 }
@@ -335,6 +330,7 @@ export default {
   cursor: default;
 }
 .bottomButtons{
+  user-select: none;
   position: absolute;
   bottom:0px;
   width: 100%;
@@ -375,16 +371,6 @@ export default {
   box-shadow: #b1b1b1 2px 2px 10px;
   border-radius: 5px;
   padding: 5px;
-}
-.keyTips{
-  position: relative;
-  top:-10px;
-  left: 4px;
-  font-size: 13px;
-  font-weight: 100;
-  width: 100%;
-  height: 10px;
-  display: block;
 }
 .transparent{
   opacity: 0.4;
@@ -428,7 +414,7 @@ export default {
   max-width: calc(90% - 17px);
   width: calc(90% - 17px);
   padding: 2px 4px;
-  min-height: 38px;
+  min-height: 19px;
   max-height: 300px;
   height: auto;
   margin: 4px 0px 0px 0px;

@@ -18,8 +18,7 @@
             </div>
             <div class="rightValue">
               <img src="../../static/keyToValue.png" class="keyToValue" alt="keyToValue"/>
-              <div class="rightValueText">{{detail.value}}</div>
-              <div class="rightValueText" v-if="detail.value===''">NULL</div>
+              <div class="rightValueText" v-text="getContent(detail.value)"></div>
             </div>
           </div>
         </div>
@@ -29,13 +28,16 @@
           其他属性
         </div>
         <div v-if="exampleConfig.id!==undefined && this.$store.state.baseMapConfig.baseMapType==='fictitious'" class="iOtherText">
-          坐标<br>{{exampleConfig.point.x}}<br>{{exampleConfig.point.y}}
+          坐标<br/>{{exampleConfig.point.x}}<br/>{{exampleConfig.point.y}}
         </div>
         <div v-if="exampleConfig.id!==undefined && this.$store.state.baseMapConfig.baseMapType==='realistic'" class="iOtherText">
-          经度<br>{{this.$store.state.detailsPanelConfig.sourcePoint.x}}<br>纬度<br>{{this.$store.state.detailsPanelConfig.sourcePoint.y}}
+          经度<br/>{{this.$store.state.detailsPanelConfig.sourcePoint.x}}<br/>纬度<br/>{{this.$store.state.detailsPanelConfig.sourcePoint.y}}
         </div>
         <div v-if="exampleConfig.id!==undefined" class="iOtherText">
-          E-ID {{exampleConfig.id}}
+          元素ID<br/>{{exampleConfig.type+exampleConfig.id}}
+        </div>
+        <div v-if="exampleConfig.id!==undefined" class="iOtherText">
+          模板ID<br/>{{tmpId}}
         </div>
         <div v-if="exampleConfig.id===undefined" class="iOtherText">
           等待选中
@@ -63,7 +65,8 @@ export default {
         "father_relation":null,
         "child_nodes":null,
         "father_node":null,
-        "details":[]
+        "details":[],
+        "custom":{"tmpId":null},
       },
       sourcePoint:{
         x:null,
@@ -75,6 +78,7 @@ export default {
       dragArea:{maxX:null,maxY:null,minX:null,minY:null},
       nailStatus:false,
       translucent:false,
+      tmpProof:null,
     }
   },
   mounted() {
@@ -82,11 +86,23 @@ export default {
   },
   methods:{
     startSetting(){
+      this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
       this.dragStart();
       this.dragIng();
       this.dragEnd();
       this.nailEvent();
       this.waterDropletEvent();
+    },
+    getContent(value){
+      if(this.tmpProof===null)return '';
+      if(value===null)return 'NULL';
+      let t=this.tmpProof.GetType(value);
+      if(t==='list'){//列表类型需要单独处理
+        return value.substr(2).split(',')[0];
+      }else{
+        let v=this.tmpProof.GetContent(value);
+        return v===''?'NULL':v;
+      }
     },
     waterDropletEvent(){
       this.$refs.waterDroplet.addEventListener('click',(ev)=>{
@@ -188,7 +204,14 @@ export default {
     },
     mouseClick(){
       return this.$store.state.mapConfig.mouseClick;
-    }
+    },
+    tmpId(){
+      try{
+        return this.exampleConfig.custom.tmpId;
+      }catch(e){
+        return null;
+      }
+    },
   },
   watch:{
     targetId:{
@@ -269,6 +292,7 @@ export default {
 .iOtherText{
   font-weight: 100;
   font-size: 13px;
+  margin: 4px 0px;
 }
 .rightValue{
   width: 100%;
@@ -280,6 +304,7 @@ export default {
   font-size: 15px;
   font-weight: 200;
   margin: 4px 0px 0px 4px;
+  white-space: pre-wrap;
 }
 .keyToValue{
   width: 20px;

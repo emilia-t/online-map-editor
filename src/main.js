@@ -10,14 +10,14 @@ Array.prototype.remove = function (val) {
     return this.splice(index, 1);
   }
   return this;
-}
+};
 Array.prototype.removeByElementId = function (id) {//Array must [{id:123,type:'point'},{element}...]
   const index = this.findIndex(item => item.id === id);
   if (index !== -1) {
     this.splice(index, 1);
   }
   return this;
-}
+};
 new Vue({
   el:'#app',
   data(){
@@ -256,4 +256,4 @@ new Vue({
       return this.$store.state.cameraConfig.offsetY;
     },
   },
-})
+});

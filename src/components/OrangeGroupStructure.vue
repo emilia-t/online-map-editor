@@ -1,21 +1,24 @@
 <template>
   <div ref="memberTeamOut" :class="eachLevelClass">
-    <div class="memberTeamName" @click="pickChildGroupRequest()" @contextmenu.stop.prevent="contextmenuHeadOpen($event)" @mouseup="confirmItemJoinGroup($event)">
+    <div class="memberTeamName"
+         @click="pickChildGroupRequest()"
+         @contextmenu.stop.prevent="contextmenuHeadOpen($event)"
+         @mouseup="confirmItemJoinGroup($event)">
       <div class="memberTeamNameL">
         <div class="expandMoreL" @click.stop="expandGroup()" v-show="!groupExpand">
-          <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"></expand-more>
+          <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"/>
         </div>
         <div class="expandMoreL" @click.stop="expandGroup()" v-show="groupExpand">
-          <expand-more custom="transform:translate(0px,2px);cursor:pointer;"></expand-more>
+          <expand-more custom="transform:translate(0px,2px);cursor:pointer;"/>
         </div>
-        <span class="groupListName" v-text="structure[0]"></span>
+        <span class="groupListName" v-text="structure[0]"/>
       </div>
       <div class="memberTeamNameR" title="隐藏操作仅对您可见" v-show="hasElementMember">
         <div class="memberRightEyeA" @click.stop="hiddenAllElements()" v-show="!groupMemberAllHide">
-          <eye-visible custom="cursor:pointer"></eye-visible>
+          <eye-visible custom="cursor:pointer"/>
         </div>
         <div class="memberRightEyeB" @click.stop="unHiddenAllElements()" v-show="groupMemberAllHide">
-          <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+          <eye-not-visible custom="cursor:pointer"/>
         </div>
       </div>
     </div>
@@ -25,54 +28,37 @@
              @mouseenter="expandOrderCase($event,layer.members[item].id)"
              @mouseleave="restoreOrderCase($event)"
              @mouseup="confirmOrderCase($event,layer.members[item].id)">
-          <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].type)">
-            <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'" v-if="layer.members[item].type==='point'"></point>
-            <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='line'"></segment-line>
-            <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='area'"></region>
-            <span class="memberName" v-text="getItemName(layer.members[item])"></span>
+          <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].custom.tmpId)">
+            <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'"
+                   v-if="layer.members[item].type==='point'"/>
+            <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
+                   v-if="layer.members[item].type==='line'"/>
+            <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
+                    v-if="layer.members[item].type==='area'"/>
+            <span class="memberName" v-text="getItemName(layer.members[item])"/>
           </div>
           <div :ref="'memberRightEye'+layer.members[item].id">
             <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
-              <eye-visible custom="cursor:pointer"></eye-visible>
+              <eye-visible custom="cursor:pointer"/>
             </div>
             <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
-              <eye-not-visible custom="cursor:pointer"></eye-not-visible>
+              <eye-not-visible custom="cursor:pointer"/>
             </div>
           </div>
         </div>
         <div class="memberActivityInfo">
           <div class="memberPick" v-if="false">
-            <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑形状中</span>
+            <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑形状中</span>
           </div>
           <div class="memberSelect" v-if="false">
-            <span class="memberSpanA" v-text="'emilia-text'"></span><span>编辑属性中</span>
+            <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑属性中</span>
           </div>
         </div>
       </div>
-      <orange-group-structure :layer="layer" :all-expand="allExpand"
-                              :level="level+1" :route="route+'⇉'+item[0]"
-                              :structure="item"
-                              :rename-response="renameApprovalResult"
-                              :adjust-item-order-response="adjustItemOrderResponse"
-                              :pick-child-group-response="pickChildGroupResponse"
-                              @renameRequest="renameApproval"
-                              @adjustItemOrderRequest="adjustItemOrderApproval"
-                              @pickChildGroupRequest="pickChildGroupRelay"
-                              v-if="isArray(item)">
-      </orange-group-structure>
     </div>
     <div class="memberMenuClose" @contextmenu.prevent="void 1" @click.stop="contextmenuHeadClose()" v-show="memberHeadMenu.show"></div>
     <div class="memberMenu" :style="headContextmenuPos" v-show="memberHeadMenu.show">
       <div class="menuListBox">
-        <div class="menuList" @click="createGroupAtTop()">
-          在顶部新建分组
-        </div>
-        <div class="menuList" @click="createGroupAtBottom()">
-          在底部新建分组
-        </div>
-        <div class="menuList" title="删除此分组会同时删除组内元素" @click="deleteGroup()" v-if="this.level!==1">
-          删除分组与元素
-        </div>
         <div class="menuList" title="点击打开模板设置界面" @click="openTemplate()">
           设置模板
         </div>
@@ -88,8 +74,8 @@
       </div>
       <input ref="rename" type="text" maxlength="20" @focus="onFocusMode()" @blur="noFocusMode()">
       <div class="renameRow">
-        <button @click.stop="closeRename()">取消</button>
-        <button @click.stop="groupRename()">确定</button>
+        <button class="renameButton" @click.stop="closeRename()">取消</button>
+        <button class="renameButton" @click.stop="groupRename()">确定</button>
       </div>
     </div>
     <pomelo-confirm
@@ -119,6 +105,7 @@ export default {
   },
   data(){
     return {
+      tmpId:null,
       renameShow:false,
       grabStartY:0,//拖拽开始位置
       groupExpand:true,
@@ -141,7 +128,7 @@ export default {
       grabItemPosOffsetX:0,
       grabItemState:false,
       grabItemId:-1,
-      grabItemType:null,
+      grabItemTmpId:null,
       grabItemSeparate:false,//本图层是否脱离面板独立存在
       grabSeparateLeft:20,//拖动独立x轴的左侧条件
       grabSeparateRight:320,//拖动独立x轴的右侧条件
@@ -203,12 +190,11 @@ export default {
           agree:false,
           code:null,
           stage:null,
-          type:null,
           pattern:null,
-          idA:-1,
-          layerA:-1,
-          idB:-1,
-          layerB:-1,
+          elementA:-1,
+          templateA:-1,
+          elementB:-1,
+          templateB:-1,
         }
       },
       required:false
@@ -250,6 +236,7 @@ export default {
     startSetting(){
       this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
       this.bindTemplate();
+      this.tmpId=this.structure[1].template.id;
     },
     bindTemplate(){//挂载模板数据到store
       let stu1=this.structure[1];
@@ -263,9 +250,6 @@ export default {
             this.$store.state.templateData[id]=temp;
           }
         }
-      }
-      if(this.tmpProof.tpCheck()){
-
       }
     },
     openRename(){
@@ -287,24 +271,21 @@ export default {
         }
       }
     },
-    openTemplate(){
+    openTemplate(){//打开模板
       function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
       let code=this.$store.state.templateConfig.taskCode+=2;
       let stu1=this.structure[1];
       let name = this.structure[0];
       if(!isObj(stu1)){
-        this.resetStructure1();
-        this.$store.commit('setCoLogMessage',{text:'此分组模板已重置，请稍后重试',from:'internal:OrangeGroupStructure',type:'warn'});
+        this.$store.commit('setCoLogMessage',{text:'此分组模板(group'+this.layer.id+')存在异常，请联系管理员修复',from:'internal:OrangeGroupStructure',type:'error'});
         return false;
       }
       if(!stu1.hasOwnProperty('template')){
-        this.resetStructure1();
-        this.$store.commit('setCoLogMessage',{text:'此分组模板已重置，请稍后重试',from:'internal:OrangeGroupStructure',type:'warn'});
+        this.$store.commit('setCoLogMessage',{text:'此分组模板(group'+this.layer.id+')存在异常，请联系管理员修复',from:'internal:OrangeGroupStructure',type:'error'});
         return false;
       }
       if(typeof stu1.template!=='object'){
-        this.resetStructure1();
-        this.$store.commit('setCoLogMessage',{text:'此分组模板已重置，请稍后重试',from:'internal:OrangeGroupStructure',type:'warn'});
+        this.$store.commit('setCoLogMessage',{text:'此分组模板(group'+this.layer.id+')存在异常，请联系管理员修复',from:'internal:OrangeGroupStructure',type:'error'});
         return false;
       }
       let template=stu1.template;
@@ -315,31 +296,6 @@ export default {
       this.$store.commit('setCoTemplateShow',true);
       this.editTpTaskId=code;
       this.memberHeadMenu.show=false;
-    },
-    resetStructure1(){
-      let old=this.structure;
-      if(old.length>=2){
-        if(typeof old[1] === 'number'){//如果第二个是元素id则插入
-          old.splice(1,0,{template:null});
-          let newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),old);
-          this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
-        }else if(Array.isArray(old[1])){//如果第二个元素是另一个分组则插入
-          old.splice(1,0,{template:null});
-          let newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),old);
-          this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
-        }else {//其他情况下更换第二个元素
-          old[1]={template:null};
-          let newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),old);
-          this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
-        }
-      }else if(old.length===1){//结构缺失第二个参数
-        old.push({template:null});
-        let newStructure=this.structureChangeData(this.layer.structure,this.route.split('⇉'),old);
-        this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
-      }else {//空的数组
-        this.$store.commit('setCoLogMessage',{text:'存在异常为空的分组',from:'internal:OrangeGroupStructure',type:'warn'});
-        return false;
-      }
     },
     alertTip(text){
       this.$store.commit('setCoLogMessage',{text:text,from:'internal:OrangeGroupStructure',type:'warn'});
@@ -354,7 +310,7 @@ export default {
       if(ev.target.className!=='memberKeyInfo'){
         return false;
       }
-      if(this.adjustItemOrderResponse.idA!==-1 && this.adjustItemOrderResponse.idA!==id){
+      if(this.adjustItemOrderResponse.elementA!==-1 && this.adjustItemOrderResponse.elementA!==id){
         ev.target.style.height='80px';
       }
     },
@@ -364,7 +320,7 @@ export default {
       }
       ev.target.style.height='25px';
     },
-    randomNumber8() {
+    randomNumber8(){
       const min = 10000000;
       const max = 99999999;
       return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -373,44 +329,40 @@ export default {
       if(ev.button!==0){
         return false;
       }
-      if(this.adjustItemOrderResponse.idA!==-1){
-        let route=this.route;
+      if(this.adjustItemOrderResponse.elementA!==-1){
         this.$emit('adjustItemOrderRequest',{
           code:this.randomNumber8(),
           stage:'confirm',
           pattern:'join',
-          type:this.adjustItemOrderResponse.type,
-          idA:this.adjustItemOrderResponse.idA,
-          layerA:this.adjustItemOrderResponse.layerA,
-          idB:route,
-          layerB:this.layer.id,
+          elementA:this.adjustItemOrderResponse.elementA,
+          templateA:this.adjustItemOrderResponse.templateA,
+          elementB:null,
+          templateB:this.tmpId
         });
       }
     },
     confirmOrderCase(ev,id){
-      if(this.adjustItemOrderResponse.idA!==-1 && this.adjustItemOrderResponse.idA!==id){
+      if(this.adjustItemOrderResponse.elementA!==-1 && this.adjustItemOrderResponse.elementA!==id){
         let offsetY=ev.offsetY;
         if(offsetY<40){
           this.$emit('adjustItemOrderRequest',{
             code:this.randomNumber8(),
             stage:'confirm',
             pattern:'up',
-            type:this.adjustItemOrderResponse.type,
-            idA:this.adjustItemOrderResponse.idA,
-            layerA:this.adjustItemOrderResponse.layerA,
-            idB:id,
-            layerB:this.layer.id,
+            elementA:this.adjustItemOrderResponse.elementA,
+            templateA:this.adjustItemOrderResponse.templateA,
+            elementB:id,
+            templateB:this.tmpId,
           });
         }else if(offsetY>=40 && offsetY<=80){
           this.$emit('adjustItemOrderRequest',{
             code:this.randomNumber8(),
             stage:'confirm',
             pattern:'down',
-            type:this.adjustItemOrderResponse.type,
-            idA:this.adjustItemOrderResponse.idA,
-            layerA:this.adjustItemOrderResponse.layerA,
-            idB:id,
-            layerB:this.layer.id,
+            elementA:this.adjustItemOrderResponse.elementA,
+            templateA:this.adjustItemOrderResponse.templateA,
+            elementB:id,
+            templateB:this.tmpId,
           });
         }
       }
@@ -418,7 +370,7 @@ export default {
     adjustItemOrderApproval(data){
       this.$emit('adjustItemOrderRequest',data);//转发申请
     },
-    grabLayerStart(ev,index,id,type){//拖拽起步
+    grabLayerStart(ev,index,id,tmpId){//拖拽起步点击
       if(ev.button!==0){
         return false;
       }
@@ -437,7 +389,7 @@ export default {
       }
       this.grabIndex=index;
       this.grabItemId=id;
-      this.grabItemType=type;
+      this.grabItemTmpId=tmpId;
       this.$refs.memberTeamBox[index].style.userSelect='none';
       this.$refs.memberTeamBox[index].style.background='white';
       this.$refs.memberTeamBox[index].style.zIndex='666';
@@ -450,15 +402,14 @@ export default {
       if(this.moveObServe===null){
         this.moveObServe=true;
         document.addEventListener('mousemove',(event)=>{
-          if(Math.abs(this.grabStartY-event.y)<=3)return false;//仅当拖拽幅度大于3px时才进行拖拽事件
           if(this.grabItemState){
-            if(this.adjustItemOrderResponse.idA!==this.grabItemId){
+            if(Math.abs(this.grabStartY-event.y)<=3)return false;//仅当拖拽幅度大于3px时才进行拖拽事件
+            if(this.adjustItemOrderResponse.elementA!==this.grabItemId){
               this.$emit('adjustItemOrderRequest',{
                 code:this.randomNumber8(),
                 stage:'ready',
-                type:this.grabItemType,
-                idA:this.grabItemId,
-                layerA:this.layer.id,
+                elementA:this.grabItemId,
+                templateA:this.grabItemTmpId,
               });//申请调序
             }
             if(event.x<this.grabSeparateLeft || event.x>this.grabSeparateRight){//拖出图层面板
@@ -467,14 +418,14 @@ export default {
               this.$refs.memberTeamBox[this.grabIndex].style.zIndex='666';
               this.$refs.memberTeamBox[this.grabIndex].style.left=event.x-this.grabItemPosOffsetX+'px';
               this.$refs.memberTeamBox[this.grabIndex].style.top=event.y-this.grabItemPosOffsetY+'px';
-              this.$refs.memberTeamBox[this.grabIndex].style.background='white';
+              this.$refs.memberTeamBox[this.grabIndex].style.background='rgba(255,255,255,0.5)';
               this.grabItemSeparate=false;
             }else {
               this.$refs.memberTeamBox[this.grabIndex].style.pointerEvents='none';
               this.$refs.memberTeamBox[this.grabIndex].style.position='fixed';
               this.$refs.memberTeamBox[this.grabIndex].style.left='';
               this.$refs.memberTeamBox[this.grabIndex].style.top=event.y-this.grabItemPosOffsetY+'px';
-              this.$refs.memberTeamBox[this.grabIndex].style.background='white';
+              this.$refs.memberTeamBox[this.grabIndex].style.background='rgba(255,255,255,0.5)';
               this.grabItemSeparate=true;
             }
           }
@@ -505,7 +456,6 @@ export default {
             this.grabItemState=false;
             this.grabIndex=-1;
             this.grabItemId=-1;
-            this.grabItemType=null;
           }
         });
       }
@@ -532,9 +482,6 @@ export default {
         this.renameApprovalResult.name=newName;
       }
     },
-    groupNameRenameRequest(template){//检查名称是否重复
-      this.$emit('renameRequest',template);
-    },
     onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
     },
@@ -554,11 +501,8 @@ export default {
       }else{
         this.renameApprovalTemplate.code=this.randomNumber8();
         this.renameApprovalTemplate.name=newName;
-        this.groupNameRenameRequest(this.renameApprovalTemplate);
+        this.$emit('renameRequest',this.renameApprovalTemplate);
       }
-    },
-    groupNameIllegal(value){//检查分组名称是否含有非法字符
-        return value.includes('⇉');
     },
     handleConfirm(plan){//一些需要再次确认才能执行的操作
       if(!plan.state){//取消执行
@@ -569,25 +513,8 @@ export default {
       let method=plan.method;
       let value=plan.value;
       switch(method){
-        case 'deleteGroup':{//删除子分组及其元素(包含子分组的子分组)
-          let routeArr=this.route.split('⇉');
-          let StructureMembers=this.structureRemoveByGroup(this.layer.structure,routeArr);
-          let newStructure=StructureMembers.structure;
-          let removeMembers=StructureMembers.members;//[1,2,3,...]
-          let newMembers=this.removeMembersByArray(removeMembers);
-          newStructure=this.removeUndefined(newStructure);//删除子分组结构同时删除结构内的成员
-          let groupLayerId=this.layer.id;
-          this.$store.state.serverData.socket.broadcastUpdateLayerData({id:groupLayerId,members:newMembers,structure:newStructure});
-          this.$store.state.serverData.socket.broadcastBatchDeleteElement(removeMembers);
-          break;
-        }
+
       }
-    },
-    deleteGroup(){//删除子分组及其元素(包含子分组的子分组)
-      this.memberHeadMenu.show=false;//关闭右键菜单
-      this.firmPlan={method:'deleteGroup',value:null};
-      this.firmMessage='即将删除此分组及其包含的元素，是否要继续？';
-      this.firmView=true;//呼出确认菜单
     },
     getFormattedDate() {//获取模板时间
       const now = new Date();
@@ -609,294 +536,6 @@ export default {
         result += validChars.charAt(byte % validChars.length);
       });
       return result;
-    },
-    createGroupAtTop(){//在此分组顶部新增子分组
-      function randomNumber6(){const min=100000;const max=999999;return Math.floor(Math.random()*(max-min+1))+min;}
-      let random6=randomNumber6();
-      let createId=this.$store.state.elementPanelConfig.createId++;
-      let groupLayerId=this.layer.id;
-      let newGroupName='G-'+random6+createId;
-      let time=this.getFormattedDate();
-      let ID;
-      do{ID=this.createTemplateId();}
-      while(Object.prototype.hasOwnProperty.call(this.$store.state.templateData,ID));
-      let creator=this.userName+'('+this.userEmail+')';
-      let newGroup=[
-        newGroupName,
-        {
-          template:{//初始给定空模板对象
-            id:ID,
-            name:'template',
-            creator,
-            modify:time,
-            locked:false,
-            explain:'none',
-            typeRule:{point:true, line:true, area:true, curve:true},
-            detailsRule:[{set:false, name:'name', default:'☍tunknown', type:'text'}],
-            colorRule:{basis:'', type:'', condition:[]},
-            widthRule:{basis:'', type:'', condition:[]
-            }
-          }
-        }
-      ];
-      let routeArr=this.route.split('⇉');
-      let newStructure=this.structureUnshiftByItem(this.layer.structure,routeArr,newGroup);
-      this.$store.state.serverData.socket.broadcastUpdateLayerData(
-        {
-          id:groupLayerId,
-          structure:newStructure,
-        }
-      );
-      this.memberHeadMenu.show=false;
-    },
-    createGroupAtBottom(){//在此分组底部新增子分组
-      function randomNumber6(){const min=100000;const max=999999;return Math.floor(Math.random()*(max-min+1))+min;}
-      let random6=randomNumber6();
-      let createId=this.$store.state.elementPanelConfig.createId++;
-      let groupLayerId=this.layer.id;
-      let newGroupName='G-'+random6+createId;
-      let time=this.getFormattedDate();
-      let ID;
-      do{ID=this.createTemplateId();}
-      while(Object.prototype.hasOwnProperty.call(this.$store.state.templateData,ID));
-      let creator=this.userName+'('+this.userEmail+')';
-      let newGroup=[
-        newGroupName,
-        {
-          template:{//初始给定空模板对象
-            id:ID,
-            name:'template',
-            creator,
-            modify:time,
-            locked:false,
-            explain:'none',
-            typeRule:{point:true, line:true, area:true, curve:true},
-            detailsRule:[{set:false, name:'name', default:'☍tunknown', type:'text'}],
-            colorRule:{basis:'', type:'', condition:[]},
-            widthRule:{basis:'', type:'', condition:[]
-            }
-          }
-        }
-      ];
-      let routeArr=this.route.split('⇉');
-      let newStructure=this.structureInsertByItem(this.layer.structure,routeArr,newGroup);
-      this.$store.state.serverData.socket.broadcastUpdateLayerData(
-        {
-          id:groupLayerId,
-          structure:newStructure,
-        }
-      );
-      this.memberHeadMenu.show=false;
-    },
-    /**依据成员数组删除多个成员
-     * @return false|mixed
-     * @param members
-     */
-    removeMembersByArray(members){
-      const typeMapping={point:1,line:2,area:3,curve:4};
-      let newMembers=Object.keys(this.layer.members).reduce((result,key)=>{
-        result[key]=typeMapping[this.layer.members[key].type];
-        return result;
-      },{});
-      let Len=members.length;
-      for(let i=0;i<Len;i++){
-        delete newMembers[members[i]];
-      }
-      return newMembers;
-    },
-    /**依据图层路由和图层结构插入值
-     * @return false|mixed
-     * @param structure | array
-     * @param route | array
-     * @param value | int
-     */
-    structureInsertByItem(structure,route,value){
-      if (route.length===1){//路由的尽头
-        structure.push(value);
-        return structure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        let Len=structure.length;
-        for (let i=0;i<Len;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureInsertByItem(structure[i],nextRoute,value);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return structure;
-    },
-    structureUnshiftByItem(structure,route,value){
-      if (route.length===1){//路由的尽头
-        structure.splice(2,0,value);
-        return structure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        let Len=structure.length;
-        for (let i=0;i<Len;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureUnshiftByItem(structure[i],nextRoute,value);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return structure;
-    },
-    /**移除图层的某个成员
-     * @return false|mixed
-     */
-    removeLayerMember(){
-      let layerId=this.layer.id;
-      let targetId=this.memberItemMenu.target.id;
-      const typeMapping={point:1,line:2,area:3,curve:4};
-      let oldStructure=JSON.parse(JSON.stringify(this.layer.structure));
-      let newMembers=Object.keys(this.layer.members).reduce((result,key)=>{
-        result[key]=typeMapping[this.layer.members[key].type];
-        return result;
-      },{});
-      delete newMembers[targetId];
-      let route=this.route;
-      let routeArr=route.split('⇉');
-      routeArr=routeArr.filter((item)=>{return item!==''});
-      let newStructure=this.structureRemoveByItem(oldStructure,routeArr,targetId);
-      this.$store.state.serverData.socket.broadcastUpdateLayerData({
-        id:layerId,
-        members:newMembers,
-        structure:newStructure
-      });
-      this.contextmenuItemClose();
-    },
-    /**依据图层路由和图层结构删除值
-     * @return false|mixed
-     * @param structure | array
-     * @param route | array
-     * @param value | int
-     */
-    structureRemoveByItem(structure,route,value){
-      if (route.length===1){//路由的尽头
-        structure.remove(value);
-        return structure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        let Len=structure.length;
-        for (let i=0;i<Len;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureRemoveByItem(structure[i],nextRoute,value);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return structure;
-    },
-    /**依据图层路由和图层结构更改图层数据
-     * @return false|mixed
-     * @param structure | array
-     * @param route | array
-     * @param newStructure | array
-     */
-    structureChangeData(structure,route,newStructure){
-      if (route.length===1){//路由的尽头
-        return newStructure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        let Len=structure.length;
-        for (let i=0;i<Len;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureChangeData(structure[i],nextRoute,newStructure);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return structure;
-    },
-    /**依据图层路由和图层结构删除子分组并且返回被删除的子分组的成员以及新的图层结构
-     * @return false|mixed
-     * @param structure | array
-     * @param route | array
-     */
-    structureRemoveByGroup(structure,route){
-      var members=[];
-      if(route.length===1){//到达路由的尽头
-        members=this.getMembersByStructure(structure);
-        structure=undefined;//删除此分组结构
-        return structure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳名称
-        let Len=structure.length;//当前层级分组的数组长度
-        for (let i=0;i<Len;i++){//遍历此层分组的成员
-          if(Array.isArray(structure[i])){//查询此层分组的子分组
-            if (structure[i][0]===nextRoute[0]){//此子分组的名称与下一跳名称一致
-              members=this.getMembersByStructure(structure[i]);
-              structure[i]=this.structureRemoveByGroup(structure[i],nextRoute);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return {
-        structure,
-        members
-      };
-    },
-    /**获取图层结构内的所有成员ID
-     * @return false|mixed
-     * @param structure | array
-     */
-    getMembersByStructure(structure){
-      function extractNumbers(arr) {
-        return arr.reduce((result, value) => {
-          if (Array.isArray(value)) {
-            result.push(...extractNumbers(value));
-          } else if (typeof value === 'number') {
-            result.push(value);
-          }
-          return result;
-        }, []);
-      }
-      return extractNumbers(JSON.parse(JSON.stringify(structure)));
-    },
-    /**依据图层路由和图层结构更改分组名
-     * @return false|mixed
-     * @param structure | array
-     * @param route | array
-     * @param newName | string
-     */
-    structureRenameByGroup(structure,route,newName){
-      if(route.length===1){//路由的尽头
-        structure[0]=newName;
-        return structure;
-      }else{//存在下一跳
-        const nextRoute=route.slice(1);//下一跳
-        for (let i=0;i<structure.length;i++){//遍历此层结构数组
-          if(Array.isArray(structure[i])){//查询此层子层
-            if (structure[i][0]===nextRoute[0]){//此层子层的名称对应下一跳
-              structure[i]=this.structureRenameByGroup(structure[i],nextRoute,newName);//递归此子层及下一跳
-              break;
-            }
-          }
-        }
-      }
-      return structure;
-    },
-    removeUndefined(arr){
-      return arr.reduce((acc,val)=>{
-        if(val!==undefined){
-          if(Array.isArray(val)){
-            acc.push(this.removeUndefined(val));
-          }else{
-            acc.push(val);
-          }
-        }
-        return acc;
-      },[]);
     },
     contextmenuHeadOpen(ev){//头部右键菜单
       this.memberHeadMenu.show=true;
@@ -971,12 +610,18 @@ export default {
       if(!item.hasOwnProperty('details')){
         return unknown;
       }
+      if(!Array.isArray(item.details)){
+        return unknown;
+      }
       for(let i=0;i<item.details.length;i++){
-        if(item.details[i].key==='名称' || item.details[i].key==='name'){
-          if(item.details[i].value===''){
+        if(item.details[i].key==='name'){
+          let value=item.details[i].value+'';
+          let content=value.substr(2);
+          if(content===''){
             return unknown;
+          }else {
+            return content;
           }
-          return item.details[i].value;
         }
       }
       return unknown;
@@ -1048,9 +693,6 @@ export default {
       }
       this.$store.commit('arrCoElementPanelHiddenElements',
         {type:'quit',data:quitArray});
-    },
-    showTeamEyeA(id){
-      return this.inHiddenElements(id);
     },
     inHiddenElements(id){
       return this.mapHiddenElements.has(id);
@@ -1144,6 +786,13 @@ export default {
     modify(){
      try {return this.structure[1].template.modify;}
      catch (e) {return false;}
+    },
+    lastUpdateTmpId(){
+      if(this.$store.state.serverData.socket!==undefined){
+        return this.$store.state.serverData.socket.lastUpdateTmpId;
+      }else{
+        return 'id:0';
+      }
     }
   },
   watch:{
@@ -1156,16 +805,18 @@ export default {
         }
       }
     },
-    taskEndCode:{
+    taskEndCode:{//模板编辑结束回执代码
       handler(newValue){
         if(newValue===this.editTpTaskId){//模板编辑任务回执
           if(this.resultCode===2){
-            let newTem=this.resultTemplate;
-            let route=this.route.split('⇉');
-            let newStr=JSON.parse(JSON.stringify(this.structure));
-            newStr[1]={template:newTem};
-            let newStructure=this.structureChangeData(this.layer.structure,route,newStr);
-            this.$store.state.serverData.socket.broadcastUpdateLayerData({id:this.layer.id, structure:newStructure});
+            let newTemplate=this.resultTemplate;
+            let check=this.tmpProof.tpCheck(newTemplate);
+            if(check===true){
+              this.$store.state.serverData.socket.broadcastUpdateTemplateData(newTemplate);
+            }else{
+              let explain=this.tmpProof.codeExplain(check);
+              this.$store.commit('setCoLogMessage',{text:explain,from:'internal:OrangeGroupStructure',type:'warn'});
+            }
           }
         }
       }
@@ -1180,10 +831,8 @@ export default {
         if(newValue.code===this.renameApprovalTemplate.code){
           if(newValue.agree===true){
             let groupLayerId=this.layer.id;
-            let routeArr=this.route.split('⇉');
             let newName=newValue.name;
-            let newStructure=this.structureRenameByGroup(this.layer.structure,routeArr,newName);
-            this.$store.state.serverData.socket.broadcastUpdateLayerData({id:groupLayerId, structure:newStructure});
+            this.$store.state.serverData.socket.broadcastRenameLayer(groupLayerId,newName);
             this.$store.commit('setCoLogMessage',{text:'已重命名分组',from:'internal:OrangeGroupStructure',type:'tip'});
             this.closeRename();
           }else{
@@ -1209,15 +858,27 @@ export default {
           let member=this.$refs['memberRightEye'+difference.addedKeys[i]];
           if(member===undefined){continue;}
           let Member=member[0];
-          Member.firstChild.style.display='none';
-          Member.lastChild.style.display='flex';
+          try{
+            Member.firstChild.style.display='none';
+            Member.lastChild.style.display='flex';
+          }catch(e){}
         }
         for(let j=0;j<removeLength;j++){
           let member=this.$refs['memberRightEye'+difference.removedKeys[j]];
           if(member===undefined){continue;}
           let Member=member[0];
-          Member.firstChild.style.display='flex';
-          Member.lastChild.style.display='none';
+          try{
+            Member.firstChild.style.display='flex';
+            Member.lastChild.style.display='none';
+          }catch(e){}
+        }
+      }
+    },
+    lastUpdateTmpId:{
+      handler(newValue){
+        let tmpId=newValue.split(':')[0];
+        if(tmpId===this.tmpId){//重新应用模板
+          this.$store.commit('setCoTemplateUse',this.structure[1].template);
         }
       }
     },
@@ -1248,52 +909,6 @@ export default {
 </script>
 
 <style scoped>
-.renameClose{
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  z-index: 555;
-  top: 0px;
-  left: 0px;
-  background: rgba(0, 0, 0, 0.26);
-}
-.renameY{
-  width: 400px;
-  height: 150px;
-  background: rgba(255, 255, 255, 0.84);
-  position: fixed;
-  z-index: 556;
-  border-radius: 15px;
-  left: calc(50% - 200px);
-  top: calc(50% - 50px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.renameY input{
-  width: 300px;
-  height: 30px;
-  font-size: 15px;
-  padding: 2px 4px;
-  outline: none;
-  border: none;
-  border-bottom: 1px dashed #8e8e8e;
-  transition: 0.3s;
-  background: rgba(255, 255, 255, 0.84);
-}
-.renameY input:focus{
-  border-bottom: 1px solid #292929;
-}
-.renameRow{
-  width: 100%;
-  height: 50px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
-  font-size: 16px;
-}
 button{
   cursor: pointer;
   -webkit-appearance: none;
@@ -1669,5 +1284,4 @@ button:active{
   white-space: nowrap;
   line-height: 24px;
 }
-
 </style>

@@ -228,10 +228,9 @@ export default {
       handler(){
         this.autoScrollDown();
         if(this.unreadIs){
-          this.unreadNumber++;
+          this.unreadNumber+=1;
         }
-      },
-      deep:true
+      }
     }
   },
   destroyed(){

@@ -6,7 +6,7 @@
       <div class="consoleMapSplitA">
         <hr/>
         运行参数
-        <br>
+        <br/>
         <div class="consoleMapItem">
           <div class="consoleMapItemL">
             浏览器&nbsp;&nbsp;尺寸：
@@ -220,7 +220,7 @@
       <div class="consoleMapSplitB">
         <hr/>
         指令状态
-        <br>
+        <br/>
         <div class="consoleMapItem">
           <div class="consoleMapItemL1">
             disableMove：
@@ -271,13 +271,72 @@
         </div>
         <hr/>
         相机状态
-        <br>
+        <br/>
         <div class="consoleMapItem">
           <div class="consoleMapItemL1">
              采样率：
           </div>
           <div class="consoleMapItemR1">
             {{$store.state.cameraConfig.frameTime}}
+          </div>
+        </div>
+        <hr/>
+        当前模板
+        <br/>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            模板id
+          </div>
+          <div class="consoleMapItemR8">
+            {{$store.state.templateConfig.useTpId}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            模板名称
+          </div>
+          <div class="consoleMapItemR8">
+            {{$store.state.templateConfig.useTpName}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            Point
+          </div>
+          <div class="consoleMapItemR8">
+            {{$store.state.templateConfig.useTypeRule.point}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            Line
+          </div>
+          <div class="consoleMapItemR8">
+            {{$store.state.templateConfig.useTypeRule.line}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            Area
+          </div>
+          <div class="consoleMapItemR8">
+            {{$store.state.templateConfig.useTypeRule.area}}
+          </div>
+        </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            Curve
+          </div>
+          <div class="consoleMapItemR8">
+            {{$store.state.templateConfig.useTypeRule.curve}}
+          </div>
+        </div>
+        <div class="consoleMapItem" v-for="item in this.$store.state.templateConfig.useDetailsRule">
+          <div class="consoleMapItemL8">
+            {{item.name}}
+          </div>
+          <div class="consoleMapItemR8">
+            {{item.type}}
           </div>
         </div>
       </div>
@@ -322,6 +381,12 @@ export default {
 </script>
 
 <style scoped>
+.consoleMapItemL8{
+  width: 120px;
+}
+.consoleMapItemR8{
+  width: calc(100% - 120px);
+}
 .consoleMapItemL1{
   width: 180px;
 }

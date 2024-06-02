@@ -314,9 +314,12 @@ export default {
               let rid=pickItem.data.rid;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===vid){
+                  let tmpId=null;
+                  try{tmpId=this.initialIntent[ii].tmpId;}catch (e){}
                   this.$store.state.recorderConfig.reachIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,
+                      tmpId:tmpId,
                       type:'upload',
                       updateId:'up'+this.$store.state.serverData.socket.updateId++,
                       class:this.initialIntent[ii].class,
@@ -376,9 +379,12 @@ export default {
               let rid=pickItem.data.rid;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===rid){
+                  let tmpId=null;
+                  try{tmpId=this.initialIntent[ii].tmpId;}catch (e){}
                   this.$store.state.recorderConfig.reachIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,
+                      tmpId:tmpId,
                       type:'delete',
                       class:this.initialIntent[ii].class,
                     }
@@ -405,9 +411,12 @@ export default {
               let vid=pickItem.data.source.id;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===vid){
+                  let tmpId=null;
+                  try{tmpId=this.initialIntent[ii].tmpId;}catch (e){}
                   this.$store.state.recorderConfig.failIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:vid,
+                      tmpId:tmpId,
                       type:'upload',
                       class:this.initialIntent[ii].class,
                       source:pickItem.data.source,
@@ -461,9 +470,12 @@ export default {
               let rid=pickItem.data.source.id;
               for(let ii=0;ii<this.initialIntent.length;ii++){
                 if(this.initialIntent[ii].id===rid){
+                  let tmpId=null;
+                  try{tmpId=this.initialIntent[ii].tmpId;}catch (e){}
                   this.$store.state.recorderConfig.failIntent.unshift(//添入成功执行的更改列表中
                     {
                       id:rid,
+                      tmpId:tmpId,
                       type:'delete',
                       class:this.initialIntent[ii].class,
                       source:pickItem.data.source,

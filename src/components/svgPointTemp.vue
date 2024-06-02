@@ -1,6 +1,25 @@
 <template>
   <g>
-    <circle class="svgPointTempCircle" :cx="pointView.x" :cy="-pointView.y" :r="tempPoint.width+'px'" :fill="'#'+tempPoint.color"/>
+    <circle class="svgPointTempCircle"
+      :cx="pointView.x"
+      :cy="-pointView.y"
+      :r="tempPoint.width+'px'"
+      :fill="'#'+tempPoint.color"
+      v-if="!hasIcon"/>
+    <circle
+      :cx="pointView.x"
+      :cy="-pointView.y"
+      r="12px"
+      :fill="'#'+tempPoint.color"
+      v-if="hasIcon"/>
+    <image
+      :x="pointView.x-13"
+      :y="-pointView.y-13"
+      width="26px"
+      height="26px"
+      :href="iconHref"
+      v-if="hasIcon">
+    </image>
   </g>
 </template>
 
@@ -146,6 +165,19 @@ export default {
     mousePoint(){
       return this.$store.state.mapConfig.mousePoint;
     },
+    hasIcon(){
+      if(this.tempPoint.custom!==null && typeof this.tempPoint.custom==='object'){
+        return typeof this.tempPoint.custom.icon==='string';
+      }
+      return true;
+    },
+    iconHref(){
+      if(this.hasIcon){
+        return '../../static/icons/'+this.tempPoint.custom.icon;
+      }else{
+        return '../../static/icons/usualIcon000.png';
+      }
+    }
   },
   watch:{
     layer:{
@@ -162,7 +194,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

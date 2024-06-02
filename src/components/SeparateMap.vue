@@ -12,6 +12,7 @@
   <layer-details-panel v-show="!loading"/><!--属性面板层-->
   <layer-console v-show="!loading"/><!--调试面板-->
 <!--  <pomelo-loading :view="loading"/>&lt;!&ndash;加载界面&ndash;&gt;-->
+  <pomelo-delay/>
 </div>
 </template>
 
@@ -28,12 +29,13 @@ import LayerUser from "./LayerUser";
 import LayerDetailsPanel from "./LayerDetailsPanel";
 import LayerMessage from "./LayerMessage";
 import PomeloLoading from "./PomeloLoading";
+import PomeloDelay from "./PomeloDelay";
 export default {
   name: "SeparateMap",
   components:{
     LayerData,LayerRuler,LayerBackground,LayerControl,LayerElementPanel,LayerConsole,
     LayerUser,LayerDetailsPanel,LayerMessage,LayerRealisticBaseMap,LayerFictitiousBaseMap,
-    PomeloLoading,
+    PomeloLoading,PomeloDelay
   },
   props:{
     serverKey:{
@@ -77,7 +79,7 @@ export default {
         }
       }
       if(!find){
-        this.$store.commit('setCoLogMessage',{text:'找不到本地服务器配置信息',from:'internal:SeparateMap',type:'warn'});
+        //this.$store.commit('setCoLogMessage',{text:'找不到本地服务器配置信息',from:'internal:SeparateMap',type:'warn'});
         needRouteSearch=true;
       }
       if(find){//找到了配置信息
@@ -103,7 +105,7 @@ export default {
       if(needRouteSearch){//向路由获取服务器地址
         let routeObject=null;
         if(this.$store.state.userRouteConfig.use!==null){
-          this.$store.commit('setCoLogMessage',{text:'正在从路由获取服务器地址',from:'internal:SeparateMap',type:'tip'});
+          //this.$store.commit('setCoLogMessage',{text:'正在从路由获取服务器地址',from:'internal:SeparateMap',type:'tip'});
           routeObject=this.$store.state.userRouteConfig.use;
           let address=routeObject.address;
           let port=routeObject.port;

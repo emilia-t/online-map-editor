@@ -8,7 +8,7 @@
         <img title="编辑元素" class="ButtonImg" draggable="false" alt="按钮" src="../../static/edit.png"/>
       </div>
       <div @click="hiddenElement(operated.id,operated.type)" class="ButtonBox" ref="hideElement" title="隐藏元素">
-        <eye-not-visible></eye-not-visible>
+        <eye-not-visible/>
       </div>
       <div class="ButtonBox" ref="historyRecord">
         <img title="历史记录" @click="" class="ButtonImg" draggable="false" alt="按钮" src="../../static/historyRecord.png"/>
@@ -31,28 +31,32 @@
           <div class="iStyContent"><!--内容-->
             <div class="iStyP" v-if="this.operated.type==='point'">
               <div class="iStyName">选择图标</div>
-<!--              <div class="iStyWidth" title="当前图标">-->
-<!--                <img src="../../static/icons/usualIcon000.png" alt=""/>-->
-<!--              </div>-->
             </div>
             <div class="iStySlide" v-if="this.operated.type==='point'">
-              <orange-icons-custom @OrangeIconsCustomCall="instantChangeCustom" @OrangeIconsCustomMousedown="beforeChangeCustom"></orange-icons-custom>
+              <orange-icons-custom @OrangeIconsCustomCall="instantChangeCustom"
+                                   @OrangeIconsCustomMousedown="beforeChangeCustom"/>
             </div>
             <div class="iStyP">
               <div class="iStyName">当前颜色</div>
               <div class="iStyView" title="当前颜色" :style="operatedColor"></div>
               <div class="iStyName">自选颜色</div>
-              <orange-color-palette @OrangeColorPaletteFocusout="instantChangeColor" @OrangeColorPaletteCall="paletteHandle" @OrangeColorPaletteMousedown="beforeChangeColor()" class="iStyInput" :default="'#'+operated.color"></orange-color-palette>
+              <orange-color-palette @OrangeColorPaletteFocusout="instantChangeColor"
+                                    @OrangeColorPaletteCall="paletteHandle"
+                                    @OrangeColorPaletteMousedown="beforeChangeColor()" class="iStyInput"
+                                    :default="'#'+operated.color"/>
             </div>
             <div class="iStyColors"><!--选择区域-->
               <div class="iStyColor" v-for="color in colors" :style="'background:#'+color" @mousedown="beforeChangeColor()" @click="instantChangeColor(color)"></div>
             </div>
-            <div class="iStyP">
+            <div class="iStyP" v-if="this.operated.type!=='area'">
               <div class="iStyName">当前宽度</div>
               <div class="iStyWidth" title="当前宽度">{{this.operatedCache.width}}</div>
             </div>
-            <div class="iStySlide">
-              <orange-slide-block @OrangeSlideBlockFocusout="instantChangeWidth"  @OrangeSlideBlockCall="sliderHandle" @OrangeSlideBlockMousedown="beforeChangeWidth()" :div-style="'width:267px;left:-92px;top:34%'" max="15" min="2" :default="this.operated.width"></orange-slide-block>
+            <div class="iStySlide" v-if="this.operated.type!=='area'">
+              <orange-slide-block @OrangeSlideBlockFocusout="instantChangeWidth" @OrangeSlideBlockCall="sliderHandle"
+                                  @OrangeSlideBlockMousedown="beforeChangeWidth()"
+                                  :div-style="'width:267px;left:-92px;top:34%'" max="15" min="2"
+                                  :default="this.operated.width"/>
             </div>
           </div>
         </div>
@@ -62,16 +66,12 @@
           </div>
           <div class="iAttContent"><!--内容-->
             <div class="iAttItem" v-for="detail in operated.details">
-              <div class="keyTips">在您编辑结束后同步</div>
               <div class="leftProperty">
-                <input @input="keyCheck($event)" @focusout="instantChangeDetail" @focus="onFocusMode()" @blur="noFocusMode()" contenteditable="true" v-model:value="detail.key" maxlength="12"/>
-                <img src="../../static/downInsert.png" alt="downInsert" class="icon15" title="向下插入" @click="downInsertDetail(detail.key)">
-                <img src="../../static/upInsert.png" alt="upInsert" class="icon15" title="向上插入" @click="upInsertDetail(detail.key)">
-                <img src="../../static/delete.png" alt="deleteButton" class="icon15" title="删除此行" @click="deleteRow(detail.key)">
+                {{detail.key}}
               </div>
               <div class="rightValue">
                 <img src="../../static/keyToValue.png" class="keyToValue" alt="keyToValue"/>
-                <textarea @focusout="instantChangeDetail" @focus="onFocusMode()" @blur="noFocusMode()" @mousedown="beforeChangeDetail()" contenteditable="true" v-model:value="detail.value"></textarea>
+                <pomelo-input :value="getContent(detail.value)" :type="getType(detail.value)" :item="detail" @inputFocus="beforeChangeDetail" @inputChanged="detailsChanged"/>
               </div>
             </div>
           </div>
@@ -88,18 +88,15 @@ import OrangeColorPalette from './OrangeColorPalette';
 import OrangeSlideBlock from './OrangeSlideBlock';
 import OrangeIconsCustom from './OrangeIconsCustom';
 import {mapState} from "vuex";
+import PomeloInput from "./PomeloInput";
+
 export default {
   name: "BananaElementOperationBoard",
-  components:{OrangeColorPalette,OrangeSlideBlock,OrangeIconsCustom,EyeNotVisible},
+  components:{OrangeColorPalette,OrangeSlideBlock,OrangeIconsCustom,EyeNotVisible,PomeloInput},
   data(){
     return {
       editPanelShow:false,
-      theConfig:{
-        selectNum:-1
-      },
-      operatedCache:{
-
-      },
+      operatedCache:{},
       oldColor:null,
       oldWidth:null,
       oldCustom:null,
@@ -108,15 +105,29 @@ export default {
       colors:['cc0066','ff6666','ff6600','ffcc33','ffff00','99cc33','66cc33','009966','009999','0099cc','333399','993399','666633',
         '993300','ff6600','ffcc00','996600','669933','006633','006699','333366','6633cc','cccccc','666666','333333','000000'],
       translucent:false,
-      insertCount:1
+      tmpProof:null,
     }
   },
   mounted() {
+    this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
     this.startSetting();
   },
   methods:{
     startSetting(){
       this.waterDropletEvent();
+    },
+    detailsChanged(data){
+      data.item.value=data.value;
+      this.instantChangeDetail();
+    },
+    getContent(value){
+      if(this.tmpProof===null)return '';
+      return value;
+    },
+    getType(value){
+      if(this.tmpProof===null)return 'text';
+      let v=this.tmpProof.GetType(value);
+      return v==='list'?'listEdit':v;
     },
     hiddenElement(id,type){
       if(!this.mapHiddenElements.has(id)){
@@ -128,32 +139,6 @@ export default {
         this.$store.commit('arrCoElementPanelHiddenElements',
           {type:'remove',data:{id,type}})
       }
-    },
-    keyCheck(ev){
-        let lock=false;
-        let nowValue=ev.target.value;
-        let count=0;
-        if(nowValue===''){
-          ev.target.parentElement.parentElement.firstChild.innerText='不能重复或为空';
-          ev.target.parentElement.parentElement.firstChild.style.display='block';
-          lock=true;
-        }
-        for(let i=0;i<this.operated.details.length;i++){
-          if(nowValue===this.operated.details[i].key){
-            count++;
-            if(count>=2){
-              setTimeout(()=>ev.target.value='',50);
-              ev.target.parentElement.parentElement.firstChild.innerText='不能重复或为空';
-              ev.target.parentElement.parentElement.firstChild.style.display='block';
-              lock=true;
-              break;
-            }
-          }
-       }
-       if(lock===false){
-         ev.target.parentElement.parentElement.firstChild.innerText='';
-         ev.target.parentElement.parentElement.firstChild.style.display='none';
-       }
     },
     waterDropletEvent(){
       this.$refs.waterDroplet.addEventListener('click',(ev)=>{
@@ -171,47 +156,6 @@ export default {
     },
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
-    },
-    upInsertDetail(key){
-      let index=-1;
-      for(let i=0;i<this.operated.details.length;i++){
-        if(this.operated.details[i].key==key){
-          index=i+1;
-          break;
-        }
-      }
-      if(index!==-1){
-        let newRow={'key':'名'+this.insertCount,'value':'值'};
-        this.operated.details.splice(index-1,0,newRow);
-      }
-      this.insertCount++;
-    },
-    downInsertDetail(key){
-      let index=-1;
-      for(let i=0;i<this.operated.details.length;i++){
-        if(this.operated.details[i].key==key){
-          index=i+1;
-          break;
-        }
-      }
-      if(index!==-1){
-        let newRow={'key':'名'+this.insertCount,'value':'值'};
-        this.operated.details.splice(index,0,newRow);
-      }
-      this.insertCount++;
-    },
-    deleteRow(key){
-      let index=-1;
-      for(let i=0;i<this.operated.details.length;i++){
-        if(this.operated.details[i].key==key){
-          index=i+1;
-          break;
-        }
-      }
-      if(index!==-1){
-        this.operated.details.splice(index-1,1);
-        this.instantChangeDetail();
-      }
     },
     sliderHandle(data){//滑块
       try{
@@ -285,7 +229,7 @@ export default {
       let sendDataObj={
         id:this.operated.id,
         updateId:updateId,
-        changes:{custom:this.operated.custom,color:data}
+        changes:{color:data}
       };
       let recordObj=JSON.parse(JSON.stringify({
           type:'updateElement',
@@ -297,29 +241,17 @@ export default {
         }
       ));
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
-      if(this.operated.type==='point'){
-        if(this.operated.custom!==null){
-          this.operated.custom.color='#'+data;
-          this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
-        }else {
-          this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
-        }
-      }else {
-        this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
-      }
+      this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,this.operated.type);
     },
     beforeChangeCustom(){
       this.oldCustom=JSON.parse(JSON.stringify(this.operated.custom));
     },
     instantChangeCustom(data){
-      if(this.operated.custom===null){
-        this.operated.custom={
-          width:null,
-          icon:data,
-          color:null,
-        };
+      if(this.operated.custom===null){//异常情况
+        this.$store.commit('setCoLogMessage',{text:'更新失败，因为元素'+this.operated.id+'.custom为空，请联系管理员',from:'internal:BananaElementOperationBoard',type:'error'});
+        return false;
       }
-      if(this.oldCustom!==null && typeof this.oldCustom==='object'){
+      if(this.oldCustom!==null && typeof this.oldCustom==='object'){//新旧值一样的情况不更新
         if(data===this.oldCustom.icon){
           return false;
         }
@@ -348,13 +280,16 @@ export default {
     },
     deleteElement(){//删除操作
       let id=this.operated.id;//select id
+      let tmpId=null;//template id
+      try{tmpId=this.operated.custom.tmpId;}catch(e){}
       let recordObj=JSON.parse(JSON.stringify({
         type:'delete',
         class:this.operated.type,
         id:id,
+        tmpId:tmpId
       }));
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
-      this.$store.state.serverData.socket.broadcastDeleteElement(id);
+      this.$store.state.serverData.socket.broadcastDeleteElement(id,tmpId);
       this.$store.state.operationBoardConfig.display=false;
     }
   },
@@ -362,6 +297,13 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    lastPSEndId(){//array element id list
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.lastPSEndId;
+      }else{
+        return [];
+      }
+    },
     mapHiddenElements(){
       let map=new Map();
       this.hiddenElements.forEach(value=>map.set(value.id,true));
@@ -431,6 +373,15 @@ export default {
     }
   },
   watch:{
+    lastPSEndId:{
+      handler(newValue){
+        if(newValue.includes(this.operated.id)){//如果当前编辑的元素在被清除选中要素列表中则取消编辑
+          this.$store.state.mapConfig.operated.id=-1;
+          this.$store.state.mapConfig.operated.data=null;
+          this.$store.state.operationBoardConfig.display=false;//关闭element operation board
+        }
+      }
+    },
     operated:{
       handler(newValue,oldValue){
         this.operatedCache=newValue;
@@ -547,13 +498,10 @@ export default {
   height: auto;
   padding: 10px 0px;
 }
-.leftProperty input{
-  font-size: 13px;
-  font-weight: 200;
-  width: 194px;
-}
 .leftProperty{
   width: 100%;
+  font-size: 13px;
+  font-weight: 200;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -572,7 +520,7 @@ export default {
   max-width: calc(90% - 17px);
   width: calc(90% - 17px);
   padding: 2px 4px;
-  min-height: 38px;
+  min-height: 19px;
   max-height: 300px;
   height: auto;
   margin: 4px 0px 0px 0px;
@@ -610,8 +558,8 @@ export default {
   width: calc(100% - 10px);
   height: auto;
   background: #ffffff;
-  padding: 5px;
-  margin: 0px 0px 5px 0px;
+  padding: 5px 5px 0px 5px;
+  margin: 0px;
 }
 .iTitle{
   width: 100%;

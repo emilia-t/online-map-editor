@@ -209,28 +209,28 @@ export default {
       if(this.enableCurve){
         this.addCurveStart();
       }else{
-        this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“曲线”',from:'internal:LayerControl',type:'tip'});
+        this.$store.commit('setCoLogMessage',{text:'添加曲线已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
       }
     },
     areaButton(){//右侧“区域”按钮事件
       if(this.enableArea){
         this.addAreaStart();
       }else{
-        this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“区域”',from:'internal:LayerControl',type:'tip'});
+        this.$store.commit('setCoLogMessage',{text:'添加区域已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
       }
     },
     lineButton(){//右侧“线段”按钮事件
       if(this.enableLine){
         this.addRouteLineStart();
       }else{
-        this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“线段”',from:'internal:LayerControl',type:'tip'});
+        this.$store.commit('setCoLogMessage',{text:'添加线段已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
       }
     },
     pointButton(){//右侧“点”按钮事件
       if(this.enablePoint){
         this.addInterestPointStart();
       }else{
-        this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“点”',from:'internal:LayerControl',type:'tip'});
+        this.$store.commit('setCoLogMessage',{text:'添加点已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
       }
     },
     addInterestPointStart(){//添加关注点
@@ -263,7 +263,7 @@ export default {
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 if(ev.target.classList[0]==='Icon40X'){return;}
-                let Pos=this.computeMouseActualPos(ev)//计算新增点位置
+                let Pos=this.computeMouseActualPos(ev);//计算新增点位置
                 this.theConfig.addPointPos.x=Pos.x;
                 this.theConfig.addPointPos.y=Pos.y;
               }
@@ -354,7 +354,7 @@ export default {
           }
           case '1':{
             if(!this.enablePoint){
-              this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“点”',from:'internal:LayerControl',type:'tip'});
+              this.$store.commit('setCoLogMessage',{text:'添加点已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
             this.addInterestPointStart();
@@ -362,7 +362,7 @@ export default {
           }
           case '2':{
             if(!this.enableLine){
-              this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“线段”',from:'internal:LayerControl',type:'tip'});
+              this.$store.commit('setCoLogMessage',{text:'添加线段已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
             this.addRouteLineStart();
@@ -370,7 +370,7 @@ export default {
           }
           case '3':{
             if(!this.enableArea){
-              this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“区域”',from:'internal:LayerControl',type:'tip'});
+              this.$store.commit('setCoLogMessage',{text:'添加区域已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
             this.addAreaStart();
@@ -378,7 +378,7 @@ export default {
           }
           case '4':{
             if(!this.enableCurve){
-              this.$store.commit('setCoLogMessage',{text:'此分组禁用了添加“曲线”',from:'internal:LayerControl',type:'tip'});
+              this.$store.commit('setCoLogMessage',{text:'添加曲线已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
             this.addCurveStart();
@@ -404,13 +404,16 @@ export default {
             if(this.$store.state.detailsPanelConfig.targetNode===null){
               if(this.$store.state.detailsPanelConfig.target!==-1){
                 let id=this.$store.state.detailsPanelConfig.target;
+                let tmpId=null;//template id
+                try{tmpId=this.$store.state.detailsPanelConfig.data.custom.tmpId;}catch(e){}
                 let recordObj=JSON.parse(JSON.stringify({
                   type:'delete',
                   class:this.$store.state.detailsPanelConfig.data.type,
                   id:id,
+                  tmpId:tmpId
                 }));
                 this.$store.state.recorderConfig.initialIntent.push(recordObj);
-                this.$store.state.serverData.socket.broadcastDeleteElement(id);
+                this.$store.state.serverData.socket.broadcastDeleteElement(id,tmpId);
               }
             }
             break;
@@ -427,6 +430,9 @@ export default {
         }
       });
       document.body.addEventListener('keydown',(e)=>{
+        if(this.$store.state.mapConfig.inputFocusStatus){//在聚焦模式下拒绝操作
+          return false;
+        }
         let KEY=e.key;
         switch (KEY){
           case ' ':{
@@ -470,7 +476,7 @@ export default {
       switch (type){
         case 'upload':{
           this.$store.commit('setCoLogMessage',{text:'已撤回上传，但无法保证成功',from:'internal:LayerControl',type:'tip'});
-          this.$store.state.serverData.socket.broadcastDeleteElement(id);
+          this.$store.state.serverData.socket.broadcastDeleteElement(id,intent.tmpId);
           break;
         }
         case 'updateElement':{
@@ -530,12 +536,13 @@ export default {
           break;
         }
         case 'delete':{
-          this.$store.state.serverData.socket.broadcastRestoreElement(id);
+          let tmpId=null;
+          try{tmpId=intent.tmpId;}catch(e){}
+          this.$store.state.serverData.socket.broadcastRestoreElement(id,tmpId);
           break;
         }
       }
     },
-    //ElementType
     F8Event(){
       this.$root.sendInstruct('openF4DebugBord');
     },
@@ -580,13 +587,13 @@ export default {
     buttonC(){
       return this.theConfig.buttonC;
     },
-    addNewArea(){
+    addNewArea(){//watch
       return this.theConfig.addAreaPos;
     },
-    addNewPoint(){
+    addNewPoint(){//watch
       return this.theConfig.addPointPos;
     },
-    addNewLine(){
+    addNewLine(){//watch
       return this.theConfig.addLinePos;
     },
     svgDbClick(){

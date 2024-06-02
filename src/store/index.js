@@ -357,8 +357,7 @@ export default new Vuex.Store({
           this.isLogin=false;
           this.localId=-1;//元素创建后的本地虚拟id
           this.updateId=1;//提交给服务器的本次变更id前缀为"up"为提交变更,前缀为"re"为撤销变更
-          this.localLayerId=1;//图层创建后的本地虚拟id
-          this.deleteLayerId=-1;//图层创建后的本地虚拟id
+          this.deleteLayerId=-1;//图层及其成员被删除id
           this.numberOfLoginAttempts=0;//登录成功次数
           this.numberOfLoginFailed=0;//登录失败次数
           this.reinitializeElement=0;//重新初始化元素
@@ -383,9 +382,16 @@ export default new Vuex.Store({
           this.lastEdit='很久以前';
           this.updateCount=0;//对更新元素属性和节点的统计
           this.lastDeleteId=-1;
+          this.lastUpdateTmpId='id:0';//id and code
+          this.lastPSEndId=[];//被清除选中的元素
+          this.lastPing=0;
+          this.lastPong=0;
           this.otherA1=[];
-          this.typeList=['broadcast','get_serverConfig','get_publickey','publickey','login','loginStatus','anonymousLogin','anonymousLoginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
+          this.typeList=['ping','pong','broadcast','get_serverConfig','get_publickey','publickey','login','loginStatus','anonymousLogin','anonymousLoginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
           this.Instruct={//指令合集
+            ping(){
+              return {type:'ping'};
+            },
             login(email,password) {//登录指令
               this.email=email || '';
               this.password=password || '';
@@ -424,8 +430,8 @@ export default new Vuex.Store({
             broadcast_point(data){//以广播的形式发送新增点数据
               return {type:'broadcast',class:'point',data}
             },
-            broadcast_deleteElement(elementId){//以广播的形式删除某一要素
-              return {type:'broadcast',class:'deleteElement',data:{id:elementId}}
+            broadcast_deleteElement(elementId,tmpId){//以广播的形式删除某一要素
+              return {type:'broadcast',class:'deleteElement',data:{id:elementId,tmpId:tmpId}}
             },
             broadcast_textMessage(data){//以广播普通文字消息
               return {type:'broadcast',class:'textMessage',data}
@@ -454,20 +460,17 @@ export default new Vuex.Store({
             broadcast_pickEndElement(data){
               return {type:'broadcast',class:'pickEndElement',data}
             },
-            broadcast_restoreElement(data){
-              return {type:'broadcast',class:'restoreElement',data}
+            broadcast_restoreElement(id,tmpId){
+              return {type:'broadcast',class:'restoreElement',data:{id:id,tmpId:tmpId}}
             },
-            broadcast_updateLayerData(data){
-              return {type:'broadcast',class:'updateLayerData',data}
-            },
-            broadcast_createGroupLayer(data){
-              return {type:'broadcast',class:'createGroupLayer',data}
-            },
-            broadcast_deleteLayer(id){
-              return {type:'broadcast',class:'deleteLayer',data:{id}}
+            broadcast_createGroupLayer(){
+              return {type:'broadcast',class:'createGroupLayer'}
             },
             broadcast_updateLayerOrder(passive,active,type){
               return {type:'broadcast',class:'updateLayerOrder',data:{passive,active,type}}
+            },
+            broadcast_adjustElementOrder(elementA,elementB,templateA,templateB,method){
+              return {type:'broadcast',class:'adjustElementOrder',data:{elementA,elementB,templateA,templateB,method}}
             },
             broadcast_deleteLayerAndMembers(id){
               return {type:'broadcast',class:'deleteLayerAndMembers',data:{id}}
@@ -475,6 +478,12 @@ export default new Vuex.Store({
             broadcast_batchDeleteElement(id){
               return {type:'broadcast',class:'batchDeleteElement',data:{id}}
             },
+            broadcast_renameLayer(id,name){
+              return {type:'broadcast',class:'renameLayer',data:{id,name}}
+            },
+            broadcast_updateTemplateData(template){
+              return {type:'broadcast',class:'updateTemplateData',data:{template}}
+            }
           };
           this.QIR={//检测间
             /**
@@ -595,7 +604,18 @@ export default new Vuex.Store({
         }
         startSetting(){//初始化配置
           this.link();
-          this.heartbeat();
+          //this.heartbeat();//如果启用了intervalPing则不要启用heartbeat
+          this.intervalPing();
+        }
+        intervalPing(){
+          setInterval(
+            ()=>{
+              if(this.isLogin){
+                this.lastPing=new Date().getTime();
+                this.send(this.Instruct.ping());
+              }
+            },5000
+          );
         }
         clearLocalData(){//清除本地数据
           this.userData=null;//1.清除会话内的用户数据
@@ -603,6 +623,17 @@ export default new Vuex.Store({
           this.mapData.points.length=0;//3.清除地图数据
           this.mapData.lines.length=0;
           this.mapData.areas.length=0;
+          this.mapData.curves.length=0;
+        }
+        broadcastRenameLayer(id,name){//重命名图层名称
+          if(typeof id==='number' && typeof name==='string'){
+            this.send(this.Instruct.broadcast_renameLayer(id,name));
+            return true;
+          }
+          return false;
+        }
+        broadcastUpdateTemplateData(template){
+          this.send(this.Instruct.broadcast_updateTemplateData(template));
         }
         broadcastBatchDeleteElement(id){//批量删除元素
           if(Array.isArray(id)){
@@ -614,20 +645,17 @@ export default new Vuex.Store({
             }
           }
         }
-        broadcastUpdateLayerData(data){//id,structure,members
-          this.send(this.Instruct.broadcast_updateLayerData(data));
-        }
-        broadcastCreateGroupLayer(data){
-          this.send(this.Instruct.broadcast_createGroupLayer(data));
-        }
-        broadcastDeleteLayer(id){
-          this.send(this.Instruct.broadcast_deleteLayer(id));
+        broadcastCreateGroupLayer(){
+          this.send(this.Instruct.broadcast_createGroupLayer());
         }
         broadcastDeleteLayerAndMembers(id){
           this.send(this.Instruct.broadcast_deleteLayerAndMembers(id));
         }
         broadcastUpdateLayerOrder(passiveId,activeId,type){
           this.send(this.Instruct.broadcast_updateLayerOrder(passiveId,activeId,type));
+        }
+        broadcastAdjustElementOrder(elementA,elementB,templateA,templateB,method){
+          this.send(this.Instruct.broadcast_adjustElementOrder(elementA,elementB,templateA,templateB,method));
         }
         broadcastSelectIngElement(id){
           this.send(this.Instruct.broadcast_selectIngElement(id));
@@ -688,7 +716,8 @@ export default new Vuex.Store({
                 }
                 if(this.QIR.hasProperty(data.changes,'width')){//0.4检查width
                   let refWidth=this.QIR.widthCheck(data.changes.width);
-                  if(refWidth===false){return false;}else{data.changes.width=refWidth;}
+                  if(refWidth===false){return false;}
+                  else{data.changes.width=refWidth;}
                 }
                 if(this.QIR.hasProperty(data.changes,'details')){//0.5检查details
                   if(!this.QIR.detailsCheck(data.changes.details)){
@@ -706,11 +735,11 @@ export default new Vuex.Store({
 
           }
         }
-        broadcastDeleteElement(id){//广播删除某一要素
-          this.send(this.Instruct.broadcast_deleteElement(id));
+        broadcastDeleteElement(id,tmpId){//广播删除某一要素
+          this.send(this.Instruct.broadcast_deleteElement(id,tmpId));
         }
-        broadcastRestoreElement(id){//广播删除某一要素
-          this.send(this.Instruct.broadcast_restoreElement(id));
+        broadcastRestoreElement(id,tmpId){//广播删除某一要素
+          this.send(this.Instruct.broadcast_restoreElement(id,tmpId));
         }
         broadcastSendText(data){//广播普通文本信息
           this.send(this.Instruct.broadcast_textMessage(data));
@@ -755,20 +784,20 @@ export default new Vuex.Store({
               points:[],
               point:null,//必要
               color:'',//必要
-              length:null,//这里为空
               width:2,//宽度
-              size:null,//这里为空
               childRelations:[],//这里为空
               fatherRelation:'',//这里为空
               childNodes:[],//这里为空
               fatherNode:'',//这里为空
-              details:[]
+              details:[],
+              custom:{tmpId:null}
             };
             basicStructure.points=data.points;//2.0归档
             basicStructure.point=data.point;
             basicStructure.color=data.color;
             basicStructure.width=data.width || basicStructure.width;
             basicStructure.details=data.details || basicStructure.details;
+            basicStructure.custom=data.custom || basicStructure.custom;
             if(area==='area'){//3.0广播
               basicStructure.type='area';
               this.send(this.Instruct.broadcast_area(basicStructure));
@@ -812,7 +841,7 @@ export default new Vuex.Store({
               childNodes:[],
               fatherNode:'',
               details:[],
-              custom:null
+              custom:{icon:null,tmpId:null}
             };
             basicStructure.points[0]=data.point;
             basicStructure.point=data.point;
@@ -862,6 +891,13 @@ export default new Vuex.Store({
             }
           }
         }
+        // test(){//测试用
+        //   let json=JSON.stringify({
+        //     type:"test",
+        //     data:null
+        //   });
+        //   this.socket.send(json);
+        // }
         getUserData(){//获取用户数据
           this.send(this.Instruct.get_userData());
         }
@@ -961,6 +997,10 @@ export default new Vuex.Store({
           if(jsonData.type!==undefined){
           let nowType=jsonData.type;//处理数据
           switch (nowType){
+            case 'pong':{
+              this.lastPong=new Date().getTime();
+              break;
+            }
             case 'send_presence':{
               this.presence=jsonData.data;
               break;
@@ -1078,6 +1118,9 @@ export default new Vuex.Store({
                     case 'area':{
                       this.mapData.areas.push(jsonData.data[i]);
                       break;
+                    }
+                    case 'curve':{
+                      this.mapData.curves.push(jsonData.data[i]);
                     }
                   }
                 }
@@ -1313,6 +1356,15 @@ export default new Vuex.Store({
                         }
                       });
                     }
+                    if(!find){
+                      this.mapData.curves.some((item, index)=>{
+                        if (item.id==ID){
+                          this.mapData.curves.splice(index,1);
+                          find=true;
+                          return true;
+                        }
+                      });
+                    }
                     if(find){
                       this.messages.push(jsonData);//更新消息
                       this.lastEdit=jsonData.time;
@@ -1396,7 +1448,7 @@ export default new Vuex.Store({
                           Object.assign(this.mapData[eType][i],jsonData.data);
                           this.messages.push(jsonData);//更新message
                           this.lastEdit=jsonData.time;
-                          this.updateCount++;
+                          this.updateCount+=1;
                           found=true;
                           break;
                         }
@@ -1407,6 +1459,44 @@ export default new Vuex.Store({
                     }
                   }catch (e) {
                     this.onLog('存在未同步的元素,建议刷新页面ID:'+jsonData.data.id,'warn');
+                  }
+                  break;
+                }
+                case 'batchUpdateElement':{//批量更新元素的广播
+                  let count=0;
+                  count=jsonData.data.length;
+                  for(let K=0;K<count;K++){
+                    try{
+                      if(jsonData.data[K].hasOwnProperty('details')){//解码details如果有的话
+                        jsonData.data[K].details=JSON.parse(window.atob(jsonData.data[K].details));
+                      }
+                      if(jsonData.data[K].hasOwnProperty('custom')){//解码details如果有的话
+                        jsonData.data[K].custom=JSON.parse(window.atob(jsonData.data[K].custom));
+                      }
+                      let eType=undefined;
+                      if(jsonData.data[K].hasOwnProperty('type')){
+                        eType=jsonData.data[K].type+'s';
+                      }
+                      let found=false;
+                      let eId=parseInt(jsonData.data[K].id);//hack
+                      if(!isNaN(eId) && eType!==undefined){
+                        let Len=this.mapData[eType].length;
+                        for (let i=0;i<Len;i++){//查找相应的地图数据并修改地图数据
+                          if(eId===this.mapData[eType][i].id){
+                            Object.assign(this.mapData[eType][i],jsonData.data[K]);
+                            this.lastEdit=jsonData.time;
+                            this.updateCount+=1;
+                            found=true;
+                            break;
+                          }
+                        }
+                      }
+                      if(!found){
+                        this.onLog('存在未同步的元素,建议刷新页面ID:'+eId,'warn');
+                      }
+                    }catch (e) {
+                      this.onLog('存在未同步的元素,建议刷新页面ID:'+jsonData.data.id,'warn');
+                    }
                   }
                   break;
                 }
@@ -1458,7 +1548,7 @@ export default new Vuex.Store({
                       };
                       this.messages.push(MesObj);//3.消息通知
                       this.lastEdit=jsonData.time;
-                      this.updateCount++;
+                      this.updateCount+=1;
                     }else{
                       this.onLog('存在未同步的元素,建议刷新页面ID:'+CgID,'warn');
                     }
@@ -1478,7 +1568,8 @@ export default new Vuex.Store({
                   break;
                 }
                 case 'selectEndElement':{
-                  for(let i=0;i<this.selectElements.length;i++){
+                  let len=this.selectElements.length;
+                  for(let i=0;i<len;i++){
                     if(this.selectElements[i].id===jsonData.data){
                       this.selectElements.splice(i,1);
                       break;
@@ -1496,12 +1587,36 @@ export default new Vuex.Store({
                   break;
                 }
                 case 'pickEndElement':{
-                  for(let i=0;i<this.pickElements.length;i++){
+                  let len=this.pickElements.length;
+                  for(let i=0;i<len;i++){
                     if(this.pickElements[i].id===jsonData.data){
                       this.pickElements.splice(i,1);
                       break;
                     }
                   }
+                  break;
+                }
+                case 'pickSelectEndElements':{//取消所有元素选中效果
+                  let count=jsonData.data.id.length;
+                  let len1=this.pickElements.length;
+                  let len2=this.selectElements.length;
+                  let psEnd=jsonData.data.id;
+                  for(let p=0;p<count;p++){
+                    let ID=jsonData.data.id[p];
+                    for(let i=0;i<len1;i++){
+                      if(this.pickElements[i].id===ID){
+                        this.pickElements.splice(i,1);
+                        break;
+                      }
+                    }
+                    for(let i=0;i<len2;i++){
+                      if(this.selectElements[i].id===ID){
+                        this.selectElements.splice(i,1);
+                        break;
+                      }
+                    }
+                  }
+                  this.lastPSEndId=psEnd;
                   break;
                 }
                 case 'logIn':{
@@ -1542,15 +1657,6 @@ export default new Vuex.Store({
                   }
                   break;
                 }
-                case 'deleteLayer':{
-                  for(let i=0;i<this.mapLayerData.length;i++){
-                    if(this.mapLayerData[i].id==jsonData.data.id){
-                      this.mapLayerData.splice(i,1);
-                      this.deleteLayerId=jsonData.data.id;
-                    }
-                  }
-                  break;
-                }
                 case 'deleteLayerAndMembers':{
                   for(let i=0;i<this.mapLayerData.length;i++){
                     if(this.mapLayerData[i].id==jsonData.data.id){
@@ -1562,11 +1668,12 @@ export default new Vuex.Store({
                   let changePoint=false;
                   let changeLine=false;
                   let changeArea=false;
+                  let changeCurve=false;
                   for(let key in jsonData.data.members){
-                    if(changeCount===3){
+                    if(changeCount===4){
                       break;
                     }
-                    if     (jsonData.data.members[key]===1){
+                    if(jsonData.data.members[key]===1){
                       if(changePoint===false){
                         changePoint=true;
                         changeCount+=1;
@@ -1581,6 +1688,12 @@ export default new Vuex.Store({
                     else if(jsonData.data.members[key]===3){
                       if(changeArea===false){
                         changeArea=true;
+                        changeCount+=1;
+                      }
+                    }
+                    else if(jsonData.data.members[key]===4){
+                      if(changeCurve===false){
+                        changeCurve=true;
                         changeCount+=1;
                       }
                     }
@@ -1609,6 +1722,14 @@ export default new Vuex.Store({
                     this.mapData.areas.length=0;
                     this.mapData.areas.push(...newAreas);
                   }
+                  if(changeCurve){
+                    let newCurves=this.mapData.curves.filter(
+                      (element)=>{
+                        return !jsonData.data.members.hasOwnProperty(element.id)
+                      });
+                    this.mapData.curves.length=0;
+                    this.mapData.curves.push(...newCurves);
+                  }
                   break;
                 }
                 case 'updateLayerData':{
@@ -1617,11 +1738,11 @@ export default new Vuex.Store({
                     let ID=jsonData.data.id;
                     let newMembers=undefined;
                     if(this.QIR.hasProperty(jsonData.data,'members')){
-                      newMembers=JSON.parse(window.atob(jsonData.data.members))
+                      newMembers=JSON.parse(window.atob(jsonData.data.members));
                     }
                     let newStructure=undefined;
                     if(this.QIR.hasProperty(jsonData.data,'structure')){
-                      newStructure=JSON.parse(window.atob(jsonData.data.structure))
+                      newStructure=JSON.parse(window.atob(jsonData.data.structure));
                     }
                     for(let i=0;i<this.mapLayerData.length;i++){
                       if(ID==this.mapLayerData[i].id){
@@ -1630,6 +1751,20 @@ export default new Vuex.Store({
                         }
                         if(newStructure!==undefined){
                           this.mapLayerData[i].structure=newStructure;
+
+                          if(this.QIR.hasProperty(jsonData.data,'templateVary')){
+                            if(jsonData.data.templateVary===true){
+                              let newCustom=newStructure[1];
+                              if(this.QIR.hasProperty(newCustom,'template')){
+                                let newTmp=newCustom.template;
+                                if(this.QIR.hasProperty(newTmp,'id') && typeof newTmp.id==='string'){
+                                  let splitArray=this.lastUpdateTmpId.split(':');
+                                  this.lastUpdateTmpId=newTmp.id+':'+parseInt(splitArray[1])+1;
+                                }
+                              }
+                            }
+                          }
+
                         }
                       }
                     }
@@ -1637,9 +1772,67 @@ export default new Vuex.Store({
                   }
                   break;
                 }
-                case 'updateLayerOrder':{
-                  this.mapLayerOrder=JSON.parse(jsonData.data.members);
+                case 'batchUpdateLayerData':{
+                  if(!this.QIR.hasProperty(jsonData,'data')){break;}
+                  if(!Array.isArray(jsonData.data)){break;}
+                  let count=jsonData.data.length;
+                  for(let g=0;g<count;g++){
+                    if(!this.QIR.hasProperty(jsonData.data[g],'id')){continue;}
+                    let ID=jsonData.data[g].id;
+                    let newMembers=undefined;
+                    if(this.QIR.hasProperty(jsonData.data[g],'members')){
+                      newMembers=JSON.parse(window.atob(jsonData.data[g].members));
+                    }
+                    let newStructure=undefined;
+                    if(this.QIR.hasProperty(jsonData.data[g],'structure')){
+                      newStructure=JSON.parse(window.atob(jsonData.data[g].structure));
+                    }
+                    for(let i=0;i<this.mapLayerData.length;i++){
+                      if(ID==this.mapLayerData[i].id){
+                        if(newMembers!==undefined){
+                          this.mapLayerData[i].members=newMembers;
+                        }
+                        if(newStructure!==undefined){
+                          this.mapLayerData[i].structure=newStructure;
+                          if(this.QIR.hasProperty(jsonData.data,'templateVary')){
+                            if(jsonData.data.templateVary===true){
+                              let newCustom=newStructure[1];
+                              if(this.QIR.hasProperty(newCustom,'template')){
+                                let newTmp=newCustom.template;
+                                if(this.QIR.hasProperty(newTmp,'id') && typeof newTmp.id==='string'){
+                                  let splitArray=this.lastUpdateTmpId.split(':');
+                                  this.lastUpdateTmpId=newTmp.id+':'+parseInt(splitArray[1])+1;
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                   break;
+                }
+                case 'updateLayerOrder':{
+                  if(!this.QIR.hasProperty(jsonData,'data'))break;
+                  if(!this.QIR.isObject(jsonData.data))break;
+                  if(!this.QIR.hasProperty(jsonData.data,'members'))break;
+                  this.mapLayerOrder=jsonData.data.members;
+                  break;
+                }
+                case 'renameLayer':{
+                  if(!this.QIR.hasProperty(jsonData,'data'))break;
+                  if(!this.QIR.isObject(jsonData.data))break;
+                  if(!this.QIR.hasProperty(jsonData.data,'id'))break;
+                  if(!this.QIR.hasProperty(jsonData.data,'name'))break;
+                  let len=this.mapLayerData.length;
+                  for(let i=0;i<len;i++){
+                    if(this.mapLayerData[i]['id']===Number(jsonData.data.id)){
+                      this.mapLayerData[i]['structure'][0]=jsonData.data.name;
+                      this.mapLayerData[i]['structure'].push(0);//强制更新视图
+                      this.mapLayerData[i]['structure'].pop();//强制更新视图
+                      break;
+                    }
+                  }
                 }
               }
               break;
@@ -1726,6 +1919,18 @@ export default new Vuex.Store({
 
           },
         };
+        $iNames=[//图标名称
+          "usualIcon000.png","usualIcon001.png","usualIcon002.png","usualIcon003.png",
+          "usualIcon004.png",
+        ];
+        $icons={//图标库
+          //"icon_name":new Image();
+          "usualIcon000.png":null,
+          "usualIcon001.png":null,
+          "usualIcon002.png":null,
+          "usualIcon003.png":null,
+          "usualIcon004.png":null,
+        };
         $dom=null;
         $canvas=null;
         $cBlock=null;
@@ -1779,10 +1984,24 @@ export default new Vuex.Store({
           }
         }
         startSetting(){
+          this.iconBuild();
           this.pipelineCheck();
           this.canvasBuild();
           this.mixSetRenderRange();
           this.mixDraw();
+        }
+        /**
+         iconBuild
+         save icon to local
+         **/
+        iconBuild(){
+          for(let key in this.$icons){
+            if(Object.prototype.hasOwnProperty.call(this.$icons,key)){
+              let img=new Image();
+              img.src='../../static/icons/'+key;
+              this.$icons[key]=img;
+            }
+          }
         }
         /**
          RenderRangeCheck data:element
@@ -1994,15 +2213,41 @@ export default new Vuex.Store({
          *no check pipeline healthy
         **/
         addPoint(element,colorBlock){//添加点，需要完整的元素数据和色块
-          this.$canvas.beginPath();//normal canvas
-          this.$canvas.fillStyle='#'+element.color;
-          this.$canvas.arc(element.point.x+this.$configs.offsetX,element.point.y+this.$configs.offsetY,element.width,0,Math.PI*2);
-          this.$canvas.fill();
+          let custom=element.custom;
+          let icon;//图标名称
+          let split=false;//false 默认渲染 true 图标渲染
+          if(custom!==null){
+            icon=custom.icon;
+            if(this.$iNames.includes(icon)){
+              split=true;
+            }
+          }
+          if(split){
+            let XX=element.point.x+this.$configs.offsetX;
+            let YY=element.point.y+this.$configs.offsetY;
+            this.$canvas.beginPath();//normal canvas
+            this.$canvas.fillStyle='#'+element.color;
+            this.$canvas.arc(XX,YY,12,0,Math.PI*2);//底色 12 是底色半径
+            this.$canvas.fill();
+            this.$canvas.drawImage(this.$icons[icon],XX-13,YY-13, 26,26);//图标 13 是图标半径
 
-          this.$cBlock.beginPath();//color block canvas
-          this.$cBlock.fillStyle='#'+colorBlock;
-          this.$cBlock.arc(element.point.x+this.$configs.offsetX,element.point.y+this.$configs.offsetY,element.width,0,Math.PI*2);
-          this.$cBlock.fill();
+            this.$cBlock.beginPath();//color block canvas
+            this.$cBlock.fillStyle='#'+colorBlock;
+            this.$cBlock.arc(XX,YY,12,0,Math.PI*2);
+            this.$cBlock.fill();
+          }else {
+            let XX=element.point.x+this.$configs.offsetX;
+            let YY=element.point.y+this.$configs.offsetY;
+            this.$canvas.beginPath();//normal canvas
+            this.$canvas.fillStyle='#'+element.color;
+            this.$canvas.arc(XX,YY,element.width,0,Math.PI*2);
+            this.$canvas.fill();
+
+            this.$cBlock.beginPath();//color block canvas
+            this.$cBlock.fillStyle='#'+colorBlock;
+            this.$cBlock.arc(XX,YY,element.width,0,Math.PI*2);
+            this.$cBlock.fill();
+          }
         }
         addLine(element,colorBlock){//添加线，需要完整的元素数据和色块
           let Len=element.points.length;
@@ -2169,19 +2414,19 @@ export default new Vuex.Store({
           }
         }
       },
-      tmpProof:class tmpProof{//templateCheck模板校验工具
-        $language='english';
+      tmpProof:class tmpProof{//templateCheck模板校验工具__Version(1.0)
+        $language='english';// or 'chinese'
         constructor(language){
           if(typeof this.$language==='string')this.$language=language;
         }
-        /**
+        /*
          * 字符串数据类型
-        **/
-        Text(str) {
+         */
+        Text(str){
           str=typeof str==='string'?str:'';
           return '☍t'+str;
         }
-        List(str){
+        List_(str){
           str=typeof str==='string'?str:'';
           return '☍l'+str;
         }
@@ -2201,11 +2446,29 @@ export default new Vuex.Store({
           str=typeof str==='string'?str:'';
           return '☍p'+str;
         }
-        GetContent(str){//获取字符串类型数据的数据内容
-          return str.substr(2);
+        initialData(type){//type string
+          switch (type){
+            case 'text':return this.Text();
+            case 'list':return this.List_();
+            case 'percent':return this.Percent();
+            case 'datetime':return this.Datetime();
+            case 'date':return this.Date();
+            case 'time':return this.Time();
+            case 'number':return null;
+            case 'bool':return false;
+            default:return this.Text();
+          }
         }
-        GetType(str){//获取字符串类型数据的数据类型
-          let tag=str.substring(0,2);
+        GetContent(value){//获取数据的数据内容
+          if(typeof value==='boolean' || typeof value==='number')return value;
+          if(value===null)return null;
+          return value.substr(2);
+        }
+        GetType(value){//获取数据的数据类型
+          if(typeof value==='boolean')return 'bool';
+          if(typeof value==='number')return 'number';
+          if(value===null)return 'number';
+          let tag=value.substring(0,2);
           if        (tag==='☍t'){return 'text';}
           else if(tag==='☍l'){return 'list';}
           else if(tag==='☍d'){return 'date';}
@@ -2214,12 +2477,9 @@ export default new Vuex.Store({
           else if(tag==='☍p'){return 'percent';}
           else {return 'text';}//异常的没有数据符号的数据
         }
-        /**
-         *转化相关函数
-         * 所有函数均会进行一次数据检查
-         * 所有参数均不包括数据类型符号
-         * 所有返回值不包括数据类型符号
-        **/
+        /*
+         * 转化相关函数
+         */
         datetimeToDate(datetime){
           if(this.isDatetime(datetime)){
             return datetime.substring(0,10);
@@ -2248,10 +2508,10 @@ export default new Vuex.Store({
             return '';
           }
         }
-        timeToDatetime(time){
+        timeToDatetime(){
           return '';
         }
-        timeToDate(time){
+        timeToDate(){
           return '';
         }
         /**
@@ -2274,7 +2534,7 @@ export default new Vuex.Store({
               case 'datetime':{return this.Datetime();}
               case 'date':{return this.Date();}
               case 'time':{return this.Time();}
-              case 'list':{return this.List();}
+              case 'list':{return this.List_();}
               case 'percent':{return this.Percent();}
               case 'bool':{return false;}
               case 'number':{return value;}
@@ -2340,7 +2600,7 @@ export default new Vuex.Store({
                   }
                 }
                 case 'list':{
-                  return this.List(content);//保留源内容
+                  return this.List_(content);//保留源内容
                 }
                 case 'percent':{
                   if(this.isPercent(content)){
@@ -2379,7 +2639,7 @@ export default new Vuex.Store({
                 case 'datetime':{return value;}//返回源值
                 case 'date':{return this.Date(this.datetimeToDate(content));}
                 case 'time':{return this.Time(this.datetimeToTime(content));}
-                case 'list':{return this.List(content);}
+                case 'list':{return this.List_(content);}
                 case 'percent':{return this.Percent();}
                 case 'bool':{return false;}
                 case 'number':{return 0;}
@@ -2392,7 +2652,7 @@ export default new Vuex.Store({
                 case 'datetime':{return this.Datetime(this.dateToDatetime(content));}
                 case 'date':{return value;}//返回源值
                 case 'time':{return this.Time(this.dateToTime(content));}
-                case 'list':{return this.List(content);}
+                case 'list':{return this.List_(content);}
                 case 'percent':{return this.Percent();}
                 case 'bool':{return false;}
                 case 'number':{return 0;}
@@ -2402,10 +2662,10 @@ export default new Vuex.Store({
             case 'time':{
               switch(type){
                 case 'text':{return this.Text(content);}
-                case 'datetime':{return this.Datetime(this.timeToDatetime(content));}
-                case 'date':{return this.Date(this.timeToDate(content));}
+                case 'datetime':{return this.Datetime(this.timeToDatetime());}
+                case 'date':{return this.Date(this.timeToDate());}
                 case 'time':{return value;}//返回源值
-                case 'list':{return this.List(content);}
+                case 'list':{return this.List_(content);}
                 case 'percent':{return this.Percent();}
                 case 'bool':{return false;}
                 case 'number':{return 0;}
@@ -2413,8 +2673,10 @@ export default new Vuex.Store({
               }
             }
             case 'list':{
+
               switch (type){
                 case 'text':{
+
                   return this.Text(content);//保留源内容
                 }
                 case 'datetime':{
@@ -2469,7 +2731,7 @@ export default new Vuex.Store({
                   }
                   return 0;
                 }
-                default:{return this.List();}
+                default:{return this.List_();}
               }
             }
             case 'percent':{
@@ -2478,7 +2740,7 @@ export default new Vuex.Store({
                 case 'datetime':{return this.Datetime();}
                 case 'date':{return this.Date();}
                 case 'time':{return this.Time();}
-                case 'list':{return this.List(content);}
+                case 'list':{return this.List_(content);}
                 case 'percent':{return value;}//返回源值
                 case 'bool':{return content === '100%';}
                 case 'number':{
@@ -2516,7 +2778,7 @@ export default new Vuex.Store({
                   return this.Time();
                 }
                 case 'list':{
-                  return this.List(value.toString());
+                  return this.List_(value.toString());
                 }
                 case 'percent':{
                   let number=value*100;
@@ -2550,7 +2812,7 @@ export default new Vuex.Store({
                   return this.Time();
                 }
                 case 'list':{
-                  return value?this.List('1'):this.List('0');
+                  return value?this.List_('1'):this.List_('0');
                 }
                 case 'percent':{
                   return value?this.Percent('100%'):this.Percent('0%');
@@ -2566,9 +2828,9 @@ export default new Vuex.Store({
             }
           }
         }
-        /**
+        /*
          * check function 检查函数
-         **/
+         */
         isValidTime(str){//检测字符串是否是时间格式-正确则返回true
           const reg = /^☍m([0-1]?[0-9]|2[0-3]):([0-5]?[0-9])(:([0-5]?[0-9]))?$/;
           return reg.test(str);
@@ -2594,29 +2856,23 @@ export default new Vuex.Store({
           return reg.test(str);
         }
         isAllowPercent(value){//检测字符串是否是百分数
-          const reg=/^☍p-?\d+(\.\d+)?%$/;
+          const reg = /^☍p-?\d+(\.\d+)?%$/;
           return reg.test(value);
         }
         isPercent(value){//isAllowPercent的变体，不检查类型符号
-          const reg=/^-?\d+(\.\d+)?%$/;
+          const reg = /^-?\d+(\.\d+)?%$/;
           return reg.test(value);
         }
         isAllowList(value){//检测list字符串是否正确-正确则返回true
-          const reg = /^☍l(?!.*,.*,)(?=.*[^,]$)/;
+          const reg = /^☍l(?!.*,,)(?=.*[^,]$)/;
           return reg.test(value);
         }
         isAllowId(id){//检测模板id是否正确-正确则返回true
-          const reg=/^[0-9a-zA-Z]{8,14}$/;
+          const reg = /^[0-9a-zA-Z]{8,14}$/;
           return reg.test(id);
-        }
-        isIntegerP0(value){//判断一个数字是否为大于或等于0的整数-是则返回true
-          return Number.isInteger(value) && value>=0;
         }
         isIntegerP(value){//判断一个数字是否为正整数P:positive
           return Number.isInteger(value) && value>0;
-        }
-        isInteger(value){//判断一个数字是否为整数
-          return Number.isInteger(value);
         }
         isNumber(value){//判断一个值是否为数字(不包含无限和NaN)
           if(typeof value!=='number')return false;
@@ -2632,15 +2888,20 @@ export default new Vuex.Store({
             case 'text':{
               return typeof value==='string';
             }
-            case 'long':{
-              return typeof value==='string';
-            }
             case 'number':{
               return typeof value === 'number';
             }
             case 'datetime':{
               if(typeof value!=='string')return false;
               return this.isValidDatetime(value);
+            }
+            case 'data':{
+              if(typeof value!=='string')return false;
+              return this.isValidDate(value);
+            }
+            case 'time':{
+              if(typeof value!=='string')return false;
+              return this.isValidTime(value);
             }
             case 'bool':{
               return typeof value === 'boolean';
@@ -2653,21 +2914,10 @@ export default new Vuex.Store({
               if(typeof value!=='string')return false;
               return this.isAllowPercent(value);
             }
-            case 'score':{
-              if(typeof value!=='number')return false;
-              if(value<0)return false;
-              return value <= 10;
-            }
           }
         }
         isAllowMethod(type,method){//判断method是否为type允许使用的方法-正确则返回true
           switch (type){
-            case 'long':{
-              return false;
-            }
-            case 'score':{
-              return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
-            }
             case 'number':{
               return ['equ','nequ','gre','greq','les','lesq','mod0','nmod0'].includes(method);
             }
@@ -2675,6 +2925,12 @@ export default new Vuex.Store({
               return ['equ','nequ','gre','greq','les','lesq'].includes(method);
             }
             case 'datetime':{
+              return ['equ','nequ','gre','greq','les','lesq'].includes(method);
+            }
+            case 'date':{
+              return ['equ','nequ','gre','greq','les','lesq'].includes(method);
+            }
+            case 'time':{
               return ['equ','nequ','gre','greq','les','lesq'].includes(method);
             }
             case 'bool':{
@@ -2720,7 +2976,7 @@ export default new Vuex.Store({
             }
             case 'number':{
               if(typeof value!=='number')return false;
-              return value !== Infinity;
+              return !(value===Infinity || value===-Infinity) ;
             }
             case 'bool':{
               return typeof value === 'boolean';
@@ -2753,7 +3009,7 @@ export default new Vuex.Store({
          * @param name string
          * @param type string
          * @param details array
-         * @return {boolean}
+         * @return boolean
          */
         isAllowBasis(name,type,details){
           const len=details.length;
@@ -2901,11 +3157,11 @@ export default new Vuex.Store({
           }
         }
         /**
-         * 模板检查
+         * 模板检查，若正常则返回true，否则返回其他错误的代码
          * @param template | Object
          * @return {boolean,number}
          */
-        tpCheck(template){//模板检查,若正常则返回true，否则返回其他错误的代码
+        tpCheck(template){
           if(template===null)return 500;
           let arr=[];
           let names=['name'];//details rule item.name
@@ -3127,10 +3383,10 @@ export default new Vuex.Store({
       useTpModify:'none',
       useTpExplain:'none',
       useTypeRule:{
-        point:true,line:true,area:true,curve:true
+        point:false,line:false,area:false,curve:false
       },
       useDetailsRule:[
-        {set:false,name:'name',default:'unknown',type:'text',length:100,empty:true}
+        {set:false,name:'name',default:'unknown',type:'text'}
       ],
       useColorRule:{
         basis:'',
@@ -3169,7 +3425,7 @@ export default new Vuex.Store({
       },
       showPanel:false,
     },
-    mapConfig:{//地图配置
+    mapConfig:{//地图配置v5.5
       layer:0,
       oldLayer:null,
       zoomAdd:1,//k
@@ -3215,7 +3471,11 @@ export default new Vuex.Store({
         point:{x:0,y:0},
         color:'000000',
         width:0,
-        defaultWidth:5
+        defaultWidth:5,
+        custom:{
+          icon:null,
+          tmpId:null,
+        },
       },
       tempLine:{
         id:'tempLine',
@@ -3223,21 +3483,17 @@ export default new Vuex.Store({
         points:[],
         point:{x:0,y:0},
         color: '000000',
-        length: null,
         width: 2,
-        size: null,
         child_relations: null,
         father_relation: null,
         child_nodes: null,
         father_node: null,
-        details:[
-          {key: '名称', value: ''},
-          {key: '类型', value: ''},
-          {key: '备注', value: ''},
-          {key: '区域', value: ''}
-        ],
+        details:[],
         defaultWidth:2,
-        showPos:[]
+        showPos:[],
+        custom:{
+          tmpId:null,
+        },
       },
       tempArea:{
         id:'tempArea',
@@ -3245,21 +3501,17 @@ export default new Vuex.Store({
         points:[],
         point:{x:0,y:0},
         color: '000000',
-        length: null,
         width: 2,
-        size: null,
         child_relations: null,
         father_relation: null,
         child_nodes: null,
         father_node: null,
-        details:[
-          {key: '名称', value: ''},
-          {key: '类型', value: ''},
-          {key: '备注', value: ''},
-          {key: '区域', value: ''}
-        ],
+        details:[],
         defaultWidth:2,
-        showPos:[]
+        showPos:[],
+        custom:{
+          tmpId:null,
+        },
       },
       mousePoint:{//鼠标位置
         x:0,
@@ -3426,6 +3678,7 @@ export default new Vuex.Store({
     templateData:{
       /**Read only data. If need to update, please renewal to a brand new object
        * 只读的数据,如果需要更新,请直接引用新的对象
+       * 可用于检测模板id是否重复出现等用途
        * The following is an example of template object
        * 如下为模板对象示例
       'id123abc456':{
@@ -3477,21 +3730,17 @@ export default new Vuex.Store({
         points:[],
         point:{x:0,y:0},
         color: '000000',
-        length: null,
         width: 2,
-        size: null,
         child_relations: null,
         father_relation: null,
         child_nodes: null,
         father_node: null,
-        details:[
-          {key: '名称', value: ''},
-          {key: '类型', value: ''},
-          {key: '备注', value: ''},
-          {key: '区域', value: ''}
-        ],
+        details:[],
         defaultWidth:2,
-        showPos:[]
+        showPos:[],
+        custom:{
+          tmpId:null,
+        },
       };
     },
     clearTempLineCache(state){//清空临时线段的缓存
@@ -3501,32 +3750,28 @@ export default new Vuex.Store({
         points:[],
         point:{x:0,y:0},
         color: '000000',
-        length: null,
         width: 2,
-        size: null,
         child_relations: null,
         father_relation: null,
         child_nodes: null,
         father_node: null,
-        details:[
-          {key: '名称', value: ''},
-          {key: '类型', value: ''},
-          {key: '备注', value: ''},
-          {key: '区域', value: ''}
-        ],
+        details:[],
         defaultWidth:2,
-        showPos:[]
+        showPos:[],
+        custom:{
+          tmpId:null,
+        },
       };
     },
     destroyInstructPipe(state){//销毁综合对象
       state.serverData.socket=undefined;
     },
     restoreMapConfig(state){//恢复默认地图配置
-      state.mapConfig={
+      state.mapConfig={//地图配置v5.5
         layer:0,
         oldLayer:null,
-        zoomAdd:1,
-        zoomSub:-1/(1+1),
+        zoomAdd:1,//k
+        zoomSub:-1/(1+1),//-k/(1+k)
         browser:{
           width:null,
           height:null
@@ -3542,6 +3787,10 @@ export default new Vuex.Store({
           }
         },
         A1:{
+          x:0,
+          y:0
+        },
+        movingDistance:{
           x:0,
           y:0
         },
@@ -3564,7 +3813,11 @@ export default new Vuex.Store({
           point:{x:0,y:0},
           color:'000000',
           width:0,
-          defaultWidth:5
+          defaultWidth:5,
+          custom:{
+            icon:null,
+            tmpId:null,
+          },
         },
         tempLine:{
           id:'tempLine',
@@ -3572,21 +3825,17 @@ export default new Vuex.Store({
           points:[],
           point:{x:0,y:0},
           color: '000000',
-          length: null,
           width: 2,
-          size: null,
           child_relations: null,
           father_relation: null,
           child_nodes: null,
           father_node: null,
-          details:[
-            {key: '名称', value: ''},
-            {key: '类型', value: ''},
-            {key: '备注', value: ''},
-            {key: '区域', value: ''}
-          ],
+          details:[],
           defaultWidth:2,
-          showPos:[]
+          showPos:[],
+          custom:{
+            tmpId:null,
+          },
         },
         tempArea:{
           id:'tempArea',
@@ -3594,23 +3843,19 @@ export default new Vuex.Store({
           points:[],
           point:{x:0,y:0},
           color: '000000',
-          length: null,
           width: 2,
-          size: null,
           child_relations: null,
           father_relation: null,
           child_nodes: null,
           father_node: null,
-          details:[
-            {key: '名称', value: ''},
-            {key: '类型', value: ''},
-            {key: '备注', value: ''},
-            {key: '区域', value: ''}
-          ],
+          details:[],
           defaultWidth:2,
-          showPos:[]
+          showPos:[],
+          custom:{
+            tmpId:null,
+          },
         },
-        mousePoint:{
+        mousePoint:{//鼠标位置
           x:0,
           y:0
         },
@@ -3634,6 +3879,14 @@ export default new Vuex.Store({
           x:0,
           y:0
         },
+        svgMouseRUp:{
+          x:0,
+          y:0
+        },
+        svgMouseRDown:{
+          x:0,
+          y:0
+        },
         clearClick:{
           x:0,
           y:0
@@ -3646,14 +3899,14 @@ export default new Vuex.Store({
           x:null,
           y:null
         },
-        operated:{
-          id:null,
-          data:null
+        operated:{//元素被右键选择
+          id:-1,//被操作元素id
+          data:null//被操作元素的元素数据
         },
-        cursor:'default',
-        cursorLock:false,
-        reinitializeId:-1,
-        inputFocusStatus:false
+        cursor:'default',//SVG鼠标指针类型
+        cursorLock:false,//指针类型的锁止
+        reinitializeId:-1,//重新初始化的id
+        inputFocusStatus:false//input聚焦状态
       };
     },
     restoreBaseMapConfig(state){//恢复默认底图配置
@@ -3809,6 +4062,30 @@ export default new Vuex.Store({
       state.templateConfig.useDetailsRule=template.detailsRule;
       state.templateConfig.useColorRule=template.colorRule;
       state.templateConfig.useWidthRule=template.widthRule;
+    },
+    setCoTemplateNotUse(state){
+      state.templateConfig.useTpId='none';
+      state.templateConfig.useTpName='none';
+      state.templateConfig.useTpCreator='none';
+      state.templateConfig.useTpModify='none';
+      state.templateConfig.useTpExplain='none';
+
+      state.templateConfig.useTypeRule={
+        point:false,line:false,area:false,curve:false
+      };
+      state.templateConfig.useDetailsRule=[
+        {set:false,name:'name',default:'unknown',type:'text'}
+      ];
+      state.templateConfig.useColorRule={
+        basis:'',
+        type:'',
+        condition:[]
+      };
+      state.templateConfig.useWidthRule={
+        basis:'',
+        type:'',
+        condition:[]
+      };
     },
   },
   actions: {

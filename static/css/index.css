@@ -140,6 +140,7 @@
 .pomeloCMA{user-select:none;min-width:240px;background-color:white;padding:20px 25px;border-radius:5px;}
 .pomeloCMD{width:100%;height:auto;display:flex;flex-direction:row;justify-content:space-around;align-items:center;}
 .pomeloCMP{font-size:16px;margin:10px 0 16px 0;color:#5d5d5d;}
+/*PO end*/
 /*PL↓*/
 .pomeloLD-end{
   animation:graduallyEmergingHide 0.5s forwards !important;
@@ -204,6 +205,7 @@
   50%{transform: translateY(-10px);}
   100%{transform: translateY(0px);}
 }
+/*PL end*/
 /*PI↓*/
 .PomeloInput{
   display: flex;
@@ -214,7 +216,7 @@
   font-weight: 400;
   color: #101010;
 }
-.PomeloInput-text{
+.PomeloInput-universal{
   width: inherit;
   height: inherit;
   display: inherit;
@@ -230,11 +232,77 @@
   height: inherit;
   display: inherit;
   flex-direction:inherit;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
   font-weight: inherit;
   font-size: inherit;
   color: inherit;
+}
+.PomeloInput-input-list{
+  user-select: none;
+  width: 92%;
+  margin-top:1px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 14px;
+  padding: 5px 0px;
+  height: 28px;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transition: all .3s linear;
+  transition: all .3s linear;
+  color: #000;
+  font-weight: 400;
+  -webkit-appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+.PomeloInput-input-select{
+  user-select: none;
+  transform: scale(0);
+  position: absolute;
+  width: 80%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  box-shadow: 0px 0px 6px #8b8b8b;
+  padding: 5px 0px;
+  border-radius: 5px;
+}
+.PomeloInput-input-select-open{
+  transition: 0.3s;
+  transform: scale(1);
+}
+.PomeloInput-input-select div{
+  cursor: default;
+  width: 100%;
+  height: 24px;
+  margin: 2px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.PomeloInput-input-select div:hover{
+  background: #434343;
+  color: #ffffff;
+}
+.PomeloInput-input-select div:last-child{
+  color: #1ba903;
+}
+.PomeloInput-input-select div:last-child:hover{
+  background: #1ba903;
+  color: #ffffff;
 }
 .PomeloInput-input{
   width: 92%;
@@ -303,10 +371,106 @@
   outline: none;
 }
 .PomeloInput-input[type='number']{
-  text-align: center;
+  text-align: start;
 }
 .PomeloInput-input[disabled]{
   background-image: url('../InputLockBackground.svg');
   background-repeat: no-repeat;
   background-position: center center;
 }
+/*PI end*/
+/*rename board*/
+.renameClose{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 555;
+  top: 0px;
+  left: 0px;
+  background: rgba(0, 0, 0, 0.26);
+}
+.renameY{
+  width: 400px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.84);
+  position: fixed;
+  z-index: 556;
+  border-radius: 15px;
+  left: calc(50% - 200px);
+  top: calc(50% - 50px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.renameY input{
+  width: 300px;
+  height: 30px;
+  font-size: 15px;
+  padding: 2px 4px;
+  outline: none;
+  border: none;
+  border-bottom: 1px dashed #8e8e8e;
+  transition: 0.3s;
+  background: rgba(255, 255, 255, 0.84);
+}
+.renameY input:focus{
+  border-bottom: 1px solid #292929;
+}
+.renameRow{
+  width: 100%;
+  height: 50px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  font-size: 16px;
+}
+.renameButton{
+  cursor: pointer;
+  -webkit-appearance: none;
+  width: auto;
+  min-width: 100px;
+  border-radius: 24px;
+  text-align: center;
+  padding: 5px 20px;
+  background-color: #7dc5ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  -webkit-box-shadow: 0 2px 6px -1px rgba(0,0,0,.13);
+  box-shadow: 0 2px 6px -1px rgba(0,0,0,.13);
+  border: none;
+  -webkit-transition: all .3s ease;
+  transition: all .3s ease;
+  outline: 0;
+}
+.renameButton:hover{
+  background: #289ffe;
+}
+.renameButton:active{
+  background: #ffffff;
+  color: #000000;
+}
+/*rename board end*/
+/*PDelay start*/
+.PomeloDelay{
+  position: fixed;
+  z-index: 550;
+  top: 0px;
+  left: 50%;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0BFF05;
+  text-shadow: 0px 0px 1px #09A004;
+  width: auto;
+  height: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+}
+.PomeloDelay div{
+  margin-left: 7px;
+}
+/*PDelay end*/
