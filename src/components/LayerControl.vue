@@ -2,23 +2,24 @@
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
     <div class="controlButtonBox"><!--添加按钮-->
       <div @click="pointButton()" class="ButtonOut">
-        <point :custom="'fill:'+Url1Color"></point>
+        <point :custom="'fill:'+Url1Color"/>
       </div>
       <div @click="lineButton()" class="ButtonOut">
-        <segment-line :custom="'fill:'+Url2Color"></segment-line>
+        <segment-line :custom="'fill:'+Url2Color"/>
       </div>
       <div @click="areaButton()" class="ButtonOut">
-        <region :custom="'fill:'+Url3Color"></region>
+        <region :custom="'fill:'+Url3Color"/>
       </div>
       <div @click="curveButton()" class="ButtonOut">
-        <segment-curve :custom="'fill:'+Url4Color"></segment-curve>
+        <segment-curve :custom="'fill:'+Url4Color"/>
       </div>
     </div>
-    <banana-element-operation-board></banana-element-operation-board><!--元素右键编辑面板-->
-    <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"></banana-point-attribute-board><!--点编辑属性面板-->
-    <banana-line-attribute-board :style-top="theConfig.lineBoardTop" :style-left="theConfig.lineBoardLeft"></banana-line-attribute-board><!--线编辑属性面板-->
-    <banana-area-attribute-board :style-top="theConfig.areaBoardTop" :style-left="theConfig.areaBoardLeft"></banana-area-attribute-board><!--区域编辑属性面板-->
-    <banana-recorder-panel></banana-recorder-panel>
+    <banana-element-operation-board/><!--元素右键编辑面板-->
+    <banana-point-attribute-board :style-top="theConfig.bordPosTop" :style-left="theConfig.bordPosLeft"/><!--点编辑属性面板-->
+    <banana-line-attribute-board :style-top="theConfig.lineBoardTop" :style-left="theConfig.lineBoardLeft"/><!--线编辑属性面板-->
+    <banana-curve-attribute-board :style-top="theConfig.curveBoardTop" :style-left="theConfig.curveBoardLeft"/><!--线编辑属性面板-->
+    <banana-area-attribute-board :style-top="theConfig.areaBoardTop" :style-left="theConfig.areaBoardLeft"/><!--区域编辑属性面板-->
+    <banana-recorder-panel/>
   </div>
 </template>
 
@@ -28,6 +29,7 @@ import BananaControlButton from "./BananaControlButton";
 import BananaAreaAttributeBoard from "./BananaAreaAttributeBoard";
 import BananaPointAttributeBoard from "./BananaPointAttributeBoard";
 import BananaLineAttributeBoard from "./BananaLineAttributeBoard";
+import BananaCurveAttributeBoard from "./BananaCurveAttributeBoard";
 import BananaRecorderPanel from "./BananaRecorderPanel";
 import Point from "./svgValidIcons/40X/point";
 import SegmentLine from "./svgValidIcons/40X/segmentLine";
@@ -35,7 +37,7 @@ import Region from "./svgValidIcons/40X/region";
 import SegmentCurve from './svgValidIcons/40X/segmentCurve';
 export default {
   name: "LayerControl",
-  components:{Point,SegmentLine,Region,SegmentCurve,BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaRecorderPanel,BananaLineAttributeBoard,BananaAreaAttributeBoard},
+  components:{Point,SegmentLine,Region,SegmentCurve,BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaRecorderPanel,BananaLineAttributeBoard,BananaCurveAttributeBoard,BananaAreaAttributeBoard},
   data(){
     return {
       MY_NAME:"LayerControl",
@@ -46,11 +48,14 @@ export default {
       nodeSuppressor:false,//节点抑制器，此项为true则会抑制节点更新，会对添加点、线段、面造成影响
       isAddPoint:false,
       isAddLine:false,
+      isAddCurve:false,
       isAddArea:false,
-      addAreaClock:false,
-      addLineClock:false,//false表示未锁止
+      addAreaClock:false,//false表示未锁止
+      addLineClock:false,
+      addCurveClock:false,
       areaListener:false,
       lineListener:false,
+      curveListener:false,
       pointListener:false,
       theConfig:{
         buttonA:false,
@@ -59,6 +64,7 @@ export default {
         buttonD:false,
         addAreaPos:[],
         addLinePos:[],
+        addCurvePos:[],
         addPointPos:{
           x:null,
           y:null
@@ -67,10 +73,13 @@ export default {
         bordPosLeft:-400,
         lineBoardTop:0,//线属性面板的位置
         lineBoardLeft:-400,
+        curveBoardTop:0,//曲线属性面板的位置
+        curveBoardLeft:-400,
         areaBoardTop:0,//区域属性面板的位置
         areaBoardLeft:-400,
         obServe:false,//观察者
         lineAddNodeLastPos:{x:null,y:null},
+        curveAddNodeLastPos:{x:null,y:null},
         areaAddNodeLastPos:{x:null,y:null},
       },
     }
@@ -85,18 +94,23 @@ export default {
     },
     addAreaStart(){
       if(!this.isAddArea){
+        this.$store.commit('setCoMapDrawing',true);
         this.isAddArea=true;//更改添加状态为“可用”
         this.Url3Color='#82abfe';//更改背景色
         this.theConfig.buttonC=true;//更改按钮状态
         if(this.isAddPoint){//更改其他按钮状态
-          this.addInterestPointStart();
+          this.addPointStart();
         }
-        if(this.isAddLine){//更改其他按钮状态
-          this.addRouteLineStart();
+        if(this.isAddLine){
+          this.addLineStart();
+        }
+        if(this.isAddCurve){
+          this.addCurveStart();
         }
         this.$store.commit('suppressPickSelect',true);
         this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
       }else {
+        this.$store.commit('setCoMapDrawing',false);
         this.isAddArea=false;//更改添加状态为“不可用”
         this.Url3Color='#000000';//更改背景色e72323
         this.theConfig.buttonC=false;//更改按钮状态
@@ -143,21 +157,25 @@ export default {
       this.addAreaClock=false;//停用锁止
       this.theConfig.addAreaPos=[];//清除点击位置缓存
     },
-
-    addRouteLineStart(){//添加路径线
+    addLineStart(){//添加路径线
       if(!this.isAddLine){
-        this.isAddLine=true;//更改添加点状态为“可用”
+        this.$store.commit('setCoMapDrawing',true);
+        this.isAddLine=true;//更改添加状态为“可用”
         this.Url2Color='#82abfe';//更改背景色
         this.theConfig.buttonB=true;//更改按钮状态
         if(this.isAddPoint){//更改其他按钮状态
-          this.addInterestPointStart();
+          this.addPointStart();
         }
         if(this.isAddArea){
           this.addAreaStart();
         }
+        if(this.isAddCurve){
+          this.addCurveStart();
+        }
         this.$store.commit('suppressPickSelect',true);
         this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
       }else {
+        this.$store.commit('setCoMapDrawing',false);
         this.isAddLine=false;//更改添加点状态为“不可用”
         this.Url2Color='#000000';//更改背景色e72323
         this.theConfig.buttonB=false;//更改按钮状态
@@ -221,33 +239,38 @@ export default {
     },
     lineButton(){//右侧“线段”按钮事件
       if(this.enableLine){
-        this.addRouteLineStart();
+        this.addLineStart();
       }else{
         this.$store.commit('setCoLogMessage',{text:'添加线段已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
       }
     },
     pointButton(){//右侧“点”按钮事件
       if(this.enablePoint){
-        this.addInterestPointStart();
+        this.addPointStart();
       }else{
         this.$store.commit('setCoLogMessage',{text:'添加点已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
       }
     },
-    addInterestPointStart(){//添加关注点
+    addPointStart(){//添加关注点
       if(!this.isAddPoint){
+        this.$store.commit('setCoMapDrawing',true);
         this.$store.commit('suppressPickSelect',true);
-        this.isAddPoint=true;//更改添加点状态
+        this.isAddPoint=true;//更改添加状态
         this.Url1Color='#82abfe';
         this.theConfig.buttonA=true;//更改按钮状态
         if(this.isAddLine){//更改其他按钮状态
-          this.addRouteLineStart();
+          this.addLineStart();
         }
         if(this.isAddArea){
           this.addAreaStart();
         }
+        if(this.isAddCurve){
+          this.addCurveStart();
+        }
       }else {
+        this.$store.commit('setCoMapDrawing',false);
         this.$store.commit('suppressPickSelect',false);
-        this.isAddPoint=false;//更改添加点状态
+        this.isAddPoint=false;//更改添加状态
         this.Url1Color='#000000';
         this.theConfig.buttonA=false;//更改按钮状态
       }
@@ -296,11 +319,78 @@ export default {
       this.theConfig.lineBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
       this.$root.sendSwitchInstruct('previewLine',false);//结束通知
     },
-
-    addCurveStart(){
-
+    addCurve(){//添加曲线
+      if(this.theConfig.obServe===false){
+        if(this.curveListener===false){//避免重复
+          document.addEventListener("click",(ev)=>{
+            if(this.svgMouseDown.x!==ev.x || this.svgMouseDown.y!==ev.y){//移动过程中不添加
+              return false;
+            }
+            if(this.theConfig.obServe===true && this.isAddCurve===true && this.addCurveClock===false && this.nodeSuppressor!==true){
+              let tag=ev.target.nodeName;//判断target
+              if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
+                if(ev.target.classList[0]==='Icon40X'){return;}
+                let Pos=this.computeMouseActualPos(ev);//计算新增点位置
+                if(Pos.x===this.theConfig.curveAddNodeLastPos.x &&
+                  Pos.y===this.theConfig.curveAddNodeLastPos.y){//避免在同一个位置添加点
+                  return false;
+                }else{
+                  this.theConfig.curveAddNodeLastPos=Pos;
+                  this.theConfig.addCurvePos.push(Pos);
+                }
+              }
+            }
+          });
+          this.curveListener=true;
+        }
+        this.theConfig.obServe=true;
+        this.$store.state.mapConfig.cursor='default';//允许更新指针
+      }
     },
-
+    addCurveStart(){//添加曲线
+      if(!this.isAddCurve){
+        this.$store.commit('setCoMapDrawing',true);
+        this.isAddCurve=true;//更改添加状态为“可用”
+        this.Url4Color='#82abfe';//更改背景色
+        this.theConfig.buttonD=true;//更改按钮状态
+        if(this.isAddPoint){//更改其他按钮状态
+          this.addPointStart();
+        }
+        if(this.isAddArea){
+          this.addAreaStart();
+        }
+        if(this.isAddLine){
+          this.addLineStart();
+        }
+        this.$store.commit('suppressPickSelect',true);
+        this.$root.sendSwitchInstruct('previewLine',true);//通知预览启用
+      }else {
+        this.$store.commit('setCoMapDrawing',false);
+        this.isAddCurve=false;//更改添加状态为“不可用”
+        this.Url4Color='#000000';//更改背景色e72323
+        this.theConfig.buttonD=false;//更改按钮状态
+        this.$store.commit('suppressPickSelect',false);
+        this.$root.sendSwitchInstruct('previewLine',false);//通知预览停用
+      }
+    },
+    addCurveEnd(){//双击结束
+      this.addCurveClock=true;//禁用点更新
+      this.theConfig.curveBoardLeft=this.$store.state.mapConfig.mousePoint.x+10;//调整属性面板位置
+      this.theConfig.curveBoardTop=this.$store.state.mapConfig.mousePoint.y+10;
+      this.$root.sendSwitchInstruct('previewLine',false);//结束通知
+    },
+    addCurveCancel(){//取消添加
+      this.$store.state.mapConfig.cursor='default';//允许更新指针
+      this.$store.state.mapConfig.tempCurve.point.x=0;//1.重置临时线位置
+      this.$store.state.mapConfig.tempCurve.point.y=0;
+      this.$store.state.mapConfig.tempCurve.points=[];
+      this.$store.state.mapConfig.tempCurve.showPos=[];
+      this.theConfig.obServe=false;//2.观察者模式关闭
+      this.theConfig.curveBoardLeft=-400;//3.重置属性面板位置
+      this.theConfig.curveBoardTop=0;
+      this.addCurveClock=false;//4.停用锁止
+      this.theConfig.addCurvePos=[];//清除点击位置缓存
+    },
     computeMouseActualPos(mouseEvent){//计算鼠标点与p0的位置距离并返回鼠标点击位置的坐标
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         let latLng=this.$store.state.baseMapConfig.baseMap.viewPositionToLatLng(mouseEvent.x,mouseEvent.y);
@@ -357,7 +447,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加点已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
-            this.addInterestPointStart();
+            this.addPointStart();
             break;
           }
           case '2':{
@@ -365,7 +455,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加线段已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
-            this.addRouteLineStart();
+            this.addLineStart();
             break;
           }
           case '3':{
@@ -390,13 +480,16 @@ export default {
           }
           case 'Escape':{
             if(this.buttonA){
-              this.addInterestPointStart();
+              this.addPointStart();
             }
             if(this.buttonB){
-              this.addRouteLineStart();
+              this.addLineStart();
             }
             if(this.buttonC){
               this.addAreaStart();
+            }
+            if(this.buttonD){
+              this.addCurveStart();
             }
             break;
           }
@@ -587,6 +680,9 @@ export default {
     buttonC(){
       return this.theConfig.buttonC;
     },
+    buttonD(){
+      return this.theConfig.buttonD;
+    },
     addNewArea(){//watch
       return this.theConfig.addAreaPos;
     },
@@ -596,6 +692,9 @@ export default {
     addNewLine(){//watch
       return this.theConfig.addLinePos;
     },
+    addNewCurve(){//watch
+      return this.theConfig.addCurvePos;
+    },
     svgDbClick(){
       return this.$store.state.mapConfig.svgDbClick;
     },
@@ -604,6 +703,9 @@ export default {
     },
     addNewLineEnd(){
       return this.$store.state.commits.addNewLineEnd;
+    },
+    addNewCurveEnd(){
+      return this.$store.state.commits.addNewCurveEnd;
     },
     addNewAreaEnd(){
       return this.$store.state.commits.addNewAreaEnd;
@@ -623,7 +725,7 @@ export default {
       handler(value){
         if(!value){
           if(this.buttonA){
-            this.addInterestPointStart();//取消正在进行的点添加
+            this.addPointStart();//取消正在进行的点添加
           }
           this.Url1Color='#919191';//灰度右侧按钮颜色
         }else {
@@ -637,7 +739,7 @@ export default {
       handler(value){
         if(!value){
           if(this.buttonB){
-            this.addRouteLineStart();
+            this.addLineStart();
           }
           this.Url2Color='#919191';
         }else {
@@ -692,12 +794,34 @@ export default {
     },
     addNewPointEnd:{
       handler(){
-        this.addInterestPointStart();
+        this.addPointStart();
       }
     },
     addNewLineEnd:{
       handler(){
-        this.addRouteLineStart();
+        this.addLineStart();
+      }
+    },
+    addNewCurveEnd:{
+      handler(){
+        this.addCurveStart();
+      }
+    },
+    buttonD:{
+      handler(newValue){
+        if(newValue){
+          setTimeout(
+            ()=>{
+              this.addCurve();
+              this.$store.state.mapConfig.cursor='crosshair';
+              this.$store.state.mapConfig.cursorLock=true;
+            }
+            ,0);
+        }else {
+          this.addCurveCancel();
+          this.$store.state.mapConfig.cursor='default';
+          this.$store.state.mapConfig.cursorLock=false;
+        }
       }
     },
     buttonC:{
@@ -780,6 +904,30 @@ export default {
       },
       deep:true
     },
+    addNewCurve:{
+      handler(newValue){
+        if(this.$store.state.cameraConfig.windowChange===true){//在窗口大小更新时禁止更新
+          return false;
+        }
+        if(newValue.length!==0){
+          this.$store.state.mapConfig.tempCurve.point.x=newValue[0].x;//1更新临时线数据
+          this.$store.state.mapConfig.tempCurve.point.y=newValue[0].y;
+          this.$store.state.mapConfig.tempCurve.points.push(newValue[newValue.length-1]);
+          this.$store.state.mapConfig.tempCurve.showPos.push(
+            {
+              x:this.$store.state.mapConfig.svgClick.x*this.unit1X,
+              y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y
+            }
+            );//2.更新临时线显示位置
+        }else {
+          this.$store.state.mapConfig.tempCurve.point.x=0;
+          this.$store.state.mapConfig.tempCurve.point.y=0;
+          this.$store.state.mapConfig.tempCurve.points=[];
+          this.$store.state.mapConfig.tempCurve.showPos=[];
+        }
+      },
+      deep:true
+    },
     addNewArea:{
       handler(newValue){
         if(this.$store.state.cameraConfig.windowChange===true){//在窗口大小更新时禁止更新
@@ -806,6 +954,9 @@ export default {
         }
         if(this.isAddLine){
           this.addLineEnd();
+        }
+        if(this.isAddCurve){
+          this.addCurveEnd();
         }
       },
       deep:true

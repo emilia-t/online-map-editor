@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Note</title>
+</head>
+<body>
+<script>
+  /**
+   * 中间弹窗信息指令-可以访问vuex的情况：
+   * this : 应指向vue组件
+   * text：填充信息
+   * from: 消息来源与组件名，来源分别是内部和外部[internal, external]
+   * type: 消息类型[tip, warn, error, notice]
+   * data: 额外附带数据（可以是错误信息）
+  **/
+  this.$store.commit('setCoLogMessage',{text:'xxx',from:'internal:xxx',type:'tip',data:undefined});
+
+  /**
+   * 中间弹窗信息指令-不能访问vuex的情况：
+   * code : 默认-=1即可，watch会监听此值
+   * text：填充信息
+   * from: 消息来源组件名
+   * type: 消息类型[tip, warn, error, notice]
+   * data: 额外附带数据（可以是错误信息）
+   **/
+  window.logConfig.message.code-=1;
+  window.logConfig.message.text='转化失败，无法解析文件';
+  window.logConfig.message.from='external:BananaKmlToOmd';
+  window.logConfig.message.type='error';
+  window.logConfig.message.data=e;
+
+  /**
+   * 删除数据库行以及重置自增id
+   **/
+  // DELETE FROM table_name;
+  // ALTER TABLE table_name AUTO_INCREMENT = 1;
+</script>
+</body>
+</html>

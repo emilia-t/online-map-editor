@@ -36,14 +36,14 @@
                 v-show="selectConfig.id===myId || pickConfig.id===myId"
                 class="svgAreaHighlight"/>
 
-      <circle :cx="str.a" :cy="str.b"
+      <circle :cx="str.a" :cy="str.b" data-t="node"
               :style="nodeEffectStyle(index)"
               v-bind:data-node-order="index"
               @click="selectNode(index,$event)"
               @mousedown="shiftStart(index,$event)"
               @mouseup="shiftEnd($event)"
               v-show="nodeDisplay"/><!--区域节点-->
-      <circle :cx="str.c" :cy="str.d"
+      <circle :cx="str.c" :cy="str.d" data-t="node"
               :style="nodeEffectStyle(index+1)"
               v-bind:data-node-order="index+1"
               @click="selectNode(index+1,$event)"
@@ -55,6 +55,7 @@
       <circle :cx="getVirtualCenterX(str.a,str.c)"
               :cy="getVirtualCenterY(str.b,str.d)"
               :style="virtualNodeStyle(index)"
+              data-t="node"
               @mousedown="virtualNodeDown(index)"
               v-show="selectId===myId"/><!--虚拟节点-->
 
@@ -63,7 +64,7 @@
             v-show="selectConfig.id===myId || pickConfig.id===myId"
             v-text="svgText"
             text-anchor="middle"
-            class="svgAreaSelectText"></text><!--活动文字-->
+            class="svgAreaSelectText"/><!--活动文字-->
     </g>
   </g>
 </template>
@@ -296,6 +297,7 @@ export default {
     shiftAllEnd(ev){
       this.mouseUpPosition.x=ev.x;
       this.mouseUpPosition.y=ev.y;
+      setTimeout(()=>this.shiftAllStatus=false);
     },
     circleShow(order){//显示节点
       if(order===this.shiftNodeOrder){
@@ -394,7 +396,7 @@ export default {
         this.areaConfig.point.y=viewPosition.y;
         //循环遍历
         for(let i=0;i<this.dataSourcePoints.length;i++){
-          let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x)
+          let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x);
           this.areaConfig.points[i].x=viewPosition.x;
           this.areaConfig.points[i].y=viewPosition.y;
         }

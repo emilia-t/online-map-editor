@@ -11,7 +11,7 @@
   <layer-element-panel v-show="!loading"/><!--元素面板层-->
   <layer-details-panel v-show="!loading"/><!--属性面板层-->
   <layer-console v-show="!loading"/><!--调试面板-->
-<!--  <pomelo-loading :view="loading"/>&lt;!&ndash;加载界面&ndash;&gt;-->
+  <pomelo-loading :view="loading"/><!--加载界面-->
   <pomelo-delay/>
 </div>
 </template>
@@ -48,12 +48,12 @@ export default {
       MapServerAddress:null,
       tempLinked:false,
       nowLinkClock:false,
-      loading:false,//加载中状态
+      loading:true,//加载中状态默认为true//开发可以关闭
     }
   },
   mounted() {
     this.startSetting();
-    //this.changeLoad();//开发时关闭加载页面
+    this.changeLoad();//开发时关闭加载页面
   },
   methods:{
     startSetting(){//初始化

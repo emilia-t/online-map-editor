@@ -7,7 +7,7 @@
           <sun-active v-show="layer.id===pickLayerResponse.id"/>
         </div>
         <div class="groupLayerNameBox">
-          <span contenteditable="false" class="groupLayerName" v-text="groupLayerHeadText" :title="'layer'+layer.id"/>
+          <span contenteditable="false" class="groupLayerName" v-text="groupLayerHeadText" :title="'layer'+layer.id+' count'+(layer.structure.length-2)"/>
         </div>
       </div>
       <div class="eyebrowRight" @click.stop="switchLayerActions()">

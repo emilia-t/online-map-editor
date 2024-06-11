@@ -54,6 +54,12 @@
   user-select:none;
   pointer-events:none;
 }
+.svgCurveSelectText{
+  font-size:15px;
+  text-shadow:1px 1px 1px #737373;
+  user-select:none;
+  pointer-events:none;
+}
 .svgPointSelectText{
   transform:translateX(0px) translateY(-14px);
   font-size:15px;
@@ -63,6 +69,11 @@
   pointer-events:none;
 }
 .svgLineTextPath{
+  fill:none;
+  user-select:none;
+  pointer-events:none;
+}
+.svgCurveTextPath{
   fill:none;
   user-select:none;
   pointer-events:none;
@@ -80,13 +91,28 @@
   stroke-width:1;
   pointer-events:fill;
 }
+.svgCurveFillNode{
+  stroke-width:1;
+  pointer-events:fill;
+}
 .svgLineNodeEffect{
   pointer-events:fill;
   fill:#ffffff;
   stroke:#000000;
   stroke-width:1;
 }
+.svgCurveNodeEffect{
+  pointer-events:fill;
+  fill:#ffffff;
+  stroke:#000000;
+  stroke-width:1;
+}
 .svgLineVirtualNode{
+  stroke-width:1;
+  pointer-events:fill;
+  fill:#ffffff;
+}
+.svgCurveVirtualNode{
   stroke-width:1;
   pointer-events:fill;
   fill:#ffffff;
@@ -101,7 +127,18 @@
   stroke-width:3px;
   stroke:rgba(10,10,10,0.2);
 }
+.svgCurveTempPreview{
+  fill:rgba(0,0,0,0);
+  stroke-width:3px;
+  stroke:rgba(10,10,10,0.2);
+}
 .svgLineTempCircle{
+  stroke-width:1;
+  stroke:#010101;
+  pointer-events:fill;
+  fill:#ffffff;
+}
+.svgCurveTempCircle{
   stroke-width:1;
   stroke:#010101;
   pointer-events:fill;
@@ -109,6 +146,11 @@
 }
 .svgLineTempMain{
   fill: rgba(255,255,255,0);
+}
+.svgCurveTempMain{
+  fill: rgba(255,255,255,0);
+  stroke: rgba(0,0,0,0.5);
+  stroke-width: 2px;
 }
 .svgAreaTempPreviewA{
   stroke: #dedede;

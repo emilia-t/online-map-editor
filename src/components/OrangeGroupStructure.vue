@@ -33,6 +33,8 @@
                    v-if="layer.members[item].type==='point'"/>
             <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
                    v-if="layer.members[item].type==='line'"/>
+            <curve :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
+                          v-if="layer.members[item].type==='curve'"/>
             <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
                     v-if="layer.members[item].type==='area'"/>
             <span class="memberName" v-text="getItemName(layer.members[item])"/>
@@ -94,6 +96,7 @@ import EyeNotVisible from "./svgValidIcons/eyeNotVisible";
 import OrangeGroupStructure from "./OrangeGroupStructure";
 import Region from "./svgValidIcons/region";
 import SegmentLine from "./svgValidIcons/segmentLine";
+import Curve from "./svgValidIcons/curve";
 import Point from "./svgValidIcons/point";
 import {mapState} from "vuex";
 import PomeloConfirm from "./PomeloConfirm";
@@ -101,7 +104,7 @@ export default {
   name: "OrangeGroupStructure",
   components:{
     OrangeGroupStructure,EyeVisible,EyeNotVisible,ExpandMore,Region,
-    SegmentLine,Point,PomeloConfirm,
+    SegmentLine,Point,PomeloConfirm,Curve,
   },
   data(){
     return {
@@ -650,7 +653,7 @@ export default {
       this.allReinitialize();
       this.setElementFlicker(element,2000);
     },
-    setElementFlicker(element,duration){
+    setElementFlicker(element,duration){//闪烁特效
       let product={
         svgType:element.type,
         svgData:element,

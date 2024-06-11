@@ -15,9 +15,6 @@
           <div class="mapMoreAction" @click.stop="exportData()" title="可以导出此地图数据至本地">
             导出地图数据为 OMD
           </div>
-          <div class="mapMoreAction" title="隐藏或显示默认图层" @click.stop="switchShowDefaultLayer()">
-            <span v-show="showDefaultLayer">隐藏</span><span v-show="!showDefaultLayer">显示</span><span>默认图层</span>
-          </div>
         </div>
       </div>
       <div class="headText">
@@ -42,157 +39,6 @@
       </div>
     </div>
     <div class="panelContent" ref="panelContent" @contextmenu.prevent="void 1">
-      <div class="defaultLayer" v-if="showDefaultLayer"><!--默认图层-->
-        <div class="eyebrow">
-          <div class="eyebrowLeft">
-            <div class="previewEyeL">
-              <sun-active/>
-            </div>
-            <span class="cursorDefault">默认图层-只读</span>
-          </div>
-          <div class="eyebrowRight" @click.stop="switchDefaultLayerActions()">
-            <more custom="cursor:pointer;transform:translate(3px,1px)"/>
-          </div>
-          <div class="layerMoreActionsClose" @contextmenu.prevent="void 1" @click.stop="switchDefaultLayerActions()" v-show="defaultLayerActionsOpen">
-          </div>
-          <div class="layerMoreActions" v-show="defaultLayerActionsOpen">
-            <div class="layerMoreAction" title="展开或收起此图层所有分组" @click="expandAllDefaultGroup()">
-              <span v-show="!expandAllDefaultState">展开</span><span v-show="expandAllDefaultState">收起</span>所有分组
-            </div>
-          </div>
-        </div>
-        <div class="content">
-          <div class="memberTeamName" @contextmenu.prevent="void 1">
-            <div class="memberTeamNameL">
-              <div class="expandMoreL" @click.stop="expandDefaultPoint()" v-show="!defaultLayerPoint">
-                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"/>
-              </div>
-              <div class="expandMoreL" @click.stop="expandDefaultPoint()" v-show="defaultLayerPoint">
-                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"/>
-              </div>
-              <span>Point</span>
-            </div>
-            <div class="memberTeamNameR" title="隐藏操作仅对您可见">
-              <div class="memberRightEyeA" @click.stop="hiddenAllPoint()" v-show="!allPointHideState">
-                <eye-visible custom="cursor:pointer"/>
-              </div>
-              <div class="memberRightEyeC" @click.stop="unhiddenAllPoint()" v-show="allPointHideState">
-                <eye-not-visible custom="cursor:pointer"/>
-              </div>
-            </div>
-          </div>
-          <div class="memberTeamBox" v-for="item in PointData" :key="item.id" v-show="defaultLayerPoint">
-            <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
-              <div class="memberLeft" @click="locateToElement(item)">
-                <point :custom="'fill:#'+item.color+';transform:translate(-2px,0px)'"/>
-                <span class="memberName" v-text="getItemName(item)"/>
-              </div>
-              <div :ref="'memberRightEye'+item.id">
-                <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-visible custom="cursor:pointer"/>
-                </div>
-                <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-not-visible custom="cursor:pointer"/>
-                </div>
-              </div>
-            </div>
-            <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
-              <div class="memberPick">
-                <span class="memberSpanA"/><span>正在编辑形状</span>
-              </div>
-              <div class="memberSelect">
-                <span class="memberSpanA"/><span>正在编辑属性</span>
-              </div>
-            </div>
-          </div>
-          <div class="memberTeamName" @contextmenu.prevent="void 1">
-            <div class="memberTeamNameL">
-              <div class="expandMoreL" @click.stop="expandDefaultLine()" v-show="!defaultLayerLine">
-                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"/>
-              </div>
-              <div class="expandMoreL" @click.stop="expandDefaultLine()" v-show="defaultLayerLine">
-                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"/>
-              </div>
-              <span>Line</span>
-            </div>
-            <div class="memberTeamNameR" title="隐藏操作仅对您可见">
-              <div class="memberRightEyeA" @click.stop="hiddenAllLine()" v-show="!allLineHideState">
-                <eye-visible custom="cursor:pointer"/>
-              </div>
-              <div class="memberRightEyeC" @click.stop="unhiddenAllLine()" v-show="allLineHideState">
-                <eye-not-visible custom="cursor:pointer"/>
-              </div>
-            </div>
-          </div>
-          <div class="memberTeamBox" v-for="item in PolyLineData" :key="item.id" v-show="defaultLayerLine">
-            <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
-              <div class="memberLeft" @click="locateToElement(item)">
-                <segment-line :custom="'fill:#'+item.color+';transform:translateX(-5px);'"/>
-                <span class="memberName" v-text="getItemName(item)"/>
-              </div>
-              <div :ref="'memberRightEye'+item.id">
-                <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-visible custom="cursor:pointer"/>
-                </div>
-                <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-not-visible custom="cursor:pointer"/>
-                </div>
-              </div>
-            </div>
-            <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
-              <div class="memberPick">
-                <span class="memberSpanA"/><span>正在编辑形状</span>
-              </div>
-              <div class="memberSelect">
-                <span class="memberSpanA"/><span>正在编辑属性</span>
-              </div>
-            </div>
-          </div>
-          <div class="memberTeamName" @contextmenu.prevent="void 1">
-            <div class="memberTeamNameL">
-              <div class="expandMoreL" @click.stop="expandDefaultArea()" v-show="!defaultLayerArea">
-                <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"/>
-              </div>
-              <div class="expandMoreL" @click.stop="expandDefaultArea()" v-show="defaultLayerArea">
-                <expand-more custom="transform:translate(0px,2px);cursor:pointer;"/>
-              </div>
-              <span>Area</span>
-            </div>
-            <div class="memberTeamNameR" title="隐藏操作仅对您可见">
-              <div class="memberRightEyeA" @click.stop="hiddenAllArea()" v-show="!allAreaHideState">
-                <eye-visible custom="cursor:pointer"/>
-              </div>
-              <div class="memberRightEyeC" @click.stop="unhiddenAllArea()" v-show="allAreaHideState">
-                <eye-not-visible custom="cursor:pointer"/>
-              </div>
-            </div>
-          </div>
-          <div class="memberTeamBox" v-for="item in AreaData" :key="item.id" v-show="defaultLayerArea">
-            <div class="memberKeyInfo" :title="'ID'+item.id" @contextmenu.prevent="itemContextmenuOpen($event,item)">
-              <div class="memberLeft" @click="locateToElement(item)">
-                <region :custom="'fill:#'+item.color+';transform:translateX(-5px);'"/>
-                <span class="memberName" v-text="getItemName(item)"/>
-              </div>
-              <div :ref="'memberRightEye'+item.id">
-                <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-visible custom="cursor:pointer"/>
-                </div>
-                <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenElement(item.id,item.type)">
-                  <eye-not-visible custom="cursor:pointer"/>
-                </div>
-              </div>
-            </div>
-            <div class="memberActivityInfo" :ref="'memberActivity'+item.id">
-              <div class="memberPick">
-                <span class="memberSpanA"/><span>编辑形状中</span>
-              </div>
-              <div class="memberSelect">
-                <span class="memberSpanA"/><span>编辑属性中</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <banana-group-layer v-for="layerId in mapLayerOrder" :key="layerId"
         :layer="groupLayers[layerId]" :group-layers="groupLayers"
         :adjust-order-response="adjustOrderTemplate"
@@ -271,16 +117,7 @@ export default {
       searchShowView:false,
       searchFind:false,
       groupLayers:{},
-      allPointHideState:false,//所有point元素均隐藏状态
-      allLineHideState:false,
-      allAreaHideState:false,
-      allCurveHideState:false,
-      showDefaultLayer:true,//显示默认图层
       mapMoreActionsOpen:false,//元素面板顶部更多按钮
-      defaultLayerActionsOpen:false,//默认图层顶部更多按钮
-      defaultLayerPoint:true,//默认图层中的point组展开状态
-      defaultLayerLine:true,
-      defaultLayerArea:true,
       adjustOrderTemplate:{
         agree:false,
         code:null,
@@ -318,11 +155,7 @@ export default {
   },
   methods:{
     startSetting(){
-      if(this.closeDefaultLayer===true){
-        this.showDefaultLayer=false;
-      }else {
-        this.showDefaultLayer=true;
-      }
+
     },
     openSearchView(){
       let sta=this.searchShowView;
@@ -356,9 +189,11 @@ export default {
       let ref=[];
       const Points=this.$store.state.serverData.socket.mapData.points;
       const Lines=this.$store.state.serverData.socket.mapData.lines;
+      const Curves=this.$store.state.serverData.socket.mapData.curves;
       const Areas=this.$store.state.serverData.socket.mapData.areas;
       const LengthP=Points.length;
       const LengthL=Lines.length;
+      const LengthC=Curves.length;
       const LengthA=Areas.length;
       for(let i=0;i<LengthP;i++){
         if(this.getItemName(Points[i]).includes(inputValue)){
@@ -368,6 +203,11 @@ export default {
       for(let j=0;j<LengthL;j++){
         if(this.getItemName(Lines[j]).includes(inputValue)){
           ref.push(Lines[j]);
+        }
+      }
+      for(let x=0;x<LengthC;x++){
+        if(this.getItemName(Curves[x]).includes(inputValue)){
+          ref.push(Curves[x]);
         }
       }
       for(let x=0;x<LengthA;x++){
@@ -454,34 +294,69 @@ export default {
     createGroupLayer(){//添加新的分组图层
       this.$store.state.serverData.socket.broadcastCreateGroupLayer();
     },
-    expandAllDefaultGroup(){//展开或关闭所有分组
-      this.switchDefaultLayerActions();
-      if(this.expandAllDefaultState){
-        this.defaultLayerPoint=false;
-        this.defaultLayerLine=false;
-        this.defaultLayerArea=false;
-      }else {
-        this.defaultLayerPoint=true;
-        this.defaultLayerLine=true;
-        this.defaultLayerArea=true;
-      }
-    },
-    expandDefaultPoint(){//展开默认图层中的point组
-      this.defaultLayerPoint=!this.defaultLayerPoint;
-    },
-    expandDefaultLine(){//展开默认图层中的point组
-      this.defaultLayerLine=!this.defaultLayerLine;
-    },
-    expandDefaultArea(){//展开默认图层中的point组
-      this.defaultLayerArea=!this.defaultLayerArea;
-    },
     exportData(){//导出图层和地图数据
       if(this.$store.state.serverData.socket!==undefined){
         if(this.$store.state.serverData.socket.isLogin===true){
           let serverName=this.$store.state.serverData.socket.config.name;
           let serverAddress=this.$store.state.serverData.socket.url;
-          let layerData=this.mapLayerData;
-          let mapData={points:this.PointData,lines:this.PolyLineData,areas:this.AreaData,curves:this.CurveData};
+          let layerData=JSON.parse(JSON.stringify(this.mapLayerData));
+          let orderData={
+            id:this.$store.state.serverData.socket.mapLayerOrderId,
+            type:'order',
+            members:JSON.parse(JSON.stringify(this.mapLayerOrder)),
+            structure:'',
+            phase:1
+          };
+          if(Array.isArray(layerData)){
+            layerData.unshift(orderData);
+          }
+          let mapData={
+            points:JSON.parse(JSON.stringify(this.PointData)),
+            lines:JSON.parse(JSON.stringify(this.PolyLineData)),
+            areas:JSON.parse(JSON.stringify(this.AreaData)),
+            curves:JSON.parse(JSON.stringify(this.CurveData))
+          };
+          let lenArea=mapData.areas.length;
+          let lenLines=mapData.lines.length;
+          let lenCurve=mapData.curves.length;
+          let lenPoint=mapData.points.length;
+          let lenLayer=layerData.length;
+          for(let i=0;i<lenArea;i++){
+            mapData.areas[i].point=mapData.areas[i].basePoint;
+            mapData.areas[i].points=mapData.areas[i].basePoints;
+            mapData.areas[i].phase=parseInt(mapData.areas[i].phase);
+            mapData.areas[i].width=parseInt(mapData.areas[i].width);
+            delete mapData.areas[i].basePoint;
+            delete mapData.areas[i].basePoints;
+          }
+          for(let i=0;i<lenLines;i++){
+            mapData.lines[i].point=mapData.lines[i].basePoint;
+            mapData.lines[i].points=mapData.lines[i].basePoints;
+            mapData.lines[i].phase=parseInt(mapData.lines[i].phase);
+            mapData.lines[i].width=parseInt(mapData.lines[i].width);
+            delete mapData.lines[i].basePoint;
+            delete mapData.lines[i].basePoints;
+          }
+          for(let i=0;i<lenCurve;i++){
+            mapData.curves[i].point=mapData.curves[i].basePoint;
+            mapData.curves[i].points=mapData.curves[i].basePoints;
+            mapData.curves[i].phase=parseInt(mapData.curves[i].phase);
+            mapData.curves[i].width=parseInt(mapData.curves[i].width);
+            delete mapData.curves[i].basePoint;
+            delete mapData.curves[i].basePoints;
+          }
+          for(let i=0;i<lenPoint;i++){
+            mapData.points[i].point=mapData.points[i].basePoint;
+            mapData.points[i].points=mapData.points[i].basePoints;
+            mapData.points[i].phase=parseInt(mapData.points[i].phase);
+            mapData.points[i].width=parseInt(mapData.points[i].width);
+            delete mapData.points[i].basePoint;
+            delete mapData.points[i].basePoints;
+          }
+          for(let i=0;i<lenLayer;i++){
+            layerData[i].phase=parseInt(layerData[i].phase);
+            delete layerData[i].hasChange;
+          }
           let OMD={
             omd:'omd',
             type:'All',
@@ -507,65 +382,6 @@ export default {
     },
     switchMapMoreActions(){
       this.mapMoreActionsOpen=!this.mapMoreActionsOpen;
-    },
-    switchDefaultLayerActions(){
-      this.defaultLayerActionsOpen=!this.defaultLayerActionsOpen;
-    },
-    switchShowDefaultLayer(){
-      this.showDefaultLayer=!this.showDefaultLayer;
-      this.switchMapMoreActions();
-    },
-    hiddenAllPoint(){//隐藏所有点
-      let length=this.PointData.length;
-      let Arr=[];
-      for(let i=0;i<length;i++){
-        Arr.push({id:this.PointData[i].id,type:'point'});
-      }
-      this.$store.commit('arrCoElementPanelHiddenElements',
-        {type:'byTypeJoin',by:'point',data:Arr});
-    },
-    unhiddenAllPoint(){//取消隐藏所有点
-      this.$store.commit('arrCoElementPanelHiddenElements',
-        {type:'byTypeQuit',by:'point'});
-    },
-    hiddenAllLine(){
-      let length=this.PolyLineData.length;
-      let Arr=[];
-      for(let i=0;i<length;i++){
-        Arr.push({id:this.PolyLineData[i].id,type:'line'});
-      }
-      this.$store.commit('arrCoElementPanelHiddenElements',
-        {type:'byTypeJoin',by:'line',data:Arr});
-    },
-    unhiddenAllLine(){
-      this.$store.commit('arrCoElementPanelHiddenElements',
-        {type:'byTypeQuit',by:'line'});
-    },
-    hiddenAllArea(){
-      let length=this.AreaData.length;
-      let Arr=[];
-      for(let i=0;i<length;i++){
-        Arr.push({id:this.AreaData[i].id,type:'area'});
-      }
-      this.$store.commit('arrCoElementPanelHiddenElements',
-        {type:'byTypeJoin',by:'area',data:Arr});
-    },
-    unhiddenAllArea(){
-      this.$store.commit('arrCoElementPanelHiddenElements',
-        {type:'byTypeQuit',by:'area'});
-    },
-    hiddenAllCurve(){
-      let length=this.CurveData.length;
-      let Arr=[];
-      for(let i=0;i<length;i++){
-        Arr.push({id:this.CurveData[i].id,type:'curve'});
-      }
-      this.$store.commit('arrCoElementPanelHiddenElements',
-        {type:'byTypeJoin',by:'curve',data:Arr});
-    },
-    unhiddenAllCurve(){
-      this.$store.commit('arrCoElementPanelHiddenElements',
-        {type:'byTypeQuit',by:'curve'});
     },
     hiddenElement(id,type){//隐藏某元素
       if(!this.mapHiddenElements.has(id)){
@@ -647,15 +463,14 @@ export default {
     getMapLayer(){
       this.$store.state.serverData.socket.getMapLayer();
     },
-
-    /**成员映射
+    /**成员映射 图层解析 Member resolution
      *  由{id:num}
      *  变为{id:{element object}}
      **/
     deconstructMembers(members){
       let ref={};
       Object.keys(members).forEach(item=>{
-          let element=[members[item]+'',item];//转化为[类型,ID]
+          let element=[members[item]+'',item];//转化为数组：[类型数字,ID]
           switch (element[0]) {
             case '1':{
               let len=this.PointData.length;
@@ -682,6 +497,16 @@ export default {
               for(let i=0;i<len;i++){
                 if(this.AreaData[i].id==element[1]){
                   ref[item]=this.AreaData[i];
+                  break;
+                }
+              }
+              break;
+            }
+            case '4':{
+              let len=this.CurveData.length;
+              for(let i=0;i<len;i++){
+                if(this.CurveData[i].id==element[1]){
+                  ref[item]=this.CurveData[i];
                   break;
                 }
               }
@@ -730,73 +555,6 @@ export default {
       let map=new Map();
       this.hiddenElements.forEach(value=>map.set(value.id,true));
       return map;
-    },
-    expandAllDefaultState(){
-      return this.defaultLayerPoint === true && this.defaultLayerLine === true && this.defaultLayerArea === true;
-    },
-    pointsNumber(){
-      if(this.$store.state.serverData.socket!==undefined){
-        return this.$store.state.serverData.socket.mapData.points.length;
-      }else {
-        return 0;
-      }
-    },
-    linesNumber(){
-      if(this.$store.state.serverData.socket!==undefined){
-        return this.$store.state.serverData.socket.mapData.lines.length;
-      }else {
-        return 0;
-      }
-    },
-    areasNumber(){
-      if(this.$store.state.serverData.socket!==undefined){
-        return this.$store.state.serverData.socket.mapData.areas.length;
-      }else {
-        return 0;
-      }
-    },
-    curvesNumber(){
-      if(this.$store.state.serverData.socket!==undefined){
-        return this.$store.state.serverData.socket.mapData.curves.length;
-      }else {
-        return 0;
-      }
-    },
-    hideTypeNumbers(){
-      let hides=this.hiddenElements.length
-      let point=0;
-      let line=0;
-      let area=0;
-      let curve=0;
-      if(hides===0){
-        return {point,line,area,curve};
-      }
-      for(let i=0;i<hides;i++){
-        try {
-          let type=this.hiddenElements[i].type;
-          switch (type) {
-            case 'point':{
-              point++;
-              break;
-            }
-            case 'line':{
-              line++;
-              break;
-            }
-            case 'area':{
-              area++;
-              break;
-            }
-            case 'curve':{
-              curve++;
-              break;
-            }
-          }
-        }catch (Exception) {
-
-        }
-      }
-      return {point,line,area,curve};
     },
     pickElements(){
       if(this.$store.state.serverData.socket!==undefined){
@@ -851,9 +609,6 @@ export default {
     },
     deleteLayerId(){
       return this.$store.state.serverData.socket.deleteLayerId;
-    },
-    closeDefaultLayer(){
-      return this.$store.state.userSettingConfig.closeDefaultLayer;
     }
   },
   watch:{
@@ -867,7 +622,6 @@ export default {
     },
     pickElements:{
       handler(newValue,oldValue){
-        if(!this.showDefaultLayer){return false;}
         function compareMaps(newValue,oldValue) {
           let newKeys=Array.from(newValue.keys());
           let oldKeys=Array.from(oldValue.keys());
@@ -896,7 +650,6 @@ export default {
     },
     selectElements:{
       handler(newValue,oldValue){
-        if(!this.showDefaultLayer){return false;}
         function compareMaps(newValue,oldValue) {
           let newKeys=Array.from(newValue.keys());
           let oldKeys=Array.from(oldValue.keys());
@@ -925,7 +678,6 @@ export default {
     },
     mapHiddenElements:{
       handler(newValue,oldValue){
-        if(!this.showDefaultLayer){return false;}
         function compareMaps(newValue,oldValue) {
           let newKeys=Array.from(newValue.keys());
           let oldKeys=Array.from(oldValue.keys());
@@ -946,11 +698,6 @@ export default {
           Member.firstChild.style.display='flex';
           Member.lastChild.style.display='none';
         }
-      }
-    },
-    closeDefaultLayer:{
-      handler(newValue){
-        this.showDefaultLayer=!newValue;
       }
     },
     deleteLayerId:{
@@ -995,23 +742,11 @@ export default {
         }
       }
     },
-    hideTypeNumbers:{
-      handler(newValue){
-        this.allPointHideState = newValue.point === this.pointsNumber;
-        this.allLineHideState = newValue.line === this.linesNumber;
-        this.allAreaHideState = newValue.area === this.areasNumber;
-        this.allCurveHideState = newValue.curve === this.curvesNumber;
-      }
-    }
   }
 }
 </script>
 
 <style scoped>
-.ButtonImg{
-  width: 25px;
-  height: 25px;
-}
 .searchIcon{
   width: 33px;
   height: 33px;
@@ -1077,118 +812,6 @@ export default {
   justify-content: flex-start;
   align-items: center;
 }
-.menuGroupListBox{
-  width: 180px;
-  height: auto;
-  position: absolute;
-  z-index: 550;
-  background: white;
-  box-shadow: #c5c5c5 0px 0px 6px;
-}
-.menuListBox{
-  user-select: none;
-  width: 100%;
-  height: auto;
-  padding: 5px 0px;
-  position: absolute;
-  z-index: 551;
-  background: white;
-  -webkit-box-shadow: #c5c5c5 0px 0px 6px;
-  box-shadow: #c5c5c5 0px 0px 6px;
-}
-.menuList{
-  width: calc(100% - 30px);
-  padding: 0px 15px;
-  height: 30px;
-  font-size: 14px;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: start;
-  -ms-flex-pack: start;
-  justify-content: flex-start;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: row;
-  flex-direction: row;
-  z-index: inherit;
-  cursor: pointer;
-}
-.menuList:hover{
-  background: #f1f1f1;
-}
-.rightClickMenuClose{
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  z-index: 555;
-  top: 0px;
-  left: 0px;
-}
-.rightClickMenu{
-  width: 180px;
-  height: auto;
-  position: fixed;
-  z-index: 556;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-.layerMoreActions{
-  width: 180px;
-  height: auto;
-  min-height: 60px;
-  padding: 5px 0px;
-  position: absolute;
-  z-index: 551;
-  background: white;
-  box-shadow: #c5c5c5 0px 0px 6px;
-  right: 10px;
-  top: 40px;
-}
-.layerMoreAction{
-  width: calc(100% - 30px);
-  padding: 0px 15px;
-  height: 30px;
-  font-size: 14px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: row;
-  z-index: inherit;
-  cursor: pointer;
-}
-.layerMoreAction:hover{
-  background: #f1f1f1;
-}
-.layerMoreActionsClose{
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  position: fixed;
-  z-index: 550;
-  left: 0px;
-  top: 0px;
-}
-.previewEyeL{
-  width:25px;
-  height: 25px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-.expandMoreL{
-  width:25px;
-  height: 25px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
 .headTitleMore{
   cursor: pointer;
   height:100%;
@@ -1230,12 +853,6 @@ export default {
   z-index: inherit;
   cursor: pointer;
 }
-.prohibit{
-  cursor: no-drop;
-}
-.cursorDefault{
-  cursor: default;
-}
 .mapMoreAction:hover{
   background: #f1f1f1;
 }
@@ -1244,181 +861,10 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.memberPick{
-  width: 100%;
-  height: 25px;
-  display: none;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-}
-.memberSelect{
-  width: 100%;
-  height: 25px;
-  display: none;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-}
-.memberActivityInfo img{
-  width: 21px;
-  height: 21px;
-  border-radius: 3px;
-  margin: 0px 2px 0px 0px;
-  overflow: hidden;
-}
-.memberSpanA{
-  height: 25px;
-  width: calc(100% - 70px - 23px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 24px;
-}
-.memberActivityInfo{
-  width: calc(100% - 4px);
-  height: auto;
-  max-height: 50px;
-  transition: 0.3s;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font-size: 14px;
-  font-weight: 200;
-}
-.memberKeyInfo{
-  width: 100%;
-  height: 25px;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  flex-wrap: nowrap;
-}
-.memberKeyInfo:hover .memberRightEyeA{
-  opacity: 1;
-}
-.memberTeamName:hover .memberRightEyeA{
-  opacity: 1;
-}
-.content{
-  width:100%;
-  height: auto;
-}
 .memberName{
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.memberTeamName{
-  width: 100%;
-  height: 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  color: #3a84df;
-}
-.memberTeamNameL{
-  width: auto;
-  height: 25px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: row;
-}
-.memberTeamNameR{
-  width: auto;
-  height: 25px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: row;
-}
-.memberTeamBox{
-  width: calc(100% - 25px);
-  height: auto;
-  padding-left: 25px;
-  margin-bottom: 3px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.memberTeamBox:hover{
-  box-shadow: 0px 0px 2px #2577ff;
-}
-.memberRightEyeA{
-  width: 25px;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: 0.2s;
-  opacity: 0;
-}
-.memberRightEyeB{
-  width: 25px;
-  height: 100%;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  transition: 0.2s;
-  opacity: 1;
-}
-.memberRightEyeC{
-  width: 25px;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: 0.2s;
-  opacity: 1;
-}
-.memberLeft{
-  width: calc(100% - 25px);
-  height: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-}
-.defaultLayer{
-  min-height: 105px;
-  font-size: 14px;
-  font-weight: 400;
-  padding: 10px 14px;
-  border-bottom: 1px solid #e5e5e5;
-  position: relative;
-}
-.eyebrow{
-  width: 100%;
-  height: 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  flex-wrap: nowrap;
-}
-.eyebrowLeft{
-  width: calc(100% - 20px);
-  height: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-}
-.eyebrowLeft span{
-  font-size: 15px;
-  height: 20px;
-}
-.eyebrowRight{
-  width: 20px;
-  height: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
 }
 .elementPanelLayer{
   width: calc(300px - 18px);

@@ -23,7 +23,7 @@ new Vue({
   data(){
     return{
       Copyright:'Minxi Wan',
-      Version:'0.5.5(Preview)',
+      Version:'0.6.5',
       lastTime:0,
       fps:0,
       general_script,
@@ -41,6 +41,7 @@ new Vue({
         disableZoomAndMove:{pass:0,intercept:0},
         disableMove:{pass:0,intercept:0},
         addNewAreaEnd:{pass:0,intercept:0},
+        addNewCurveEnd:{pass:0,intercept:0},
         allReinitialize:{pass:0,intercept:0},
       }
     }
@@ -131,6 +132,15 @@ new Vue({
             this.commitsConfig.addNewLineEnd.pass++;
           }else {
             this.commitsConfig.addNewLineEnd.intercept++;
+          }
+          break;
+        }
+        case 'addNewCurveEnd':{
+          if(this.filter(name)){
+            this.$store.state.commits.addNewCurveEnd=!this.$store.state.commits.addNewCurveEnd;
+            this.commitsConfig.addNewCurveEnd.pass++;
+          }else {
+            this.commitsConfig.addNewCurveEnd.intercept++;
           }
           break;
         }

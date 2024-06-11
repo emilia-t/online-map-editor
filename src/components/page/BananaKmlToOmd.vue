@@ -64,18 +64,63 @@ export default {
     },
     setDropEvent(){
       let [structure,reader,file,text,parser,folderName,kmlMapName]=[null,null,null,null,null,null,null];
-      let [folders,placeMarks]=[[],[]];
+      let [folders,placeMarks,createdTmpIds]=[[],[],[]];
       let [fileName,newOMD]=[null,null];
       let kmlDataObj={
         mapName:null,
         mapFolders:[],
       };
+      let createTemplateId=()=>{
+        const validChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const length = Math.floor(Math.random() * 7) + 8;//先生成一个[0,7)的随机数，然后加上8
+        let array = new Uint8Array(length);//输出长度为随机的8-14位
+        window.crypto.getRandomValues(array);
+        let result = '';
+        array.forEach((byte) => {
+          result += validChars.charAt(byte % validChars.length);
+        });
+        return result;
+      };
+      let createTemplate=(tmpId,detailsList)=>{
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        let time = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        let ref = {
+          id:tmpId,
+          name:'template',
+          creator:'Administrators',
+          modify:time,
+          locked:false,
+          explain:'none',
+          typeRule:{point:true, line:true, area:true, curve:true},
+          detailsRule:[{set:false, name:'name', default:'☍tunknown', type:'text'}],
+          colorRule:{basis:'', type:'', condition:[]},
+          widthRule:{basis:'', type:'', condition:[]}
+        };
+        for(let i=0;i<detailsList.length;i++){
+          if(detailsList[i]==='name')continue;
+          ref.detailsRule.push(
+            {set:false,
+              name:detailsList[i],
+              default:'☍t',
+              type:'text'}
+          );
+        }
+        return ref;
+      };
       let kmlFolderObj=class kmlFolderObj {
         constructor(name) {
           this.name=name;
           this.placeMark=[];
+          this.details=[];
+          this.tmpId='';
         }
-      }
+      };
       let kmlItemObj=class kmlItemObj{
         constructor() {
           this.name=null;
@@ -85,8 +130,9 @@ export default {
           this.width=null;
           this.styleUrl=null;
           this.normalStyleId=null;
+          this.extendedData=null;
         }
-      }
+      };
       this.$refs.putAreaContent.addEventListener('dragover',(e)=>{e.preventDefault();});
       this.$refs.putAreaContent.addEventListener('drop',(e)=> {//放入文件后
         e.preventDefault();
@@ -110,32 +156,58 @@ export default {
             structure = parser.parseFromString(text, 'application/xml');//解析text为dom树结构
             kmlMapName = structure.getElementsByTagName('name')[0].textContent;
             folders = structure.getElementsByTagName('Folder');
-            for (let j = 0; j < folders.length; j++) {
-             folderName = folders[j].getElementsByTagName('name')[0].textContent;
-              placeMarks = folders[j].getElementsByTagName('Placemark');
-              let newKmlFolderObj = new kmlFolderObj(folderName);
-              for (let i = 0; i < placeMarks.length; i++) {
-               let newKmlItemObj = new kmlItemObj();
-                newKmlItemObj.name = placeMarks[i].querySelector('name').textContent;
-                newKmlItemObj.coord = placeMarks[i].querySelector('coordinates').textContent;
-                newKmlItemObj.styleUrl = placeMarks[i].querySelector('styleUrl').textContent;
-                newKmlItemObj.normalStyleId = getNormalStyleId(newKmlItemObj.styleUrl, structure);
-                newKmlItemObj.width = getNormalStyleWidth(newKmlItemObj.normalStyleId, structure);
-                newKmlItemObj.coord = parseLocations(newKmlItemObj.coord);
-                newKmlItemObj.type = transformType(newKmlItemObj.styleUrl);
-                newKmlItemObj.color = getNormalStyleColor(newKmlItemObj.normalStyleId, structure ,newKmlItemObj.type);
-                newKmlFolderObj.placeMark.push(newKmlItemObj);
+            if(folders.length<=0){//单一的图层数据导出
+              window.logConfig.message.code-=1;
+              window.logConfig.message.text='转化失败，暂不支持单一图层的转换';
+              window.logConfig.message.from='internal:BananaKmlToOmd';
+              window.logConfig.message.type='error';
+              return false;
+            }else{//多图层导出
+              for (let j = 0; j < folders.length; j++){
+                folderName = folders[j].getElementsByTagName('name')[0].textContent;
+                placeMarks = folders[j].getElementsByTagName('Placemark');
+                let newKmlFolderObj = new kmlFolderObj(folderName);
+                let newTmpId='';//当前图层的模板id
+                do{newTmpId=createTemplateId();}
+                while(createdTmpIds.includes(newTmpId));
+                createdTmpIds.push(newTmpId);
+                newKmlFolderObj.tmpId = newTmpId;
+                for (let i = 0; i < placeMarks.length; i++) {
+                  let detailsList=['name'];//除了name以外的属性，所有kml的元素额外属性将转换为text类型的数据并且默认值为☍t
+                  let newKmlItemObj = new kmlItemObj();
+                  newKmlItemObj.name = placeMarks[i].querySelector('name').textContent;
+                  newKmlItemObj.coord = placeMarks[i].querySelector('coordinates').textContent;
+                  newKmlItemObj.styleUrl = placeMarks[i].querySelector('styleUrl').textContent;
+                  let extendData=placeMarks[i].getElementsByTagName('ExtendedData');
+                  if(extendData.length!==0){
+                    newKmlItemObj.extendedData=[];
+                    let extData=extendData[0].getElementsByTagName('Data');
+                    for(let u=0;u<extData.length;u++){
+                      let key=extData[u].getAttribute('name');
+                      let value='☍t'+extData[u].getElementsByTagName('value')[0].textContent;
+                      if(!detailsList.includes(key))detailsList.push(key);//添加属性
+                      newKmlItemObj.extendedData.push({key,value});
+                    }
+                  }
+                  newKmlItemObj.normalStyleId = getNormalStyleId(newKmlItemObj.styleUrl, structure);
+                  newKmlItemObj.width = getNormalStyleWidth(newKmlItemObj.normalStyleId, structure);
+                  newKmlItemObj.coord = parseLocations(newKmlItemObj.coord);
+                  newKmlItemObj.type = transformType(newKmlItemObj.styleUrl);
+                  newKmlItemObj.color = getNormalStyleColor(newKmlItemObj.normalStyleId, structure ,newKmlItemObj.type);
+                  newKmlFolderObj.placeMark.push(newKmlItemObj);
+                  newKmlFolderObj.details=detailsList;
+                }
+                kmlDataObj.mapName = kmlMapName;
+                kmlDataObj.mapFolders.push(newKmlFolderObj);
               }
-              kmlDataObj.mapName = kmlMapName;
-              kmlDataObj.mapFolders.push(newKmlFolderObj);
+              newOMD=transformKmlToOmd(kmlDataObj);//转化完成后的OMD对象
             }
-            newOMD=transformKmlToOmd(kmlDataObj);//转化完成后的OMD对象
             const file=new Blob([JSON.stringify(newOMD)], {type: 'application/json'});
             let A = document.getElementById('KmlToOmdResult');
             A.style.display='flex';
             A.href = URL.createObjectURL(file);
             A.download = 'KmlToOmd_result'+'.omd';
-            function transformKmlToOmd(kmlDataObj) {
+            function transformKmlToOmd(kmlDataObj){
               let dataItemObj = class dataItemObj {
                 constructor() {
                   this.id = null;
@@ -146,15 +218,17 @@ export default {
                   this.phase = null;
                   this.width = null;
                   this.details = null;
-                  this.custom = null;
+                  this.custom = {
+                    tmpId:null
+                  };
                 }
               };
               let groupLayerObj = class groupLayerObj {
-                constructor(id,name) {
+                constructor(id,name,template) {
                   this.id=id;
                   this.type='group';
                   this.members={};
-                  this.structure=[name,{template:null}];
+                  this.structure=[name,{template}];
                   this.phase=1;
                 }
               };
@@ -184,19 +258,31 @@ export default {
               let newOrderLayer=new orderLayerObj(1);//order图层默认为1
               const TypeMapping={point:1,line:2,area:3,curve:4};
               for(let i=0;i<folderLength;i++){
-                let newLayer=new groupLayerObj(i+2,kmlDataObj.mapFolders[i].name);//第一个非order图层id为2
+                let newTmpId=kmlDataObj.mapFolders[i].tmpId;
+                let newTemplate=createTemplate(newTmpId,kmlDataObj.mapFolders[i].details);
+                let newLayer=new groupLayerObj(i+2,kmlDataObj.mapFolders[i].name,newTemplate);
                 newOrderLayer.members.push(newLayer.id);
                 let placeMarkLength=kmlDataObj.mapFolders[i].placeMark.length;
                 for(let j=0;j<placeMarkLength;j++){
                   let newDataItem=new dataItemObj();//元素相关
                   newDataItem.id=itemId++;
+                  newDataItem.custom.tmpId=newTmpId;
                   newDataItem.color=kmlDataObj.mapFolders[i].placeMark[j].color;
                   newDataItem.width=kmlDataObj.mapFolders[i].placeMark[j].width;
                   newDataItem.type=kmlDataObj.mapFolders[i].placeMark[j].type;
                   newDataItem.points=coordTransformOmdType(kmlDataObj.mapFolders[i].placeMark[j].coord);
                   newDataItem.point=newDataItem.points[0];
                   newDataItem.phase=1;
-                  newDataItem.details=[{key:'name',value:kmlDataObj.mapFolders[i].placeMark[j].name}];
+                  newDataItem.details=[{key:'name',value:'☍t'+kmlDataObj.mapFolders[i].placeMark[j].name}];
+                  if(kmlDataObj.mapFolders[i].placeMark[j].extendedData.length!==0){//如果包含额外的元素属性数据
+                    let LeN=kmlDataObj.mapFolders[i].placeMark[j].extendedData.length;
+                    for(let g=0;g<LeN;g++){
+                      newDataItem.details.push({
+                        key:kmlDataObj.mapFolders[i].placeMark[j].extendedData[g].key,
+                        value:kmlDataObj.mapFolders[i].placeMark[j].extendedData[g].value
+                      });
+                    }
+                  }
                   if(newDataItem.type==='point'){
                     OMD.mapData.points.push(newDataItem);
                   }else if(newDataItem.type==='line'){

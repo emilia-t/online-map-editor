@@ -70,14 +70,6 @@
         <hr class="style-one"/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">总是隐藏默认图层</span>
-            <span class="spansB">修改此项后将隐藏默认图层</span>
-          </div>
-          <div class="switchOut" ref="DS06" @click="DS06($event)"><div ref="DS06_1" class="circle"></div></div>
-        </div>
-        <hr class="style-one"/>
-        <div class="SettingList">
-          <div class="spans">
             <span class="spansA">显示历史编辑记录面板</span>
             <span class="spansB">在浏览器左上角显示历史记录面板</span>
           </div>
@@ -914,18 +906,6 @@ export default {
               }
               break;
             }
-            case 'set_DS_CloseDefaultLayer':{
-              if(nowLocalStorage[key]==true){
-                this.$refs.DS06.classList.add('switchOutOn');//更新样式
-                this.$refs.DS06_1.classList.add('circleOn');
-                this.$store.state.userSettingConfig.closeDefaultLayer=true;//更新状态
-              }else if(nowLocalStorage[key]==false){
-                this.$refs.DS06.classList.remove('switchOutOn');
-                this.$refs.DS06_1.classList.remove('circleOn');
-                this.$store.state.userSettingConfig.closeDefaultLayer=false;//更新状态
-              }
-              break;
-            }
             case 'set_DS_MixVisibleRange':{
               let oldStatus=nowLocalStorage[key];
               switch (oldStatus) {
@@ -1142,34 +1122,6 @@ export default {
         }
       }
     },
-    DS06(ev){//默认图层不启用
-      ev.stopPropagation();
-      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
-      let oldStatus=null;
-      if(settingsObj.hasOwnProperty('set_DS_CloseDefaultLayer')){
-        oldStatus=settingsObj.set_DS_CloseDefaultLayer;
-      }else{
-        oldStatus=false;
-      }
-      switch (oldStatus) {
-        case false:{
-          settingsObj.set_DS_CloseDefaultLayer=true;
-          this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
-          this.$refs.DS06.classList.add('switchOutOn');//更改样式
-          this.$refs.DS06_1.classList.add('circleOn');
-          this.$store.state.userSettingConfig.closeDefaultLayer=true;
-          break;
-        }
-        case true:{
-          settingsObj.set_DS_CloseDefaultLayer=false;
-          this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
-          this.$refs.DS06.classList.remove('switchOutOn');//更改样式
-          this.$refs.DS06_1.classList.remove('circleOn');
-          this.$store.state.userSettingConfig.closeDefaultLayer=false;
-          break;
-        }
-      }
-    },
     DS08(ev){//调整元素可视范围
       ev.stopPropagation();
       let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
@@ -1374,18 +1326,6 @@ export default {
             this.$store.state.userSettingConfig.openStepRecorder=false;
             this.$refs.DS04.classList.remove('switchOutOn');
             this.$refs.DS04_1.classList.remove('circleOn');
-          }
-          break;
-        }
-        case 'set_DS_CloseDefaultLayer':{
-          if(value==true){
-            this.$store.state.userSettingConfig.closeDefaultLayer=true;
-            this.$refs.DS06.classList.add('switchOutOn');//更新样式
-            this.$refs.DS06_1.classList.add('circleOn');
-          }else if(value==false){
-            this.$store.state.userSettingConfig.closeDefaultLayer=false;
-            this.$refs.DS06.classList.remove('switchOutOn');
-            this.$refs.DS06_1.classList.remove('circleOn');
           }
           break;
         }

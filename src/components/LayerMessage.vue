@@ -37,6 +37,14 @@
             </div>
             <div class="messageData">我添加了一条线段，id为：{{message.data.elementId}}</div>
           </div>
+          <div v-if="message.class==='curve'" class="messageItemA"><!--新增曲线消息-->
+            <div class="messageTime">{{message.time}}</div>
+            <div class="messageConveyor">
+              <div class="avatar" :style="{backgroundColor:'#ffffff'}">{{message.conveyor.charAt(0)}}</div>
+              {{message.conveyor}}
+            </div>
+            <div class="messageData">我添加了一条曲线，id为：{{message.data.elementId}}</div>
+          </div>
           <div v-if="message.class==='point'" class="messageItemA"><!--新增点消息-->
             <div class="messageTime">{{message.time}}</div>
             <div class="messageConveyor">

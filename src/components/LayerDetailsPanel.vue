@@ -21,6 +21,9 @@
               <div class="rightValueText" v-text="getContent(detail.value)"></div>
             </div>
           </div>
+          <div v-if="exampleConfig.id===undefined" class="iOtherText">
+            等待选中
+          </div>
         </div>
       </div>
       <div class="item">

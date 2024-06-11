@@ -7,6 +7,9 @@
       <g data-svg-flicker-line v-show="svgFlicker.svgType==='line' || svgFlicker.svgType==='area'">
         <path class="svgFlickerLine" ref="svgFlickerLine" :d="pointsD(svgFlicker.svgType)"/>
       </g>
+      <g data-svg-flicker-line v-show="svgFlicker.svgType==='curve'">
+        <path class="svgFlickerLine" ref="svgFlickerCurve" :d="pointsCurve()"/>
+      </g>
     </g>
   </g>
 </template>
@@ -68,6 +71,19 @@ export default {
             );
             break;
           }
+          case 'curve':{
+            this.$refs.svgFlickerCurve.animate(
+              [
+                {opacity:1},
+                {opacity:0},
+              ],{
+                duration:this.svgFlicker.duration/4,
+                iterations:4,
+                fill:"forwards",
+              }
+            );
+            break;
+          }
         }
       }catch (e) {
 
@@ -107,6 +123,26 @@ export default {
       if(type==='area'){
         refArr+='Z'
       }
+      return refArr;
+    },
+    pointsCurve(){
+      let newArr = [];
+      let refArr = '';
+      newArr = this.svgFlicker.svgData.points;
+      for (let i = 0; i < newArr.length-2; i++) {
+        if(i===0){
+          let x = newArr[i].x/this.unit1X;
+          let y = newArr[i].y/this.unit1Y;
+          refArr+='M'+x+','+y+' ';
+        }else {
+          let x = newArr[i].x/this.unit1X;
+          let y = newArr[i].y/this.unit1Y;
+          let x2= (newArr[i].x / this.unit1X + newArr[i + 1].x / this.unit1X) / 2;
+          let y2 = (newArr[i].y / this.unit1Y + newArr[i + 1].y / this.unit1Y) / 2;
+          refArr+='Q'+x+','+y+' '+ x2 + ',' + y2 + ' ';
+        }
+      }
+      refArr += `T${newArr[newArr.length - 1].x / this.unit1X},${newArr[newArr.length - 1].y / this.unit1Y}`;// 处理最后一个点
       return refArr;
     }
   },

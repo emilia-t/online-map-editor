@@ -1,8 +1,6 @@
 <template>
   <div class="dataLayer" id="dataLayer" ref="dataLayer" style="pointer-events: auto">
-    <canvas id="mixCanvas">
-
-    </canvas>
+    <canvas id="mixCanvas"/>
     <svg style="transform: translateZ(0)" class="elementData" id="elementData" ref="elementData" @contextmenu="preventDefault($event)" @dblclick="elementDataDbClick($event)" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" :style="'cursor:'+cursor">
       <defs><!--滤镜-->
         <filter id="svgFilterShadow">
@@ -15,7 +13,7 @@
           <feComposite operator="atop" in2="SourceGraphic"/>
         </filter>
         <filter id="svgFilterOutline">
-          <feMorphology in="SourceAlpha" result="DILATED" operator="dilate" radius="1"></feMorphology>
+          <feMorphology in="SourceAlpha" result="DILATED" operator="dilate" radius="1"/>
           <feMerge>
             <feMergeNode in="DILATED" />
             <feMergeNode in="SourceGraphic" />
@@ -23,10 +21,11 @@
         </filter>
       </defs>
       <g ref="svgAllElement">
-        <svg-effects></svg-effects><!--效果层-->
-        <svg-point-temp></svg-point-temp><!--临时点数据-->
-        <svg-line-temp></svg-line-temp><!--临时线数据-->
-        <svg-area-temp></svg-area-temp><!--临时区域数据-->
+        <svg-effects/><!--效果层-->
+        <svg-point-temp/><!--临时点数据-->
+        <svg-line-temp/><!--临时线数据-->
+        <svg-curve-temp/><!--临时区域数据-->
+        <svg-area-temp/><!--临时区域数据-->
 
         <svg-area v-for="area in svgAreaData" :key="area.id"
           :pick-config="pickElement(area.id)" :select-config="selectElement(area.id)"
@@ -37,6 +36,11 @@
           :pick-config="pickElement(line.id)" :select-config="selectElement(line.id)"
           :poly-line-config="line" :show-details-id="showDetailsId" v-show="!mapHiddenElements.has(line.id)">
         </svg-line><!--线段数据-->
+
+        <svg-curve v-for="curve in svgCurveData" :key="curve.id"
+          :pick-config="pickElement(curve.id)" :select-config="selectElement(curve.id)"
+          :curve-config="curve" :show-details-id="showDetailsId" v-show="!mapHiddenElements.has(curve.id)">
+        </svg-curve><!--线段数据-->
 
         <svg-point v-for="point in svgPointData" :key="point.id"
           :pick-config="pickElement(point.id)" :select-config="selectElement(point.id)"
@@ -53,16 +57,18 @@
 <script>
 import {mapState} from 'vuex';
 import SvgEffects from './svgEffects';
-import SvgLine from "./svgLine";
-import SvgArea from "./svgArea";
 import SvgPoint from "./svgPoint";
+import SvgLine from "./svgLine";
+import SvgCurve from "./svgCurve";
+import SvgArea from "./svgArea";
 import SvgPointP0 from "./svgPointP0";
 import SvgLineTemp from "./svgLineTemp";
+import SvgCurveTemp from "./svgCurveTemp";
 import SvgAreaTemp from "./svgAreaTemp";
 import SvgPointTemp from "./svgPointTemp";
 export default {
   name: "LayerData",
-  components: {SvgPoint,SvgLine,SvgPointP0,SvgLineTemp,SvgPointTemp,SvgArea,SvgAreaTemp,SvgEffects},
+  components: {SvgPoint,SvgLine,SvgCurve,SvgArea,SvgPointP0,SvgLineTemp,SvgCurveTemp,SvgPointTemp,SvgAreaTemp,SvgEffects},
   data(){
     return {
       MY_NAME:"LayerData",
@@ -99,7 +105,8 @@ export default {
         elements:{
           points:null,
           lines:null,
-          areas:null
+          areas:null,
+          curves:null
         }
       },
       svgPointData:[
@@ -109,6 +116,9 @@ export default {
 
       ],
       svgAreaData:[
+
+      ],
+      svgCurveData:[
 
       ]
     }
@@ -139,6 +149,7 @@ export default {
       this.initialPointData();
       this.initialLineData();
       this.initialAreaData();
+      this.initialCurveData();
     },
     initialPointData(){//解析点数据
       let Len=this.MyPointData.length;
@@ -156,8 +167,12 @@ export default {
         const count=this.$store.state.serverData.socket.mapData.lines[p].points.length;
         this.$store.state.serverData.socket.mapData.lines[p].points=[];
         for(let i=0;i<count;i++){
-          let pointsPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyPolyLineData[p].basePoints[i].y,this.MyPolyLineData[p].basePoints[i].x);
-          this.$store.state.serverData.socket.mapData.lines[p].points.push({x:pointsPosition.x,y:pointsPosition.y});
+          try{
+            let pointsPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyPolyLineData[p].basePoints[i].y,this.MyPolyLineData[p].basePoints[i].x);
+            this.$store.state.serverData.socket.mapData.lines[p].points.push({x:pointsPosition.x,y:pointsPosition.y});
+          }catch (e) {
+
+          }
         }
       }
     },
@@ -172,8 +187,32 @@ export default {
         const count=this.$store.state.serverData.socket.mapData.areas[p].points.length;
         this.$store.state.serverData.socket.mapData.areas[p].points=[];
         for(let i=0;i<count;i++){
-          let pointsPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyAreaData[p].basePoints[i].y,this.MyAreaData[p].basePoints[i].x);
-          this.$store.state.serverData.socket.mapData.areas[p].points.push({x:pointsPosition.x,y:pointsPosition.y});
+          try{//存在节点数量同步问题
+            let pointsPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyAreaData[p].basePoints[i].y,this.MyAreaData[p].basePoints[i].x);
+            this.$store.state.serverData.socket.mapData.areas[p].points.push({x:pointsPosition.x,y:pointsPosition.y});
+          }catch (e) {
+
+          }
+        }
+      }
+    },
+    initialCurveData(){//解析曲线数据
+      let Len=this.MyCurveData.length;
+      for(let p=0;p<Len;p++){
+        if(this.pauseInitialSvgId===this.MyCurveData[p].id){
+          continue;
+        }
+        let pointPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyCurveData[p].basePoint.y,this.MyCurveData[p].basePoint.x);
+        this.$store.state.serverData.socket.mapData.curves[p].point={x:pointPosition.x,y:pointPosition.y};
+        const count=this.$store.state.serverData.socket.mapData.curves[p].points.length;
+        this.$store.state.serverData.socket.mapData.curves[p].points=[];
+        for(let i=0;i<count;i++){
+          try{
+            let pointsPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyCurveData[p].basePoints[i].y,this.MyCurveData[p].basePoints[i].x);
+            this.$store.state.serverData.socket.mapData.curves[p].points.push({x:pointsPosition.x,y:pointsPosition.y});
+          }catch (e) {
+
+          }
         }
       }
     },
@@ -184,6 +223,7 @@ export default {
           this.mixPipeLine.elements.points=this.MyPointData;
           this.mixPipeLine.elements.lines=this.MyPolyLineData;
           this.mixPipeLine.elements.areas=this.MyAreaData;
+          this.mixPipeLine.elements.curves=this.MyCurveData;
           this.mixPipeLine.options.viewWidth=this.browserSize.width;
           this.mixPipeLine.options.viewHeight=this.browserSize.height;
           this.mixPipeLine.options.mapHiddenElements=this.mapHiddenElements;
@@ -236,9 +276,13 @@ export default {
     listenMouseUpSvg(){//获取鼠标左键松开的位置(svg)
       this.$refs.elementData.addEventListener('mouseup',(e)=>{
         if(e.button===0){
-          this.$store.state.mapConfig.svgMouseUp.x=e.x;this.$store.state.mapConfig.svgMouseUp.y=e.y;
+          this.$store.state.mapConfig.svgMouseUp.x=e.x;
+          this.$store.state.mapConfig.svgMouseUp.y=e.y;
+          this.$store.state.mapConfig.svgMouseUp.target=e.target;
         }else if(e.button===2){
-          this.$store.state.mapConfig.svgMouseRUp.x=e.x;this.$store.state.mapConfig.svgMouseRUp.y=e.y;
+          this.$store.state.mapConfig.svgMouseRUp.x=e.x;
+          this.$store.state.mapConfig.svgMouseRUp.y=e.y;
+          this.$store.state.mapConfig.svgMouseRUp.target=e.target;
         }
       }
       )
@@ -246,9 +290,13 @@ export default {
     listenMouseDownSvg(){//获取鼠标左键按下的位置(svg)
       this.$refs.elementData.addEventListener('mousedown',(e)=>{
           if(e.button===0){
-            this.$store.state.mapConfig.svgMouseDown.x=e.x;this.$store.state.mapConfig.svgMouseDown.y=e.y;
+            this.$store.state.mapConfig.svgMouseDown.x=e.x;
+            this.$store.state.mapConfig.svgMouseDown.y=e.y;
+            this.$store.state.mapConfig.svgMouseDown.target=e.target;
           }else if(e.button===2){
-            this.$store.state.mapConfig.svgMouseRDown.x=e.x;this.$store.state.mapConfig.svgMouseRDown.y=e.y;
+            this.$store.state.mapConfig.svgMouseRDown.x=e.x;
+            this.$store.state.mapConfig.svgMouseRDown.y=e.y;
+            this.$store.state.mapConfig.svgMouseRDown.target=e.target;
           }
         }
       )
@@ -511,6 +559,9 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    drawing(){
+      return this.$store.state.mapConfig.drawing;
+    },
     pauseInitialSvgId(){
       return this.$store.state.cameraConfig.pauseInitialSvgId
     },
@@ -560,6 +611,13 @@ export default {
         return this.$store.state.serverData.socket.updateCount;
       }else {
         return 0;
+      }
+    },
+    MyCurveData(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.mapData.curves;
+      }else {
+        return [];
       }
     },
     MyAreaData(){
@@ -630,9 +688,11 @@ export default {
         let pointLen=this.svgPointData.length;
         let lineLen=this.svgLineData.length;
         let areaLen=this.svgAreaData.length;
+        let curveLen=this.svgCurveData.length;
         let mapPoints=new Map(this.MyPointData.map(item=>[item.id,item]));
         let mapLines=new Map(this.MyPolyLineData.map(item=>[item.id,item]));
         let mapAreas=new Map(this.MyAreaData.map(item=>[item.id,item]));
+        let mapCurves=new Map(this.MyCurveData.map(item=>[item.id,item]));
         for(let i=0;i<pointLen;i++){
           Object.assign(this.svgPointData[i],mapPoints.get(this.svgPointData[i].id));
         }
@@ -641,6 +701,9 @@ export default {
         }
         for(let i=0;i<areaLen;i++){
           Object.assign(this.svgAreaData[i],mapAreas.get(this.svgAreaData[i].id));
+        }
+        for(let i=0;i<curveLen;i++){
+          Object.assign(this.svgCurveData[i],mapCurves.get(this.svgCurveData[i].id));
         }
         this.mixCanvas.mixWash();
         this.mixCanvas.mixDraw();
@@ -652,27 +715,30 @@ export default {
           this.svgPointData.removeByElementId(newValue);
           this.svgLineData.removeByElementId(newValue);
           this.svgAreaData.removeByElementId(newValue);
+          this.svgCurveData.removeByElementId(newValue);
         }
       }
     },
     svgMouseUp:{
       handler(newValue){
+        if(this.drawing)return false;
         if(newValue.x!==this.svgMouseDown.x || newValue.y!==this.svgMouseDown.y)return false;
+        if(this.svgMouseDown.target.getAttribute('data-t')==='node')return false;
         let element=this.mixCanvas.mixGetElementByXY(newValue.x,newValue.y);
         if(element!==false){
-          if
-          (element.type==='point'){
-            for(let i=0;i<this.svgPointData.length;i++){
+          if(element.type==='point'){
+            let len=this.svgPointData.length;
+            for(let i=0;i<len;i++){//遍历当前已弹入的元素，避免重复弹出
               if(this.svgPointData[i].id===element.id){
                 return false;
               }
             }
-            this.svgPointData.push(element);
+            this.svgPointData.push(element);//弹入svg
             this.showDetailsId=element.id;
           }
-          else if
-          (element.type==='line'){
-            for(let i=0;i<this.svgLineData.length;i++){
+          else if(element.type==='line'){
+            let len=this.svgLineData.length;
+            for(let i=0;i<len;i++){
               if(this.svgLineData[i].id===element.id){
                 return false;
               }
@@ -680,14 +746,24 @@ export default {
             this.svgLineData.push(element);
             this.showDetailsId=element.id;
           }
-          else if
-          (element.type==='area'){
-            for(let i=0;i<this.svgAreaData.length;i++){
+          else if(element.type==='area'){
+            let len=this.svgAreaData.length;
+            for(let i=0;i<len;i++){
               if(this.svgAreaData[i].id===element.id){
                 return false;
               }
             }
-            this.svgAreaData.push(element)
+            this.svgAreaData.push(element);
+            this.showDetailsId=element.id;
+          }
+          else if(element.type==='curve'){
+            let len=this.svgCurveData.length;
+            for(let i=0;i<len;i++){
+              if(this.svgCurveData[i].id===element.id){
+                return false;
+              }
+            }
+            this.svgCurveData.push(element);
             this.showDetailsId=element.id;
           }
         }
@@ -768,12 +844,19 @@ export default {
         this.mixCanvas.mixDraw();
       }
     },
+    MyCurveData:{
+      handler(){
+        this.initialCurveData();
+        this.mixCanvas.mixWash();
+        this.mixCanvas.mixDraw();
+      }
+    },
     movingDistance:{
       handler(newValue){
         this.$refs.svgAllElement.style.transform='translate('+-newValue.x+'px,'+newValue.y+'px)';
         this.mixCanvas.mixOffset(-newValue.x,newValue.y);
         this.mixCanvas.mixWash();
-        this.mixCanvas.mixDraw();
+        this.mixCanvas.mixMove();
       },
       deep:true
     },
@@ -822,6 +905,9 @@ export default {
           if(addElement===undefined){
             addElement = this.MyAreaData.find(item => item.id === changes.added[i].id);
           }
+          if(addElement===undefined){
+            addElement = this.MyCurveData.find(item => item.id === changes.added[i].id);
+          }
           if(addElement!==undefined){
             this.mixPipeLine.options.mapEjectElements.set(addElement.id,addElement);
             switch (addElement.type) {
@@ -840,6 +926,12 @@ export default {
               case 'area':{
                 if(this.svgAreaData.findIndex(item => item.id === addElement.id)===-1) {
                   this.svgAreaData.push(JSON.parse(JSON.stringify(addElement)));
+                }
+                break;
+              }
+              case 'curve':{
+                if(this.svgCurveData.findIndex(item => item.id === addElement.id)===-1) {
+                  this.svgCurveData.push(JSON.parse(JSON.stringify(addElement)));
                 }
                 break;
               }
@@ -859,6 +951,9 @@ export default {
           if(remElement===undefined){
             remElement = this.MyAreaData.find(item => item.id === changes.removed[i].id);
           }
+          if(remElement===undefined){
+            remElement = this.MyCurveData.find(item => item.id === changes.removed[i].id);
+          }
           if(remElement!==undefined){
             this.mixPipeLine.options.mapEjectElements.delete(remElement.id);
             switch (remElement.type) {
@@ -877,6 +972,11 @@ export default {
                 this.initialAreaData();
                 break;
               }
+              case 'curve':{
+                this.svgCurveData.removeByElementId(remElement.id);
+                this.initialCurveData();
+                break;
+              }
             }
           }
         }
@@ -889,7 +989,6 @@ export default {
     pickElements:{
       handler(newValue){
         let changes=this.getChangesByArray(newValue,this.oldPickElements);
-
         let len=changes.added.length;
         for(let i=0;i<len;i++){
           let addElement = this.MyPointData.find(item => item.id === changes.added[i].id);//changes id is string
@@ -898,6 +997,9 @@ export default {
           }
           if(addElement===undefined){
             addElement = this.MyAreaData.find(item => item.id === changes.added[i].id);
+          }
+          if(addElement===undefined){
+            addElement = this.MyCurveData.find(item => item.id === changes.added[i].id);
           }
           if(addElement!==undefined){
             this.mixPipeLine.options.mapEjectElements.set(addElement.id,addElement);
@@ -920,6 +1022,12 @@ export default {
                 }
                 break;
               }
+              case 'curve':{
+                if(this.svgCurveData.findIndex(item => item.id === addElement.id)===-1) {
+                  this.svgCurveData.push(JSON.parse(JSON.stringify(addElement)));
+                }
+                break;
+              }
             }
           }
         }
@@ -935,6 +1043,9 @@ export default {
           }
           if(remElement===undefined){
             remElement = this.MyAreaData.find(item => item.id === changes.removed[i].id);
+          }
+          if(remElement===undefined){
+            remElement = this.MyCurveData.find(item => item.id === changes.removed[i].id);
           }
           if(remElement!==undefined){
             this.mixPipeLine.options.mapEjectElements.delete(remElement.id);
@@ -954,10 +1065,14 @@ export default {
                 this.initialAreaData();
                 break;
               }
+              case 'curve':{
+                this.svgCurveData.removeByElementId(remElement.id);
+                this.initialCurveData();
+                break;
+              }
             }
           }
         }
-
         this.mixCanvas.mixWash();
         this.mixCanvas.mixDraw();
         this.oldPickElements=JSON.parse(JSON.stringify(newValue));

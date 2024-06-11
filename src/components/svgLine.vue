@@ -6,17 +6,17 @@
     <g v-for="(str,index) in dynamicPointsStr">
       <path :d="'M'+str.a+','+str.b+' L'+str.c+','+str.d" :style="pathLineStyle" @contextmenu="rightClickOperation($event)" @click="showDetails()" @mousedown="shiftAllStart($event)" @mouseup="shiftAllEnd($event)"/><!--路径主体-->
 
-      <circle class="svgLineFillNode" :cx="str.a" :cy="str.b" :style="fillNodeStyle"/><!--填充节点-->
-      <circle class="svgLineFillNode" :cx="str.c" :cy="str.d" :style="fillNodeStyle" v-if="index===dynamicPointsStr.length-1"/>
+      <circle class="svgLineFillNode" data-t="node" :cx="str.a" :cy="str.b" :style="fillNodeStyle"/><!--填充节点-->
+      <circle class="svgLineFillNode" data-t="node" :cx="str.c" :cy="str.d" :style="fillNodeStyle" v-if="index===dynamicPointsStr.length-1"/>
 
-      <circle class="svgLineNodeEffect" :cx="str.a" :cy="str.b" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" @contextmenu="" v-show="nodeDisplay"/><!--节点-->
-      <circle class="svgLineNodeEffect" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
+      <circle class="svgLineNodeEffect" data-t="node" :cx="str.a" :cy="str.b" :style="nodeEffectStyle(index)" v-bind:data-node-order="index" @click="selectNode(index,$event)" @mousedown="shiftStart(index,$event)" @mouseup="shiftEnd($event)" @contextmenu="" v-show="nodeDisplay"/><!--节点-->
+      <circle class="svgLineNodeEffect" data-t="node" :cx="str.c" :cy="str.d" :style="nodeEffectStyle(index+1)"  v-bind:data-node-order="index+1" @click="selectNode(index+1,$event)" @mousedown="shiftStart(index+1,$event)" @mouseup="shiftEnd($event)" v-if="index===dynamicPointsStr.length-1" v-show="nodeDisplay"/>
 
-      <circle class="svgLineVirtualNode" :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :style="virtualNodeStyle(index)" @mousedown="virtualNodeDown(index)" v-show="selectId===myId"/><!--虚拟节点-->
+      <circle class="svgLineVirtualNode" data-t="node" :cx="getVirtualCenterX(str.a,str.c)" :cy="getVirtualCenterY(str.b,str.d)" :style="virtualNodeStyle(index)" @mousedown="virtualNodeDown(index)" v-show="selectId===myId"/><!--虚拟节点-->
     </g>
     <g v-show="selectConfig.id===myId || pickConfig.id===myId">
       <text class="svgLineSelectText" :style="textPathPos" :fill="svgTextFill">
-        <textPath v-bind:xlink:href="'#textPath'+polyLineConfig.id" v-text="svgText"></textPath>
+        <textPath v-bind:xlink:href="'#textPath'+polyLineConfig.id" v-text="svgText"/>
       </text>
     </g>
   </g>
@@ -225,6 +225,7 @@ export default {
     shiftAllEnd(ev){
       this.mouseUpPosition.x=ev.x;
       this.mouseUpPosition.y=ev.y;
+      setTimeout(()=>this.shiftAllStatus=false);
     },
     shiftAllStart(ev){
       this.mouseDownPosition.x=ev.x;
@@ -338,7 +339,7 @@ export default {
         this.polyLineConfig.point.x=viewPosition.x;
         this.polyLineConfig.point.y=viewPosition.y;
         for(let i=0;i<this.dataSourcePoints.length;i++){//循环遍历
-          let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x)
+          let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x);
           this.polyLineConfig.points[i].x=viewPosition.x;
           this.polyLineConfig.points[i].y=viewPosition.y;
         }

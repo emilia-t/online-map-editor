@@ -3,13 +3,15 @@
     <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="!hasIcon">
       <circle class="svgCircleHighlight" r="22px" :cx="dynamicPointsX" :cy="dynamicPointsY" :stroke="pickStroke" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
       <circle class="svgCircleInner" :cx="dynamicPointsX" :cy="dynamicPointsY" :r="pointConfig.width+'px'" :fill="'#'+pointConfig.color"/>
-      <text :x="dynamicPointsX" :y="textCy" v-show="selectConfig.id===myId || pickConfig.id===myId" :fill="pickFill" class="svgPointSelectText" v-text="svgText"></text>
+      <text :x="dynamicPointsX" :y="textCy" v-show="selectConfig.id===myId || pickConfig.id===myId" :fill="pickFill"
+            class="svgPointSelectText" v-text="svgText"/>
     </g>
     <g @mouseenter="mouseover=true" @mouseleave="mouseover=false" @contextmenu="rightClickOperation($event)" @click="showDetails()" v-if="hasIcon">
       <circle class="svgCircleHighlight" r="22px" :cx="dynamicPointsX" :cy="dynamicPointsY" :stroke="pickStroke" v-show="selectId===myId || mouseover || selectConfig.id===myId || pickConfig.id===myId"/>
       <circle :cx="dynamicPointsX" :cy="dynamicPointsY" r="12px" :fill="'#'+pointConfig.color"/>
-      <image :x="dynamicPointsX-13" :y="dynamicPointsY-13"  width="26px" height="26px" :href="iconHref"></image>
-      <text class="svgPointSelectText"  :x="dynamicPointsX" :y="dynamicPointsY-13" v-show="selectConfig.id===myId || pickConfig.id===myId" :fill="pickFill" v-text="svgText"></text>
+      <image :x="dynamicPointsX-13" :y="dynamicPointsY-13" width="26px" height="26px" :href="iconHref"/>
+      <text class="svgPointSelectText" :x="dynamicPointsX" :y="dynamicPointsY-13"
+            v-show="selectConfig.id===myId || pickConfig.id===myId" :fill="pickFill" v-text="svgText"/>
     </g>
   </g>
 </template>
