@@ -65,7 +65,7 @@ export default {
   computed:{
     mainStyle(){
       return {
-        stroke:'#'+this.tempArea.color,
+        stroke:'#'+this.tempArea.color+'80',
         strokeWidth:this.tempArea.width
       }
     },

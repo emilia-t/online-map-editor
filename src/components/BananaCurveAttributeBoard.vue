@@ -26,7 +26,7 @@
           <div class="iStySlide">
             <orange-slide-block @OrangeSlideBlockCall="sliderHandle"
                                 :div-style="'width:267px;left:-92px;top:34%'"
-                                max="15" min="2" :default="width"/>
+                                :max="15" :min="2" :default="width"/>
           </div>
         </div>
       </div>
@@ -130,8 +130,8 @@
         this.width=data;
       },
       submitEdit(){//提交-更新缓存-同时上传数据
-        if(this.tempCurve.points.length<2){
-          this.$store.commit('setCoLogMessage',{text:'线段至少需要两个点，请取消后重试',from:'internal:BananaCurveAttributeBoard',type:'warn'});
+        if(this.tempCurve.points.length<3){
+          this.$store.commit('setCoLogMessage',{text:'曲线至少需要三个点，请取消后重试',from:'internal:BananaCurveAttributeBoard',type:'warn'});
           return false;
         }
         /**

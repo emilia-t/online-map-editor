@@ -6,33 +6,40 @@
   <div class="content" ref="content"><!--主内容-->
     <div class="InterfaceHead"><!--顶部-->
       <div class="HeadLeft"><!--标题-->
-        <server custom="margin:7px 10"></server>
+        <server custom="margin:7px 10"/>
         <span class="InterfaceHeadTitle">服务器列表</span>
       </div>
       <div ref="addNewConnectButton">
-        <add-plus custom="margin:6px 10px 2px 10px"></add-plus>
+        <add-plus custom="margin:6px 10px 2px 10px"/>
       </div>
     </div>
     <div class="connectionInterfaceBox"><!--连接盒子-->
-      <banana-connection-box v-for="value in serverLocalConfig" :key="value.serverAddress" :account="value.account" :password="value.password" :default-x="value.defaultX" :default-y="value.defaultY" :img-time="value.imgTime" :max-height="value.maxHeight" :online-number="value.onlineNumber" :max-online-user="value.maxOnlineUser" :max-width="value.maxWidth" :server-address="value.serverAddress" :server-img="value.serverImg" :server-key="value.serverKey" :server-name="value.serverName" @ancBoxChange="handlerCnBox"></banana-connection-box>
+      <banana-connection-box v-for="value in serverLocalConfig" :key="value.serverAddress" :account="value.account"
+                             :password="value.password" :default-x="value.defaultX" :default-y="value.defaultY"
+                             :img-time="value.imgTime" :max-height="value.maxHeight" :online-number="value.onlineNumber"
+                             :max-online-user="value.maxOnlineUser" :max-width="value.maxWidth"
+                             :server-address="value.serverAddress" :server-img="value.serverImg"
+                             :server-key="value.serverKey" :server-name="value.serverName"
+                             @ancBoxChange="handlerCnBox"/>
     </div>
     <div class="emptyServerList" v-if="isObjectEmpty(serverLocalConfig)">
       <div class="emptyBox">
-        <empty-server :custom="'box-shadow:1px 1px 4px rgb(200,200,200);border-radius:7px;'"></empty-server>
+        <empty-server :custom="'box-shadow:1px 1px 4px rgb(200,200,200);border-radius:7px;'"/>
       </div>
     </div>
     <hr>
     <div class="connectionInterfaceBoxT">
       <div class="connectionInterfaceBoxN">
-        以下服务器来自路由端
+        来自路由的服务器列表
       </div>
     </div>
     <div class="connectionInterfaceBox"><!--连接盒子-->
-      <banana-connection-box v-for="address in addressList2Route" :key="address" :source="'route'" :server-address="address"></banana-connection-box>
+      <banana-connection-box v-for="address in addressList2Route" :key="address" :source="'route'"
+                             :server-address="address"/>
     </div>
     <div class="emptyServerList" v-if="addressList2Route.length===0">
       <div class="emptyBox">
-        <empty-server :custom="'box-shadow:1px 1px 4px rgb(200,200,200);border-radius:7px;'"></empty-server>
+        <empty-server :custom="'box-shadow:1px 1px 4px rgb(200,200,200);border-radius:7px;'"/>
       </div>
     </div>
   </div>
@@ -95,7 +102,7 @@
         </div>
       </div>
       <div class="AncButton"><!--提交按钮-->
-        <button @click="resetInput()">重置</button>
+        <button @click="cancelANC()">取消</button>
         <button @click="createServer()">创建</button>
       </div>
     </div>
@@ -398,13 +405,14 @@ export default {
       }
       this.saveLocalServerConfig({url,account,password});//5.保存至本地
     },
-    resetInput(){//重置输入框
+    cancelANC(){//重置输入框
       this.$refs.UrlInput.value='';
       this.$refs.UrlLabel.style.top='0px';
       this.$refs.AccountInput.value='';
       this.$refs.AccountLabel.style.top='0px';
       this.$refs.PasswordInput.value='';
       this.$refs.PasswordLabel.style.top='0px';
+      this.closeANC();
     },
     saveLocalServerConfig(obj){//在本地存储一个服务器配置
       if(obj.account!=='' && obj.password!=='' && obj.account!==null && obj.password!==null){//如果包含了账号名和密码的信息还需要另存在accounts中

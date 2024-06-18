@@ -38,6 +38,7 @@
                               :adjust-item-order-response="adjustItemOrderResponse"
                               :pick-child-group-response="pickChildGroupResult"
                               :pick-layer-id="pickLayerResponse.id"
+                              :virtual-list="virtualList"
                               @renameRequest="renameRequestCheck"
                               @adjustItemOrderRequest="adjustItemOrderApproval"
                               @pickChildGroupRequest="pickChildGroupApproval">
@@ -105,6 +106,13 @@ export default {
   },
   components:{AddNewGroup, SunActive,More,OrangeGroupStructure,PomeloConfirm},
   props:{
+    virtualList:{
+      type:Object,
+      default:function (){
+        return {}
+      },
+      required:true,
+    },
     layer:{
       type:Object,
       default:function (){
@@ -479,13 +487,13 @@ export default {
   color: #4f4f4f;
 }
 .groupLayersBox{
-  min-height: 120px;
-  width: 246px;/*246px与拖拽计算点击位置绑定，不可修改*/
+  min-height: 100px;
+  width: 250px;/*250px与拖拽计算点击位置绑定，不可修改*/
   font-size: 14px;
   font-weight: 400;
-  padding: 10px 14px;
-  border-bottom: 1px solid #f4f4f4;
-  border-top: 1px solid #f4f4f4;
+  padding: 10px 10px;
+  /*border-bottom: 1px solid #f4f4f4;*/
+  /*border-top: 1px solid #f4f4f4;*/
   position: relative;
 }
 .groupLayerNameBox{

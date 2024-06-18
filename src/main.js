@@ -4,11 +4,9 @@ import App from "./App";
 import general_script from './js/general_script_v1.1';//a
 import store from './store';
 Vue.config.productionTip = false;//不允许生产环境输入错误信息
-Array.prototype.remove = function (val) {
-  const index = this.indexOf(val);
-  if (index > -1) {
-    return this.splice(index, 1);
-  }
+Array.prototype.remove=function(val){//查找一维的数组内的成员并删除
+  const ind=this.indexOf(val);
+  if(ind>-1)return this.splice(ind,1);
   return this;
 };
 Array.prototype.removeByElementId = function (id) {//Array must [{id:123,type:'point'},{element}...]

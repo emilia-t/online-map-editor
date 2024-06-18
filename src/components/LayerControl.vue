@@ -584,7 +584,7 @@ export default {
                 };
 
                 this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,intent.class);
-                break;
+                break;s
               }
               case 'width':{
                 let sendDataObj={

@@ -359,6 +359,8 @@ export default new Vuex.Store({
           this.localId=-1;//元素创建后的本地虚拟id
           this.updateId=1;//提交给服务器的本次变更id前缀为"up"为提交变更,前缀为"re"为撤销变更
           this.deleteLayerId=-1;//图层及其成员被删除id
+          this.createLayerId=-1;//新创建的图层id
+          this.updateLayerIds=[];//[]layerId list
           this.numberOfLoginAttempts=0;//登录成功次数
           this.numberOfLoginFailed=0;//登录失败次数
           this.reinitializeElement=0;//重新初始化元素
@@ -384,10 +386,18 @@ export default new Vuex.Store({
           this.lastEdit='很久以前';
           this.updateCount=0;//对更新元素属性和节点的统计
           this.lastDeleteId=-1;
-          this.lastUpdateTmpId='id:0';//id and code
-          this.lastPSEndId=[];//被清除选中的元素
+          this.lastAddPoint=null;//主要用于mixMove()
+          this.lastAddLine=null;
+          this.lastAddArea=null;
+          this.lastAddCurve=null;
+          this.lastUpdateTmpId='id:0';//tmpId and code
+          this.lastPSEndId=[];//最后被被清除选中的元素
           this.lastPing=0;
           this.lastPong=0;
+          this.lastSelectIng='0:0';//最后被选中的元素id,弹回mixCanvas
+          this.lastSelectEnd='0:0';//最后被结束选中的元素id,弹回mixCanvas
+          this.lastPickIng='0:0';//id:code
+          this.lastPickEnd='0:0';
           this.otherA1=[];
           this.typeList=['ping','pong','broadcast','get_serverConfig','get_publickey','publickey','login','loginStatus','anonymousLogin','anonymousLoginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
           this.Instruct={//指令合集
@@ -1231,6 +1241,7 @@ export default new Vuex.Store({
                   let NewMessageObj={'type':'broadcast','class':'line','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.lines.push(jsonData.data);//添加到mapData
+                  this.lastAddLine=jsonData.data;
                   this.lastEdit=jsonData.time;
                   break;
                 }
@@ -1277,6 +1288,7 @@ export default new Vuex.Store({
                   let NewMessageObj={'type':'broadcast','class':'curve','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.curves.push(jsonData.data);//添加到mapData
+                  this.lastAddCurve=jsonData.data;
                   this.lastEdit=jsonData.time;
                   break;
                 }
@@ -1323,6 +1335,7 @@ export default new Vuex.Store({
                   let NewMessageObj={'type':'broadcast','class':'area','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.areas.push(jsonData.data);//添加到mapData
+                  this.lastAddArea=jsonData.data;
                   this.lastEdit=jsonData.time;
                   break;
                 }
@@ -1382,6 +1395,7 @@ export default new Vuex.Store({
                   let NewMessageObj={'type':'broadcast','class':'point','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);
                   this.mapData.points.push(jsonData.data);
+                  this.lastAddPoint=jsonData.data;
                   this.lastEdit=jsonData.time;
                   break;
                 }
@@ -1624,6 +1638,8 @@ export default new Vuex.Store({
                     color:jsonData.data.color,
                   };
                   this.selectElements.push(obj);
+                  let code=parseInt(this.lastSelectIng.split(':')[1])+1;
+                  this.lastSelectIng=obj.id+':'+code;
                   break;
                 }
                 case 'selectEndElement':{
@@ -1631,6 +1647,8 @@ export default new Vuex.Store({
                   for(let i=0;i<len;i++){
                     if(this.selectElements[i].id===jsonData.data){
                       this.selectElements.splice(i,1);
+                      let code=parseInt(this.lastSelectEnd.split(':')[1])+1;
+                      this.lastSelectEnd=jsonData.data+':'+code;
                       break;
                     }
                   }
@@ -1643,6 +1661,8 @@ export default new Vuex.Store({
                     color:jsonData.data.color,
                   };
                   this.pickElements.push(obj);
+                  let code=parseInt(this.lastPickIng.split(':')[1])+1;
+                  this.lastPickIng=obj.id+':'+code;
                   break;
                 }
                 case 'pickEndElement':{
@@ -1650,6 +1670,8 @@ export default new Vuex.Store({
                   for(let i=0;i<len;i++){
                     if(this.pickElements[i].id===jsonData.data){
                       this.pickElements.splice(i,1);
+                      let code=parseInt(this.lastPickEnd.split(':')[1])+1;
+                      this.lastPickEnd=jsonData.data+':'+code;
                       break;
                     }
                   }
@@ -1712,13 +1734,14 @@ export default new Vuex.Store({
                         members:newMembers,
                         structure:newStructure,
                       });
+                      this.createLayerId=jsonData.data.id;
                     }
                   }
                   break;
                 }
                 case 'deleteLayerAndMembers':{
                   for(let i=0;i<this.mapLayerData.length;i++){
-                    if(this.mapLayerData[i].id==jsonData.data.id){
+                    if(this.mapLayerData[i].id==jsonData.data.id){//删除图层
                       this.mapLayerData.splice(i,1);
                       this.deleteLayerId=jsonData.data.id;
                     }
@@ -1728,7 +1751,7 @@ export default new Vuex.Store({
                   let changeLine=false;
                   let changeArea=false;
                   let changeCurve=false;
-                  for(let key in jsonData.data.members){
+                  for(let key in jsonData.data.members){//查询图层的成员类型
                     if(changeCount===4){
                       break;
                     }
@@ -1757,7 +1780,7 @@ export default new Vuex.Store({
                       }
                     }
                   }
-                  if(changePoint){
+                  if(changePoint){//删除点
                     let newPoints=this.mapData.points.filter(
                       (element)=>{
                         return !jsonData.data.members.hasOwnProperty(element.id)
@@ -1765,7 +1788,7 @@ export default new Vuex.Store({
                     this.mapData.points.length=0;
                     this.mapData.points.push(...newPoints);
                   }
-                  if(changeLine){
+                  if(changeLine){//删除线段
                     let newLines=this.mapData.lines.filter(
                       (element)=>{
                         return !jsonData.data.members.hasOwnProperty(element.id)
@@ -1773,7 +1796,7 @@ export default new Vuex.Store({
                     this.mapData.lines.length=0;
                     this.mapData.lines.push(...newLines);
                   }
-                  if(changeArea){
+                  if(changeArea){//删除区域
                     let newAreas=this.mapData.areas.filter(
                       (element)=>{
                         return !jsonData.data.members.hasOwnProperty(element.id)
@@ -1781,7 +1804,7 @@ export default new Vuex.Store({
                     this.mapData.areas.length=0;
                     this.mapData.areas.push(...newAreas);
                   }
-                  if(changeCurve){
+                  if(changeCurve){//删除曲线
                     let newCurves=this.mapData.curves.filter(
                       (element)=>{
                         return !jsonData.data.members.hasOwnProperty(element.id)
@@ -1818,12 +1841,15 @@ export default new Vuex.Store({
                                 let newTmp=newCustom.template;
                                 if(this.QIR.hasProperty(newTmp,'id') && typeof newTmp.id==='string'){
                                   let splitArray=this.lastUpdateTmpId.split(':');
-                                  this.lastUpdateTmpId=newTmp.id+':'+parseInt(splitArray[1])+1;
+                                  this.lastUpdateTmpId=newTmp.id+':'+parseInt(splitArray[1])+1;//更新模板
                                 }
                               }
                             }
                           }
 
+                        }
+                        if(newMembers!==undefined || newStructure!==undefined){
+                          this.updateLayerIds.push(ID);//更新图层
                         }
                       }
                     }
@@ -1834,6 +1860,7 @@ export default new Vuex.Store({
                 case 'batchUpdateLayerData':{
                   if(!this.QIR.hasProperty(jsonData,'data')){break;}
                   if(!Array.isArray(jsonData.data)){break;}
+                  let IDS=[];
                   let count=jsonData.data.length;
                   for(let g=0;g<count;g++){
                     if(!this.QIR.hasProperty(jsonData.data[g],'id')){continue;}
@@ -1866,9 +1893,13 @@ export default new Vuex.Store({
                             }
                           }
                         }
+                        if(newMembers!==undefined || newStructure!==undefined){
+                          IDS.push(ID);//更新图层
+                        }
                       }
                     }
                   }
+                  this.updateLayerIds.push(...IDS);
                   break;
                 }
                 case 'updateLayerOrder':{
@@ -1930,7 +1961,7 @@ export default new Vuex.Store({
         }
       },
       mixCanvas:class mixCanvas{//混合地图数据渲染类
-        $configs={//$开头的为私有属性，请通过内部函数修改私有属性
+        $configs={//渲染范围配置；$开头的为私有属性，请通过内部函数修改私有属性
           pipelineHealthy:true,
           renderRangeX:1,
           renderRangeY:1,
@@ -1997,6 +2028,7 @@ export default new Vuex.Store({
         $drawCache=[
           /** Example
           {
+            "id":23,//元素的id
             "path":new Path2D(),//缓存要素主路径
             "color":"#123456",//缓存要素主颜色
             "type":"line",//缓存要素类型
@@ -2006,6 +2038,30 @@ export default new Vuex.Store({
           }
           **/
         ];
+        $moving=false;//是否在移动视图中
+        $moveDraw={//在移动过程中出现的新增或变动的元素渲染
+          /* 类型解释
+           * 'join'表示新增或弹入的元素(弹入指的是元素被取消选中后需要重新回到mixCanvas的渲染列表中)
+           * 'out'表示删除或弹出的元素id(弹出指的是元素被选中后需要移除出mixCanvas的渲染列表)
+           * 'element'存放的需要在移动过程中单独渲染的元素(渲染顺序按照join中的元素id)
+           */
+          join:[
+            // 23
+          ],
+          out:[
+            //  45,
+            //  58
+          ],
+          element:{
+            // "23":{
+            //  id: 23,
+            //  type: 'point',
+            //  point: {x: 234, y: 567},
+            //  color: 'aabbcc',
+            //  width: 8
+            // }
+          }
+        };
         pipeline=null;
         constructor(pipeline){
           this.pipeline=pipeline;//管线允许外部自由修改
@@ -2148,21 +2204,172 @@ export default new Vuex.Store({
           return new Proxy(target, handler);
         }
         /**
+        * mixMove()的拆分函数
+         * 且不包含mixWash()
+         * 且不包含colorBlock渲染
+        **/
+        drawPoint(element){//渲染单个点元素
+          let custom=element.custom;
+          let icon;//图标名称
+          let split=false;//false 默认渲染 true 图标渲染
+          if(custom!==null){
+            icon=custom.icon;
+            if(this.$iNames.includes(icon)){
+              split=true;
+            }
+          }
+          if(split){
+            let path=new Path2D();
+            let XX=element.point.x;
+            let YY=element.point.y;
+            path.arc(XX,YY,12,0,Math.PI*2);
+            this.$canvas.fillStyle='#'+element.color;//normal canvas
+            this.$canvas.fill(path);
+            this.$canvas.drawImage(this.$icons[icon],XX-13,YY-13, 26,26);//图标 13 是图标半径
+          }
+          else{
+            let path=new Path2D();
+            let XX=element.point.x;
+            let YY=element.point.y;
+            path.arc(XX,YY,element.width,0,Math.PI*2);
+            this.$canvas.fillStyle='#'+element.color;//normal canvas
+            this.$canvas.fill(path);
+          }
+        }
+        drawLine(element){//渲染单个线段元素
+          let path=new Path2D();
+          let Len=element.points.length;
+          path.moveTo(element.points[0].x, element.points[0].y);
+          for(let i=1;i<Len;i++) {
+            path.lineTo(element.points[i].x, element.points[i].y);}
+          this.$canvas.lineWidth=element.width;//normal canvas
+          this.$canvas.strokeStyle='#'+element.color;
+          this.$canvas.lineJoin='round';
+          this.$canvas.stroke(path);
+        }
+        drawArea(element){//渲染单个区域元素
+          let path=new Path2D();
+          let Len=element.points.length;
+          path.moveTo(element.points[0].x, element.points[0].y);
+          for(let i=1;i<Len;i++){
+            path.lineTo(element.points[i].x, element.points[i].y);}
+          path.closePath();
+          this.$canvas.fillStyle='#'+element.color+'80';//normal canvas
+          this.$canvas.fill(path);
+        }
+        drawCurve(element){//渲染单个曲线元素
+          let path1=new Path2D();
+          let path2=new Path2D();
+          let points=element.points;
+          let len=points.length;
+          if(len<2)return;//确保有足够的点来绘制曲线
+          path1.moveTo(points[0].x,points[0].y);
+          let Leng=points.length-2;
+          for(let i=1;i<Leng;i++){
+            path1.quadraticCurveTo(
+              points[i].x,points[i].y,
+              ((points[i].x)+(points[i+1].x))/2,
+              ((points[i].y)+(points[i+1].y))/2
+            );
+          }
+          path1.quadraticCurveTo(// 最后两个点使用二次贝塞尔曲线连接
+            points[points.length-2].x,
+            points[points.length-2].y,
+            points[points.length-1].x,
+            points[points.length-1].y
+          );
+          this.$canvas.strokeStyle='#'+element.color;//设置绘图样式
+          this.$canvas.lineWidth=element.width;
+          this.$canvas.stroke(path1);
+
+          path2.arc(points[0].x,points[0].y,element.width,0,Math.PI*2);
+          path2.arc(points[len-1].x,points[len-1].y,element.width,0,Math.PI*2);
+          this.$canvas.shadowBlur=10;//阴影模糊程度
+          this.$canvas.fillStyle='#ffffff';
+          this.$canvas.fill(path2);
+          this.$canvas.shadowBlur=0;//重置阴影属性，防止影响后续绘图
+        }
+        /**
+         *  set $moving
+         **/
+        moving(bool){
+          this.$moving=bool;
+        }
+        /**
+         *  set $moveDraw.out
+         *   id: element id number
+         *   bool: true=push , false=remove
+         **/
+        moveDrawOut(id,bool){
+          if(bool){
+            if(!this.$moveDraw.out.includes(id)){
+              this.$moveDraw.out.push(id);
+            }
+          }else{
+            this.$moveDraw.out.remove(id);
+          }
+        }
+        /**
+         *  set $moveDraw.join
+         *   id: element id number
+         *   bool: true=push , false=remove
+         **/
+        moveDrawJoin(id,bool){
+          if(bool){
+            if(!this.$moveDraw.join.includes(id)){
+              this.$moveDraw.join.push(id);
+            }
+          }else{
+            this.$moveDraw.join.remove(id);
+          }
+        }
+        /**
+         *  set $moveDraw.element
+         *   id: element id number
+         *   data: element  data obj
+         **/
+        moveDrawElement(id,data){
+          const X=this.$configs.offsetX;//需要减除join前的移动偏移量
+          const Y=this.$configs.offsetY;
+          const L=data.points.length;
+          data.point.x-=X;
+          data.point.y-=Y;
+          for(let i=0;i<L;i++){
+            data.points[i].x-=X;
+            data.points[i].y-=Y;
+          }
+          this.$moveDraw.element[id]=data;
+        }
+        /**
          *  get drawCacheObj
          **/
-        drawCacheObj(path,color,type,icon,width,path2){
+        drawCacheObj(id,path,color,type,icon,width,path2){
           return{
-            path,color,type,icon,width,path2
+            id,path,color,type,icon,width,path2
           };
         }
         /**
          *need check pipeline healthy
         **/
         mixMove(){//移动视图
+          /*mixWash()*/
+          this.$canvas.clearRect(0,0,this.pipeline.options.viewWidth,this.pipeline.options.viewHeight);
+          this.$cBlock.clearRect(0,0,this.pipeline.options.viewWidth,this.pipeline.options.viewHeight);
+
           this.$canvas.save();//保存当前坐标系
           this.$canvas.translate(this.$configs.offsetX,this.$configs.offsetY);//移动坐标系
           let Len=this.$drawCache.length;
+          let Out=this.$moveDraw.out;//Array
+          let len=this.$moveDraw.out.length;//Array length
+          let Join=this.$moveDraw.join;//Array
+          let LEN=this.$moveDraw.join.length;//Array length
           for(let i=0;i<Len;i++){
+            if(len!==0){//移动过程中弹出的不渲染
+              if(Out.includes(this.$drawCache[i].id)){continue;}
+            }
+            if(LEN!==0){//移动过程中新增或重新弹入的单独在最后渲染
+              if(Join.includes(this.$drawCache[i].id)){continue;}
+            }
             if(this.$drawCache[i].type==='area'){
               this.$canvas.fillStyle=this.$drawCache[i].color;
               this.$canvas.fill(this.$drawCache[i].path);
@@ -2196,27 +2403,61 @@ export default new Vuex.Store({
                 26,26);
             }
           }
+          /*渲染移动过程中新增或重新弹入的元素*/
+          for(let p=0;p<LEN;p++){
+            let id=this.$moveDraw.join[p];
+            if(id in this.$moveDraw.element){
+              let type=this.$moveDraw.element[id].type;
+              switch(type){
+                case 'point':{
+                  this.drawPoint(this.$moveDraw.element[id]);
+                  break;
+                }
+                case 'line':{
+                  this.drawLine(this.$moveDraw.element[id]);
+                  break;
+                }
+                case 'area':{
+                  this.drawArea(this.$moveDraw.element[id]);
+                  break;
+                }
+                case 'curve':{
+                  this.drawCurve(this.$moveDraw.element[id]);
+                  break;
+                }
+              }
+            }
+          }
           this.$canvas.restore();//恢复原来的坐标系
         }
-        mixWash(){//清洗canvas和colorBlock
+        mixWash(){//清洗canvas和colorBlock，已集成在mixDraw()中
           if(!this.$configs.pipelineHealthy){return false;}
           this.$canvas.clearRect(0,0,this.pipeline.options.viewWidth,this.pipeline.options.viewHeight);
           this.$cBlock.clearRect(0,0,this.pipeline.options.viewWidth,this.pipeline.options.viewHeight);
           this.$manage.colorLinks={};
         }
         mixDraw(){//绘制元素并同时绘制色块并建立色块与元素的映射关系
-          if(this.$configs.renderRangeX<=0 || this.$configs.renderRangeY<=0){//当渲染范围为小于等于0时任何都不渲染
-            return false;
-          }
-          if(!this.$configs.pipelineHealthy){return false;}
+          if(this.$moving)return false;//移动过程中不能使用mixDraw()，使用mixMove()替代
+          if(this.$configs.renderRangeX<=0 || this.$configs.renderRangeY<=0)return false;//当渲染范围为小于等于0时不渲染
+          if(!this.$configs.pipelineHealthy)return false;
+
+          /*mixWash()*/
+          this.$canvas.clearRect(0,0,this.pipeline.options.viewWidth,this.pipeline.options.viewHeight);
+          this.$cBlock.clearRect(0,0,this.pipeline.options.viewWidth,this.pipeline.options.viewHeight);
+          this.$manage.colorLinks={};
+          this.$moveDraw.out.length=0;
+          this.$moveDraw.join.length=0;
+          this.$moveDraw.element={};
+          this.$drawCache.length=0;//清空之前的缓存
+
           let pLen=this.pipeline.elements.points.length;
           let cLen=this.pipeline.elements.curves.length;
           let lLen=this.pipeline.elements.lines.length;
           let aLen=this.pipeline.elements.areas.length;
           let offsetX=this.$configs.offsetX;
           let offsetY=this.$configs.offsetY;
-          let cBlockNum=2;
-          this.$drawCache.length=0;//清空之前的缓存
+          let cBlockNum=Number(8388608);//(16^6)*0.5=8388608?预留了一半的颜色用于显示其他内容
+          let added=Math.floor(8388608/(pLen+cLen+lLen+aLen+100));//?floor(8388608/(元素总数量+预留数量))=递增值
 
           for(let i=0;i<aLen;i++){//先后渲染顺序区域->线段->曲线->点
             if(!this.renderRangeCheck(this.pipeline.elements.areas[i])){
@@ -2231,7 +2472,7 @@ export default new Vuex.Store({
             let colorBlock=cBlockNum.toString(16).padStart(6,'0');
             this.addArea(this.pipeline.elements.areas[i],colorBlock,offsetX,offsetY);
             this.addColorLinks(this.pipeline.elements.areas[i],colorBlock);
-            cBlockNum+=4;
+            cBlockNum+=added;
           }
           for(let i=0;i<lLen;i++){
             if(!this.renderRangeCheck(this.pipeline.elements.lines[i])){
@@ -2249,7 +2490,7 @@ export default new Vuex.Store({
             let colorBlock=cBlockNum.toString(16).padStart(6,'0');
             this.addLine(this.pipeline.elements.lines[i],colorBlock,offsetX,offsetY);
             this.addColorLinks(this.pipeline.elements.lines[i],colorBlock);
-            cBlockNum+=4;
+            cBlockNum+=added;
           }
           for(let i=0;i<cLen;i++){
             if(!this.renderRangeCheck(this.pipeline.elements.curves[i])){
@@ -2267,7 +2508,7 @@ export default new Vuex.Store({
             let colorBlock=cBlockNum.toString(16).padStart(6,'0');
             this.addCurve(this.pipeline.elements.curves[i],colorBlock,offsetX,offsetY);
             this.addColorLinks(this.pipeline.elements.curves[i],colorBlock);
-            cBlockNum+=4;
+            cBlockNum+=added;
           }
           for(let i=0;i<pLen;i++){
             /**
@@ -2291,8 +2532,20 @@ export default new Vuex.Store({
             let colorBlock=cBlockNum.toString(16).padStart(6,'0');
             this.addPoint(this.pipeline.elements.points[i],colorBlock,offsetX,offsetY);
             this.addColorLinks(this.pipeline.elements.points[i],colorBlock);
-            cBlockNum+=4;
+            cBlockNum+=added;
           }
+        }
+        mixColorBlockView(){//显示mixColorBlock 调试用途
+          let body=document.getElementsByTagName('BODY');
+          this.$cBlockDom.setAttribute('style',
+            'position:fixed;'+
+            'z-index:999999;'+
+            'left:0;'+
+            'top:0;'+
+            'pointer-events:none;'
+            // +'background-color:#FFFFFF' 纯白背景色
+        );
+          body[0].appendChild(this.$cBlockDom);
         }
         mixReSize(){
           if(!this.$configs.pipelineHealthy){return false;}
@@ -2321,18 +2574,13 @@ export default new Vuex.Store({
             this.throwError('Error in rendering range parameters')
           }
         }
-        mixGetElementByXY(x,y){//获取坐标下的元素数据
-          if(!this.$configs.pipelineHealthy){return false;}
-          function rgbToHex(r,g,b){//rgb转化为6 16格式 未填充
-            return ((r<<16)|(g<<8)|b).toString(16);
-          }
-          const pixelData=this.$cBlock.getImageData(x,y,1,1).data;
-          const color=("000000"+rgbToHex(pixelData[0],pixelData[1],pixelData[2])).slice(-6);
-          if(this.$manage.colorLinks.hasOwnProperty(color)){
-            return this.$manage.colorLinks[color];
-          }else {
-            return false;
-          }
+        mixGetElementByXY(x,y){//通过获取该坐标下的色块颜色,查询渲染此颜色对应的元素是什么(colorLinks)
+          if(!this.$configs.pipelineHealthy)return false;
+          const pixelData = this.$cBlock.getImageData(x, y, 1, 1).data;
+          const colorA = ((pixelData[0] << 16) | (pixelData[1] << 8) | pixelData[2]).toString(16);
+          const colorB = ('000000' + colorA).slice(-6);
+          if(this.$manage.colorLinks.hasOwnProperty(colorB))return this.$manage.colorLinks[colorB];
+          return false;
         }
         canvasBuild(){//创建基本canvas与虚拟canvas
           if(!this.$configs.pipelineHealthy){return false;}
@@ -2345,13 +2593,16 @@ export default new Vuex.Store({
           this.$cBlockDom=document.createElement('CANVAS');
           this.$cBlockDom.setAttribute('width',this.pipeline.options.viewWidth+'px');
           this.$cBlockDom.setAttribute('height',this.pipeline.options.viewHeight+'px');
-          this.$cBlock=this.$cBlockDom.getContext('2d');
+          this.$cBlockDom.setAttribute('id','mixCanvasColorBlock');
+          this.$cBlock=this.$cBlockDom.getContext('2d',{willReadFrequently:true});//willReadFrequently:true?优化getImageData()的性能
+          this.$cBlock.imageSmoothingEnabled=false;//禁用图像平滑?点击色块边缘时会存在偏色问题
         }
 
         /**
          *no check pipeline healthy
         **/
         addPoint(element,colorBlock,offsetX,offsetY){//添加点，需要完整的元素数据和色块
+          let id=element.id;
           let custom=element.custom;
           let icon;//图标名称
           let split=false;//false 默认渲染 true 图标渲染
@@ -2375,6 +2626,7 @@ export default new Vuex.Store({
             this.$cBlock.fill(path);
 
             this.$drawCache.push(this.drawCacheObj(
+              id,
               path,
               '#'+element.color,
               'icon',
@@ -2393,6 +2645,7 @@ export default new Vuex.Store({
             this.$cBlock.fill(path);
 
             this.$drawCache.push(this.drawCacheObj(
+              id,
               path,
               '#'+element.color,
               'point'
@@ -2401,6 +2654,7 @@ export default new Vuex.Store({
         }
         addLine(element,colorBlock,offsetX,offsetY){//添加线，需要完整的元素数据和色块
           let path=new Path2D();
+          let id=element.id;
           let Len=element.points.length;
           path.moveTo(element.points[0].x+offsetX, element.points[0].y+offsetY);
           for(let i=1;i<Len;i++) {
@@ -2410,12 +2664,13 @@ export default new Vuex.Store({
           this.$canvas.lineJoin='round';
           this.$canvas.stroke(path);
 
-          this.$cBlock.lineWidth=element.width;//color block canvas
+          this.$cBlock.lineWidth=(parseInt(element.width, 10)+1)<=3?4:parseInt(element.width,10)+1;//color block canvas?+1扩大1px渲染范围增大mixGetElementByXY()的容错
           this.$cBlock.strokeStyle='#'+colorBlock;
           this.$cBlock.lineJoin='round';
           this.$cBlock.stroke(path);
 
           this.$drawCache.push(this.drawCacheObj(
+            id,
             path,
             '#'+element.color,
             'line',
@@ -2425,6 +2680,7 @@ export default new Vuex.Store({
         }
         addArea(element,colorBlock,offsetX,offsetY){//添加区域，需要完整的元素数据和色块
           let path=new Path2D();
+          let id=element.id;
           let Len=element.points.length;
           path.moveTo(element.points[0].x+offsetX, element.points[0].y+offsetY);
           for(let i=1;i<Len;i++){
@@ -2436,6 +2692,7 @@ export default new Vuex.Store({
           this.$cBlock.fill(path);
 
           this.$drawCache.push(this.drawCacheObj(
+            id,
             path,
             '#'+element.color+'80',
             'area'
@@ -2444,6 +2701,7 @@ export default new Vuex.Store({
         addCurve(element,colorBlock,offX,offY){//添加曲线，需要完整的元素数据和色块
           let path1=new Path2D();
           let path2=new Path2D();
+          let id=element.id;
           let points=element.points;
           let len=points.length;
           if(len<2)return;//确保有足够的点来绘制曲线
@@ -2475,11 +2733,12 @@ export default new Vuex.Store({
 
           this.$cBlock.strokeStyle='#'+colorBlock;//color block canvas
           this.$cBlock.fillStyle='#'+colorBlock;
-          this.$cBlock.lineWidth=element.width;
+          this.$cBlock.lineWidth=(parseInt(element.width, 10)+1)<=3?4:parseInt(element.width,10)+1;//?+1扩大1px渲染范围增大mixGetElementByXY()的容错
           this.$cBlock.stroke(path1);
           this.$cBlock.fill(path2);
 
           this.$drawCache.push(this.drawCacheObj(
+            id,
             path1,
             '#'+element.color,
             'curve',
@@ -3718,7 +3977,7 @@ export default new Vuex.Store({
         type:'area',
         points:[],
         point:{x:0,y:0},
-        color: '000000',
+        color: 'ffffff',
         width: 2,
         child_relations: null,
         father_relation: null,
@@ -3790,7 +4049,8 @@ export default new Vuex.Store({
     },
     pageConfig:{//页面配置
       homeSeparateState:true,
-      mapSeparateState:false
+      mapSeparateState:false,
+      loadingTime:2000,//首次加载地图的等待时间
     },
     cameraConfig:{//相机配置
       windowChange:false,//窗口变化
@@ -3945,13 +4205,33 @@ export default new Vuex.Store({
     suppressPickSelect(state,product){//禁用全体元素选中
       state.commits.suppressPickSelect=product;
     },
+    clearTempCurveCache(state){//清空临时曲线的缓存
+      state.mapConfig.tempArea={
+        id:'tempCurve',
+        type:'curve',
+        points:[],
+        point:{x:0,y:0},
+        color: '000000',
+        width: 2,
+        child_relations: null,
+        father_relation: null,
+        child_nodes: null,
+        father_node: null,
+        details:[],
+        defaultWidth:2,
+        showPos:[],
+        custom:{
+          tmpId:null,
+        },
+      };
+    },
     clearTempAreaCache(state){//清空临时区域的缓存
       state.mapConfig.tempArea={
         id:'tempArea',
         type:'area',
         points:[],
         point:{x:0,y:0},
-        color: '000000',
+        color: 'ffffff',
         width: 2,
         child_relations: null,
         father_relation: null,

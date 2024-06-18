@@ -336,12 +336,12 @@ export default {
     initializePosition(){//初始化定位
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
-        this.polyLineConfig.point.x=viewPosition.x;
-        this.polyLineConfig.point.y=viewPosition.y;
+        this.polyLineConfig.point.x=viewPosition.x+this.movingDistance.x;//扣除移动过程中的偏移量
+        this.polyLineConfig.point.y=viewPosition.y-this.movingDistance.y;
         for(let i=0;i<this.dataSourcePoints.length;i++){//循环遍历
           let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x);
-          this.polyLineConfig.points[i].x=viewPosition.x;
-          this.polyLineConfig.points[i].y=viewPosition.y;
+          this.polyLineConfig.points[i].x=viewPosition.x+this.movingDistance.x;//扣除移动过程中的偏移量
+          this.polyLineConfig.points[i].y=viewPosition.y-this.movingDistance.y;
         }
       }
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
@@ -441,6 +441,9 @@ export default {
     },
   },
   computed:{
+    movingDistance(){
+      return this.$store.state.mapConfig.movingDistance;
+    },
     browserX(){
       return this.$store.state.mapConfig.browser.width;
     },

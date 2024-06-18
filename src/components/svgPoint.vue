@@ -116,8 +116,8 @@ export default {
     initializePosition(){//初始化定位
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
-        this.pointConfig.point.x=viewPosition.x;
-        this.pointConfig.point.y=viewPosition.y;
+        this.pointConfig.point.x=viewPosition.x+this.movingDistance.x;//扣除移动过程中的偏移量
+        this.pointConfig.point.y=viewPosition.y-this.movingDistance.y;
       }
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
         try{
@@ -219,6 +219,9 @@ export default {
     }
   },
   computed:{
+    movingDistance(){
+      return this.$store.state.mapConfig.movingDistance;
+    },
     browserX(){
       return this.$store.state.mapConfig.browser.width;
     },

@@ -177,7 +177,7 @@ export default {
             this.changeLoad();
           }
         }
-      ,2000);
+      ,this.$store.state.pageConfig.loadingTime);
     },
     isValidUrl(url){//检测url是否正常正常则返回true
       try {

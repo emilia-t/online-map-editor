@@ -392,13 +392,13 @@ export default {
     initializePosition(){//初始化定位
       if(this.$store.state.baseMapConfig.baseMapType==='realistic'){
         let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoint.y,this.dataSourcePoint.x);
-        this.areaConfig.point.x=viewPosition.x;
-        this.areaConfig.point.y=viewPosition.y;
+        this.areaConfig.point.x=viewPosition.x+this.movingDistance.x;//扣除移动过程中的偏移量
+        this.areaConfig.point.y=viewPosition.y-this.movingDistance.y;
         //循环遍历
         for(let i=0;i<this.dataSourcePoints.length;i++){
           let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.dataSourcePoints[i].y,this.dataSourcePoints[i].x);
-          this.areaConfig.points[i].x=viewPosition.x;
-          this.areaConfig.points[i].y=viewPosition.y;
+          this.areaConfig.points[i].x=viewPosition.x+this.movingDistance.x;//扣除移动过程中的偏移量
+          this.areaConfig.points[i].y=viewPosition.y-this.movingDistance.y;
         }
       }
       if(this.$store.state.baseMapConfig.baseMapType==='fictitious'){
@@ -506,6 +506,9 @@ export default {
     },
   },
   computed:{
+    movingDistance(){
+      return this.$store.state.mapConfig.movingDistance;
+    },
     areaCenter(){
       let points=JSON.parse(JSON.stringify(this.areaConfig.points));
       let len=points.length;

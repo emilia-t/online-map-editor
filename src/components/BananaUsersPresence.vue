@@ -90,7 +90,7 @@ export default {
     isLogin:{
       handler(newValue){
         if(newValue===true){
-          this.getPresence();
+          setTimeout(()=>this.getPresence(),500);
         }else {
           this.clearPresence();
         }

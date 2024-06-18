@@ -3,11 +3,11 @@
     <div class="toolboxLayer" @click.stop="void 0">
       <div class="toolList">
         <div class="toolBox" @click="openKmlToOmd()">
-          <kml-to-omd custom="background:white;cursor:pointer;"></kml-to-omd>
+          <kml-to-omd custom="background:white;cursor:pointer;"/>
           <span class="spanL">kml2omd</span>
         </div>
         <div class="toolBox">
-          <draft-icon custom="background:white;cursor:pointer;"></draft-icon>
+          <draft-icon custom="background:white;cursor:pointer;"/>
           <span class="spanL">画板</span>
         </div>
         <div class="toolBox">
@@ -17,7 +17,7 @@
       </div>
     </div>
     <div class="toolApp" @click.stop="void 0">
-      <banana-kml-to-omd :showResponse="toolShow.kmlToOmd" @kmlToOmdCloseRequest="kmlToOmdCloseApproval"></banana-kml-to-omd>
+      <banana-kml-to-omd :showResponse="toolShow.kmlToOmd" @kmlToOmdCloseRequest="kmlToOmdCloseApproval"/>
     </div>
   </div>
 </template>
@@ -152,7 +152,7 @@ export default {
   border-radius: 4px;
   box-shadow: #c5c5c5 0px 0px 6px;
   position: fixed;
-  z-index: 590;
+  z-index: 701;
   overflow-x: auto;
   overflow-y: hidden;
   display: flex;

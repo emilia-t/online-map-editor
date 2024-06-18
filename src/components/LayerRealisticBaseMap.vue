@@ -1,6 +1,6 @@
 <template>
   <div class="baseMap" :style="'opacity:'+opacity">
-    <canvas id="baseMap" ref="baseMap"></canvas>
+    <canvas id="baseMap" ref="baseMap"/>
   </div>
 </template>
 
@@ -89,7 +89,10 @@ export default {
     },
     doNeedMoveMap(){
       return this.$store.state.cameraConfig.doNeedMoveMap;
-    }
+    },
+    movingDistance(){
+      return this.$store.state.mapConfig.movingDistance;
+    },
   },
   watch:{
     A1:{

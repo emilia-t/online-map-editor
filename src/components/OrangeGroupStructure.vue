@@ -22,38 +22,40 @@
         </div>
       </div>
     </div>
-    <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in extractLatter()" v-show="groupExpand">
-      <div class="memberTeamContent" v-if="!isArray(item)">
-        <div class="memberKeyInfo" :title="getItemName(layer.members[item])"
-             @mouseenter="expandOrderCase($event,layer.members[item].id)"
-             @mouseleave="restoreOrderCase($event)"
-             @mouseup="confirmOrderCase($event,layer.members[item].id)">
-          <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].custom.tmpId)">
-            <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'"
-                   v-if="layer.members[item].type==='point'"/>
-            <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
-                   v-if="layer.members[item].type==='line'"/>
-            <curve :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
-                          v-if="layer.members[item].type==='curve'"/>
-            <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
-                    v-if="layer.members[item].type==='area'"/>
-            <span class="memberName" v-text="getItemName(layer.members[item])"/>
-          </div>
-          <div :ref="'memberRightEye'+layer.members[item].id">
-            <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
-              <eye-visible custom="cursor:pointer"/>
+    <div class="memberTeamVS">
+      <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in extractLatter()" v-show="groupExpand">
+        <div class="memberTeamContent" v-if="!isArray(item)">
+          <div class="memberKeyInfo" :title="getItemName(layer.members[item])"
+               @mouseenter="expandOrderCase($event,layer.members[item].id)"
+               @mouseleave="restoreOrderCase($event)"
+               @mouseup="confirmOrderCase($event,layer.members[item].id)">
+            <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].custom.tmpId)">
+              <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'"
+                     v-if="layer.members[item].type==='point'"/>
+              <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
+                            v-if="layer.members[item].type==='line'"/>
+              <curve :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
+                     v-if="layer.members[item].type==='curve'"/>
+              <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
+                      v-if="layer.members[item].type==='area'"/>
+              <span class="memberName" v-text="getItemName(layer.members[item])"/>
             </div>
-            <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
-              <eye-not-visible custom="cursor:pointer"/>
+            <div :ref="'memberRightEye'+layer.members[item].id">
+              <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
+                <eye-visible custom="cursor:pointer"/>
+              </div>
+              <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
+                <eye-not-visible custom="cursor:pointer"/>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="memberActivityInfo">
-          <div class="memberPick" v-if="false">
-            <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑形状中</span>
-          </div>
-          <div class="memberSelect" v-if="false">
-            <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑属性中</span>
+          <div class="memberActivityInfo">
+            <div class="memberPick" v-if="false">
+              <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑形状中</span>
+            </div>
+            <div class="memberSelect" v-if="false">
+              <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑属性中</span>
+            </div>
           </div>
         </div>
       </div>
@@ -142,9 +144,17 @@ export default {
       firmPlan:{},
       firmMessage:'',
       tmpProof:null,
+      sticky:false,//置顶图层头部
     }
   },
   props:{
+    virtualList:{
+      type:Object,
+      default:function (){
+        return {}
+      },
+      required:true,
+    },
     pickLayerId:{
       type:Number,
       default:-1,
@@ -240,6 +250,11 @@ export default {
       this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
       this.bindTemplate();
       this.tmpId=this.structure[1].template.id;
+      setTimeout(
+        ()=>{
+          console.log(this.virtualList)
+        }
+      ,2500);
     },
     bindTemplate(){//挂载模板数据到store
       let stu1=this.structure[1];
@@ -572,12 +587,8 @@ export default {
             refMember.push(member[i]);
           }
         }
-        if(Array.isArray(member[i])){
-          if(member[i].length>=2){
-            refMember.push(member[i])
-          }
-        }
       }
+      this.itemCount=refMember.length;
       return refMember;
     },
     extractNumber(){//提取除第1-2位外过滤子分组,并去除未定义的引用id
@@ -799,6 +810,11 @@ export default {
     }
   },
   watch:{
+    virtualLst:{
+      handler(newValue){
+        console.log(newValue);
+      }
+    },
     modify:{
       handler(){//当本分组模板更新后更新使用中的模板
         let im='';
@@ -912,6 +928,15 @@ export default {
 </script>
 
 <style scoped>
+.memberTeamVS{
+  width: 100%;
+  height: auto;
+}
+.stickyTop{
+  position: fixed;
+  top:150px;
+  left: 50px;
+}
 button{
   cursor: pointer;
   -webkit-appearance: none;
@@ -941,7 +966,7 @@ button:active{
 .memberTeamContent{
   width: calc(100% - 19px);
   padding-left: 15px;
-  height: auto;
+  height: 26px;
   margin: 2px 2px;
 }
 .memberTeamContent:hover{
@@ -1019,10 +1044,9 @@ button:active{
   width: 100%;
   height: auto;
   min-height: 27px;
-  padding: 5px 0px 5px 0px;
 }
 .memberTeamName{
-  width: 100%;
+  width: calc(100% - 2px);
   height: 25px;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1137,9 +1161,9 @@ button:active{
 }
 .memberTeamBox{
   width: 100%;
-  max-width: 246px;/*246px与拖拽计算点击位置绑定，不可修改*/
+  max-width: 250px;/*250px与拖拽计算点击位置绑定，不可修改*/
   height: auto;
-  margin-bottom: 3px;
+  margin-bottom: 0;
   overflow: hidden;
   display: -webkit-box;
   display: -ms-flexbox;

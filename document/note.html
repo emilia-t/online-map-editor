@@ -35,6 +35,20 @@
    **/
   // DELETE FROM table_name;
   // ALTER TABLE table_name AUTO_INCREMENT = 1;
+
+  /**
+   * 仅监听1次的watch
+   **/
+  // created(){
+  //   this.unwatch=this.$watch('mapLayerOrder',(newValue)=>{
+  //     if(newValue.length>0){
+  //       setTimeout(()=>{
+  //         this.pickLayerTemplate.id=newValue[0];
+  //       },5);
+  //     }
+  //     this.unwatch();//在第一次watch执行完毕后移除此watch
+  //   });
+  // }
 </script>
 </body>
 </html>

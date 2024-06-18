@@ -1,4 +1,3 @@
-
 <template>
 <div class="menuPanelLayer" ref="menuPanelLayer"><!--起始页面左侧的菜单面板-->
   <div class="closeButtonBox" ref="closeButtonBox"><!--关闭按钮-->
@@ -766,10 +765,14 @@ export default {
       xhr.open('GET', 'https://v1.hitokoto.cn/?c=a&c=b&c=d&c=i&max_length=18',true);
       xhr.onreadystatechange = ()=> {
         if (xhr.readyState === 4) {
-          const data = JSON.parse(xhr.responseText);
-          this.classicQuote=data.hitokoto;
+          try {
+            const data = JSON.parse(xhr.responseText);
+            this.classicQuote=data.hitokoto;
+          }catch (e) {
+
+          }
         }
-      }
+      };
       xhr.send();
     },
     deleteAccount(name){//删除账号

@@ -4,16 +4,16 @@
       <div class="logList" v-for="log in logShowList" :key="log.code" :data-log-code="log.code" :ref="'logItem'+log.code">
         <div class="logBar">
           <div class="logIcon" v-if="log.type==='notice'">
-            <log-notice></log-notice>
+            <log-notice/>
           </div>
           <div class="logIcon" v-if="log.type==='error'">
-            <log-error></log-error>
+            <log-error/>
           </div>
           <div class="logIcon" v-if="log.type==='warn'">
-            <log-warn></log-warn>
+            <log-warn/>
           </div>
           <div class="logIcon" v-if="log.type==='tip'">
-            <log-tip></log-tip>
+            <log-tip/>
           </div>
           <span v-text="log.text">
 
@@ -21,12 +21,13 @@
         </div>
       </div>
     </div>
-    <div class="logHistoryBox" ref="logHistoryBox" @click.stop="closeHistoryPanel()" v-show="this.$store.state.logConfig.showPanel">
+    <div class="logHistoryBox" ref="logHistoryBox" @click.stop="closeHistoryPanel()" v-show="showHistoryPanel">
       <div class="logHistory" @click.stop="void 0">
         <div class="logHistoryFilter"><!--顶部筛选区域-->
           <div class="logHistoryButton">
-            <div class="ButtonA colourA" @click="restoreFilter()">重置过滤器</div>
+            <div class="ButtonA colourA" title="重置过滤器" @click="restoreFilter()">重置过滤器</div>
             <div class="ButtonA colourB" title="仅保存日志类型和主要来源部位" @click="saveFilter()">保存过滤器</div>
+            <div class="ButtonA colourB" title="关闭日志面板" @click="closeHistoryPanel()">关闭日志面板</div>
           </div>
           <div class="logHistorySelect">
             <div class="list">
@@ -62,11 +63,11 @@
               <div class="listContent" ref="nextFromAllItem">
                 <div class="listContentInner" v-for="item in internalFromList" :key="item">
                   <input type="checkbox" name="nextFrom" checked="checked" :id="'nextFrom'+item" :ref="'nextFrom'+item">
-                  <label :for="'nextFrom'+item" @click="filterByNextFrom(item)"><span v-text="item" class="fromListSpan"></span></label>
+                  <label :for="'nextFrom'+item" @click="filterByNextFrom(item)"><span v-text="item" class="fromListSpan"/></label>
                 </div>
                 <div class="listContentInner" v-for="item in externalFromList" :key="item">
                   <input type="checkbox" name="nextFrom" checked="checked" :id="'nextFrom'+item" :ref="'nextFrom'+item">
-                  <label :for="'nextFrom'+item" @click="filterByNextFrom(item)"><span v-text="item" class="fromListSpan"></span></label>
+                  <label :for="'nextFrom'+item" @click="filterByNextFrom(item)"><span v-text="item" class="fromListSpan"/></label>
                 </div>
               </div>
             </div>
@@ -75,16 +76,16 @@
         <div class="logHistoryContent"><!--主体内容-->
           <div class="logHistoryList" @click="showLogAllData(log)" v-for="log in saveLog" :key="log.code" v-show="log.show">
             <div class="logIcon" v-if="log.type==='notice'">
-              <log-notice></log-notice>
+              <log-notice/>
             </div>
             <div class="logIcon" v-if="log.type==='error'">
-              <log-error></log-error>
+              <log-error/>
             </div>
             <div class="logIcon" v-if="log.type==='warn'">
-              <log-warn></log-warn>
+              <log-warn/>
             </div>
             <div class="logIcon" v-if="log.type==='tip'">
-              <log-tip></log-tip>
+              <log-tip/>
             </div>
             <div class="logFrom" v-text="log.time.split(' ')[1]">
 
@@ -97,16 +98,16 @@
         <div class="logHistoryDataBox">
           <div class="logHistoryData" v-if="logData.code!==null">
             <div class="logHistoryDataIcon" v-if="logData.type==='tip'">
-              <log-tip-x120></log-tip-x120>
+              <log-tip-x120/>
             </div>
             <div class="logHistoryDataIcon" v-if="logData.type==='warn'">
-              <log-warn-x120></log-warn-x120>
+              <log-warn-x120/>
             </div>
             <div class="logHistoryDataIcon" v-if="logData.type==='error'">
-              <log-error-x120></log-error-x120>
+              <log-error-x120/>
             </div>
             <div class="logHistoryDataIcon" v-if="logData.type==='notice'">
-              <log-notice-x120></log-notice-x120>
+              <log-notice-x120/>
             </div>
             <div class="logHistoryDetail">
               <div class="logDetailTitle">日志类型</div>
@@ -343,8 +344,7 @@ export default {
         let KEY=e.key;
         switch (KEY){
           case 'l':{
-            let status=this.$store.state.logConfig.showPanel;
-            this.$store.commit('setCoLogShowPanel',!status);
+            this.$store.state.logConfig.showPanel=!this.$store.state.logConfig.showPanel;
             break;
           }
         }

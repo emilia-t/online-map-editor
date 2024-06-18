@@ -55,7 +55,7 @@
             <div class="iStySlide" v-if="this.operated.type!=='area'">
               <orange-slide-block @OrangeSlideBlockFocusout="instantChangeWidth" @OrangeSlideBlockCall="sliderHandle"
                                   @OrangeSlideBlockMousedown="beforeChangeWidth()"
-                                  :div-style="'width:267px;left:-92px;top:34%'" max="15" min="2"
+                                  :div-style="'width:267px;left:-92px;top:34%'" :max="15" :min="slideMin"
                                   :default="this.operated.width"/>
             </div>
           </div>
@@ -302,6 +302,13 @@ export default {
         return this.$store.state.serverData.socket.lastPSEndId;
       }else{
         return [];
+      }
+    },
+    slideMin(){
+      if(this.operated.type==='point'){
+        return 4;
+      }else {
+        return 2;
       }
     },
     mapHiddenElements(){

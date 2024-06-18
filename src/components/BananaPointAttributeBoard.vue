@@ -34,7 +34,7 @@
           </div>
           <div class="iStySlide">
             <orange-slide-block @OrangeSlideBlockCall="sliderHandle" :div-style="'width:267px;left:-92px;top:34%'"
-                                max="15" min="2" :default="width"/>
+                                :max="15" :min="4" :default="width"/>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="elementPanelLayer" v-show="this.$store.state.userSettingConfig.openElementPanel">
+  <div class="elementPanelLayer" v-show="showPanel">
     <div class="panelHead">
       <div class="headTitle">
         <span v-text="this.$store.state.serverData.socket.config.name"/>
@@ -44,10 +44,12 @@
         :adjust-order-response="adjustOrderTemplate"
         :adjust-item-order-response="adjustItemOrderTemplate"
         :pick-layer-response="pickLayerTemplate"
+        :virtual-list="virtualList"
         @pickLayerRequest="pickLayerApproval"
         @adjustOrderRequest="adjustOrderApproval"
         @adjustItemOrderRequest="adjustItemOrderApproval">
       </banana-group-layer>
+      <div :style="{ height:(virtualList.itemAmount*virtualList.itemHeight)+'px' }"/>
     </div>
     <div class="panelSearch">
       <div class="searchViewClose" v-show="searchResult.length!==0" @click.stop="openSearchView()">
@@ -113,6 +115,24 @@ export default {
   data(){
     return{
       dropPng,
+      showPanel:true,
+      virtualList:{//虚拟渲染列表
+        show:[],//需要渲染的图层id列表
+        containerHeight:500,//图层面板的虚拟列表的可视高度
+        itemHeight:30,//单条成员的高度
+        headHeight:20+30+25,//每个图层的头部高度?20:padding;30:图层类型与选项按钮;25:图层名称与展开收起按钮
+        layerMinHeight:120,//每个图层的最小高度?收起图层后的高度
+        itemAmount:0,//成员列表总数
+        layerConfig:{//每个图层的成员数量统计
+          '2':{
+            id:2,
+            count:50,
+            startIndex:0,
+            endIndex:0,
+            startTop:0,
+          }
+        }
+      },
       searchResult:[],//{element}
       searchShowView:false,
       searchFind:false,
@@ -149,13 +169,67 @@ export default {
       }
       this.unwatch();//仅执行一次
     });
+    this.unwatch2=this.$watch('mapLayerData',(newValue)=>{
+      let num=newValue.length;
+      for(let i=0;i<num;i++){
+        let type=newValue[i].type;
+        switch (type) {
+          case 'group':{
+            if(this.groupLayers.hasOwnProperty(newValue[i].id)){//重复则更新
+              this.groupLayers[newValue[i].id].members=this.deconstructMembers(newValue[i].members);
+              this.groupLayers[newValue[i].id].structure=newValue[i].structure;
+            }else {//新增则加入
+              let members=this.deconstructMembers(newValue[i].members);
+              let layerId=newValue[i].id;
+              let layerDataObj={
+                id:layerId,
+                type:newValue[i].type,
+                members:members,
+                structure:newValue[i].structure
+              };
+              this.$set(this.groupLayers,layerId,layerDataObj);
+            }
+            break;
+          }
+        }
+      }
+      this.unwatch2();//仅执行一次
+    });
   },
   mounted(){
     this.startSetting();
   },
   methods:{
     startSetting(){
-
+      setTimeout(
+        ()=>{
+          this.showPanel=this.openElementPanel;
+          this.initialVirtualList();
+        }
+        ,this.$store.state.pageConfig.loadingTime+2
+      );
+    },
+    initialVirtualList(){//初始化虚拟列表
+      let height=window.innerHeight;//layerElementPanel .panelContent calc(calc(100% - 20px) - 97px - 30px - 35px);
+      height=height-20-97-30-35;
+      this.virtualList.containerHeight=height;//得到容器高度
+      let len=this.mapLayerOrder.length;
+      for(let i=0;i<len;i++){//循环遍历每个图层并获取成员数量
+        let layerId=this.mapLayerOrder[i];
+        let layer=this.groupLayers[layerId];
+        let member=layer.structure.slice(2);
+        let count=0;
+        let length=member.length;
+        for(let i=0;i<length;i++){
+          if(typeof member[i]==='number'){
+            if(layer.members.hasOwnProperty(member[i])){
+              count++;
+            }
+          }
+        }
+        this.virtualList.layerCount[layerId]=count;
+        this.virtualList.itemAmount+=count;
+      }
     },
     openSearchView(){
       let sta=this.searchShowView;
@@ -468,50 +542,22 @@ export default {
      *  变为{id:{element object}}
      **/
     deconstructMembers(members){
-      let ref={};
-      Object.keys(members).forEach(item=>{
-          let element=[members[item]+'',item];//转化为数组：[类型数字,ID]
-          switch (element[0]) {
-            case '1':{
-              let len=this.PointData.length;
-              for(let i=0;i<len;i++){
-                if(this.PointData[i].id==element[1]){
-                  ref[item]=this.PointData[i];
-                  break;
-                }
-              }
-              break;
-            }
-            case '2':{
-              let len=this.PolyLineData.length;
-              for(let i=0;i<len;i++){
-                if(this.PolyLineData[i].id==element[1]){
-                  ref[item]=this.PolyLineData[i];
-                  break;
-                }
-              }
-              break;
-            }
-            case '3':{
-              let len=this.AreaData.length;
-              for(let i=0;i<len;i++){
-                if(this.AreaData[i].id==element[1]){
-                  ref[item]=this.AreaData[i];
-                  break;
-                }
-              }
-              break;
-            }
-            case '4':{
-              let len=this.CurveData.length;
-              for(let i=0;i<len;i++){
-                if(this.CurveData[i].id==element[1]){
-                  ref[item]=this.CurveData[i];
-                  break;
-                }
-              }
-              break;
-            }
+      let ref={
+        //'23':{...}//element id => element data
+      };
+      let pointsMap=new Map(this.PointData.map(it=>[it.id,it]));
+      let linesMap=new Map(this.PolyLineData.map(it=>[it.id,it]));
+      let areasMap=new Map(this.AreaData.map(it=>[it.id,it]));
+      let curvesMap=new Map(this.CurveData.map(it=>[it.id,it]));
+      Object.keys(members).forEach(
+        (item)=>{
+          let element=[members[item]+'',item];//[类型数字,ID]
+          let ID=parseInt(element[1]);
+          switch(element[0]){
+            case '1':{ref[item]=pointsMap.get(ID);break;}
+            case '2':{ref[item]=linesMap.get(ID);break;}
+            case '3':{ref[item]=areasMap.get(ID);break;}
+            case '4':{ref[item]=curvesMap.get(ID);break;}
           }
         }
       );
@@ -522,6 +568,20 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    updateLayerIds(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.updateLayerIds;
+      }else{
+        return [];
+      }
+    },
+    createLayerId(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.createLayerId;
+      }else{
+        return -1;
+      }
+    },
     lastPSEndId(){//array element id list
       if(this.$store.state.serverData.socket){
         return this.$store.state.serverData.socket.lastPSEndId;
@@ -602,16 +662,28 @@ export default {
       return this.$store.state.serverData.socket.isLogin;
     },
     mapLayerData(){
-      return this.$store.state.serverData.socket.mapLayerData;
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.mapLayerData;
+      }else{
+        return [];
+      }
     },
     mapLayerOrder(){
       return this.$store.state.serverData.socket.mapLayerOrder;
     },
     deleteLayerId(){
       return this.$store.state.serverData.socket.deleteLayerId;
+    },
+    openElementPanel(){
+      return this.$store.state.userSettingConfig.openElementPanel;
     }
   },
   watch:{
+    openElementPanel:{
+      handler(newValue){
+        this.showPanel=newValue;
+      }
+    },
     lastPSEndId:{
       handler(newValue){
         if(newValue.includes(this.$store.state.detailsPanelConfig.target)){//如果当前编辑的元素在被清除选中要素列表中则清除属性面板
@@ -700,37 +772,45 @@ export default {
         }
       }
     },
-    deleteLayerId:{
+    updateLayerIds:{//图层更新监听
+      handler(newValue){
+        for(let k=0;k<newValue.length;k++){
+          let id=newValue[k];
+          if(!this.groupLayers.hasOwnProperty(id))return;//不存在的图层更新跳过
+          let num=this.mapLayerData.length;
+          for(let i=0;i<num;i++){
+            if(this.mapLayerData[i].id!=id){continue;}
+            this.groupLayers[id].members=this.deconstructMembers(this.mapLayerData[i].members);
+            this.groupLayers[id].structure=this.mapLayerData[i].structure;
+            break;
+          }
+        }
+        this.$store.state.serverData.socket.updateLayerIds.length=0;//清空需要更新的id
+      }
+    },
+    deleteLayerId:{//图层删除监听
       handler(deleteId){
         if(this.groupLayers.hasOwnProperty(deleteId)){
           delete this.groupLayers[deleteId];
         }
       }
     },
-    mapLayerData:{
-      handler(newValue){
-        let num=newValue.length;
+    createLayerId:{//图层新增监听
+      handler(ID){
+        if(this.groupLayers.hasOwnProperty(ID))return;//非新增图层
+        let num=this.mapLayerData.length;
         for(let i=0;i<num;i++){
-          let type=newValue[i].type;
-          switch (type) {
-            case 'group':{
-              if(this.groupLayers.hasOwnProperty(newValue[i].id)){//重复则更新
-                this.groupLayers[newValue[i].id].members=this.deconstructMembers(newValue[i].members);
-                this.groupLayers[newValue[i].id].structure=newValue[i].structure;
-              }else {//新增则加入
-                let members=this.deconstructMembers(newValue[i].members);
-                let layerId=newValue[i].id;
-                let layerDataObj={
-                  id:layerId,
-                  type:newValue[i].type,
-                  members:members,
-                  structure:newValue[i].structure
-                };
-                this.$set(this.groupLayers,layerId,layerDataObj);
-              }
-              break;
-            }
-          }
+          if(this.mapLayerData[i].id!=ID){continue;}
+          let members=this.deconstructMembers(this.mapLayerData[i].members);
+          let layerId=this.mapLayerData[i].id;
+          let layerDataObj={
+            id:layerId,
+            type:this.mapLayerData[i].type,
+            members:members,
+            structure:this.mapLayerData[i].structure
+          };
+          this.$set(this.groupLayers,layerId,layerDataObj);
+          break;
         }
       },
       deep:true
