@@ -44,12 +44,10 @@
         :adjust-order-response="adjustOrderTemplate"
         :adjust-item-order-response="adjustItemOrderTemplate"
         :pick-layer-response="pickLayerTemplate"
-        :virtual-list="virtualList"
         @pickLayerRequest="pickLayerApproval"
         @adjustOrderRequest="adjustOrderApproval"
         @adjustItemOrderRequest="adjustItemOrderApproval">
       </banana-group-layer>
-      <div :style="{ height:(virtualList.itemAmount*virtualList.itemHeight)+'px' }"/>
     </div>
     <div class="panelSearch">
       <div class="searchViewClose" v-show="searchResult.length!==0" @click.stop="openSearchView()">
@@ -116,23 +114,6 @@ export default {
     return{
       dropPng,
       showPanel:true,
-      virtualList:{//虚拟渲染列表
-        show:[],//需要渲染的图层id列表
-        containerHeight:500,//图层面板的虚拟列表的可视高度
-        itemHeight:30,//单条成员的高度
-        headHeight:20+30+25,//每个图层的头部高度?20:padding;30:图层类型与选项按钮;25:图层名称与展开收起按钮
-        layerMinHeight:120,//每个图层的最小高度?收起图层后的高度
-        itemAmount:0,//成员列表总数
-        layerConfig:{//每个图层的成员数量统计
-          '2':{
-            id:2,
-            count:50,
-            startIndex:0,
-            endIndex:0,
-            startTop:0,
-          }
-        }
-      },
       searchResult:[],//{element}
       searchShowView:false,
       searchFind:false,
@@ -204,32 +185,9 @@ export default {
       setTimeout(
         ()=>{
           this.showPanel=this.openElementPanel;
-          this.initialVirtualList();
         }
         ,this.$store.state.pageConfig.loadingTime+2
       );
-    },
-    initialVirtualList(){//初始化虚拟列表
-      let height=window.innerHeight;//layerElementPanel .panelContent calc(calc(100% - 20px) - 97px - 30px - 35px);
-      height=height-20-97-30-35;
-      this.virtualList.containerHeight=height;//得到容器高度
-      let len=this.mapLayerOrder.length;
-      for(let i=0;i<len;i++){//循环遍历每个图层并获取成员数量
-        let layerId=this.mapLayerOrder[i];
-        let layer=this.groupLayers[layerId];
-        let member=layer.structure.slice(2);
-        let count=0;
-        let length=member.length;
-        for(let i=0;i<length;i++){
-          if(typeof member[i]==='number'){
-            if(layer.members.hasOwnProperty(member[i])){
-              count++;
-            }
-          }
-        }
-        this.virtualList.layerCount[layerId]=count;
-        this.virtualList.itemAmount+=count;
-      }
     },
     openSearchView(){
       let sta=this.searchShowView;
@@ -949,6 +907,7 @@ export default {
 .elementPanelLayer{
   width: calc(300px - 18px);
   height: calc(100% - 20px);
+  min-height: 740px;
   position: fixed;
   z-index: 555;
   left: 20px;

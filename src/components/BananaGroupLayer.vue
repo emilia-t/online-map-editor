@@ -38,7 +38,6 @@
                               :adjust-item-order-response="adjustItemOrderResponse"
                               :pick-child-group-response="pickChildGroupResult"
                               :pick-layer-id="pickLayerResponse.id"
-                              :virtual-list="virtualList"
                               @renameRequest="renameRequestCheck"
                               @adjustItemOrderRequest="adjustItemOrderApproval"
                               @pickChildGroupRequest="pickChildGroupApproval">
@@ -106,13 +105,6 @@ export default {
   },
   components:{AddNewGroup, SunActive,More,OrangeGroupStructure,PomeloConfirm},
   props:{
-    virtualList:{
-      type:Object,
-      default:function (){
-        return {}
-      },
-      required:true,
-    },
     layer:{
       type:Object,
       default:function (){
@@ -342,6 +334,8 @@ export default {
               this.$refs.layerSeparate.style.left=event.x-this.grabLayerPosOffsetX+'px';
               this.$refs.layerSeparate.style.top=event.y-this.grabLayerPosOffsetY+'px';
               this.$refs.layerSeparate.style.background='rgba(255,255,255,0.5)';
+              this.$refs.layerSeparate.style.overflowY='auto';
+              this.$refs.layerSeparate.style.maxHeight='80%';
               this.grabLayerSeparate=false;
             }else {
               this.groupLayerHeadText='拖到其他图层头部调整顺序';
@@ -372,6 +366,8 @@ export default {
               this.$refs.layerSeparate.style.left='';
               this.$refs.layerSeparate.style.top='';
               this.$refs.layerSeparate.style.background='';
+              this.$refs.layerSeparate.style.overflowY='';
+              this.$refs.layerSeparate.style.maxHeight='';
               this.$refs.eyebrow.style.background='';
             }
             this.grabLayerState=false;

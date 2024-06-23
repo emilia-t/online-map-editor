@@ -168,10 +168,14 @@ export default {
       setTimeout(
         ()=>{
           if(this.$store.state.serverData.socket!==undefined){
-            if(this.$store.state.serverData.socket.loadData===true && this.$store.state.serverData.socket.loadLayer===true){
+            if(this.$store.state.serverData.socket.isLogin){//对于已登录的用户等待数据加载
+              if(this.$store.state.serverData.socket.loadData===true && this.$store.state.serverData.socket.loadLayer===true){
+                this.loading=false;
+              }else {
+                this.changeLoad();
+              }
+            }else {//对于未登录的用户跳过加载数据，需要登录后加载数据
               this.loading=false;
-            }else {
-              this.changeLoad();
             }
           }else {//2秒后再次检查是否加载完毕
             this.changeLoad();

@@ -22,6 +22,13 @@
         </div>
       </div>
     </div>
+    <div class="memberTeamPage" v-if="itemCount>=50">
+      <div :class="pageCount<7?'memberTeamPageRA':'memberTeamPageRB'">
+        <div class="memberTeamPageBt" @click="pageBtUp()">上-页</div>
+        <div :class="pageBtClass(num)"  v-for="num in pageList" v-text="num" @click="pageBtClick(num)"/>
+        <div class="memberTeamPageBt" @click="pageBtDown()">下-页</div>
+      </div>
+    </div>
     <div class="memberTeamVS">
       <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in extractLatter()" v-show="groupExpand">
         <div class="memberTeamContent" v-if="!isArray(item)">
@@ -111,6 +118,9 @@ export default {
   data(){
     return {
       tmpId:null,
+      page:1,//当前页
+      itemCount:0,//成员总数
+      pageCount:1,//一共有多少页
       renameShow:false,
       grabStartY:0,//拖拽开始位置
       groupExpand:true,
@@ -148,13 +158,6 @@ export default {
     }
   },
   props:{
-    virtualList:{
-      type:Object,
-      default:function (){
-        return {}
-      },
-      required:true,
-    },
     pickLayerId:{
       type:Number,
       default:-1,
@@ -250,11 +253,23 @@ export default {
       this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
       this.bindTemplate();
       this.tmpId=this.structure[1].template.id;
-      setTimeout(
-        ()=>{
-          console.log(this.virtualList)
-        }
-      ,2500);
+    },
+    pageBtUp(){//上一页
+      if(this.page<=1)return;
+      this.page--;
+    },
+    pageBtDown(){//下一页
+      if(this.page>=this.pageCount)return;
+      this.page++;
+    },
+    pageBtClass(num){//页数的class
+      if(num==='···')return 'memberTeamPageEl';
+      if(num===this.page)return 'memberTeamPageBtSe';
+      return 'memberTeamPageBt';
+    },
+    pageBtClick(num){//切换页数
+      if(typeof num!=='number')return;
+      this.page=num;
     },
     bindTemplate(){//挂载模板数据到store
       let stu1=this.structure[1];
@@ -589,6 +604,8 @@ export default {
         }
       }
       this.itemCount=refMember.length;
+      this.pageCount=Math.ceil(refMember.length/50);
+      refMember=refMember.splice((this.page-1)*50,50);
       return refMember;
     },
     extractNumber(){//提取除第1-2位外过滤子分组,并去除未定义的引用id
@@ -716,6 +733,21 @@ export default {
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    pageList(){
+      if(this.pageCount<=1){
+        return [];
+      }else if(this.pageCount>1 && this.pageCount<=7){
+        return Array.from({ length: this.pageCount }, (_, i) => i + 1);
+      }else{
+        if(this.page<=3){
+          return [1, 2 , 3 , 4 , 5 ,'···',this.pageCount];
+        }
+        if(this.page>=this.pageCount-5){
+          return [this.pageCount-5, this.pageCount-4 , this.pageCount-3 , this.pageCount-2 , this.pageCount-1 ,this.pageCount];
+        }
+        return [this.page-2, this.page-1, this.page,this.page+1,this.page+2,'···',this.pageCount];
+      }
+    },
     userName(){
       if(this.$store.state.serverData.socket!==undefined){
         if(this.$store.state.serverData.socket.userData!==null){
@@ -1044,6 +1076,89 @@ button:active{
   width: 100%;
   height: auto;
   min-height: 27px;
+}
+.memberTeamPageEl{/*省略符号*/
+  user-select: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 25px;
+  color: #494c50;
+  cursor: default;
+}
+.memberTeamPageBt{/*普通的页面按钮*/
+  user-select: none;
+  min-width: calc(20px - 2px);
+  height: calc(20px - 2px);
+  font-size: 12px;
+  font-weight: 400;
+  background: #ffffff;
+  color: #494c50;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  border: 1px #d7dde4 solid;
+  margin: 0px 2px;
+  cursor: pointer;
+}
+.memberTeamPageBtSe{/*当前选中的页面按钮*/
+  user-select: none;
+  min-width: calc(20px - 2px);
+  height: calc(20px - 2px);
+  font-size: 12px;
+  font-weight: 400;
+  background: #00a1d6;
+  color: #ffffff;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  border: 1px #d7dde4 solid;
+  margin: 0px 2px;
+  cursor: pointer;
+}
+.memberTeamPageRB{
+  width: calc(100%);
+  font-weight: 100;
+  font-size: 14px;
+  color: #191919;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+}
+.memberTeamPageRA{
+  width: calc(100%);
+  font-weight: 100;
+  font-size: 14px;
+  color: #191919;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+.memberTeamPage{
+  width: calc(100%);
+  height: 25px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  color: #000000;
 }
 .memberTeamName{
   width: calc(100% - 2px);
