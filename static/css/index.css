@@ -32,6 +32,11 @@
     background:#f6f6f6;
   }
 }
+.svgNode{
+  user-select: none;
+  pointer-events: painted;
+  opacity: 0;
+}
 .svgAreaPathLine{
   opacity:0.5;
   stroke-linecap:round;

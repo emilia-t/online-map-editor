@@ -49,8 +49,8 @@
           :point-config="point" :show-details-id="showDetailsId" v-show="!mapHiddenElements.has(point.id)">
         </svg-point><!--点位数据-->
 
-        <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0">
-        </svg-point-p0><!--p0-->
+        <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"/><!--p0-->
+<!--        <svg-node/>--><!--用于节点自动吸附-->
       </g>
     </svg>
   </div>
@@ -68,9 +68,10 @@ import SvgLineTemp from "./svgLineTemp";
 import SvgCurveTemp from "./svgCurveTemp";
 import SvgAreaTemp from "./svgAreaTemp";
 import SvgPointTemp from "./svgPointTemp";
+import SvgNode from "./svgNode";
 export default {
   name: "LayerData",
-  components: {SvgPoint,SvgLine,SvgCurve,SvgArea,SvgPointP0,SvgLineTemp,SvgCurveTemp,SvgPointTemp,SvgAreaTemp,SvgEffects},
+  components: {SvgNode,SvgPoint,SvgLine,SvgCurve,SvgArea,SvgPointP0,SvgLineTemp,SvgCurveTemp,SvgPointTemp,SvgAreaTemp,SvgEffects},
   data(){
     return {
       MY_NAME:"LayerData",
