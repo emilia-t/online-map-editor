@@ -41,7 +41,17 @@ To create an online map server, please go here https://github.com/emilia-t/Onlin
 
 ## 🌎️ 一些截图(Some screenshots)
 
+首页、服务器选择页面(Home page, server selection page)：
+
 <img src="https://raw.githubusercontent.com/emilia-t/online-map-editor/main/other/img/START.png" alt="Screenshot 1" width="800"/>
+
+编辑要素(Edit elements)：
+
+<img src="https://raw.githubusercontent.com/emilia-t/online-map-editor/main/other/img/screenshot2.jpg" alt="Screenshot 2" width="800"/>
+
+查看要素(View elements)：
+
+<img src="https://raw.githubusercontent.com/emilia-t/online-map-editor/main/other/img/screenshot3.jpg" alt="Screenshot 3" width="800"/>
 
 ## 🆕 版本更新内容(Version update content)
 
@@ -98,13 +108,13 @@ root
 
 ## 🔧 开发您的地图web程序(Develop your map web program)
 
-### 安装所有的依赖(Install all dependencies)
+#### 安装所有的依赖(Install all dependencies)
 ````
 bash
 npm run install
 ````
 
-### 使用开发模式启动web服务(Starting a web service using development mode)
+#### 使用开发模式启动web服务(Starting a web service using development mode)
 ````
 bash
 npm run dev
@@ -115,9 +125,9 @@ npm run dev
 bash
 npm run build
 ````
-注意：您的服务器还需要额外准备一个URL重定项的模块或程序，以便使vue-route正常工作。
+注意：在启动您的网站之前，您的服务器还需要额外准备一个URL重定项的模块或程序，以便使vue-route正常工作。
 
-Note: Your server also needs to prepare an additional URL redirection module or program to make vue route work properly.
+Note: Before launching your website, your server also needs to prepare an additional URL redirection module or program to make vue route work properly.
 
 如果是Apache2：
 
@@ -141,8 +151,6 @@ If it is Apache2:
 </IfModule>
 ````
 
-
-
 ## 📎 参考文章链接(Reference article link)
 
 | URL | 作者或来源(Author or Source) | 标题(title) | 在本项目中的应用(Application in this project) |
@@ -151,7 +159,6 @@ If it is Apache2:
 |[瓦片(Tile)行列号计算方法](https://xcsf.github.io/blog/2020/06/12/%E7%93%A6%E7%89%87Tile%E8%A1%8C%E5%88%97%E5%8F%B7%E8%AE%A1%E7%AE%97%E6%96%B9%E6%B3%95) | xcsf | 瓦片(Tile)行列号计算方法 | [LayerRealisticBaseMap.vue](https://github.com/emilia-t/online-map-editor/blob/main/src/components/LayerRealisticBaseMap.vue) |
 |[墨卡托投影法](https://zh.wikipedia.org/wiki/%E9%BA%A5%E5%8D%A1%E6%89%98%E6%8A%95%E5%BD%B1%E6%B3%95) | wikipedia | 墨卡托投影法 | [LayerRealisticBaseMap.vue](https://github.com/emilia-t/online-map-editor/blob/main/src/components/LayerRealisticBaseMap.vue) |
 |[Web墨卡托投影](https://zh.wikipedia.org/wiki/Web%E5%A2%A8%E5%8D%A1%E6%89%98%E6%8A%95%E5%BD%B1) | wikipedia | Web墨卡托投影 | [LayerRealisticBaseMap.vue](https://github.com/emilia-t/online-map-editor/blob/main/src/components/LayerRealisticBaseMap.vue) |
-
 
 ## 💪 感谢所有的贡献者(Thank you to all the contributors)
 ALIMU
