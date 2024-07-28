@@ -1,4 +1,6 @@
-![banner](https://raw.githubusercontent.com/emilia-t/online-map-editor/main/other/img/map-log.png)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/emilia-t/online-map-editor/main/other/img/map-log.png" alt="log" width="64"/>
+</div>
 
 <div align="center">
 <h1>在线地图编辑器 online-map-editor</h1>
@@ -37,7 +39,8 @@ Used to connect to online map servers and perform real-time editing of map data
 
 To create an online map server, please go here https://github.com/emilia-t/OnlineMapServer
 
-##🌎️ 一些截图(Some screenshots)
+## 🌎️ 一些截图(Some screenshots)
+
 <img src="https://raw.githubusercontent.com/emilia-t/online-map-editor/main/other/img/START.png" alt="Screenshot 1" width="800"/>
 
 ## 🆕 版本更新内容(Version update content)
