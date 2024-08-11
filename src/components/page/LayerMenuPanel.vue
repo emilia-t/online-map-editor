@@ -310,7 +310,7 @@
             <span class="cutA">按键</span><span class="cutB">功能描述</span>
           </div>
           <div class="shortcut">
-            <span class="cutA">1</span><span class="cutB">创建兴趣点</span>
+            <span class="cutA">1</span><span class="cutB">创建点</span>
           </div>
           <div class="shortcut">
             <span class="cutA">2</span><span class="cutB">创建路径</span>
@@ -322,7 +322,10 @@
             <span class="cutA">4</span><span class="cutB">创建曲线</span>
           </div>
           <div class="shortcut">
-            <span class="cutA">空格</span><span class="cutB">暂停创建节点</span>
+            <span class="cutA">L</span><span class="cutB">打开日志面板</span>
+          </div>
+          <div class="shortcut">
+            <span class="cutA">space</span><span class="cutB">按住空格暂停创建节点</span>
           </div>
           <div class="shortcut">
             <span class="cutA">Enter</span><span class="cutB">结束创建要素</span>
@@ -334,7 +337,7 @@
             <span class="cutA">Del</span><span class="cutB">删除节点或元素</span>
           </div>
           <div class="shortcut">
-            <span class="cutA">L</span><span class="cutB">打开日志面板</span>
+            <span class="cutA">Alt</span><span class="cutB">关闭或启用节点吸附</span>
           </div>
           <div class="shortcutTypeB">
             <div class="shortcutText">
