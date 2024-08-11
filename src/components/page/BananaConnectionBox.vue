@@ -2,17 +2,17 @@
 <div class="BananaConnectionBox"><!--连接盒子-->
   <div class="ConnectionImgBox"><!--图像-->
     <img class="ConnectionImg" alt="图片加载失败" v-if="ServerImage!==''" :src="ServerImage"/>
-    <image-loading-failed v-if="ServerImage===''"></image-loading-failed>
+    <image-loading-failed v-if="ServerImage===''"/>
   </div>
   <router-link :to="`/m/${MyConfig.serverKey}`" title="点击打开地图"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
   <div class="downloadButtonBox" title="下载OMS文件" v-if="source==='manual'" @click="downLoad()"><!--右上角更多属性按钮-->
-    <download></download>
+    <download/>
   </div>
   <div class="moreButtonBox" title="点击查看更多" @click="openDetailBoard()"><!--右上角更多属性按钮-->
-    <svg t="1681047402121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="33387" width="200" height="200"><path d="M288 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33388" data-spm-anchor-id="a313x.7781069.0.i32" class="selected"></path><path d="M512 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33389" data-spm-anchor-id="a313x.7781069.0.i33" class="selected"></path><path d="M736 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33390" data-spm-anchor-id="a313x.7781069.0.i34" class="selected"></path></svg>
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M288 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33388" data-spm-anchor-id="a313x.7781069.0.i32" class="selected"></path><path d="M512 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33389" data-spm-anchor-id="a313x.7781069.0.i33" class="selected"></path><path d="M736 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z" fill="#ffffff" p-id="33390" data-spm-anchor-id="a313x.7781069.0.i34" class="selected"></path></svg>
   </div>
   <div class="onlineNumber" title="在线人数"><!--左上角在线人数-->
-    <span v-text="onlineNumberView"></span>
+    <span v-text="onlineNumberView"/>
   </div>
   <div class="ConnectionDetails"><!--底部信息-->
     <div>{{MyConfig.serverName}}</div>
@@ -21,36 +21,37 @@
   </div>
   <div class="moreBoard" ref="moreBoard"><!--点击更多显示信息-->
     <div class="moreBoardClose" title="点击关闭" @click="closeDetailBoard">
-      <svg t="1681049938063" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="34516" width="200" height="200"><path d="M235.403636 182.178909l270.475637 270.498909L776.401455 182.178909a58.181818 58.181818 0 1 1 82.292363 82.292364L588.171636 534.946909 858.693818 805.469091a58.181818 58.181818 0 1 1-82.292363 82.269091L505.879273 617.239273 235.403636 887.738182A58.181818 58.181818 0 0 1 153.134545 805.469091l270.475637-270.522182L153.134545 264.471273a58.181818 58.181818 0 0 1 82.269091-82.292364z" fill="#282C33" p-id="34517"></path></svg>
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M235.403636 182.178909l270.475637 270.498909L776.401455 182.178909a58.181818 58.181818 0 1 1 82.292363 82.292364L588.171636 534.946909 858.693818 805.469091a58.181818 58.181818 0 1 1-82.292363 82.269091L505.879273 617.239273 235.403636 887.738182A58.181818 58.181818 0 0 1 153.134545 805.469091l270.475637-270.522182L153.134545 264.471273a58.181818 58.181818 0 0 1 82.269091-82.292364z" fill="#282C33" p-id="34517"></path></svg>
     </div>
-    <span>服务器Key：{{MyConfig.serverKey}}</span>
-    <span>最大在线人数：{{MyConfig.maxOnlineUser}}</span>
-    <span>最大宽度：{{MyConfig.maxWidth}}</span>
-    <span>最小宽度：{{MyConfig.minWidth}}</span>
-    <span>最大高度：{{MyConfig.maxHeight}}</span>
-    <span>最小高度：{{MyConfig.minHeight}}</span>
-    <span>默认点X：{{MyConfig.p0X}}</span>
-    <span>默认点Y：{{MyConfig.p0Y}}</span>
-    <span>横轴单位1：{{MyConfig.unit1X}}</span>
-    <span>纵轴单位1：{{MyConfig.unit1Y}}</span>
-    <span>最大层级：{{MyConfig.maxLayer}}</span>
-    <span>最小层级：{{MyConfig.minLayer}}</span>
-    <span>默认层级：{{MyConfig.defaultLayer}}</span>
-    <span>是否启用底图：{{MyConfig.enableBaseMap}}</span>
-    <span>最大底图缩放数：{{MyConfig.maxZoom}}</span>
-    <span>最小底图缩放数：{{MyConfig.minZoom}}</span>
-    <span>默认底图缩放数：{{MyConfig.defaultZoom}}</span>
-    <span>中心点X：{{MyConfig.defaultX}}</span>
-    <span>中心点Y：{{MyConfig.defaultY}}</span>
-    <span>分辨率：{{MyConfig.resolutionX}}×{{MyConfig.resolutionY}}</span>
+    <span v-if="isNotEmpty(MyConfig.serverKey)">服务器Key：{{MyConfig.serverKey}}</span>
+    <span v-if="isNotEmpty(MyConfig.maxOnlineUser)">最大在线人数：{{MyConfig.maxOnlineUser}}</span>
+    <span v-if="isNotEmpty(MyConfig.maxWidth)">最大宽度：{{MyConfig.maxWidth}}</span>
+    <span v-if="isNotEmpty(MyConfig.minWidth)">最小宽度：{{MyConfig.minWidth}}</span>
+    <span v-if="isNotEmpty(MyConfig.maxHeight)">最大高度：{{MyConfig.maxHeight}}</span>
+    <span v-if="isNotEmpty(MyConfig.minHeight)">最小高度：{{MyConfig.minHeight}}</span>
+    <span v-if="isNotEmpty(MyConfig.p0X)">默认点X：{{MyConfig.p0X}}</span>
+    <span v-if="isNotEmpty(MyConfig.p0Y)">默认点Y：{{MyConfig.p0Y}}</span>
+    <span v-if="isNotEmpty(MyConfig.unit1X)">横轴单位1：{{MyConfig.unit1X}}</span>
+    <span v-if="isNotEmpty(MyConfig.unit1Y)">纵轴单位1：{{MyConfig.unit1Y}}</span>
+    <span v-if="isNotEmpty(MyConfig.maxLayer)">最大层级：{{MyConfig.maxLayer}}</span>
+    <span v-if="isNotEmpty(MyConfig.minLayer)">最小层级：{{MyConfig.minLayer}}</span>
+    <span v-if="isNotEmpty(MyConfig.defaultLayer)">默认层级：{{MyConfig.defaultLayer}}</span>
+    <span v-if="isNotEmpty(MyConfig.enableBaseMap)">是否启用底图：{{MyConfig.enableBaseMap}}</span>
+    <span v-if="isNotEmpty(MyConfig.maxZoom)">最大底图缩放数：{{MyConfig.maxZoom}}</span>
+    <span v-if="isNotEmpty(MyConfig.minZoom)">最小底图缩放数：{{MyConfig.minZoom}}</span>
+    <span v-if="isNotEmpty(MyConfig.defaultZoom)">默认底图缩放数：{{MyConfig.defaultZoom}}</span>
+    <span v-if="isNotEmpty(MyConfig.defaultX)">中心点X：{{MyConfig.defaultX}}</span>
+    <span v-if="isNotEmpty(MyConfig.defaultY)">中心点Y：{{MyConfig.defaultY}}</span>
+    <span v-if="isNotEmpty(MyConfig.resolutionX) && isNotEmpty(MyConfig.resolutionY)">分辨率：{{MyConfig.resolutionX}}×{{MyConfig.resolutionY}}</span>
   </div>
   <div class="serverDelete" ref="serverDelete" title="点击删除服务器" v-if="source==='manual'"><!--左下角的删除按钮-->
-    <svg t="1682340682455" ref="serverDeleteIcon" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10839" width="200" height="200"><path d="M585.27998 767.998465 585.27998 365.722472c0-46.879704 73.238025-46.879704 73.238025 0l0 402.275993C658.518005 814.883285 585.27998 814.883285 585.27998 767.998465L585.27998 767.998465 585.27998 767.998465zM365.500415 767.998465 365.500415 365.722472c0-46.879704 73.271794-46.879704 73.271794 0l0 402.275993C438.771185 814.883285 365.500415 814.883285 365.500415 767.998465L365.500415 767.998465 365.500415 767.998465zM988.190423 182.861748 805.060569 182.861748l0-73.16844c0-60.576657-49.247634-109.692285-108.754936-109.692285L328.879356 0.001023c-60.673871 0-109.887736 49.116651-109.887736 109.692285l0 73.16844L35.860742 182.861748c-46.949288 0-46.949288 73.104995 0 73.104995l952.32968 0C1035.104919 255.966743 1035.104919 182.861748 988.190423 182.861748L988.190423 182.861748 988.190423 182.861748zM292.26239 109.692285c0-19.428491 17.158798-36.58729 36.615942-36.58729l367.426277 0c19.459191 0 35.484166 14.863523 35.484166 36.58729l0 73.16844L292.26239 182.860724 292.26239 109.692285 292.26239 109.692285zM768.410857 1024 255.607562 1024c-60.640102 0-109.853967-49.111534-109.853967-109.687168L145.753595 365.722472c0-21.723767 17.158798-36.586267 36.615942-36.586267 19.462261 0 36.621059 14.862499 36.621059 36.586267l0 548.589336c0 19.389606 17.192567 36.547381 36.615942 36.547381l512.803295 0c19.457144 0 36.649711-17.157775 36.649711-36.547381L805.059546 366.855272c0-48.012504 73.238025-48.012504 73.238025 0l0 547.456536C878.298594 974.888466 829.084729 1024 768.410857 1024L768.410857 1024zM768.410857 1024" fill="#272636" p-id="10840"></path></svg>
+    <svg ref="serverDeleteIcon" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M585.27998 767.998465 585.27998 365.722472c0-46.879704 73.238025-46.879704 73.238025 0l0 402.275993C658.518005 814.883285 585.27998 814.883285 585.27998 767.998465L585.27998 767.998465 585.27998 767.998465zM365.500415 767.998465 365.500415 365.722472c0-46.879704 73.271794-46.879704 73.271794 0l0 402.275993C438.771185 814.883285 365.500415 814.883285 365.500415 767.998465L365.500415 767.998465 365.500415 767.998465zM988.190423 182.861748 805.060569 182.861748l0-73.16844c0-60.576657-49.247634-109.692285-108.754936-109.692285L328.879356 0.001023c-60.673871 0-109.887736 49.116651-109.887736 109.692285l0 73.16844L35.860742 182.861748c-46.949288 0-46.949288 73.104995 0 73.104995l952.32968 0C1035.104919 255.966743 1035.104919 182.861748 988.190423 182.861748L988.190423 182.861748 988.190423 182.861748zM292.26239 109.692285c0-19.428491 17.158798-36.58729 36.615942-36.58729l367.426277 0c19.459191 0 35.484166 14.863523 35.484166 36.58729l0 73.16844L292.26239 182.860724 292.26239 109.692285 292.26239 109.692285zM768.410857 1024 255.607562 1024c-60.640102 0-109.853967-49.111534-109.853967-109.687168L145.753595 365.722472c0-21.723767 17.158798-36.586267 36.615942-36.586267 19.462261 0 36.621059 14.862499 36.621059 36.586267l0 548.589336c0 19.389606 17.192567 36.547381 36.615942 36.547381l512.803295 0c19.457144 0 36.649711-17.157775 36.649711-36.547381L805.059546 366.855272c0-48.012504 73.238025-48.012504 73.238025 0l0 547.456536C878.298594 974.888466 829.084729 1024 768.410857 1024L768.410857 1024zM768.410857 1024" fill="#272636" p-id="10840"></path></svg>
   </div>
   <div class="serverStatus" title="服务器在线状态" :style="`color:${onlineShowColor}`"><!--右下角的在线状态-->
     <span class="serverStatusSpan">{{onlineStatusText}}</span>
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px">
-      <circle style="transition: 1s" r="5px" :fill="onlineShowColor" cx="10" cy="10" stroke-width="1" pointer-events="fill" fill-opacity="0.8"></circle>
+      <circle style="transition: 1s" r="5px" :fill="onlineShowColor" cx="10" cy="10" stroke-width="1"
+              pointer-events="fill" fill-opacity="0.8"/>
     </svg>
   </div>
 </div>
@@ -185,6 +186,9 @@ export default {
         this.appendDeleteServer();//删除按钮添加删除服务器的事件
       }
     },
+    isNotEmpty(value){//检测传入参数是否是null或空字符
+      return value !== null && value !== '';
+    },
     deleteServer(){//删除服务器
       let Config=JSON.parse(this.$root.general_script.handleLocalStorage('get','servers'));//1.查询本地存储
       delete Config[this.MyConfig.serverAddress];
@@ -201,6 +205,7 @@ export default {
     checkOnline(address){//检查服务器在线状态
       try {
         let tempCon=new WebSocket(address);
+        setTimeout(()=>tempCon.close(),1500);//关闭测试连接
         tempCon.onopen=()=>{
           if(this.MyConfig.imgTime===''){//查询本地配置中此服务器的img更新时间，如果没有则申请时将time设置为1970年1月1日0时0分0秒
             this.MyConfig.imgTime='1970-01-01 00:00:00';
@@ -211,8 +216,7 @@ export default {
           tempCon.send(json);
           let json2=JSON.stringify({type:'get_serverImg',data:{time:this.imgTime}});//获取服务器图像
           tempCon.send(json2);
-          setTimeout(()=>tempCon.close(),500);//关闭测试连接
-        }
+        };
         tempCon.onmessage=(event)=>{
           let jsonData=JSON.parse(event.data);//1.解析数据//1.转化json
           if(jsonData.type!==undefined){//2.检测是否存在必要值'type'
@@ -301,7 +305,7 @@ export default {
               }
             }
           }
-        }
+        };
         tempCon.onerror=(event)=>{
           event.preventDefault();
           this.onlineShowColor='#ff1414';

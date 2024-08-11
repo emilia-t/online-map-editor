@@ -1,15 +1,15 @@
 <template>
   <div id="app">
-    <layer-notification-popup></layer-notification-popup>
-    <layer-toolbox></layer-toolbox>
-    <layer-log></layer-log>
-    <page-layer-menu-panel></page-layer-menu-panel><!--左侧的菜单面板-->
+    <layer-notification-popup/>
+    <layer-toolbox/>
+    <layer-log/>
+    <page-layer-menu-panel/><!--左侧的菜单面板-->
     <div id="SeparateHomePage" v-show="homeSeparateState"><!--初始界面-选择服务器+配置服务器-->
-      <!--<page-layer-background></page-layer-background>--><!--背景层-->
-      <page-layer-connection-interface></page-layer-connection-interface><!--连接管理界面-->
+      <!--<page-layer-background/>--><!--背景层-->
+      <page-layer-connection-interface/><!--连接管理界面-->
     </div>
-    <router-view></router-view><!--地图主体-->
-    <layer-bottom-anchor></layer-bottom-anchor><!--底部锚-->
+    <router-view/><!--地图主体-->
+    <layer-bottom-anchor/><!--底部锚，除作者以外的人如果需要修改此处，请备注原因！If anyone other than the author needs to modify this area, please indicate the reason!-->
   </div>
 </template>
 

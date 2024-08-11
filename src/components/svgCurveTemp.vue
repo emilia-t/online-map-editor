@@ -62,6 +62,12 @@
       this.startSetting();
     },
     computed:{
+      adsorptionVX(){
+        return this.$store.state.mapConfig.adsorption.vx;
+      },
+      adsorptionVY(){
+        return this.$store.state.mapConfig.adsorption.vy;
+      },
       tempCurve(){
         return this.$store.state.mapConfig.tempCurve;
       },
@@ -147,8 +153,15 @@
             let yb=-this.tempCurve.showPos[i+1].y/this.unit1Y;
             str+=' Q'+xa+','+ya+' '+(xa+xb)/2+','+(ya+yb)/2;
           }
-          let x3=this.mouse.x+this.movingDistance.x;
-          let y3=this.mouse.y-this.movingDistance.y;
+          let x3=null;
+          let y3=null;
+          if(this.adsorptionVX!==null && this.adsorptionVY!==null){
+            x3=this.adsorptionVX;
+            y3=this.adsorptionVY;
+          }else{
+            x3=this.mouse.x+this.movingDistance.x;
+            y3=this.mouse.y-this.movingDistance.y;
+          }
           str+=' T'+x3+','+y3;
           return str;
         }
@@ -162,15 +175,31 @@
           let xb=this.tempCurve.showPos[1].x/this.unit1X;
           let yb=-this.tempCurve.showPos[1].y/this.unit1Y;
           str+=' Q'+xa+','+ya+' '+(xa+xb)/2+','+(ya+yb)/2;
-          let x3=this.mouse.x+this.movingDistance.x;
-          let y3=this.mouse.y-this.movingDistance.y;
+          let x3=null;
+          let y3=null;
+          if(this.adsorptionVX!==null && this.adsorptionVY!==null){
+            x3=this.adsorptionVX;
+            y3=this.adsorptionVY;
+          }else{
+            x3=this.mouse.x+this.movingDistance.x;
+            y3=this.mouse.y-this.movingDistance.y;
+          }
           str+=' T'+x3+','+y3;
           return str;
         }
         else if(len===1){
           let str='';
           str+='M'+(this.tempCurve.showPos[0].x/this.unit1X)+','+(-this.tempCurve.showPos[0].y/this.unit1Y);
-          str+=' L'+(this.mouse.x+this.movingDistance.x)+','+(this.mouse.y-this.movingDistance.y);
+          let x3=null;
+          let y3=null;
+          if(this.adsorptionVX!==null && this.adsorptionVY!==null){
+            x3=this.adsorptionVX;
+            y3=this.adsorptionVY;
+          }else{
+            x3=this.mouse.x+this.movingDistance.x;
+            y3=this.mouse.y-this.movingDistance.y;
+          }
+          str+=' L'+x3+','+y3;
           return str;
         }
         else if(len===0){

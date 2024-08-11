@@ -18,6 +18,9 @@
         <span data-s="12" class="pomeloLD2">.</span>
         <span data-s="13" class="pomeloLD2">.</span>
       </div>
+      <div class="pomeloLDC">地图数据&nbsp;&nbsp;<span v-if="!loadData">加载中</span><span v-if="loadData">加载完毕</span></div>
+      <div class="pomeloLDC">图层数据&nbsp;&nbsp;<span v-if="!loadLayer">加载中</span><span v-if="loadLayer">加载完毕</span></div>
+      <div class="pomeloLDR">长期处于加载中&nbsp;&nbsp;请刷新页面重试</div>
     </div>
 </template>
 <script>
@@ -39,6 +42,10 @@ mounted(){
     if(this.count===this.Emoji.length)this.count=0;
     this.emoji=this.Emoji[this.count++];
     },2000);
+},
+computed:{
+  loadData(){return this.$store.state.serverData.socket.loadData},
+  loadLayer(){return this.$store.state.serverData.socket.loadLayer}
 },
 watch:{
   view:{

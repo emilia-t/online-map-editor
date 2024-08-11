@@ -842,11 +842,11 @@ export default {
     }
   },
   watch:{
-    virtualLst:{
-      handler(newValue){
-        console.log(newValue);
-      }
-    },
+    // virtualLst:{
+    //   handler(newValue){
+    //     console.log(newValue);
+    //   }
+    // },
     modify:{
       handler(){//当本分组模板更新后更新使用中的模板
         let im='';

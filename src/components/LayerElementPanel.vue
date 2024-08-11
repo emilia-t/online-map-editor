@@ -512,10 +512,22 @@ export default {
           let element=[members[item]+'',item];//[类型数字,ID]
           let ID=parseInt(element[1]);
           switch(element[0]){
-            case '1':{ref[item]=pointsMap.get(ID);break;}
-            case '2':{ref[item]=linesMap.get(ID);break;}
-            case '3':{ref[item]=areasMap.get(ID);break;}
-            case '4':{ref[item]=curvesMap.get(ID);break;}
+            case '1':{
+              if(pointsMap.has(ID)){ref[item]=pointsMap.get(ID);}
+              break;
+            }
+            case '2':{
+              if(linesMap.has(ID)){ref[item]=linesMap.get(ID);}
+              break;
+            }
+            case '3':{
+              if(areasMap.has(ID)){ref[item]=areasMap.get(ID);}
+              break;
+            }
+            case '4':{
+              if(curvesMap.has(ID)){ref[item]=curvesMap.get(ID);}
+              break;
+            }
           }
         }
       );

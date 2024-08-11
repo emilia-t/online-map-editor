@@ -1,6 +1,6 @@
 <template>
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
-    <div class="controlButtonBox"><!--添加按钮-->
+    <div class="controlButtonBox1"><!--添加按钮-->
       <div @click="pointButton()" class="ButtonOut">
         <point :custom="'fill:'+Url1Color"/>
       </div>
@@ -12,6 +12,21 @@
       </div>
       <div @click="curveButton()" class="ButtonOut">
         <segment-curve :custom="'fill:'+Url4Color"/>
+      </div>
+    </div>
+    <div class="controlButtonBox2" ref="controlButtonBox2">
+      <div class="ButtonOut" @click="showBaseLayerList()">
+        <layer-switch :custom="'cursor:pointer'"/>
+      </div>
+      <div class="baseLayerList" v-if="baseMapListView">
+        <div class="defaultUseLayer">
+          <input type="radio"  id="defaultBaseMapOpt" name="baseMapGroup" :checked="baseMapSelectId===-1" @click="baseMapSelectId=-1"/>
+          <label for="defaultBaseMapOpt" v-text="'默认底图'"/>
+        </div>
+        <div class="baseLayerSelect" v-for="map in baseMapList" :key="map.id">
+          <input type="radio"  :id="'baseMapOpt'+map.id" name="baseMapGroup" :value="map.url" :checked="baseMapSelectId===map.id" @click="baseMapSelectId=map.id"/>
+          <label :for="'baseMapOpt'+map.id" v-text="map.name"/>
+        </div>
       </div>
     </div>
     <banana-element-operation-board/><!--元素右键编辑面板-->
@@ -35,9 +50,10 @@ import Point from "./svgValidIcons/40X/point";
 import SegmentLine from "./svgValidIcons/40X/segmentLine";
 import Region from "./svgValidIcons/40X/region";
 import SegmentCurve from './svgValidIcons/40X/segmentCurve';
+import LayerSwitch from './svgValidIcons/40X/LayerSwitch';
 export default {
   name: "LayerControl",
-  components:{Point,SegmentLine,Region,SegmentCurve,BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaRecorderPanel,BananaLineAttributeBoard,BananaCurveAttributeBoard,BananaAreaAttributeBoard},
+  components:{Point,SegmentLine,Region,SegmentCurve,BananaElementOperationBoard, BananaControlButton, BananaPointAttributeBoard,BananaRecorderPanel,BananaLineAttributeBoard,BananaCurveAttributeBoard,BananaAreaAttributeBoard,LayerSwitch},
   data(){
     return {
       MY_NAME:"LayerControl",
@@ -57,6 +73,34 @@ export default {
       lineListener:false,
       curveListener:false,
       pointListener:false,
+      baseMapListView:false,
+      baseMapSelectId:-1,
+      baseMapList:[
+        {
+          name:'高德地图', url:'http://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8', id:0,
+        },
+        // {
+        //   name:'百度地图', url:'http://maponline1.bdimg.com/tile/?qt=vtile&styles=pl&scaler=1&showtext=1', id:3,
+        // },
+        {
+          name:'谷歌地图', url:'http://www.google.cn/maps/vt?lyrs=m@189&gl=cn', id:6,
+        },
+        {
+          name:'OpenStreetMap', url:'http://tile.openstreetmap.org', id:9,// /z/x/y
+        },
+        {
+          name:'Carto Voyager', url:'http://b.basemaps.cartocdn.com/rastertiles/voyager', id:10,// /z/x/y
+        },
+        {
+          name:'高德卫星影像', url:'http://webst04.is.autonavi.com/appmaptile?style=6', id:12,
+        },
+        {
+          name:'Google Satellite', url:'http://khms1.google.com/kh/v=947?', id:15,
+        },
+        {
+          name:'ArcGIS Satellite', url:'http://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile', id:18,// /z/x/y
+        }
+      ],
       theConfig:{
         buttonA:false,
         buttonB:false,
@@ -91,6 +135,10 @@ export default {
     startSetting(){
       this.KeyListen();//开启键盘监听
       this.MultiKeyListen();
+    },
+    showBaseLayerList(){
+      this.$refs.controlButtonBox2.classList.toggle('baseMapListShow');
+      this.baseMapListView=!this.baseMapListView;
     },
     addAreaStart(){
       if(!this.isAddArea){
@@ -129,7 +177,7 @@ export default {
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 if(ev.target.classList[0]==='Icon40X'){return;}
-                let Pos=this.computeMouseActualPos(ev)//计算新增点位置
+                let Pos=this.computeMouseActualPos(ev);//计算新增点位置
                 if(Pos.x===this.theConfig.areaAddNodeLastPos.x &&
                    Pos.y===this.theConfig.areaAddNodeLastPos.y){
                   return false;
@@ -194,7 +242,13 @@ export default {
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 if(ev.target.classList[0]==='Icon40X'){return;}
-                let Pos=this.computeMouseActualPos(ev);//计算新增点位置
+                let Pos={x:null,y:null};
+                if(this.adsorptionX!==null && this.adsorptionY!==null){
+                  Pos.x=this.adsorptionX;//复用吸附的节点坐标
+                  Pos.y=this.adsorptionY;
+                }else{
+                  Pos=this.computeMouseActualPos(ev);//计算新增点位置
+                }
                 if(Pos.x===this.theConfig.lineAddNodeLastPos.x &&
                   Pos.y===this.theConfig.lineAddNodeLastPos.y){//避免在同一个位置添加点
                   return false;
@@ -330,7 +384,13 @@ export default {
               let tag=ev.target.nodeName;//判断target
               if(tag==='svg' || tag==='polyline' || tag==='circle' || tag==='path' || tag==='polygon'){
                 if(ev.target.classList[0]==='Icon40X'){return;}
-                let Pos=this.computeMouseActualPos(ev);//计算新增点位置
+                let Pos={x:null,y:null};
+                if(this.adsorptionX!==null && this.adsorptionY!==null){
+                  Pos.x=this.adsorptionX;//复用吸附的节点坐标
+                  Pos.y=this.adsorptionY;
+                }else{
+                  Pos=this.computeMouseActualPos(ev);//计算新增点位置
+                }
                 if(Pos.x===this.theConfig.curveAddNodeLastPos.x &&
                   Pos.y===this.theConfig.curveAddNodeLastPos.y){//避免在同一个位置添加点
                   return false;
@@ -439,10 +499,12 @@ export default {
         let KEY=e.key;
         switch (KEY){
           case 'F8':{
+            e.preventDefault();
             this.F8Event();
             break;
           }
           case '1':{
+            e.preventDefault();
             if(!this.enablePoint){
               this.$store.commit('setCoLogMessage',{text:'添加点已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
@@ -451,6 +513,7 @@ export default {
             break;
           }
           case '2':{
+            e.preventDefault();
             if(!this.enableLine){
               this.$store.commit('setCoLogMessage',{text:'添加线段已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
@@ -459,6 +522,7 @@ export default {
             break;
           }
           case '3':{
+            e.preventDefault();
             if(!this.enableArea){
               this.$store.commit('setCoLogMessage',{text:'添加区域已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
@@ -467,6 +531,7 @@ export default {
             break;
           }
           case '4':{
+            e.preventDefault();
             if(!this.enableCurve){
               this.$store.commit('setCoLogMessage',{text:'添加曲线已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
@@ -475,10 +540,12 @@ export default {
             break;
           }
           case ' ':{
+            e.preventDefault();
             this.nodeSuppressor=false;
             break;
           }
           case 'Escape':{
+            e.preventDefault();
             if(this.buttonA){
               this.addPointStart();
             }
@@ -494,6 +561,7 @@ export default {
             break;
           }
           case 'Delete':{
+            e.preventDefault();
             if(this.$store.state.detailsPanelConfig.targetNode===null){
               if(this.$store.state.detailsPanelConfig.target!==-1){
                 let id=this.$store.state.detailsPanelConfig.target;
@@ -512,11 +580,26 @@ export default {
             break;
           }
           case 'Enter':{
+            e.preventDefault();
             if(this.isAddArea){
               this.addAreaEnd();
             }
             if(this.isAddLine){
               this.addLineEnd();
+            }
+            if(this.isAddCurve){
+              this.addCurveEnd();
+            }
+            break;
+          }
+          case 'Alt':{
+            e.preventDefault();
+            if(this.adsorptionNode){
+              this.$store.commit('setUnAdsorptionNode');//关闭自动节点吸附
+              this.$store.commit('setCoLogMessage',{text:'已关闭自动吸附',from:'internal:LayerControl',type:'tip'});
+            }else{
+              this.$store.commit('setOpAdsorptionNode');//开启自动节点吸附
+              this.$store.commit('setCoLogMessage',{text:'已启用自动吸附',from:'internal:LayerControl',type:'tip'});
             }
             break;
           }
@@ -529,6 +612,7 @@ export default {
         let KEY=e.key;
         switch (KEY){
           case ' ':{
+            e.preventDefault();
             this.nodeSuppressor=true;
           }
         }
@@ -582,9 +666,8 @@ export default {
                   updateId:intent.updateId,
                   changes:{color:intent.oldValue}
                 };
-
                 this.$store.state.serverData.socket.broadcastUpdateElement(sendDataObj,intent.class);
-                break;s
+                break;
               }
               case 'width':{
                 let sendDataObj={
@@ -641,6 +724,12 @@ export default {
     },
   },
   computed:{
+    adsorptionNode(){
+      return this.$store.state.userSettingConfig.adsorptionNode;
+    },
+    defaultBaseMapUrl(){
+      return this.$store.state.baseMapConfig.baseLayer;
+    },
     templateId(){
       return this.$store.state.templateConfig.useTpId+this.$store.state.templateConfig.useTpName
     },
@@ -719,8 +808,33 @@ export default {
     svgMouseDown(){
       return this.$store.state.mapConfig.svgMouseDown;
     },
+    adsorptionX(){
+      return this.$store.state.mapConfig.adsorption.x;
+    },
+    adsorptionY(){
+      return this.$store.state.mapConfig.adsorption.y;
+    },
+    adsorptionVX(){
+      return this.$store.state.mapConfig.adsorption.vx;
+    },
+    adsorptionVY(){
+      return this.$store.state.mapConfig.adsorption.vy;
+    },
   },
   watch:{
+    baseMapSelectId:{
+      handler(value){
+        if(value===-1){
+          this.$store.state.baseMapConfig.baseMap.setBaseMapUrl(this.defaultBaseMapUrl);
+        }else {
+          for(let i=0;i<this.baseMapList.length;i++){
+            if(this.baseMapList[i].id===value){
+              this.$store.state.baseMapConfig.baseMap.setBaseMapUrl(this.baseMapList[i].url);
+            }
+          }
+        }
+      }
+    },
     enablePoint:{
       handler(value){
         if(!value){
@@ -894,7 +1008,11 @@ export default {
           this.$store.state.mapConfig.tempLine.point.x=newValue[0].x;//1更新临时线数据
           this.$store.state.mapConfig.tempLine.point.y=newValue[0].y;
           this.$store.state.mapConfig.tempLine.points.push(newValue[newValue.length-1]);
-          this.$store.state.mapConfig.tempLine.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X,y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});//2.更新临时线显示位置
+          if(this.adsorptionVX!==null && this.adsorptionVY!==null){
+            this.$store.state.mapConfig.tempLine.showPos.push({x:this.adsorptionVX,y:-this.adsorptionVY});//2.更新临时线显示位置
+          }else{
+            this.$store.state.mapConfig.tempLine.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X,y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});//2.更新临时线显示位置
+          }
         }else {
           this.$store.state.mapConfig.tempLine.point.x=0;
           this.$store.state.mapConfig.tempLine.point.y=0;
@@ -913,12 +1031,12 @@ export default {
           this.$store.state.mapConfig.tempCurve.point.x=newValue[0].x;//1更新临时线数据
           this.$store.state.mapConfig.tempCurve.point.y=newValue[0].y;
           this.$store.state.mapConfig.tempCurve.points.push(newValue[newValue.length-1]);
-          this.$store.state.mapConfig.tempCurve.showPos.push(
-            {
-              x:this.$store.state.mapConfig.svgClick.x*this.unit1X,
-              y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y
-            }
-            );//2.更新临时线显示位置
+
+          if(this.adsorptionVX!==null && this.adsorptionVY!==null){
+            this.$store.state.mapConfig.tempCurve.showPos.push({x:this.adsorptionVX,y:-this.adsorptionVY});//2.更新临时线显示位置
+          }else{
+            this.$store.state.mapConfig.tempCurve.showPos.push({x:this.$store.state.mapConfig.svgClick.x*this.unit1X, y:-this.$store.state.mapConfig.svgClick.y*this.unit1Y});//2.更新临时线显示位置
+          }
         }else {
           this.$store.state.mapConfig.tempCurve.point.x=0;
           this.$store.state.mapConfig.tempCurve.point.y=0;
@@ -1010,7 +1128,7 @@ export default {
   flex-direction: column;
   align-items: center;
 }
-.controlButtonBox{
+.controlButtonBox1{
   width: 60px;
   height: 220px;
   display: flex;
@@ -1024,5 +1142,49 @@ export default {
   background: white;
   border-radius: 6px;
   box-shadow:  #c5c5c5 0px 0px 6px;
+}
+.controlButtonBox2{
+  width: 60px;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: fixed;
+  z-index: 550;
+  right: 10px;
+  top:310px;
+  background: white;
+  border-radius: 6px;
+  box-shadow:  #c5c5c5 0px 0px 6px;
+}
+.baseMapListShow{
+  width: auto;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: fixed;
+  z-index: 550;
+  right: 10px;
+  top:310px;
+  background: white;
+  border-radius: 6px;
+  box-shadow:  #c5c5c5 0px 0px 6px;
+}
+.baseLayerSelect{
+  width: auto;
+  height: 30px;
+  margin: 0px 8px;
+  font-size: 14.5px;
+  font-weight: 400;
+}
+.defaultUseLayer{
+  width: auto;
+  height: 30px;
+  margin: 0px 8px;
+  font-size: 14.5px;
+  font-weight: 400;
 }
 </style>

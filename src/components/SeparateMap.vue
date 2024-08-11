@@ -280,6 +280,12 @@ export default {
         this.$store.state.mapConfig.zoomAdd=add;
         this.$store.state.mapConfig.zoomSub=-add/(1+add);//-k/(1+k)
       }
+      if(QIR.hasProperty(config,'default_x')!==false){
+        this.$store.state.baseMapConfig.options.center[1]=QIR.returnNumber(config['default_x']);
+      }
+      if(QIR.hasProperty(config,'default_y')!==false){
+        this.$store.state.baseMapConfig.options.center[0]=QIR.returnNumber(config['default_y']);
+      }
       if(QIR.hasProperty(config,'enable_base_map')!==false){//地图底图相关配置，如果启用的话：
         this.$store.state.baseMapConfig.enableBaseMap=config['enable_base_map'];
         this.$store.state.baseMapConfig.baseMapType=config['base_map_type'];
@@ -295,12 +301,6 @@ export default {
           }
           if(QIR.hasProperty(config,'base_map_url')!==false){
             this.$store.state.baseMapConfig.baseLayer=config['base_map_url'];
-          }
-          if(QIR.hasProperty(config,'default_x')!==false){
-            this.$store.state.baseMapConfig.options.center[1]=QIR.returnNumber(config['default_x']);
-          }
-          if(QIR.hasProperty(config,'default_y')!==false){
-            this.$store.state.baseMapConfig.options.center[0]=QIR.returnNumber(config['default_y']);
           }
           if(QIR.hasProperty(config,'resolution_x')!==false){
             this.$store.state.baseMapConfig.resolution.width=QIR.returnNumber(config['resolution_x']);

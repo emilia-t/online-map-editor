@@ -100,6 +100,7 @@ export default {
       firmView:false,//确认菜单
       firmPlan:{},
       firmMessage:'',
+      tmpProof:null,
       editTpTaskId:null,//编辑模板任务id
     }
   },
@@ -186,6 +187,7 @@ export default {
         }
       });
       this.tmpId=this.layer.structure[1].template.id;
+      this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
     },
     openTemplate(){//打开模板-顶层
       function isObj(value){return typeof value==='object' && !Array.isArray(value) && value!==null;}
@@ -440,7 +442,13 @@ export default {
         if(newValue===this.editTpTaskId){//模板编辑任务回执
           if(this.resultCode===2){
             let newTemplate=this.resultTemplate;
-
+            let check=this.tmpProof.tpCheck(newTemplate);
+            if(check===true){
+              this.$store.state.serverData.socket.broadcastUpdateTemplateData(newTemplate);
+            }else{
+              let explain=this.tmpProof.codeExplain(check);
+              this.$store.commit('setCoLogMessage',{text:explain,from:'internal:BananaGroupLayer',type:'warn'});
+            }
           }
         }
       }

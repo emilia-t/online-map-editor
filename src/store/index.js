@@ -99,8 +99,8 @@ export default new Vuex.Store({
             parseInt(this.options.zoom)+1;
           this.network.downloadManage.forEach((tile)=>{
               if(tile.z!==zoom){
-                if(this.network.needTiles.find((e)=>e.x===tile.x&&e.y===tile.y)===undefined){
-                  tile.xhr.abort();
+                if(this.network.needTiles.find((e)=>e.x===tile.x&&e.y===tile.y)===undefined){//移除不需要的下载
+                  tile.xhr.abort();//暂停下载
                   this.removeArrayValue(this.network.downloadManage,tile);
                 }
               }
@@ -112,7 +112,7 @@ export default new Vuex.Store({
             const tileV = this.mapLatToViewport(et.x * etSize, et.y * etSize);
             this.drawRect(tileV.x, tileV.y, etSize, etSize);
             //const text = `${zoom}/${et.x}/${et.y}.png`;
-            const text = '加载图片中';
+            const text = 'Loading';
             this.drawText(text, tileV.x + etSize / 2, tileV.y + etSize / 2);
             this.drawTileImg(zoom, et.x, et.y);
           });
@@ -123,23 +123,75 @@ export default new Vuex.Store({
           this.map.width=this.el.clientWidth;
           this.map.height=this.el.clientHeight;
         }
+        setBaseMapUrl(url){
+          this.options.baseMapUrl=url;//更换底图源
+          this.network.tileCache.length=0;//清空底图缓存
+          this.network.downloadManage.length=0;//清空底图缓存
+          this.network.needTiles.length=0;//清空底图缓存
+          this.render();//重新渲染
+        }
+        getTopLevelDomain(url) {
+          try {
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname;
+            const domainParts = hostname.split('.');
+            const domainLength = domainParts.length;
+            const topLevelDomain = domainParts.slice(domainLength - 2).join('.');
+            return topLevelDomain;
+          } catch (error) {
+            return null;
+          }
+        }
         axiosDownloadImg(z,x,y){
-              let url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
-              let imgAxios=axios.create({
-                responseType:'blob'
-              });
-              imgAxios
-                .get(url)
-                .then(ref=>{
-                    if(ref.status===200){
-                      let blob = new Blob([ref.data], { type: 'image/png' });
-                      let img = createImageBitmap(blob);
-                      this.network.tileCache.push({ img: img, z: z, x: x, y: y });
-                      this.network.downTileCount++;
-                      return img;
-                    }
-                  }
-                )
+          let domain=this.getTopLevelDomain(this.options.baseMapUrl);
+          let url='';
+          switch (domain) {
+            case 'autonavi.com':{
+              url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+              break;
+            }
+            // case 'bdimg.com':{
+            //   url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+            //   break;
+            // }
+            case 'google.cn':{
+              url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+              break;
+            }
+            case 'google.com':{
+              url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+              break;
+            }
+            case 'openstreetmap.org':{
+              url=this.options.baseMapUrl+`/${z}/${x}/${y}.png`;
+              break;
+            }
+            case 'cartocdn.com':{
+              url=this.options.baseMapUrl+`/${z}/${x}/${y}.png`;
+              break;
+            }
+            case 'arcgisonline.com':{
+              url=this.options.baseMapUrl+`/${z}/${x}/${y}.png`;
+              break;
+            }
+            default:{//无法解析底图url则使用高德
+              url='http://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8'+`&x=${x}&y=${y}&z=${z}`;
+            }
+          }
+          let imgAxios=axios.create({
+            responseType:'blob'
+          });
+          imgAxios
+            .get(url)
+            .then(ref=>{
+              if(ref.status===200){
+                let blob = new Blob([ref.data], { type: 'image/png' });
+                let img = createImageBitmap(blob);
+                this.network.tileCache.push({ img: img, z: z, x: x, y: y });
+                this.network.downTileCount++;
+                return img;
+              }
+            })
         }
         drawTileImg(z, x, y) {
           const img = this.getImg(this, z, x, y);
@@ -177,9 +229,44 @@ export default new Vuex.Store({
           }
         }
         xhrDownloadImg(z, x, y) {
-          return new Promise((resolve, reject) =>
-          {
-            let url = this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+          return new Promise((resolve, reject) => {
+            let domain=this.getTopLevelDomain(this.options.baseMapUrl);
+            let url='';
+            switch (domain) {
+              case 'autonavi.com':{
+                url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+                break;
+              }
+              // case 'bdimg.com':{
+              //   //url="https://maponline1.bdimg.com/tile/?qt=vtile&x=209409&y=54868&z=20&styles=pl&scaler=1&showtext=1";
+              //   //url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+              //   //console.log(url);
+              //   break;
+              // }
+              case 'google.cn':{
+                url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+                break;
+              }
+              case 'google.com':{
+                url=this.options.baseMapUrl+`&x=${x}&y=${y}&z=${z}`;
+                break;
+              }
+              case 'openstreetmap.org':{
+                url=this.options.baseMapUrl+`/${z}/${x}/${y}.png`;
+                break;
+              }
+              case 'cartocdn.com':{
+                url=this.options.baseMapUrl+`/${z}/${x}/${y}.png`;
+                break;
+              }
+              case 'arcgisonline.com':{
+                url=this.options.baseMapUrl+`/${z}/${x}/${y}.png`;
+                break;
+              }
+              default:{//无法解析底图url则使用高德
+                url='http://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8'+`&x=${x}&y=${y}&z=${z}`;
+              }
+            }
             let imgXhr = new XMLHttpRequest();
             let downloadObj = { xhr: imgXhr, z: z, x: x, y: y };
             downloadObj.xhr.open('GET', url, true);
@@ -191,12 +278,10 @@ export default new Vuex.Store({
                 this.network.tileCache.push({ img: img, z: z, x: x, y: y });
                 this.network.downTileCount += 1;
                 this.removeArrayValue(this.network.downloadManage,downloadObj);//下载完成后移除
-                //('dm下载完成减少');
                 resolve(img);
               } else {
-                reject('下载似乎失败了');
+                reject(new Error('download tail failed'));
                 this.removeArrayValue(this.network.downloadManage,downloadObj);
-                //('dm下载失败减少');
               }
             };
             this.network.downloadManage.push(downloadObj);//保存xhr对象 和xyz索引
@@ -383,6 +468,7 @@ export default new Vuex.Store({
           this.mapLayerOrder=[];
           this.mapLayerOrderId=0;
           this.config={};
+          this.getConfigTime=0;//最后一次获取的服务器配置的时间
           this.lastEdit='很久以前';
           this.updateCount=0;//对更新元素属性和节点的统计
           this.lastDeleteId=-1;
@@ -751,15 +837,28 @@ export default new Vuex.Store({
           }
         }
         broadcastDeleteElement(id,tmpId){//广播删除某一要素
+          if(typeof id!=='number' && typeof tmpId!=='string'){return false;}
+          if(tmpId===''){return false;}
           this.send(this.Instruct.broadcast_deleteElement(id,tmpId));
         }
-        broadcastRestoreElement(id,tmpId){//广播删除某一要素
+        broadcastRestoreElement(id,tmpId){//广播恢复删除某一要素
+          if(typeof id!=='number' && typeof tmpId!=='string'){return false;}
+          if(tmpId===''){return false;}
           this.send(this.Instruct.broadcast_restoreElement(id,tmpId));
         }
         broadcastSendText(data){//广播普通文本信息
           this.send(this.Instruct.broadcast_textMessage(data));
         }
         broadcastSendLine(data,Type){//发送路径线数据(兼容区域和曲线类型，只需要在第二个参数Type传入area或curve即可)
+          if('custom' in data){
+            if(typeof data.custom.tmpId!=='string' || data.custom.tmpId===''){
+              this.onLog('添加失败，因为模板id为空，请选中图层后再添加。','error');
+              return false;
+            }
+          }else{
+            this.onLog('添加失败，因为缺失custom。','error');
+            return false;
+          }
           try{
             if(!this.QIR.isObject(data)){return false;}//0.1检查是否属于object
             if(!this.QIR.hasProperty(data,'class')){return false;}//0.2检查是否包含class类型
@@ -829,6 +928,15 @@ export default new Vuex.Store({
         }
         broadcastSendPoint(data){//发送关注点数据
           try {
+            if('custom' in data){
+              if(typeof data.custom.tmpId!=='string' || data.custom.tmpId===''){
+                this.onLog('添加失败，因为模板id为空，请选中图层后再添加。','error');
+                return false;
+              }
+            }else{
+              this.onLog('添加失败，因为缺失custom。','error');
+              return false;
+            }
             if(!this.QIR.isObject(data)){return false;}//0.1检查是否属于object
             if(!this.QIR.hasProperty(data,'class')){return false;}//0.2检查是否包含class类型
             if(data.class!=='point'){return false;}//0.3检查class类型是否为point
@@ -1027,6 +1135,7 @@ export default new Vuex.Store({
             }
             case 'send_serverConfig':{//服务器发来配置信息
               this.config=jsonData.data;
+              this.getConfigTime=new Date().getTime();
               break;
             }
             case 'publickey':{//服务器发来公钥
@@ -1237,7 +1346,29 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
+                  try{
+                    let [lock,baseA,Ps]=[true,null,null];
+                    try{
+                      baseA=window.atob(jsonData.data.custom);//将base64转化为普通字符
+                    }
+                    catch(e){lock=false;}
+                    try {
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                      }
+                    }catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.custom=Ps;
+                    }
+                  }catch(e){}
                   jsonData.data.id=parseInt(jsonData.data.id);//hack
+                  if('custom' in jsonData.data){//hack
+                    if(typeof jsonData.data.custom.tmpId!=='string'){
+                      jsonData.data.custom.tmpId='';
+                    }
+                  }else{
+                    jsonData.data.custom={tmpId:''};
+                  }
                   let NewMessageObj={'type':'broadcast','class':'line','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.lines.push(jsonData.data);//添加到mapData
@@ -1284,7 +1415,29 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
+                  try{
+                    let [lock,baseA,Ps]=[true,null,null];
+                    try{
+                      baseA=window.atob(jsonData.data.custom);//将base64转化为普通字符
+                    }
+                    catch(e){lock=false;}
+                    try {
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                      }
+                    }catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.custom=Ps;
+                    }
+                  }catch(e){}
                   jsonData.data.id=parseInt(jsonData.data.id);//hack
+                  if('custom' in jsonData.data){//hack
+                    if(typeof jsonData.data.custom.tmpId!=='string'){
+                      jsonData.data.custom.tmpId='';
+                    }
+                  }else{
+                    jsonData.data.custom={tmpId:''};
+                  }
                   let NewMessageObj={'type':'broadcast','class':'curve','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.curves.push(jsonData.data);//添加到mapData
@@ -1331,7 +1484,29 @@ export default new Vuex.Store({
                       jsonData.data.details=Ps;
                     }
                   }catch(e){}
+                  try{
+                    let [lock,baseA,Ps]=[true,null,null];
+                    try{
+                      baseA=window.atob(jsonData.data.custom);//将base64转化为普通字符
+                    }
+                    catch(e){lock=false;}
+                    try {
+                      if(lock){
+                        Ps=JSON.parse(baseA);
+                      }
+                    }catch(e){lock=false;}
+                    if(lock){
+                      jsonData.data.custom=Ps;
+                    }
+                  }catch(e){}
                   jsonData.data.id=parseInt(jsonData.data.id);//hack
+                  if('custom' in jsonData.data){//hack
+                    if(typeof jsonData.data.custom.tmpId!=='string'){
+                      jsonData.data.custom.tmpId='';
+                    }
+                  }else{
+                    jsonData.data.custom={tmpId:''};
+                  }
                   let NewMessageObj={'type':'broadcast','class':'area','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);//更新messages
                   this.mapData.areas.push(jsonData.data);//添加到mapData
@@ -1392,6 +1567,13 @@ export default new Vuex.Store({
                     }
                   }catch(e){}
                   jsonData.data.id=parseInt(jsonData.data.id);//hack
+                  if('custom' in jsonData.data){//hack
+                    if(typeof jsonData.data.custom.tmpId!=='string'){
+                      jsonData.data.custom.tmpId='';
+                    }
+                  }else{
+                    jsonData.data.custom={tmpId:''};
+                  }
                   let NewMessageObj={'type':'broadcast','class':'point','conveyor':jsonData.conveyor,'time':jsonData.time,'data':{'elementId':jsonData.data.id}};
                   this.messages.push(NewMessageObj);
                   this.mapData.points.push(jsonData.data);
@@ -2724,8 +2906,9 @@ export default new Vuex.Store({
           this.$canvas.lineWidth=element.width;
           this.$canvas.stroke(path1);
 
-          path2.arc(points[0].x+offX,points[0].y+offY,element.width,0,Math.PI*2);
-          path2.arc(points[len-1].x+offX,points[len-1].y+offY,element.width,0,Math.PI*2);
+          let radius=element.width<=2?2:element.width-2;
+          path2.arc(points[0].x+offX,points[0].y+offY,radius,0,Math.PI*2);
+          path2.arc(points[len-1].x+offX,points[len-1].y+offY,radius,0,Math.PI*2);
           this.$canvas.shadowBlur=10;//阴影模糊程度
           this.$canvas.fillStyle='#ffffff';
           this.$canvas.fill(path2);
@@ -3821,6 +4004,8 @@ export default new Vuex.Store({
       addNewAreaEnd:false,
       allReinitialize:false,
       suppressPickSelect:false,
+      opAdsorptionNode:false,
+      unAdsorptionNode:false,
     },
     /**
      * Config:可读可写 read write
@@ -3883,7 +4068,7 @@ export default new Vuex.Store({
       },
       showPanel:false,
     },
-    mapConfig:{//地图配置v5.7
+    mapConfig:{//地图配置v5.8
       layer:0,
       oldLayer:null,
       zoomAdd:1,//k
@@ -4045,7 +4230,13 @@ export default new Vuex.Store({
       cursor:'default',//SVG鼠标指针类型
       cursorLock:false,//指针类型的锁止
       reinitializeId:-1,//重新初始化的id
-      inputFocusStatus:false//input聚焦状态
+      inputFocusStatus:false,//input聚焦状态
+      adsorption:{
+        x:null,//吸附节点的实际坐标
+        y:null,
+        vx:null,//吸附节点屏幕上的虚拟坐标
+        vy:null,
+      }
     },
     pageConfig:{//页面配置
       homeSeparateState:true,
@@ -4056,8 +4247,8 @@ export default new Vuex.Store({
       windowChange:false,//窗口变化
       doNeedMoveMap:false,//是否需要移动地图
       frameTime:16,//帧时间
-      maxZoom:5,//最大缩放
-      minZoom:-10,//最小缩放
+      maxZoom:32,//最大缩放layer
+      minZoom:-20,//最小缩放layer
       unit1X:1,//横轴单位1
       unit1Y:1,//纵轴单位1
       offsetX:0,//x偏移补偿
@@ -4070,26 +4261,26 @@ export default new Vuex.Store({
     monitorConfig:{
       fps:0,
     },
-    baseMapConfig:{//底图配置
-      enableBaseMap:false,
-      baseMapType:'unknown',
+    baseMapConfig:{//底图配置v5
+      enableBaseMap:true,
+      baseMapType:'realistic',//realistic和fictitious
       baseMap:null,
       resolution:{
-        width:null,
-        height:null
+        width:1920,
+        height:980
       },
       options:{
-        minZoom:3,
-        maxZoom:18,
-        center:[0,0],
-        zoom:13,
+        minZoom:5,//最小zoom
+        maxZoom:18,//最大zoom
+        center:[0,0],//中心点坐标x,y
+        zoom:13,//默认layer
         zoomControl:false,
         scrollWheelZoom:false,
         attributionControl:false,
         inertia:false,
-        scaling:null
+        scaling:0.25,//缩放比例
       },
-      baseLayer:'',
+      baseLayer:"http://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8",
     },
     recorderConfig:{
       lastUploadId:-1,
@@ -4110,6 +4301,8 @@ export default new Vuex.Store({
       use:null,//若无use则更改为null
     },
     userSettingConfig:{//用户设置
+      autoCheckServer:true,//自动搜索服务器状态
+      adsorptionNode:true,//自动吸附节点
       openFpsMonitor:false,//fps监控开启
       openElementPanel:false,//是否开启元素面板
       openStepRecorder:false,//步骤记录器
@@ -4269,7 +4462,7 @@ export default new Vuex.Store({
       state.serverData.socket=undefined;
     },
     restoreMapConfig(state){//恢复默认地图配置
-      state.mapConfig={//地图配置v5.7
+      state.mapConfig={//地图配置v5.8
         layer:0,
         oldLayer:null,
         zoomAdd:1,//k
@@ -4413,20 +4606,26 @@ export default new Vuex.Store({
         cursor:'default',//SVG鼠标指针类型
         cursorLock:false,//指针类型的锁止
         reinitializeId:-1,//重新初始化的id
-        inputFocusStatus:false//input聚焦状态
+        inputFocusStatus:false,//input聚焦状态
+        adsorption:{
+          x:null,//吸附节点的实际坐标
+          y:null,
+          vx:null,//吸附节点屏幕上的虚拟坐标
+          vy:null,
+        }
       };
     },
     restoreBaseMapConfig(state){//恢复默认底图配置
       state.baseMapConfig={
-        enableBaseMap:false,
-        baseMapType:'unknown',
+        enableBaseMap:true,
+        baseMapType:'realistic',
         baseMap:null,
         resolution:{
-          width:null,
-          height:null
+          width:1920,
+          height:980
         },
         options:{
-          minZoom:3,
+          minZoom:5,
           maxZoom:18,
           center:[0,0],
           zoom:13,
@@ -4434,9 +4633,9 @@ export default new Vuex.Store({
           scrollWheelZoom:false,
           attributionControl:false,
           inertia:false,
-          scaling:null
+          scaling:0.25
         },
-        baseLayer:'',
+        baseLayer:'http://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8',
       };
     },
     restoreCameraConfig(state){//恢复默认相机配置
@@ -4444,8 +4643,8 @@ export default new Vuex.Store({
         windowChange:false,
         doNeedMoveMap:false,
         frameTime:16,
-        maxZoom:5,
-        minZoom:-10,
+        maxZoom:32,
+        minZoom:-20,
         unit1X:1,
         unit1Y:1,
         offsetX:0,
@@ -4596,6 +4795,18 @@ export default new Vuex.Store({
     },
     setCoMapDrawing(state,bool){
       state.mapConfig.drawing=bool;
+    },
+    setCoAdsorption(state,product){//product {x,y,vx,vy}
+      state.mapConfig.adsorption.x=product.x;
+      state.mapConfig.adsorption.y=product.y;
+      state.mapConfig.adsorption.vx=product.vx;
+      state.mapConfig.adsorption.vy=product.vy;
+    },
+    setOpAdsorptionNode(state){
+      state.commits.opAdsorptionNode=!state.commits.opAdsorptionNode;
+    },
+    setUnAdsorptionNode(state){
+      state.commits.unAdsorptionNode=!state.commits.unAdsorptionNode;
     },
   },
   actions: {

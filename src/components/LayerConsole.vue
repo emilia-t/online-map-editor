@@ -280,6 +280,16 @@
             {{$store.state.cameraConfig.frameTime}}
           </div>
         </div>
+        绘制状态
+        <br/>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL1">
+            状态：
+          </div>
+          <div class="consoleMapItemR1">
+            {{$store.state.mapConfig.drawing}}
+          </div>
+        </div>
         <hr/>
         当前模板
         <br/>
@@ -339,6 +349,14 @@
             {{item.type}}
           </div>
         </div>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            左选元素模板id
+          </div>
+          <div class="consoleMapItemR8">
+            {{leftTmpId}}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -362,13 +380,20 @@ export default {
     }
   },
   computed:{
-    commitsDebugBordHide() {
+    commitsDebugBordHide(){
       return this.$store.state.commits.openF4DebugBord;
+    },
+    leftTmpId(){
+      if('custom' in this.$store.state.detailsPanelConfig.data){
+        return this.$store.state.detailsPanelConfig.data.custom.tmpId
+      }else {
+        return 'unknown';
+      }
     }
   },
   watch:{
     commitsDebugBordHide:{
-      handler(newValue,oldValue){
+      handler(){
         this.openF4DebugBord();
       },
       deep:true

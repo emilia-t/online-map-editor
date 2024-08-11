@@ -21,25 +21,40 @@ export default {
   },
   methods:{
     startSetting(){
-      setTimeout(
-        ()=>{
-          let option={};
-          option.defaultX=this.$store.state.baseMapConfig.options.center[1];
-          option.defaultY=this.$store.state.baseMapConfig.options.center[0];
-          option.resolutionX=this.$store.state.baseMapConfig.resolution.width;
-          option.resolutionY=this.$store.state.baseMapConfig.resolution.height;
-          option.maxZoom=this.$store.state.baseMapConfig.options.maxZoom;
-          option.minZoom=this.$store.state.baseMapConfig.options.minZoom;
-          option.defaultZoom=this.$store.state.baseMapConfig.options.zoom;
-          option.baseMapUrl=this.$store.state.baseMapConfig.baseLayer;
-          option.scaling=this.$store.state.baseMapConfig.options.scaling;
-          this.A1Cache.x=this.A1.x;//初始化A1cache
-          this.A1Cache.y=this.A1.y;
-          this.$store.state.baseMapConfig.baseMap=new this.$store.state.classList.realisticTile(this.$refs.baseMap,option);
-          this.moveStart();
-          this.moveEnd();
-        }
-      ,10);
+      this.A1Cache.x=this.A1.x;//初始化A1cache
+      this.A1Cache.y=this.A1.y;
+      this.moveStart();
+      this.moveEnd();
+      this.setRealisticTile();
+    },
+    setRealisticTile(){
+      if(this.getConfigTime===0){//如果还未获取到服务器配置
+        setTimeout(()=>this.setRealisticTile(),10);//10毫秒后再初始化底图
+        return false;
+      }else{
+        let option={};
+        option.defaultX=this.$store.state.baseMapConfig.options.center[1];
+        option.defaultY=this.$store.state.baseMapConfig.options.center[0];
+        option.resolutionX=this.$store.state.baseMapConfig.resolution.width;
+        option.resolutionY=this.$store.state.baseMapConfig.resolution.height;
+        option.maxZoom=this.$store.state.baseMapConfig.options.maxZoom;
+        option.minZoom=this.$store.state.baseMapConfig.options.minZoom;
+        option.defaultZoom=this.$store.state.baseMapConfig.options.zoom;
+        option.baseMapUrl=this.$store.state.baseMapConfig.baseLayer;
+        option.scaling=this.$store.state.baseMapConfig.options.scaling;
+        this.$store.state.baseMapConfig.baseMap=new this.$store.state.classList.realisticTile(this.$refs.baseMap,option);
+        return true;
+      }
+    },
+    setCanvasSize(){
+      if(this.$store.state.baseMapConfig.baseMap===null){
+        setTimeout(()=>this.setCanvasSize(),10);
+        return false;
+      }else{
+        this.$store.state.baseMapConfig.baseMap.setCanvasSize();
+        this.$store.state.baseMapConfig.baseMap.render();
+        return true;
+      }
     },
     moveStart(){
       document.addEventListener('mousedown',(e)=>{
@@ -93,6 +108,13 @@ export default {
     movingDistance(){
       return this.$store.state.mapConfig.movingDistance;
     },
+    getConfigTime(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.getConfigTime;
+      }else {
+        return 0;
+      }
+    },
   },
   watch:{
     A1:{
@@ -130,8 +152,7 @@ export default {
     },
     browserSize:{
       handler(){
-        this.$store.state.baseMapConfig.baseMap.setCanvasSize();
-        this.$store.state.baseMapConfig.baseMap.render();
+        this.setCanvasSize();
       },deep:true
     }
   }

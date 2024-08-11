@@ -1,12 +1,28 @@
 <!--用于节点自动吸附-->
 <template>
-  <g>
-    <g v-for="L  in  LineData">
-      <circle class="svgNode" r="5px" fill="transparent" :cx="L.points[0].x" :cy="L.points[0].y"
-              @mouseenter="enter(L.points[0],L.basePoints[0])" @mouseleave="leave()" v-if="mightShow(L.points[0])"/>
-      <circle class="svgNode" r="5px" fill="transparent" :cx="L.points[L.points.length-1].x" :cy="L.points[L.points.length-1].y"
-              @mouseenter="enter(L.points[L.points.length-1],L.basePoints[L.basePoints.length-1])" @mouseleave="leave()" v-if="mightShow(L.points[L.points.length-1])"/>
+  <g v-if="drawing && magnetic">
+    <g v-for="L  in  LineData" v-if="isInside(L.point.x,L.point.y,L.points[L.points.length-1].x,L.points[L.points.length-1].y)" :key="L.id">
+      <circle class="svgNode" r="10px" fill="transparent" :cx="L.points[0].x" :cy="L.points[0].y"
+              @mouseenter="enter(L.points[0],L.basePoints[0])" @mouseleave="leave()"
+              v-if="isEffective(L.points[0].x,L.points[0].y)"
+      />
+      <circle class="svgNode" r="10px" fill="transparent" :cx="L.points[L.points.length-1].x" :cy="L.points[L.points.length-1].y"
+              @mouseenter="enter(L.points[L.points.length-1],L.basePoints[L.basePoints.length-1])" @mouseleave="leave()"
+              v-if="isEffective(L.points[L.points.length-1].x,L.points[L.points.length-1].y)"
+      />
     </g>
+    <g v-for="C  in  curveData" v-if="isInside(C.point.x,C.point.y,C.points[C.points.length-1].x,C.points[C.points.length-1].y)" :key="C.id">
+      <circle class="svgNode" r="10px" fill="transparent" :cx="C.points[0].x" :cy="C.points[0].y"
+              @mouseenter="enter(C.points[0],C.basePoints[0])" @mouseleave="leave()"
+              v-if="isEffective(C.points[0].x,C.points[0].y)"
+      />
+      <circle class="svgNode" r="10px" fill="transparent" :cx="C.points[C.points.length-1].x" :cy="C.points[C.points.length-1].y"
+              @mouseenter="enter(C.points[C.points.length-1],C.basePoints[C.basePoints.length-1])" @mouseleave="leave()"
+              v-if="isEffective(C.points[C.points.length-1].x,C.points[C.points.length-1].y)"
+      />
+    </g>
+    <!--启用可以显示吸附范围-->
+<!--    <rect :x="effectiveX1" :y="effectiveY1" width="100" height="100" fill="transparent" stroke="black" stroke-width="2"/>-->
   </g>
 </template>
 
@@ -20,57 +36,53 @@
         posY:null,
         viewX:null,//吸附点显示坐标?null表示未吸附
         viewY:null,
-        renderX1:0,//渲染的矩形范围 | 吸附节点有效的范围
-        renderY1:0,
-        renderX2:0,//渲染的矩形范围 | 吸附节点有效的范围
-        renderY2:0,
+        effectiveX1:0,//有效范围x1 | 以鼠标为中心的100px × 100px 正方形范围内为有效范围
+        effectiveY1:0,
+        effectiveX2:0,
+        effectiveY2:0
       }
     },
     mounted() {
-      this.setRender();
+      this.setMouseListen();
+      if(this.adsorptionNode){
+        this.magnetic=true;
+      }else{
+        this.magnetic=false;
+      }
     },
     methods:{
-      setRender(){
-        if(this.mixVisibleRange==='high'){
-          this.renderX1=-window.innerWidth;
-          this.renderX2=window.innerWidth*2;
-          this.renderY1=-window.innerHeight;
-          this.renderY2=window.innerHeight*2;
-        }else if(this.mixVisibleRange==='medium'){
-          this.renderX1=-window.innerWidth*0.5;
-          this.renderX2=window.innerWidth*1.5;
-          this.renderY1=-window.innerHeight*0.5;
-          this.renderY2=window.innerHeight*1.5;
-        }else if(this.mixVisibleRange==='low'){
-          this.renderX1=0;
-          this.renderX2=window.innerWidth;
-          this.renderY1=0;
-          this.renderY2=window.innerHeight;
-        }
+      setMouseListen(){
+        window.document.addEventListener(
+          'mousemove',
+          (ev)=>{
+            this.effectiveX1=ev.x-50;
+            this.effectiveY1=ev.y-50;
+            this.effectiveX2=ev.x+50;
+            this.effectiveY2=ev.y+50;
+          }
+        );
+      },
+      isEffective(px,py) {
+        return px>=this.effectiveX1 && px<=this.effectiveX2 && py>=this.effectiveY1 && py<=this.effectiveY2;
+      },
+      isInside(x,y,x2,y2){
+        return !((x <= 0 || y <= 0 || x >= window.innerWidth || y >= window.innerHeight) && (x2 <= 0 || y2 <= 0 || x2 >= window.innerWidth || y2 >= window.innerHeight));
       },
       enter(pt,pos){//pt view xy , pos pos xy
         if(!this.magnetic)return;
-        console.log(pos.x);
-        console.log(pt.x);
-        console.log({
-          x1:this.renderX1,
-          x2:this.renderX2,
-          y1:this.renderY1,
-          y2:this.renderY2,
-        })
+        this.$store.commit('setCoAdsorption',{x:pos.x,y:pos.y,vx:pt.x,vy:pt.y});
       },
       leave(){
-        this.posX=null;
-        this.posY=null;
-        this.viewX=null;
-        this.viewY=null;
+        this.$store.commit('setCoAdsorption',{x:null,y:null,vx:null,vy:null});
       },
-      mightShow(pt){//pt屏幕上的虚拟坐标点
-        return pt.x >= this.renderX1 && pt.x <= this.renderX2 &&
-                  pt.y >= this.renderY1 && pt.y <= this.renderY2;
-      }
     },
     computed:{
+      drawing(){
+        return this.$store.state.mapConfig.drawing;
+      },
+      adsorptionNode(){
+        return this.$store.state.userSettingConfig.adsorptionNode;
+      },
       LineData(){
         if(this.$store.state.serverData.socket){
           return this.$store.state.serverData.socket.mapData.lines;
@@ -78,14 +90,23 @@
           return [];
         }
       },
-      mixVisibleRange(){
-        return this.$store.state.userSettingConfig.mixVisibleRange;
+      curveData(){
+        if(this.$store.state.serverData.socket){
+          return this.$store.state.serverData.socket.mapData.curves;
+        }else {
+          return [];
+        }
       }
     },
     watch:{
-      mixVisibleRange:{
-        handler(){
-          this.setRender();
+      adsorptionNode:{
+        handler(value){
+          if(value){
+            this.magnetic=true;
+          }else{
+            this.$store.commit('setCoAdsorption',{x:null,y:null,vx:null,vy:null});
+            this.magnetic=false;
+          }
         }
       }
     }

@@ -2,42 +2,45 @@
 <div class="menuPanelLayer" ref="menuPanelLayer"><!--起始页面左侧的菜单面板-->
   <div class="closeButtonBox" ref="closeButtonBox"><!--关闭按钮-->
     <div class="closeButton" ref="closeButton" @click="close()">
-      <svg class="icon2" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.64645 3.14645C5.45118 3.34171 5.45118 3.65829 5.64645 3.85355L9.79289 8L5.64645 12.1464C5.45118 12.3417 5.45118 12.6583 5.64645 12.8536C5.84171 13.0488 6.15829 13.0488 6.35355 12.8536L10.8536 8.35355C11.0488 8.15829 11.0488 7.84171 10.8536 7.64645L6.35355 3.14645C6.15829 2.95118 5.84171 2.95118 5.64645 3.14645Z" fill="currentColor"></path></svg>
+      <svg class="icon2" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M5.64645 3.14645C5.45118 3.34171 5.45118 3.65829 5.64645 3.85355L9.79289 8L5.64645 12.1464C5.45118 12.3417 5.45118 12.6583 5.64645 12.8536C5.84171 13.0488 6.15829 13.0488 6.35355 12.8536L10.8536 8.35355C11.0488 8.15829 11.0488 7.84171 10.8536 7.64645L6.35355 3.14645C6.15829 2.95118 5.84171 2.95118 5.64645 3.14645Z"
+          fill="currentColor"/></svg>
     </div>
   </div>
   <div class="listButtonBox selected" @click="MenuButtonHomePage()"><!--菜单按钮-->
-    <home-page custom="margin:4px"></home-page>
+    <home-page custom="margin:4px"/>
     <span class="iconSpan">主页</span>
   </div>
   <hr/>
   <div class="listButtonBox" @click="openSetting('a',$event)">
-    <general-setting custom="margin:4px"></general-setting>
+    <general-setting custom="margin:4px"/>
     <span class="iconSpan">常规</span>
   </div>
   <div class="listButtonBox" @click="openSetting('b',$event)">
-    <monitor custom="margin:4px"></monitor>
+    <monitor custom="margin:4px"/>
     <span class="iconSpan">显示</span>
   </div>
   <div class="listButtonBox" @click="openSetting('r',$event)">
-    <split-o-m-r custom="margin:4px"></split-o-m-r>
+    <split-o-m-r custom="margin:4px"/>
     <span class="iconSpan">路由</span>
   </div>
   <div class="listButtonBox" @click="openSetting('c',$event)">
-    <user-account custom="margin:4px"></user-account>
+    <user-account custom="margin:4px"/>
     <span class="iconSpan">账户</span>
   </div>
   <hr/>
   <div class="listButtonBox" @click="openSetting('o',$event)">
-    <menu-about custom="margin:4px"></menu-about>
+    <menu-about custom="margin:4px"/>
     <span class="iconSpan">关于</span>
   </div>
   <div class="listButtonBox" @click="openSetting('p',$event)">
-    <menu-help custom="margin:4px 8px 4px 7px;transform:translateY(1px)"></menu-help>
+    <menu-help custom="margin:4px 8px 4px 7px;transform:translateY(1px)"/>
     <span class="iconSpan">帮助</span>
   </div>
   <hr/>
   <div class="listButtonBox" @click="openToolbox($event)">
-    <menu-tool custom="margin:4px"></menu-tool>
+    <menu-tool custom="margin:4px"/>
     <span class="iconSpan">工具</span>
   </div>
   <div class="SettingsBox" ref="SettingsBox" v-show="settingShow" @click.stop="settingShow=false">
@@ -52,6 +55,13 @@
           <div class="switchOut" ref="GS01" @click="GS01($event)"><div ref="GS01_1" class="circle"></div></div>
         </div>
         <hr class="style-one"/>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">节点自动吸附(Alt)</span>
+            <span class="spansB">启用后绘制线段或曲线时可以吸附节点</span>
+          </div>
+          <div class="switchOut" ref="GS02" @click="GS02($event)"><div ref="GS02_1" class="circle"></div></div>
+        </div>
       </div>
       <div class="Setting" v-show="DisplaySettings"><!--显示设置-->
         <div class="SettingTitle">显示设置</div>
@@ -112,7 +122,7 @@
           <div class="switchOut" ref="RS02" @click="RS02($event)"><div ref="RS02_1" class="circle"></div></div>
         </div>
         <div class="routeListTitle">
-          <menu-about-c></menu-about-c>
+          <menu-about-c/>
           已保存{{routes.length}}条路由，至多保存20条路由
         </div>
         <div class="sheetList">
@@ -124,7 +134,7 @@
           <div class="row" v-for="route in this.routes">
             <span class="rowSelect" v-show="route.use">✓</span>
             <span class="rowSelect" v-show="!route.use">-</span>
-            <span class="rowName" :title="route.address" v-text="getRouteName(route)"></span>
+            <span class="rowName" :title="route.address" v-text="getRouteName(route)"/>
             <span class="rowButton" @click="editRoute(route.address)">编辑</span>
             <span class="rowButton" @click="topRoute(route.address)">置顶</span>
             <span class="rowButton" @click="selectRoute(route.address)">选择</span>
@@ -188,7 +198,7 @@
           <div class="row" v-for="value in accounts" :key="value.A">
             <span class="rowSelect" v-if="value.default">✓</span>
             <span class="rowSelect" v-if="!value.default">-</span>
-            <span class="rowName" :title="value.A" v-text="value.A"></span>
+            <span class="rowName" :title="value.A" v-text="value.A"/>
             <span class="rowButton" @click="deleteAccount(value.A)">删除</span>
             <span class="rowButton" @click="editAccount(value.A)">修改</span>
             <span class="rowButton" @click="selectAccount(value.A)">选择</span>
@@ -263,7 +273,7 @@
           <p class="Ap3">鸣谢</p>
           <p class="Ap1">ALIMU（测试）</p>
           <p class="Ap3">一言</p>
-          <p class="Ap1" v-cloak v-text="'『 '+classicQuote+' 』'"></p>
+          <p class="Ap1" v-cloak v-text="'『 '+classicQuote+' 』'"/>
         </div>
       </div>
       <div class="Setting" v-show="HelpSettings"><!--帮助界面-->
@@ -309,10 +319,13 @@
             <span class="cutA">3</span><span class="cutB">创建区域</span>
           </div>
           <div class="shortcut">
+            <span class="cutA">4</span><span class="cutB">创建曲线</span>
+          </div>
+          <div class="shortcut">
             <span class="cutA">空格</span><span class="cutB">暂停创建节点</span>
           </div>
           <div class="shortcut">
-            <span class="cutA">Enter</span><span class="cutB">结束创建节点</span>
+            <span class="cutA">Enter</span><span class="cutB">结束创建要素</span>
           </div>
           <div class="shortcut">
             <span class="cutA">Esc</span><span class="cutB">取消创建要素</span>
@@ -321,7 +334,7 @@
             <span class="cutA">Del</span><span class="cutB">删除节点或元素</span>
           </div>
           <div class="shortcut">
-            <span class="cutA">L</span><span class="cutB">打开历史日志面板</span>
+            <span class="cutA">L</span><span class="cutB">打开日志面板</span>
           </div>
           <div class="shortcutTypeB">
             <div class="shortcutText">
@@ -338,7 +351,7 @@
               <br/><br/>
               3.创建好一个新的元素后，坐标整体偏移，需要重新绘制，可以使用Ctrl+Z撤销本次添加的元素。
               <br/><br/>
-              如果您不清楚您进行了哪些操作，您还可以在显示设置中打开历史记录面板以查询您的历史操作。
+              如果您不清楚您进行了哪些操作，您还可以在显示设置中打开历史编辑记录面板以查询您的历史操作。
             </div>
           </div>
         </div>
@@ -388,7 +401,6 @@
         <div class="explain">
           <span class="explainChild">1.鼠标右键键（右键选中）任意要素</span>
           <span class="explainChild">2.点击图标<img :src="deleteButton" alt="删除图标" title="删除图标" class="icon7"/>以删除要素</span>
-          <span class="explainChild">3.在消息面板会主动发送一条删除要素的消息</span>
         </div>
         <div class="title1">
           名词解释(Ctrl + F 可进行搜索)
@@ -409,6 +421,7 @@
           <div class="shortcut">
             <span class="cutA">区域面</span><span class="cutB">用以承载实际或虚拟的范围、区块等信息并以面状显现于视图</span>
           </div>
+          <br/>
           <br/>
           <div class="shortcut">
             <span class="cutA">节点</span><span class="cutB">用以显现路径线、区域面的轨迹节点并以灰色点状显现于路径线或区域面之上</span>
@@ -830,11 +843,16 @@ export default {
       if(hasLocalConfig=='true'){
         let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));//格式化本地配置设置
         let hasAutoCheckServerStatus=nowLocalStorage.hasOwnProperty('set_GS_AutoCheckServerStatus');
+        let hasAutoAdsorptionNode=nowLocalStorage.hasOwnProperty('set_GS_AutoAdsorptionNode');
         let hasAutoGetRoute=nowLocalStorage.hasOwnProperty('set_RS_AutoGetRoute');
         let hasMouseSamplingRate=nowLocalStorage.hasOwnProperty('set_DS_MouseSamplingRate');
         let hasMixVisibleRange=nowLocalStorage.hasOwnProperty('set_DS_MixVisibleRange');
         if(!hasAutoCheckServerStatus){
           nowLocalStorage.set_GS_AutoCheckServerStatus=true;
+          this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
+        }
+        if(!hasAutoAdsorptionNode){
+          nowLocalStorage.set_GS_AutoAdsorptionNode=true;
           this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
         }
         if(!hasAutoGetRoute){
@@ -875,11 +893,25 @@ export default {
               }
               break;
             }
+            case 'set_GS_AutoAdsorptionNode':{
+              if(nowLocalStorage[key]==true){
+                this.$store.state.userSettingConfig.adsorptionNode=true;
+                this.$refs.GS02.classList.add('switchOutOn');//更新样式
+                this.$refs.GS02_1.classList.add('circleOn');
+              }else if(nowLocalStorage[key]==false){
+                this.$store.state.userSettingConfig.adsorptionNode=false;
+                this.$refs.GS02.classList.remove('switchOutOn');
+                this.$refs.GS02_1.classList.remove('circleOn');
+              }
+              break;
+            }
             case 'set_GS_AutoCheckServerStatus':{//设置启动时自动检查服务器状态
               if(nowLocalStorage[key]==true){
+                this.$store.state.userSettingConfig.autoCheckServer=true;
                 this.$refs.GS01.classList.add('switchOutOn');//更新样式
                 this.$refs.GS01_1.classList.add('circleOn');
               }else if(nowLocalStorage[key]==false){
+                this.$store.state.userSettingConfig.autoCheckServer=false;
                 this.$refs.GS01.classList.remove('switchOutOn');
                 this.$refs.GS01_1.classList.remove('circleOn');
               }
@@ -985,6 +1017,7 @@ export default {
         this.handleLocalStorage('set','A_tips_cn','请勿在控制台修改本地配置');
         this.handleLocalStorage('set','A_tips_uk','Do not modify local configuration on the console');
         this.settingSwitch('set_GS_AutoCheckServerStatus',true);//按钮初始化
+        this.settingSwitch('set_GS_AutoAdsorptionNode',true);//按钮初始化
         this.settingSwitch('set_RS_AutoGetRoute',true);//按钮初始化
         this.settingSwitch('set_DS_MouseSamplingRate','medium');//按钮初始化
         this.settingSwitch('set_DS_MixVisibleRange','medium');//按钮初始化
@@ -1221,7 +1254,7 @@ export default {
         this.$store.state.userSettingConfig.autoGetRoute=true;//更新状态
       }
     },
-    GS01(ev){//常规设置（GS）下的功能开关
+    GS01(ev){//常规设置（GS）下的自动搜索服务器状态
       ev.stopPropagation();
       let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
       let oldStatus=settingsObj.set_GS_AutoCheckServerStatus;
@@ -1230,11 +1263,31 @@ export default {
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         this.$refs.GS01.classList.remove('switchOutOn');//更改样式
         this.$refs.GS01_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.autoCheckServer=false;//更新状态
       }else {
         settingsObj.set_GS_AutoCheckServerStatus=true;
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         this.$refs.GS01.classList.add('switchOutOn');//更改样式
         this.$refs.GS01_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.autoCheckServer=true;//更新状态
+      }
+    },
+    GS02(ev){//常规设置（GS）下的节点吸附开关
+      ev.stopPropagation();
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+      let oldStatus=settingsObj.set_GS_AutoAdsorptionNode;
+      if(oldStatus===true){//修改storage中的值
+        settingsObj.set_GS_AutoAdsorptionNode=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.GS02.classList.remove('switchOutOn');//更改样式
+        this.$refs.GS02_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.adsorptionNode=false;//更新状态
+      }else {
+        settingsObj.set_GS_AutoAdsorptionNode=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.GS02.classList.add('switchOutOn');//更改样式
+        this.$refs.GS02_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.adsorptionNode=false;//更新状态
       }
     },
     watchStorage(){//实时监听storage变化
@@ -1298,11 +1351,25 @@ export default {
           }
           break;
         }
+        case 'set_GS_AutoAdsorptionNode':{
+          if(value==true){
+            this.$store.state.userSettingConfig.adsorptionNode=true;
+            this.$refs.GS02.classList.add('switchOutOn');//更新样式
+            this.$refs.GS02_1.classList.add('circleOn');
+          }else if(value==false){
+            this.$store.state.userSettingConfig.adsorptionNode=false;
+            this.$refs.GS02.classList.remove('switchOutOn');
+            this.$refs.GS02_1.classList.remove('circleOn');
+          }
+          break;
+        }
         case 'set_GS_AutoCheckServerStatus':{
           if(value==true){
+            this.$store.state.userSettingConfig.autoCheckServer=true;
             this.$refs.GS01.classList.add('switchOutOn');//更新样式
             this.$refs.GS01_1.classList.add('circleOn');
           }else if(value==false){
+            this.$store.state.userSettingConfig.autoCheckServer=false;
             this.$refs.GS01.classList.remove('switchOutOn');
             this.$refs.GS01_1.classList.remove('circleOn');
           }
@@ -1514,6 +1581,12 @@ export default {
     mouseSamplingRate(){
       return this.$store.state.userSettingConfig.mouseSamplingRate;
     },
+    opAdsorptionNode(){
+      return this.$store.state.commits.opAdsorptionNode;
+    },
+    unAdsorptionNode(){
+      return this.$store.state.commits.unAdsorptionNode;
+    },
   },
   watch:{
     '$route'(to,from){
@@ -1580,7 +1653,27 @@ export default {
           }
         }
       }
-    }
+    },
+    opAdsorptionNode:{//启用自动吸附
+      handler(){
+        let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+        settingsObj.set_GS_AutoAdsorptionNode=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.GS02.classList.add('switchOutOn');//更改样式
+        this.$refs.GS02_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.adsorptionNode=true;//更新状态
+      }
+    },
+    unAdsorptionNode:{//关闭自动吸附
+      handler(){
+        let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+        settingsObj.set_GS_AutoAdsorptionNode=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.GS02.classList.remove('switchOutOn');//更改样式
+        this.$refs.GS02_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.adsorptionNode=false;//更新状态
+      }
+    },
   }
 }
 </script>

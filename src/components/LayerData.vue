@@ -50,7 +50,7 @@
         </svg-point><!--点位数据-->
 
         <svg-point-p0 :point-config="this.$store.state.mapConfig.p0" ref="ElementP0"/><!--p0-->
-<!--        <svg-node/>--><!--用于节点自动吸附-->
+        <svg-node/><!--节点自动吸附-->
       </g>
     </svg>
   </div>

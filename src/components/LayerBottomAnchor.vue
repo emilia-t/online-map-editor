@@ -1,9 +1,10 @@
+<!---除作者以外的人如果需要修改此文件，请备注原因！If anyone other than the author needs to modify this file, please indicate the reason!--->
 <template>
   <div class="bottomAnchorLayer">
     <div class="bottomAnchorLayerBox">
-      PowerBy&nbsp;<a target="_blank">Online map editor</a>&nbsp;&nbsp;
-      ©&nbsp;<a target="_blank">{{$root.Copyright}}</a>&nbsp;&nbsp;
-      V&nbsp;<a target="_blank">{{$root.Version}}</a>&nbsp;&nbsp;
+      <span class="bottomAnchorSpan">PowerBy</span><a href="https://github.com/emilia-t/online-map-editor" target="_blank">online-map-editor</a>
+      <span class="bottomAnchorSpan">©</span><a target="_blank">{{$root.Copyright}}</a>
+      <span class="bottomAnchorSpan">Ver</span><a target="_blank">{{$root.Version}}</a>
 <!--      <img alt="图标" :src="batb" class="batb-d0289dc0"/>-->
 <!--      <a target="_blank" :href="'http://www.beian.gov.cn/portal/registerSystemInfo?recordcode='+this.$root.CONFIG.bottomAnchorTextC">{{this.$root.CONFIG.bottomAnchorTextA}}</a>&nbsp;&nbsp;-->
 <!--      <a target="_blank" href="https://beian.miit.gov.cn/">{{this.$root.CONFIG.bottomAnchorTextB}}</a>&nbsp;&nbsp;-->
@@ -43,6 +44,9 @@ export default {
   font-weight: 400;
   color:rgba(0,0,0,0.8)
 }
+.bottomAnchorSpan{
+  margin:0  5px  0  10px;
+}
 .batb-d0289dc0{
   width: 16px;
   height: 16px;
@@ -52,10 +56,8 @@ a {
   text-decoration: none;
   transition: all .2s ease-in-out;
 }
-
 a:hover {
   color: rgba(0,0,0,0.8);
   text-decoration: underline;
 }
-
 </style>

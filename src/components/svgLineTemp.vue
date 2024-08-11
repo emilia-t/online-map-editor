@@ -62,6 +62,12 @@ export default {
     this.startSetting();
   },
   computed:{
+    adsorptionVX(){
+      return this.$store.state.mapConfig.adsorption.vx;
+    },
+    adsorptionVY(){
+      return this.$store.state.mapConfig.adsorption.vy;
+    },
     tempLine(){
       return this.$store.state.mapConfig.tempLine;
     },
@@ -126,13 +132,21 @@ export default {
         let str='';
         str+=this.dynamicPointsStr[this.dynamicPointsStr.length-1].c+','+this.dynamicPointsStr[this.dynamicPointsStr.length-1].d;
         str+=' ';
-        str+=(this.mouse.x+this.movingDistance.x)+','+(this.mouse.y-this.movingDistance.y);
+        if(this.adsorptionVX!==null && this.adsorptionVY!==null){//吸附节点
+          str+=(this.adsorptionVX)+','+(this.adsorptionVY);
+        }else{
+          str+=(this.mouse.x+this.movingDistance.x)+','+(this.mouse.y-this.movingDistance.y);
+        }
         return str;
       }else if(this.dynamicPointsStr.length===0){
         let str='';
         str+=(this.tempLine.showPos[0].x/this.unit1X)+','+(-this.tempLine.showPos[0].y/this.unit1Y);
         str+=' ';
-        str+=(this.mouse.x+this.movingDistance.x)+','+(this.mouse.y-this.movingDistance.y);
+        if(this.adsorptionVX!==null && this.adsorptionVY!==null){//吸附节点
+          str+=(this.adsorptionVX)+','+(this.adsorptionVY);
+        }else{
+          str+=(this.mouse.x+this.movingDistance.x)+','+(this.mouse.y-this.movingDistance.y);
+        }
         return str;
       }
     },
