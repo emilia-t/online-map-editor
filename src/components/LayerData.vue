@@ -158,6 +158,12 @@ export default {
       this.initialCurveData();
     },
     initialPointData(){//解析点数据
+      if(this.$store.state.baseMapConfig.baseMap===null){
+        setTimeout(
+          ()=>this.initialPointData()
+        ,200);
+        return;
+      }
       let Len=this.MyPointData.length;
       for(let p=0;p<Len;p++){
         let viewPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyPointData[p].basePoint.y,this.MyPointData[p].basePoint.x);
@@ -166,6 +172,12 @@ export default {
       }
     },
     initialLineData(){//解析线段数据
+      if(this.$store.state.baseMapConfig.baseMap===null){
+        setTimeout(
+          ()=>this.initialPointData()
+        ,200);
+        return;
+      }
       let Len=this.MyPolyLineData.length;
       for(let p=0;p<Len;p++){
         let pointPosition=this.$store.state.baseMapConfig.baseMap.latLngToViewPosition(this.MyPolyLineData[p].basePoint.y,this.MyPolyLineData[p].basePoint.x);
@@ -183,6 +195,12 @@ export default {
       }
     },
     initialAreaData(){//解析区域数据
+      if(this.$store.state.baseMapConfig.baseMap===null){
+        setTimeout(
+          ()=>this.initialPointData()
+        ,200);
+        return;
+      }
       let Len=this.MyAreaData.length;
       for(let p=0;p<Len;p++){
         if(this.pauseInitialSvgId===this.MyAreaData[p].id){
@@ -203,6 +221,12 @@ export default {
       }
     },
     initialCurveData(){//解析曲线数据
+      if(this.$store.state.baseMapConfig.baseMap===null){
+        setTimeout(
+          ()=>this.initialPointData()
+        ,200);
+        return;
+      }
       let Len=this.MyCurveData.length;
       for(let p=0;p<Len;p++){
         if(this.pauseInitialSvgId===this.MyCurveData[p].id){
@@ -863,7 +887,8 @@ export default {
       deep:true
     },
     MyPointData:{
-      handler(){
+      handler(newValue){
+        console.log(newValue);
         this.initialPointData();
         this.mixCanvas.mixDraw();
       }

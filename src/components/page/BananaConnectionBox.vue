@@ -205,7 +205,7 @@ export default {
     checkOnline(address){//检查服务器在线状态
       try {
         let tempCon=new WebSocket(address);
-        setTimeout(()=>tempCon.close(),1500);//关闭测试连接
+        setTimeout(()=>tempCon.close(),15000);//关闭测试连接
         tempCon.onopen=()=>{
           if(this.MyConfig.imgTime===''){//查询本地配置中此服务器的img更新时间，如果没有则申请时将time设置为1970年1月1日0时0分0秒
             this.MyConfig.imgTime='1970-01-01 00:00:00';
@@ -216,8 +216,11 @@ export default {
           tempCon.send(json);
           let json2=JSON.stringify({type:'get_serverImg',data:{time:this.imgTime}});//获取服务器图像
           tempCon.send(json2);
-        };
+        };  
         tempCon.onmessage=(event)=>{
+          console.log("-----send----");
+          console.log(event);
+          console.log("-----send----");
           let jsonData=JSON.parse(event.data);//1.解析数据//1.转化json
           if(jsonData.type!==undefined){//2.检测是否存在必要值'type'
             let nowType=jsonData.type;//3.处理数据
