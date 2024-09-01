@@ -150,7 +150,9 @@ export default {
           setTimeout(()=>{
             let encrypt=new JSEncrypt();//加密
             encrypt.setPublicKey(this.$store.state.serverData.socket.publickey);
+            console.time("login");
             if(this.$store.state.serverData.socket.publickey===''){
+              console.timeEnd("login");
               this.$store.commit('setCoLogMessage',{text:'获取公钥失败，请尝试刷新浏览器',from:'internal:BananaLoginBoard',type:'tip'});
               return false;
             }

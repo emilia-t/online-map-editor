@@ -32,18 +32,26 @@ export default {
         setTimeout(()=>this.setRealisticTile(),10);//10毫秒后再初始化底图
         return false;
       }else{
-        let option={};
-        option.defaultX=this.$store.state.baseMapConfig.options.center[1];
-        option.defaultY=this.$store.state.baseMapConfig.options.center[0];
-        option.resolutionX=this.$store.state.baseMapConfig.resolution.width;
-        option.resolutionY=this.$store.state.baseMapConfig.resolution.height;
-        option.maxZoom=this.$store.state.baseMapConfig.options.maxZoom;
-        option.minZoom=this.$store.state.baseMapConfig.options.minZoom;
-        option.defaultZoom=this.$store.state.baseMapConfig.options.zoom;
-        option.baseMapUrl=this.$store.state.baseMapConfig.baseLayer;
-        option.scaling=this.$store.state.baseMapConfig.options.scaling;
-        this.$store.state.baseMapConfig.baseMap=new this.$store.state.classList.realisticTile(this.$refs.baseMap,option);
-        return true;
+        setTimeout(
+          ()=>{
+          let option={};
+          option.defaultX=this.$store.state.baseMapConfig.options.center[1];
+          option.defaultY=this.$store.state.baseMapConfig.options.center[0];
+          option.resolutionX=this.$store.state.baseMapConfig.resolution.width;
+          option.resolutionY=this.$store.state.baseMapConfig.resolution.height;
+          option.maxZoom=this.$store.state.baseMapConfig.options.maxZoom;
+          option.minZoom=this.$store.state.baseMapConfig.options.minZoom;
+          option.defaultZoom=this.$store.state.baseMapConfig.options.zoom;
+          option.baseMapUrl=this.$store.state.baseMapConfig.baseLayer;
+          option.scaling=this.$store.state.baseMapConfig.options.scaling;
+          if(this.$refs.baseMap===undefined){
+            setTimeout(()=>this.setRealisticTile(),10);//10毫秒后再初始化底图
+            return false;
+          }
+          this.$store.state.baseMapConfig.baseMap=new this.$store.state.classList.realisticTile(this.$refs.baseMap,option);
+          return true;
+        }
+        ,0); 
       }
     },
     setCanvasSize(){
