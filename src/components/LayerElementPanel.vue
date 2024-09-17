@@ -1,5 +1,5 @@
 <template>
-  <div class="elementPanelLayer" v-show="showPanel">
+  <div class="elementPanelLayer" :style="showPanel?'opacity:1':'opacity:0'" v-show="showPanel">
     <div class="panelHead">
       <div class="headTitle">
         <span v-text="this.$store.state.serverData.socket.config.name"/>
@@ -113,7 +113,7 @@ export default {
   data(){
     return{
       dropPng,
-      showPanel:true,
+      showPanel:false,
       searchResult:[],//{element}
       searchShowView:false,
       searchFind:false,
@@ -182,12 +182,41 @@ export default {
   },
   methods:{
     startSetting(){
-      setTimeout(
-        ()=>{
-          this.showPanel=this.openElementPanel;
+      let hasLocalConfig=this.handleLocalStorage('get','setting');
+      if(hasLocalConfig=='true'){
+        let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));
+        let status=nowLocalStorage.set_DS_OpenElementPanel;
+        if(status){
+          this.showPanel=true;
+        }else {
+          this.showPanel=false;
         }
-        ,this.$store.state.pageConfig.loadingTime+2
-      );
+      }else {
+        this.showPanel=false;
+      }
+    },
+    handleLocalStorage(method, key, value) {//本地存储接口
+      switch (method){
+        case 'get':{
+          let temp = window.localStorage.getItem(key);
+          if (temp) {
+            return temp;
+          } else {
+            return false;
+          }
+        }
+        case 'set':{
+          window.localStorage.setItem(key, value);
+          break;
+        }
+        case 'remove':{
+          window.localStorage.removeItem(key);
+          break;
+        }
+        default:{
+          return false;
+        }
+      }
     },
     openSearchView(){
       let sta=this.searchShowView;
@@ -917,6 +946,7 @@ export default {
   white-space: nowrap;
 }
 .elementPanelLayer{
+  opacity:0;
   width: calc(300px - 18px);
   height: calc(100% - 20px);
   min-height: 740px;

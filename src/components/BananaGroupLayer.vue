@@ -442,13 +442,8 @@ export default {
         if(newValue===this.editTpTaskId){//模板编辑任务回执
           if(this.resultCode===2){
             let newTemplate=this.resultTemplate;
-            let check=this.tmpProof.tpCheck(newTemplate);
-            if(check===true){
-              this.$store.state.serverData.socket.broadcastUpdateTemplateData(newTemplate);
-            }else{
-              let explain=this.tmpProof.codeExplain(check);
-              this.$store.commit('setCoLogMessage',{text:explain,from:'internal:BananaGroupLayer',type:'warn'});
-            }
+            this.$store.state.serverData.socket.broadcastUpdateTemplateData(newTemplate);
+            //删除了重复的检查tpCheck在BananaTemplateEdit的submitEdit阶段就已经进行了检查
           }
         }
       }

@@ -9,9 +9,6 @@ import {Path} from "leaflet/dist/leaflet-src.esm";
 Vue.use(Vuex);
 export default new Vuex.Store({
   state:{
-    constant:{
-
-    },
     classList:{
       realisticTile:class realisticTile{//真实地图底图类
         constructor(mountDocument,baseMapOptions){
@@ -705,8 +702,129 @@ export default new Vuex.Store({
         }
         startSetting(){//初始化配置
           this.link();
-          //this.heartbeat();//如果启用了intervalPing则不要启用heartbeat
           this.intervalPing();
+        }
+        unicastInstructCheck(DATA,TYPE){//指令的检查移动到此处
+          let status=true;
+          switch (TYPE){
+            case 'pong':{//无需检查
+              break;
+            }
+            case 'send_presence':{
+              break;
+            }
+            case 'send_serverConfig':{//服务器发来配置信息
+              break;
+            }
+            case 'publickey':{//服务器发来公钥
+              break;
+            }
+            case 'loginStatus':{//服务器发来登录状态
+              break;
+            }
+            case 'anonymousLoginStatus':{//服务器发来匿名登录状态
+              break;
+            }
+            case 'send_userData':{//服务器发来的用户数据
+              break;
+            }
+            case 'send_activeData':{//活动的数据
+              break;
+            }
+            case 'send_mapData':{//服务器发来的地图数据
+              break;
+            }
+            case 'send_mapLayer':{
+              break;
+            }
+            case 'send_error':{
+              break;
+            }
+            case 'send_correct':{
+              break;
+            }
+            default:{break;}
+          }
+          return status;
+        }
+        broadInstructCheck(DATA,CLASS){//指令的检查移动到此处
+          let status=true;
+          switch (CLASS){
+            case 'A1':{//A1位置广播
+              break;
+            }
+            case 'line':{//新增线段数据广播
+              break;
+            }
+            case 'curve':{//新增曲线数据广播
+              break;
+            }
+            case 'area':{//新增线段数据广播
+              break;
+            }
+            case 'point':{//新增点数据广播
+              break;
+            }
+            case 'deleteElement':{//删除某一元素的广播
+              break;
+            }
+            case 'batchDeleteElement':{//批量删除元素的广播
+              break;
+            }
+            case 'textMessage':{//普通文本消息
+              break;
+            }
+            case 'updateElement':{//更新某一元素的广播
+              break;
+            }
+            case 'batchUpdateElement':{//批量更新元素的广播
+              break;
+            }
+            case 'updateElementNode':{//更新某一元素的节点的广播
+              break;
+            }
+            case 'selectIngElement':{
+              break;
+            }
+            case 'selectEndElement':{
+              break;
+            }
+            case 'pickIngElement':{
+              break;
+            }
+            case 'pickEndElement':{
+              break;
+            }
+            case 'pickSelectEndElements':{//取消所有元素选中效果
+              break;
+            }
+            case 'logIn':{
+              break;
+            }
+            case 'logOut':{
+              break;
+            }
+            case 'createGroupLayer':{
+              break;
+            }
+            case 'deleteLayerAndMembers':{
+              break;
+            }
+            case 'updateLayerData':{
+              break;
+            }
+            case 'batchUpdateLayerData':{
+              break;
+            }
+            case 'updateLayerOrder':{
+              break;
+            }
+            case 'renameLayer':{
+              break;
+            }
+            default:{break;}
+          }
+          return status;
         }
         intervalPing(){
           setInterval(
@@ -714,8 +832,10 @@ export default new Vuex.Store({
               if(this.isLogin){
                 this.lastPing=new Date().getTime();
                 this.send(this.Instruct.ping());
+                setTimeout(()=>{if(Math.abs(this.lastPong-this.lastPing)>1000){this.onLog('服务器连接超时(>1S)','warn');this.socket.close();}},1000);//连接超时检测
               }
-            },5000
+            },
+            5000
           );
         }
         clearLocalData(){//清除本地数据
@@ -983,15 +1103,6 @@ export default new Vuex.Store({
         broadcastMyA1(x,y,color,name){//广播A1
           this.send(this.Instruct.broadcast_A1(x,y,color,name));
         }
-        heartbeat(){//心跳
-          setInterval(()=>{
-            if(this.isLink===true){
-              if(this.socket!==undefined){
-                this.socket.send('');
-              }
-            }
-          },55000)
-        }
         closeLink(){//断开服务器连接
           this.socket.close();
           this.isLogin=false;
@@ -1078,9 +1189,23 @@ export default new Vuex.Store({
           if(this.isLink){
             if(this.instructObjCheck(instructObj)){//1.数据检查
               let json=JSON.stringify(instructObj);
+              // 指令截取
+              // if(instructObj.type==='broadcast' && instructObj.class==='area'){
+              //   console.log("%c↓↓↓截取到的发送指令↓↓↓","color:blue;");
+              //   console.log(JSON.parse(JSON.stringify(instructObj)));
+              //   console.log("%c↑↑↑截取到的发送指令↑↑↑","color:blue;");
+              // }
+              // 指令截取
+              // 始终输出发送的指令
+              console.log("%c↓↓↓发送出去的指令↓↓↓","color:blue;");
+              console.log(JSON.parse(JSON.stringify(instructObj)));
+              console.log("%c↑↑↑发送出去的指令↑↑↑","color:blue;");
+              // 始终输出发送的指令
               this.socket.send(json);
+            }else{
+              this.onLog('指令无效或不安全','error');
             }
-          }else {
+          }else{
             this.onLog('服务器连接中断','warn');
           }
         }
@@ -1101,7 +1226,7 @@ export default new Vuex.Store({
           }
           return true;
         }
-        onLog(text,type){
+        onLog(text,type,data){
           function reset(){
             window.logConfig={
               message:{code:-1,time:'',text:'',from:'',type:'',data:undefined}
@@ -1113,6 +1238,7 @@ export default new Vuex.Store({
             window.logConfig.message.text=text;
             window.logConfig.message.from='external:instructPipe';
             window.logConfig.message.type=type;
+            window.logConfig.message.data=data;
           }catch (e) {
             lock=true;
           }
@@ -1121,9 +1247,23 @@ export default new Vuex.Store({
           }
         }
         onMessage(ev){//收到消息事件
-          let jsonData=JSON.parse(ev.data);
-          if(jsonData.type!==undefined){
-          let nowType=jsonData.type;//处理数据
+          let jsonData=null;
+          try{jsonData=JSON.parse(ev.data);}catch(e){this.onLog('无法解析指令','error',ev.data);return false;}
+          // 指令截取
+          // if(jsonData.type==='broadcast' && jsonData.class==='area'){
+          //   console.log("%c↓↓↓截取到的发送指令↓↓↓","color:green;");
+          //   console.log(JSON.parse(JSON.stringify(jsonData)));
+          //   console.log("%c↑↑↑截取到的发送指令↑↑↑","color:green;");
+          // }
+          // 指令截取
+          // 始终输出接收的指令
+          console.log("%c↓↓↓接收到的指令↓↓↓","color:green;");
+          console.log(JSON.parse(JSON.stringify(jsonData)));
+          console.log("%c↑↑↑接收到的指令↑↑↑","color:green;");
+          // 始终输出接收的指令
+          if(jsonData.type!==undefined && typeof jsonData.type==='string'){
+          let nowType=jsonData.type;
+          if(!this.unicastInstructCheck(jsonData,nowType)){this.onLog('无法解析指令','error',jsonData);return false;}
           switch (nowType){
             case 'pong':{
               this.lastPong=new Date().getTime();
@@ -1198,41 +1338,26 @@ export default new Vuex.Store({
             case 'send_mapData':{//服务器发来的地图数据
               for (let i=0;i<jsonData.data.length;i++){
                 try{
-                  let [Ps,Pt,basePs,basePt]=[null,null,null,null];//point相关
-                  Pt=JSON.parse(window.atob(jsonData.data[i].point));
-                  basePt=JSON.parse(window.atob(jsonData.data[i].point));
-                  Ps=JSON.parse(window.atob(jsonData.data[i].points));
-                  basePs=JSON.parse(window.atob(jsonData.data[i].points));
+                  let [Ps,Pt,basePs,basePt]=[null,null,null,null];//point/s解析
+                  Pt=JSON.parse(jsonData.data[i].point);
+                  basePt=JSON.parse(jsonData.data[i].point);
+                  Ps=JSON.parse(jsonData.data[i].points);
+                  basePs=JSON.parse(jsonData.data[i].points);
                   jsonData.data[i].points=Ps;
                   jsonData.data[i].basePoints=basePs;
                   jsonData.data[i].point=Pt;
                   jsonData.data[i].basePoint=basePt;
-                  let [loc,baseD,Pu]=[true,null,null];//details
-                  let [lock,base64,ref]=[true,null,null];//custom
-                  try{
-                    baseD=window.atob(jsonData.data[i].details);
-                  }
+
+                  let [loc,baseD]=[true,null];//details解析
+                  try{baseD=JSON.parse(jsonData.data[i].details);}
                   catch(e){loc=false;}
-                  try {
-                    if(loc){
-                      Pu=JSON.parse(baseD);
-                    }
-                  }catch(e){loc=false;}
-                  if(loc){
-                    jsonData.data[i].details=Pu;
-                  }
-                  try{
-                    base64=window.atob(jsonData.data[i].custom);
-                  }
-                  catch(e){loc=false;}
-                  try {
-                    if(lock){
-                      ref=JSON.parse(base64);
-                    }
-                  }catch(e){loc=false;}
-                  if(lock){
-                    jsonData.data[i].custom=ref;
-                  }
+                  if(loc){jsonData.data[i].details=baseD;}
+
+                  let [lock,baseG]=[true,null];//custom解析
+                  try{baseG=JSON.parse(jsonData.data[i].custom);}
+                  catch(e){lock=false;}
+                  if(lock){jsonData.data[i].custom=baseG;}
+
                   let NowType=jsonData.data[i].type;//分组
                   jsonData.data[i].id=parseInt(jsonData.data[i].id);//hack
                   switch (NowType) {
@@ -1253,7 +1378,7 @@ export default new Vuex.Store({
                     }
                   }
                 }
-                catch(e){}
+                catch(e){console.log(e);}
               }
               this.loadData=true;
               break;
@@ -1263,15 +1388,16 @@ export default new Vuex.Store({
                 let res=[];
                 let ord=[];
                 let ordId=0;
-                let layerNumber=jsonData.data.length;
-                for(let i=0;i<layerNumber;i++){
+                let layerCount=jsonData.data.length;
+                for(let i=0;i<layerCount;i++){
                   if(jsonData.data[i].type==='order'){
                     ord=JSON.parse(jsonData.data[i].members);
                     ordId=parseInt(jsonData.data[i].id);
-                  }else {
+                  }
+                  else{
                     jsonData.data[i].id=parseInt(jsonData.data[i].id);//hack
-                    jsonData.data[i].members=JSON.parse(window.atob(jsonData.data[i].members));
-                    jsonData.data[i].structure=JSON.parse(window.atob(jsonData.data[i].structure));
+                    jsonData.data[i].members=JSON.parse(jsonData.data[i].members);//不再使用base64编码members,structure
+                    jsonData.data[i].structure=JSON.parse(jsonData.data[i].structure);
                     res.push(jsonData.data[i]);
                   }
                 }
@@ -1281,12 +1407,13 @@ export default new Vuex.Store({
                 this.loadLayer=true;
               }
               catch (e) {
-                //console.log(e);
+                this.onLog('图层构建失败','error',jsonData);
               }
               break;
             }
             case 'broadcast':{//服务器发来的广播
               let classIs=jsonData.class;//获取广播类型
+              if(!this.broadInstructCheck(jsonData,classIs)){this.onLog('无法解析指令','error',jsonData);return false;}
               switch (classIs){
                 case 'A1':{//A1位置广播
                   let oldLength=this.otherA1.length;//曾经的长度
@@ -1308,20 +1435,17 @@ export default new Vuex.Store({
                   break;
                 }
                 case 'line':{//新增线段数据广播
-                  try{
-                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null];
-                    try{
-                      baseA=window.atob(jsonData.data.points);//将base64转化为普通字符
-                      baseB=window.atob(jsonData.data.point);
+                  let error=false;
+                  try{//points point解析
+                    if(typeof jsonData.data.point!=='object' || typeof jsonData.data.points!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
                     }
-                    catch(e){lock=false;}
+                    let [lock,Ps,Pt,basePs,basePt]=[true,null,null,null,null];
                     try{
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                        Pt=JSON.parse(baseB);
-                        basePs=JSON.parse(baseA);
-                        basePt=JSON.parse(baseB);
-                      }
+                      Ps=JSON.parse(JSON.stringify(jsonData.data.points));
+                      Pt=JSON.parse(JSON.stringify(jsonData.data.point));
+                      basePs=JSON.parse(JSON.stringify(jsonData.data.points));
+                      basePt=JSON.parse(JSON.stringify(jsonData.data.point));
                     }
                     catch(e){lock=false;}
                     if(lock){
@@ -1330,38 +1454,49 @@ export default new Vuex.Store({
                       jsonData.data.basePoints=basePs;
                       jsonData.data.basePoint=basePt;
                     }
-                  }catch(e){}
-                  try{
-                    let [lock,baseA,Ps]=[true,null,null];
+                  }catch(e){
+                    console.log(e);
+                    this.onLog('添加线段失败，无法解析point或points','error',jsonData);
+                    error=true;
+                  }
+                  try{//details custom解析
+                    if(typeof jsonData.data.details!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
+                    }
+                    let [lock,details]=[true,null];
                     try{
-                      baseA=window.atob(jsonData.data.details);//将base64转化为普通字符
-                    }
-                    catch(e){lock=false;}
-                    try {
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                      }
-                    }catch(e){lock=false;}
+                      details=JSON.parse(JSON.stringify(jsonData.data.details));
+                    }catch(e){console.log(e);lock=false;}
                     if(lock){
-                      jsonData.data.details=Ps;
+                      jsonData.data.details=details;
                     }
-                  }catch(e){}
+                  }catch(e){console.log(e);
+                    this.onLog('添加线段失败，无法解析details','error',jsonData);
+                    error=true;
+                  }
                   try{
-                    let [lock,baseA,Ps]=[true,null,null];
+                    if(typeof jsonData.data.custom!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
+                    }
+                    let [lock,custom]=[true,null];
                     try{
-                      baseA=window.atob(jsonData.data.custom);//将base64转化为普通字符
-                    }
-                    catch(e){lock=false;}
-                    try {
                       if(lock){
-                        Ps=JSON.parse(baseA);
+                        custom=JSON.parse(JSON.stringify(jsonData.data.custom));
                       }
-                    }catch(e){lock=false;}
+                    }catch(e){console.log(e);lock=false;}
                     if(lock){
-                      jsonData.data.custom=Ps;
+                      jsonData.data.custom=custom;
                     }
-                  }catch(e){}
-                  jsonData.data.id=parseInt(jsonData.data.id);//hack
+                  }catch(e){console.log(e);
+                    this.onLog('添加线段失败，无法解析custom','error',jsonData);
+                    error=true;
+                  }
+                  if(error){
+                    break;
+                  }
+                  if('id' in jsonData.data){//hack
+                    jsonData.data.id=parseInt(jsonData.data.id);
+                  }
                   if('custom' in jsonData.data){//hack
                     if(typeof jsonData.data.custom.tmpId!=='string'){
                       jsonData.data.custom.tmpId='';
@@ -1377,20 +1512,17 @@ export default new Vuex.Store({
                   break;
                 }
                 case 'curve':{//新增曲线数据广播
-                  try{
-                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null];
-                    try{
-                      baseA=window.atob(jsonData.data.points);//将base64转化为普通字符
-                      baseB=window.atob(jsonData.data.point);
+                  let error=false;
+                  try{//points point解析
+                    if(typeof jsonData.data.point!=='object' || typeof jsonData.data.points!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
                     }
-                    catch(e){lock=false;}
+                    let [lock,Ps,Pt,basePs,basePt]=[true,null,null,null,null];
                     try{
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                        Pt=JSON.parse(baseB);
-                        basePs=JSON.parse(baseA);
-                        basePt=JSON.parse(baseB);
-                      }
+                      Ps=JSON.parse(JSON.stringify(jsonData.data.points));
+                      Pt=JSON.parse(JSON.stringify(jsonData.data.point));
+                      basePs=JSON.parse(JSON.stringify(jsonData.data.points));
+                      basePt=JSON.parse(JSON.stringify(jsonData.data.point));
                     }
                     catch(e){lock=false;}
                     if(lock){
@@ -1399,38 +1531,46 @@ export default new Vuex.Store({
                       jsonData.data.basePoints=basePs;
                       jsonData.data.basePoint=basePt;
                     }
-                  }catch(e){}
-                  try{
-                    let [lock,baseA,Ps]=[true,null,null];
+                  }catch(e){console.log(e);
+                    this.onLog('添加曲线失败，无法解析point或points','error',jsonData);
+                    error=true;
+                  }
+                  try{//details custom解析
+                    if(typeof jsonData.data.details!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
+                    }
+                    let [lock,details]=[true,null];
                     try{
-                      baseA=window.atob(jsonData.data.details);//将base64转化为普通字符
-                    }
-                    catch(e){lock=false;}
-                    try {
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                      }
-                    }catch(e){lock=false;}
+                      details=JSON.parse(JSON.stringify(jsonData.data.details));
+                    }catch(e){console.log(e);lock=false;}
                     if(lock){
-                      jsonData.data.details=Ps;
+                      jsonData.data.details=details;
                     }
-                  }catch(e){}
+                  }catch(e){console.log(e);
+                    this.onLog('添加曲线失败，无法解析details','error',jsonData);
+                    error=true;
+                  }
                   try{
-                    let [lock,baseA,Ps]=[true,null,null];
+                    if(typeof jsonData.data.custom!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
+                    }
+                    let [lock,custom]=[true,null];
                     try{
-                      baseA=window.atob(jsonData.data.custom);//将base64转化为普通字符
-                    }
-                    catch(e){lock=false;}
-                    try {
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                      }
-                    }catch(e){lock=false;}
+                      custom=JSON.parse(JSON.stringify(jsonData.data.custom));
+                    }catch(e){console.log(e);lock=false;}
                     if(lock){
-                      jsonData.data.custom=Ps;
+                      jsonData.data.custom=custom;
                     }
-                  }catch(e){}
-                  jsonData.data.id=parseInt(jsonData.data.id);//hack
+                  }catch(e){console.log(e);
+                    this.onLog('添加曲线失败，无法解析custom','error',jsonData);
+                    error=true;
+                  }
+                  if(error){
+                    break;
+                  }
+                  if('id' in jsonData.data){//hack
+                    jsonData.data.id=parseInt(jsonData.data.id);
+                  }
                   if('custom' in jsonData.data){//hack
                     if(typeof jsonData.data.custom.tmpId!=='string'){
                       jsonData.data.custom.tmpId='';
@@ -1446,20 +1586,17 @@ export default new Vuex.Store({
                   break;
                 }
                 case 'area':{//新增线段数据广播
-                  try{//解析坐标
-                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null];
-                    try{
-                      baseA=window.atob(jsonData.data.points);
-                      baseB=window.atob(jsonData.data.point);
+                  let error=false;
+                  try{//points point解析
+                    if(typeof jsonData.data.point!=='object' || typeof jsonData.data.points!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
                     }
-                    catch(e){lock=false;}
+                    let [lock,Ps,Pt,basePs,basePt]=[true,null,null,null,null];
                     try{
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                        Pt=JSON.parse(baseB);
-                        basePs=JSON.parse(baseA);
-                        basePt=JSON.parse(baseB);
-                      }
+                      Ps=JSON.parse(JSON.stringify(jsonData.data.points));
+                      Pt=JSON.parse(JSON.stringify(jsonData.data.point));
+                      basePs=JSON.parse(JSON.stringify(jsonData.data.points));
+                      basePt=JSON.parse(JSON.stringify(jsonData.data.point));
                     }
                     catch(e){lock=false;}
                     if(lock){
@@ -1468,38 +1605,46 @@ export default new Vuex.Store({
                       jsonData.data.basePoints=basePs;
                       jsonData.data.basePoint=basePt;
                     }
-                  }catch(e){}
-                  try{//解析详细描述信息
-                    let [lock,baseA,Ps]=[true,null,null];
+                  }catch(e){console.log(e);
+                    this.onLog('添加区域失败，无法解析point或points','error',jsonData);
+                    error=true;
+                  }
+                  try{//details custom解析
+                    if(typeof jsonData.data.details!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
+                    }
+                    let [lock,details]=[true,null];
                     try{
-                      baseA=window.atob(jsonData.data.details);
-                    }
-                    catch(e){lock=false;}
-                    try {
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                      }
-                    }catch(e){lock=false;}
+                      details=JSON.parse(JSON.stringify(jsonData.data.details));
+                    }catch(e){console.log(e);lock=false;}
                     if(lock){
-                      jsonData.data.details=Ps;
+                      jsonData.data.details=details;
                     }
-                  }catch(e){}
+                  }catch(e){console.log(e);
+                    this.onLog('添加区域失败，无法解析details','error',jsonData);
+                    error=true;
+                  }
                   try{
-                    let [lock,baseA,Ps]=[true,null,null];
+                    if(typeof jsonData.data.custom!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
+                    }
+                    let [lock,custom]=[true,null];
                     try{
-                      baseA=window.atob(jsonData.data.custom);//将base64转化为普通字符
-                    }
-                    catch(e){lock=false;}
-                    try {
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                      }
-                    }catch(e){lock=false;}
+                      custom=JSON.parse(JSON.stringify(jsonData.data.custom));
+                    }catch(e){console.log(e);lock=false;}
                     if(lock){
-                      jsonData.data.custom=Ps;
+                      jsonData.data.custom=custom;
                     }
-                  }catch(e){}
-                  jsonData.data.id=parseInt(jsonData.data.id);//hack
+                  }catch(e){console.log(e);
+                    this.onLog('添加区域失败，无法解析custom','error',jsonData);
+                    error=true;
+                  }
+                  if(error){
+                    break;
+                  }
+                  if('id' in jsonData.data){//hack
+                    jsonData.data.id=parseInt(jsonData.data.id);
+                  }
                   if('custom' in jsonData.data){//hack
                     if(typeof jsonData.data.custom.tmpId!=='string'){
                       jsonData.data.custom.tmpId='';
@@ -1515,20 +1660,17 @@ export default new Vuex.Store({
                   break;
                 }
                 case 'point':{//新增点数据广播
-                  try{//解析坐标
-                    let [lock,baseA,baseB,Ps,Pt,basePs,basePt]=[true,null,null,null,null,null,null];
-                    try{
-                      baseA=window.atob(jsonData.data.points);
-                      baseB=window.atob(jsonData.data.point);
+                  let error=false;
+                  try{//points point解析
+                    if(typeof jsonData.data.point!=='object' || typeof jsonData.data.points!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
                     }
-                    catch(e){lock=false;}
+                    let [lock,Ps,Pt,basePs,basePt]=[true,null,null,null,null];
                     try{
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                        Pt=JSON.parse(baseB);
-                        basePs=JSON.parse(baseA);
-                        basePt=JSON.parse(baseB);
-                      }
+                      Ps=JSON.parse(JSON.stringify(jsonData.data.points));
+                      Pt=JSON.parse(JSON.stringify(jsonData.data.point));
+                      basePs=JSON.parse(JSON.stringify(jsonData.data.points));
+                      basePt=JSON.parse(JSON.stringify(jsonData.data.point));
                     }
                     catch(e){lock=false;}
                     if(lock){
@@ -1537,36 +1679,40 @@ export default new Vuex.Store({
                       jsonData.data.basePoints=basePs;
                       jsonData.data.basePoint=basePt;
                     }
-                  }catch(e){}
-                  try{//details解析
-                    let [lock,baseA,Ps]=[true,null,null];
-                    let [lockCustom,baseCustom,ref]=[true,null,null];
-                    try{
-                      baseA=window.atob(jsonData.data.details);
+                  }
+                  catch(e){
+                    this.onLog('添加点失败，无法解析point或points','error',jsonData);
+                    error=true;
+                  }
+                  try{//details custom解析
+                    if(typeof jsonData.data.details!=='object' || typeof jsonData.data.custom!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
                     }
-                    catch(e){lock=false;}
-                    try {
-                      if(lock){
-                        Ps=JSON.parse(baseA);
-                      }
-                    }catch(e){lock=false;}
+                    let [lock,details]=[true,null];
+                    let [lockCustom,custom]=[true,null];
+                    try{
+                      details=JSON.parse(JSON.stringify(jsonData.data.details));
+                    }catch(e){console.log(e);lock=false;}
                     if(lock){
-                      jsonData.data.details=Ps;
+                      jsonData.data.details=details;
                     }
                     try{
-                      baseCustom=window.atob(jsonData.data.custom);
-                    }
-                    catch(e){lockCustom=false;}
-                    try {
-                      if(lockCustom){
-                        ref=JSON.parse(baseCustom);
-                      }
-                    }catch(e){lockCustom=false;}
+                      custom=JSON.parse(JSON.stringify(jsonData.data.custom));
+                    }catch(e){console.log(e);lockCustom=false;}
                     if(lockCustom){
-                      jsonData.data.custom=ref;
+                      jsonData.data.custom=custom;
                     }
-                  }catch(e){}
-                  jsonData.data.id=parseInt(jsonData.data.id);//hack
+                  }
+                  catch(e){
+                    this.onLog('添加点失败，无法解析details或custom','error',jsonData);
+                    error=true;
+                  }
+                  if(error){
+                    break;
+                  }
+                  if('id' in jsonData.data){//hack
+                    jsonData.data.id=parseInt(jsonData.data.id);
+                  }
                   if('custom' in jsonData.data){//hack
                     if(typeof jsonData.data.custom.tmpId!=='string'){
                       jsonData.data.custom.tmpId='';
@@ -1684,11 +1830,18 @@ export default new Vuex.Store({
                 }
                 case 'updateElement':{//更新某一元素的广播
                   try{
-                    if(jsonData.data.hasOwnProperty('details')){//解码details如果有的话
-                      jsonData.data.details=JSON.parse(window.atob(jsonData.data.details));
+                    if(!Object.hasOwnProperty.call(jsonData.data,'details') && !Object.hasOwnProperty.call(jsonData.data,'custom')){
+                      throw new Error('cannot parse data');//本地捕获异常
                     }
-                    if(jsonData.data.hasOwnProperty('custom')){//解码details如果有的话
-                      jsonData.data.custom=JSON.parse(window.atob(jsonData.data.custom));
+                    if(Object.hasOwnProperty.call(jsonData.data,'details')){
+                      if(typeof jsonData.data.details!=='object'){
+                        throw new Error('cannot parse data');//本地捕获异常
+                      }
+                    }
+                    if(Object.hasOwnProperty.call(jsonData.data,'custom')){
+                      if(typeof jsonData.data.custom!=='object'){
+                        throw new Error('cannot parse data');//本地捕获异常
+                      }
                     }
                     let eType=undefined;
                     if(jsonData.data.hasOwnProperty('type')){
@@ -1713,20 +1866,26 @@ export default new Vuex.Store({
                       this.onLog('存在未同步的元素,建议刷新页面ID:'+eId,'warn');
                     }
                   }catch (e) {
-                    this.onLog('存在未同步的元素,建议刷新页面ID:'+jsonData.data.id,'warn');
+                    this.onLog('指令解析失败','error',jsonData);
                   }
                   break;
                 }
                 case 'batchUpdateElement':{//批量更新元素的广播
-                  let count=0;
-                  count=jsonData.data.length;
+                  if(!Array.isArray(jsonData.data)){
+                    break;
+                  }
+                  let count=jsonData.data.length;
                   for(let K=0;K<count;K++){
                     try{
                       if(jsonData.data[K].hasOwnProperty('details')){//解码details如果有的话
-                        jsonData.data[K].details=JSON.parse(window.atob(jsonData.data[K].details));
+                        if(typeof jsonData.data[K].details!=='object'){
+                          throw new Error('cannot parse data');//本地捕获异常
+                        }
                       }
-                      if(jsonData.data[K].hasOwnProperty('custom')){//解码details如果有的话
-                        jsonData.data[K].custom=JSON.parse(window.atob(jsonData.data[K].custom));
+                      if(jsonData.data[K].hasOwnProperty('custom')){//解码custom如果有的话
+                        if(typeof jsonData.data[K].custom!=='object'){
+                          throw new Error('cannot parse data');//本地捕获异常
+                        }
                       }
                       let eType=undefined;
                       if(jsonData.data[K].hasOwnProperty('type')){
@@ -1750,21 +1909,24 @@ export default new Vuex.Store({
                         this.onLog('存在未同步的元素,建议刷新页面ID:'+eId,'warn');
                       }
                     }catch (e) {
-                      this.onLog('存在未同步的元素,建议刷新页面ID:'+jsonData.data.id,'warn');
+                      this.onLog('指令解析失败','error',jsonData);
                     }
                   }
                   break;
                 }
                 case 'updateElementNode':{//更新某一元素的节点的广播
-                  try{//解析
-                    let pointsObj=JSON.parse(window.atob(jsonData.data.points));
-                    let basePointsObj=JSON.parse(window.atob(jsonData.data.points));
+                  try{
+                    if(typeof jsonData.data.point!=='object' || typeof jsonData.data.points!=='object'){
+                      throw new Error('cannot parse data');//本地捕获异常
+                    }
+                    let pointsObj=JSON.parse(JSON.stringify(jsonData.data.points));//不再使用base64编码数据也不再使用json重复打包数据
+                    let basePointsObj=JSON.parse(JSON.stringify(jsonData.data.points));//不再使用base64编码数据也不再使用json重复打包数据
                     let [pointObj,basePointObj]=[null,null];
                     if(this.QIR.hasProperty(jsonData.data,'point')){
-                      pointObj=JSON.parse(window.atob(jsonData.data.point));
-                      basePointObj=JSON.parse(window.atob(jsonData.data.point));
+                      pointObj=JSON.parse(JSON.stringify(jsonData.data.point));//不再使用base64编码数据也不再使用json重复打包数据
+                      basePointObj=JSON.parse(JSON.stringify(jsonData.data.point));//不再使用base64编码数据也不再使用json重复打包数据
                     }
-                    let CgID=parseInt(jsonData.data.id);//hack
+                    let CgID=parseInt(jsonData.data.id);//hack | Cg mean change
                     let type=null;//查找type类型
                     if(this.QIR.hasProperty(jsonData.data,'type')){
                       type=jsonData.data.type+'s';
@@ -1807,9 +1969,8 @@ export default new Vuex.Store({
                     }else{
                       this.onLog('存在未同步的元素,建议刷新页面ID:'+CgID,'warn');
                     }
-                    break;
                   }catch (e) {
-                    this.onLog('存在未同步的元素,建议刷新页面ID:'+jsonData.data.id,'warn');
+                    this.onLog('指令解析失败','error',jsonData);
                   }
                   break;
                 }
@@ -1907,16 +2068,23 @@ export default new Vuex.Store({
                       this.QIR.hasProperty(jsonData.data,'members') &&
                       this.QIR.hasProperty(jsonData.data,'structure')
                     ){
-                      let newMembers=JSON.parse(window.atob(jsonData.data.members));
-                      let newStructure=JSON.parse(window.atob(jsonData.data.structure));
-                      jsonData.data.id=parseInt(jsonData.data.id);//hack
-                      this.mapLayerData.push({
-                        id:jsonData.data.id,
-                        type:jsonData.data.type,
-                        members:newMembers,
-                        structure:newStructure,
-                      });
-                      this.createLayerId=jsonData.data.id;
+                      try{
+                        if(typeof jsonData.data.members!=='object' || typeof jsonData.data.structure!=='object'){
+                          throw new Error('cannot parse data');//本地捕获异常
+                        }
+                        let newMembers=JSON.parse(JSON.stringify(jsonData.data.members));//不再使用base64编码members,structure
+                        let newStructure=JSON.parse(JSON.stringify(jsonData.data.structure));
+                        jsonData.data.id=parseInt(jsonData.data.id);//hack
+                        this.mapLayerData.push({
+                          id:jsonData.data.id,
+                          type:jsonData.data.type,
+                          members:newMembers,
+                          structure:newStructure,
+                        });
+                        this.createLayerId=jsonData.data.id;
+                      }catch(e){console.log(e);
+                        this.onLog('指令解析失败','error',jsonData);
+                      }
                     }
                   }
                   break;
@@ -2002,11 +2170,19 @@ export default new Vuex.Store({
                     let ID=jsonData.data.id;
                     let newMembers=undefined;
                     if(this.QIR.hasProperty(jsonData.data,'members')){
-                      newMembers=JSON.parse(window.atob(jsonData.data.members));
+                      if(typeof jsonData.data.members!=='object'){
+                        this.onLog('更新图层数据失败，无法解析指令','error',jsonData);
+                        break;
+                      }
+                      newMembers=JSON.parse(JSON.stringify(jsonData.data.members));
                     }
                     let newStructure=undefined;
                     if(this.QIR.hasProperty(jsonData.data,'structure')){
-                      newStructure=JSON.parse(window.atob(jsonData.data.structure));
+                      if(typeof jsonData.data.structure!=='object'){
+                        this.onLog('更新图层数据失败，无法解析指令','error',jsonData);
+                        break;
+                      }
+                      newStructure=JSON.parse(JSON.stringify(jsonData.data.structure));
                     }
                     for(let i=0;i<this.mapLayerData.length;i++){
                       if(ID==this.mapLayerData[i].id){
@@ -2049,11 +2225,19 @@ export default new Vuex.Store({
                     let ID=jsonData.data[g].id;
                     let newMembers=undefined;
                     if(this.QIR.hasProperty(jsonData.data[g],'members')){
-                      newMembers=JSON.parse(window.atob(jsonData.data[g].members));
+                      if(typeof jsonData.data[g].members!=='object'){
+                        this.onLog('更新图层数据失败，无法解析指令','error',jsonData);
+                        continue;
+                      }
+                      newMembers=JSON.parse(JSON.stringify(jsonData.data[g].members));
                     }
                     let newStructure=undefined;
                     if(this.QIR.hasProperty(jsonData.data[g],'structure')){
-                      newStructure=JSON.parse(window.atob(jsonData.data[g].structure));
+                      if(typeof jsonData.data[g].structure!=='object'){
+                        this.onLog('更新图层数据失败，无法解析指令','error',jsonData);
+                        continue;
+                      }
+                      newStructure=JSON.parse(JSON.stringify(jsonData.data[g].structure));
                     }
                     for(let i=0;i<this.mapLayerData.length;i++){
                       if(ID==this.mapLayerData[i].id){
@@ -2088,7 +2272,16 @@ export default new Vuex.Store({
                   if(!this.QIR.hasProperty(jsonData,'data'))break;
                   if(!this.QIR.isObject(jsonData.data))break;
                   if(!this.QIR.hasProperty(jsonData.data,'members'))break;
-                  this.mapLayerOrder=jsonData.data.members;
+                  try{
+                    let order=JSON.parse(JSON.stringify(jsonData.data.members));
+                    if(Array.isArray(order)){
+                      this.mapLayerOrder=order;
+                    }
+                  }
+                  catch(e){
+                    console.log(e);
+                    this.onLog('指令解析失败','error',jsonData);
+                  }
                   break;
                 }
                 case 'renameLayer':{
@@ -2105,6 +2298,7 @@ export default new Vuex.Store({
                       break;
                     }
                   }
+                  break;
                 }
               }
               break;
@@ -2119,22 +2313,22 @@ export default new Vuex.Store({
               this.correctsROnly.push(jsonData);
               break;
             }
-            default:{
-            }
+            default:{this.onLog('无法解析指令','error',jsonData);}
           }
           }
+          else{this.onLog('无法解析指令','error',jsonData);}
         }
-        onClose(ev){//断开连接事件
+        onClose(){//断开连接事件
           this.isLink=false;
           this.onLog('服务器连接中断','warn');
           return true;
         }
-        onError(ev){//连接失败事件
+        onError(){//连接失败事件
           this.isLink=false;
           this.onLog('服务器连接失败','warn');
           return true;
         }
-        onOpen(ev){//连接成功事件
+        onOpen(){//连接成功事件
           this.isLink=true;
           this.onLog('服务器连接成功','tip');
           this.getServerPublickey();//获取公钥
@@ -4055,6 +4249,11 @@ export default new Vuex.Store({
         svgData:null,
         duration:1000,
         changeCode:1,
+      },
+      soundEffect:{//音效配置
+        needPlay:'',//需要播放的音效名称
+        playCount:0,//总播放次数
+        permission:false,//播放权限
       }
     },
     logConfig:{
@@ -4728,6 +4927,13 @@ export default new Vuex.Store({
     setCoToolboxPosition(state,product){//product:{x,y}
       state.toolboxConfig.position.x=product.x;
       state.toolboxConfig.position.y=product.y;
+    },
+    setCoEffectsSound(state,name){//name: sound effect name string
+      state.effectsConfig.soundEffect.needPlay=name;
+      state.effectsConfig.soundEffect.playCount+=1;
+    },
+    setCoEffectsSoundPermission(state,permission){//permission: true or false
+      state.effectsConfig.soundEffect.permission=permission;
     },
     setCoEffectsSvgFlicker(state,product){//product:{svgType:'point'|'line'|'area',svgData:elementObject,duration:millisecond}
       state.effectsConfig.svgFlicker.svgType=product.svgType;

@@ -8,7 +8,7 @@
         <path class="svgFlickerLine" ref="svgFlickerLine" :d="pointsD(svgFlicker.svgType)"/>
       </g>
       <g data-svg-flicker-line v-show="svgFlicker.svgType==='curve'">
-        <path class="svgFlickerLine" ref="svgFlickerCurve" :d="pointsCurve()"/>
+        <path class="svgFlickerLine" ref="svgFlickerCurve" :d="pointsC()"/>
       </g>
     </g>
   </g>
@@ -107,43 +107,49 @@ export default {
     },
     pointsD(type){
       let newArr = [];
-      let refArr = '';
+      let refStr = '';
       newArr = this.svgFlicker.svgData.points;
+      if(type==='line'){
+        if(newArr.length<2){return '';}
+      }else{
+        if(newArr.length<3){return '';}
+      }
       for (let i = 0; i < newArr.length; i++) {
         if(i===0){
           let x = newArr[i].x/this.unit1X;
           let y = newArr[i].y/this.unit1Y;
-          refArr+='M'+x+','+y+' ';
+          refStr+='M'+x+','+y+' ';
         }else {
           let x = newArr[i].x/this.unit1X;
           let y = newArr[i].y/this.unit1Y;
-          refArr+='L'+x+','+y+' ';
+          refStr+='L'+x+','+y+' ';
         }
       }
       if(type==='area'){
-        refArr+='Z'
+        refStr+='Z'
       }
-      return refArr;
+      return refStr;
     },
-    pointsCurve(){
+    pointsC(){
       let newArr = [];
-      let refArr = '';
+      let refStr = '';
       newArr = this.svgFlicker.svgData.points;
+      if(newArr.length<3){return '';}
       for (let i = 0; i < newArr.length-2; i++) {
         if(i===0){
           let x = newArr[i].x/this.unit1X;
           let y = newArr[i].y/this.unit1Y;
-          refArr+='M'+x+','+y+' ';
+          refStr+='M'+x+','+y+' ';
         }else {
           let x = newArr[i].x/this.unit1X;
           let y = newArr[i].y/this.unit1Y;
           let x2= (newArr[i].x / this.unit1X + newArr[i + 1].x / this.unit1X) / 2;
           let y2 = (newArr[i].y / this.unit1Y + newArr[i + 1].y / this.unit1Y) / 2;
-          refArr+='Q'+x+','+y+' '+ x2 + ',' + y2 + ' ';
+          refStr+='Q'+x+','+y+' '+ x2 + ',' + y2 + ' ';
         }
       }
-      refArr += `T${newArr[newArr.length - 1].x / this.unit1X},${newArr[newArr.length - 1].y / this.unit1Y}`;// 处理最后一个点
-      return refArr;
+      refStr += `T${newArr[newArr.length - 1].x / this.unit1X},${newArr[newArr.length - 1].y / this.unit1Y}`;// 处理最后一个点
+      return refStr;
     }
   },
   computed:{

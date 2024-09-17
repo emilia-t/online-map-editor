@@ -1,10 +1,10 @@
 <template>
-<div class="BananaConnectionBox"><!--连接盒子-->
+<div class="BananaConnectionBox" @mouseenter="playSoundEffect('do_1')"><!--连接盒子-->
   <div class="ConnectionImgBox"><!--图像-->
     <img class="ConnectionImg" alt="图片加载失败" v-if="ServerImage!==''" :src="ServerImage"/>
     <image-loading-failed v-if="ServerImage===''"/>
   </div>
-  <router-link :to="`/m/${MyConfig.serverKey}`" title="点击打开地图"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
+  <router-link :to="`/m/${MyConfig.serverKey}`" title="点击进入"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
   <div class="downloadButtonBox" title="下载OMS文件" v-if="source==='manual'" @click="downLoad()"><!--右上角更多属性按钮-->
     <download/>
   </div>
@@ -23,26 +23,27 @@
     <div class="moreBoardClose" title="点击关闭" @click="closeDetailBoard">
       <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M235.403636 182.178909l270.475637 270.498909L776.401455 182.178909a58.181818 58.181818 0 1 1 82.292363 82.292364L588.171636 534.946909 858.693818 805.469091a58.181818 58.181818 0 1 1-82.292363 82.269091L505.879273 617.239273 235.403636 887.738182A58.181818 58.181818 0 0 1 153.134545 805.469091l270.475637-270.522182L153.134545 264.471273a58.181818 58.181818 0 0 1 82.269091-82.292364z" fill="#282C33" p-id="34517"></path></svg>
     </div>
-    <span v-if="isNotEmpty(MyConfig.serverKey)">服务器Key：{{MyConfig.serverKey}}</span>
-    <span v-if="isNotEmpty(MyConfig.maxOnlineUser)">最大在线人数：{{MyConfig.maxOnlineUser}}</span>
-    <span v-if="isNotEmpty(MyConfig.maxWidth)">最大宽度：{{MyConfig.maxWidth}}</span>
-    <span v-if="isNotEmpty(MyConfig.minWidth)">最小宽度：{{MyConfig.minWidth}}</span>
-    <span v-if="isNotEmpty(MyConfig.maxHeight)">最大高度：{{MyConfig.maxHeight}}</span>
-    <span v-if="isNotEmpty(MyConfig.minHeight)">最小高度：{{MyConfig.minHeight}}</span>
-    <span v-if="isNotEmpty(MyConfig.p0X)">默认点X：{{MyConfig.p0X}}</span>
-    <span v-if="isNotEmpty(MyConfig.p0Y)">默认点Y：{{MyConfig.p0Y}}</span>
-    <span v-if="isNotEmpty(MyConfig.unit1X)">横轴单位1：{{MyConfig.unit1X}}</span>
-    <span v-if="isNotEmpty(MyConfig.unit1Y)">纵轴单位1：{{MyConfig.unit1Y}}</span>
-    <span v-if="isNotEmpty(MyConfig.maxLayer)">最大层级：{{MyConfig.maxLayer}}</span>
-    <span v-if="isNotEmpty(MyConfig.minLayer)">最小层级：{{MyConfig.minLayer}}</span>
-    <span v-if="isNotEmpty(MyConfig.defaultLayer)">默认层级：{{MyConfig.defaultLayer}}</span>
-    <span v-if="isNotEmpty(MyConfig.enableBaseMap)">是否启用底图：{{MyConfig.enableBaseMap}}</span>
-    <span v-if="isNotEmpty(MyConfig.maxZoom)">最大底图缩放数：{{MyConfig.maxZoom}}</span>
-    <span v-if="isNotEmpty(MyConfig.minZoom)">最小底图缩放数：{{MyConfig.minZoom}}</span>
-    <span v-if="isNotEmpty(MyConfig.defaultZoom)">默认底图缩放数：{{MyConfig.defaultZoom}}</span>
-    <span v-if="isNotEmpty(MyConfig.defaultX)">中心点X：{{MyConfig.defaultX}}</span>
-    <span v-if="isNotEmpty(MyConfig.defaultY)">中心点Y：{{MyConfig.defaultY}}</span>
-    <span v-if="isNotEmpty(MyConfig.resolutionX) && isNotEmpty(MyConfig.resolutionY)">分辨率：{{MyConfig.resolutionX}}×{{MyConfig.resolutionY}}</span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.version)"><span>服务器版本</span><span>{{MyConfig.version}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.serverKey)"><span>服务器Key</span><span>{{MyConfig.serverKey}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.maxOnlineUser)"><span>最大在线数</span><span>{{MyConfig.maxOnlineUser}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.maxWidth)"><span>最大宽度</span><span>{{MyConfig.maxWidth}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.minWidth)"><span>最小宽度</span><span>{{MyConfig.minWidth}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.maxHeight)"><span>最大高度</span><span>{{MyConfig.maxHeight}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.minHeight)"><span>最小高度</span><span>{{MyConfig.minHeight}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.p0X)"><span>初始点X</span><span>{{MyConfig.p0X}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.p0Y)"><span>初始点Y</span><span>{{MyConfig.p0Y}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.unit1X)"><span>横轴单位1</span>{{MyConfig.unit1X}}<span></span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.unit1Y)"><span>纵轴单位1</span><span>{{MyConfig.unit1Y}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.maxLayer)"><span>最大层级</span><span>{{MyConfig.maxLayer}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.minLayer)"><span>最小层级</span><span>{{MyConfig.minLayer}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.defaultLayer)"><span>默认层级</span><span>{{MyConfig.defaultLayer}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.enableBaseMap)"><span>启用底图</span><span>{{MyConfig.enableBaseMap}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.maxZoom)"><span>最大缩放量</span><span>{{MyConfig.maxZoom}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.minZoom)"><span>最小缩放量</span><span>{{MyConfig.minZoom}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.defaultZoom)"><span>默认缩放量</span><span>{{MyConfig.defaultZoom}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.defaultX)"><span>中心点X</span><span>{{MyConfig.defaultX}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.defaultY)"><span>中心点Y</span><span>{{MyConfig.defaultY}}</span></span>
+    <span class="infos" v-if="isNotEmpty(MyConfig.resolutionX) && isNotEmpty(MyConfig.resolutionY)"><span>分辨率</span><span>{{MyConfig.resolutionX}}×{{MyConfig.resolutionY}}</span></span>
   </div>
   <div class="serverDelete" ref="serverDelete" title="点击删除服务器" v-if="source==='manual'"><!--左下角的删除按钮-->
     <svg ref="serverDeleteIcon" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M585.27998 767.998465 585.27998 365.722472c0-46.879704 73.238025-46.879704 73.238025 0l0 402.275993C658.518005 814.883285 585.27998 814.883285 585.27998 767.998465L585.27998 767.998465 585.27998 767.998465zM365.500415 767.998465 365.500415 365.722472c0-46.879704 73.271794-46.879704 73.271794 0l0 402.275993C438.771185 814.883285 365.500415 814.883285 365.500415 767.998465L365.500415 767.998465 365.500415 767.998465zM988.190423 182.861748 805.060569 182.861748l0-73.16844c0-60.576657-49.247634-109.692285-108.754936-109.692285L328.879356 0.001023c-60.673871 0-109.887736 49.116651-109.887736 109.692285l0 73.16844L35.860742 182.861748c-46.949288 0-46.949288 73.104995 0 73.104995l952.32968 0C1035.104919 255.966743 1035.104919 182.861748 988.190423 182.861748L988.190423 182.861748 988.190423 182.861748zM292.26239 109.692285c0-19.428491 17.158798-36.58729 36.615942-36.58729l367.426277 0c19.459191 0 35.484166 14.863523 35.484166 36.58729l0 73.16844L292.26239 182.860724 292.26239 109.692285 292.26239 109.692285zM768.410857 1024 255.607562 1024c-60.640102 0-109.853967-49.111534-109.853967-109.687168L145.753595 365.722472c0-21.723767 17.158798-36.586267 36.615942-36.586267 19.462261 0 36.621059 14.862499 36.621059 36.586267l0 548.589336c0 19.389606 17.192567 36.547381 36.615942 36.547381l512.803295 0c19.457144 0 36.649711-17.157775 36.649711-36.547381L805.059546 366.855272c0-48.012504 73.238025-48.012504 73.238025 0l0 547.456536C878.298594 974.888466 829.084729 1024 768.410857 1024L768.410857 1024zM768.410857 1024" fill="#272636" p-id="10840"></path></svg>
@@ -66,6 +67,7 @@ export default {
   data(){
     return {
       MyConfig:{
+        version:this.version,
         account:this.account,
         password:this.password,
         p0X:null,
@@ -105,6 +107,11 @@ export default {
     source:{
       type:String,
       default:'manual',
+      required:false
+    },
+    version:{
+      type:String,
+      default:'0.1',
       required:false
     },
     account:{
@@ -186,6 +193,9 @@ export default {
         this.appendDeleteServer();//删除按钮添加删除服务器的事件
       }
     },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
     isNotEmpty(value){//检测传入参数是否是null或空字符
       return value !== null && value !== '';
     },
@@ -223,6 +233,7 @@ export default {
             let nowType=jsonData.type;//3.处理数据
             switch (nowType){
               case 'send_serverConfig':{
+                this.MyConfig.version=jsonData.data.version!==undefined ? jsonData.data.version : this.MyConfig.version;
                 this.MyConfig.p0X=jsonData.data.p0_x!==undefined ? jsonData.data.p0_x : this.MyConfig.p0X;
                 this.MyConfig.p0Y=jsonData.data.p0_y!==undefined ? jsonData.data.p0_y : this.MyConfig.p0Y;
                 this.MyConfig.maxHeight=jsonData.data.max_height!==undefined ? jsonData.data.max_height : this.MyConfig.maxHeight;
@@ -248,13 +259,14 @@ export default {
                 this.MyConfig.resolutionX=jsonData.data.resolution_x!==undefined ? jsonData.data.resolution_x : this.MyConfig.resolutionX;
                 this.MyConfig.resolutionY=jsonData.data.resolution_y!==undefined ? jsonData.data.resolution_y : this.MyConfig.resolutionY;
                 let configObj={//更新本地配置
-                  account:'',password:'',p0X:'',p0Y:'',imgTime:'',maxHeight:'',
+                  version:'',account:'',password:'',p0X:'',p0Y:'',imgTime:'',maxHeight:'',
                   onlineNumber:'',maxOnlineUser:'',maxWidth:'',serverAddress:'',serverImg:'',serverKey:'',
                   serverName:'',
                   baseMapUrl:'',defaultLayer:'',defaultZoom:'',enableBaseMap:'',maxLayer:'',
                   maxZoom:'',minHeight:'',minLayer:'',minWidth:'',minZoom:'',unit1X:'',
                   unit1Y:'',defaultX:'',defaultY:'',resolutionX:'',resolutionY:''
                 };
+                configObj.version=this.MyConfig.version;
                 configObj.account=this.MyConfig.account;
                 configObj.password=this.MyConfig.password;
                 configObj.p0X=this.MyConfig.p0X;
@@ -367,6 +379,30 @@ export default {
 </script>
 
 <style scoped>
+.infos{
+  height: 26px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  font-size: 14px;
+}
+.infos span:first-child{
+  height: 26px;
+  width: 50%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  font-weight: 400;
+}
+.infos span:last-child{
+  height: 26px;
+  width: 50%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  font-weight: 200;
+}
 .serverDelete{
   z-index: 550;
   width: 20px;
@@ -396,6 +432,26 @@ export default {
   overflow: hidden;
   box-shadow: 1px 1px 4px rgb(200,200,200);
   position: relative;
+  animation: scale_box 0.3s ease forwards;
+}
+.BananaConnectionBox:hover{
+  animation: scale_box_hover 0.3s ease forwards;
+}
+@keyframes scale_box {
+  0%{
+    transform: scale(1.08);
+  }
+  100%{
+    transform: scale(1);
+  }
+}
+@keyframes scale_box_hover {
+  0%{
+    transform: scale(1);
+  }
+  100%{
+    transform: scale(1.08);
+  }
 }
 .ConnectionImg{
   width: 220px;
@@ -522,7 +578,7 @@ export default {
   bottom: 65px;
   right: 0px;
   z-index: 550;
-  width: 70px;
+  width: 60px;
   height: 20px;
   display: flex;
   justify-content: center;

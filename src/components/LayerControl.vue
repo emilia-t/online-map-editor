@@ -141,6 +141,14 @@ export default {
       this.baseMapListView=!this.baseMapListView;
     },
     addAreaStart(){
+      if(typeof this.useTpId!=='string'){
+        this.$store.commit('setCoLogMessage',{text:'请先选择一个图层',from:'internal:LayerControl',type:'tip'});
+        return false;
+      }
+      if(this.useTpId==='none' || this.useTpId===''){
+        this.$store.commit('setCoLogMessage',{text:'请先选择一个图层',from:'internal:LayerControl',type:'tip'});
+        return false;
+      }
       if(!this.isAddArea){
         this.$store.commit('setCoMapDrawing',true);
         this.isAddArea=true;//更改添加状态为“可用”
@@ -206,6 +214,14 @@ export default {
       this.theConfig.addAreaPos=[];//清除点击位置缓存
     },
     addLineStart(){//添加路径线
+      if(typeof this.useTpId!=='string'){
+        this.$store.commit('setCoLogMessage',{text:'请先选择一个图层',from:'internal:LayerControl',type:'tip'});
+        return false;
+      }
+      if(this.useTpId==='none' || this.useTpId===''){
+        this.$store.commit('setCoLogMessage',{text:'请先选择一个图层',from:'internal:LayerControl',type:'tip'});
+        return false;
+      }
       if(!this.isAddLine){
         this.$store.commit('setCoMapDrawing',true);
         this.isAddLine=true;//更改添加状态为“可用”
@@ -306,6 +322,14 @@ export default {
       }
     },
     addPointStart(){//添加关注点
+      if(typeof this.useTpId!=='string'){
+        this.$store.commit('setCoLogMessage',{text:'请先选择一个图层',from:'internal:LayerControl',type:'tip'});
+        return false;
+      }
+      if(this.useTpId==='none' || this.useTpId===''){
+        this.$store.commit('setCoLogMessage',{text:'请先选择一个图层',from:'internal:LayerControl',type:'tip'});
+        return false;
+      }
       if(!this.isAddPoint){
         this.$store.commit('setCoMapDrawing',true);
         this.$store.commit('suppressPickSelect',true);
@@ -408,6 +432,14 @@ export default {
       }
     },
     addCurveStart(){//添加曲线
+      if(typeof this.useTpId!=='string'){
+        this.$store.commit('setCoLogMessage',{text:'请先选择一个图层',from:'internal:LayerControl',type:'tip'});
+        return false;
+      }
+      if(this.useTpId==='none' || this.useTpId===''){
+        this.$store.commit('setCoLogMessage',{text:'请先选择一个图层',from:'internal:LayerControl',type:'tip'});
+        return false;
+      }
       if(!this.isAddCurve){
         this.$store.commit('setCoMapDrawing',true);
         this.isAddCurve=true;//更改添加状态为“可用”
@@ -724,6 +756,9 @@ export default {
     },
   },
   computed:{
+    useTpId(){
+      return  this.$store.state.templateConfig.useTpId;
+    },
     adsorptionNode(){
       return this.$store.state.userSettingConfig.adsorptionNode;
     },

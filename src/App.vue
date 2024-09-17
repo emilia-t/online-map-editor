@@ -10,10 +10,12 @@
     </div>
     <router-view/><!--地图主体-->
     <layer-bottom-anchor/><!--底部锚，除作者以外的人如果需要修改此处，请备注原因！If anyone other than the author needs to modify this area, please indicate the reason!-->
+    <layer-sound-effect/><!--音效-->
   </div>
 </template>
 
 <script>
+import LayerSoundEffect from "./components/currency/LayerSoundEffect";
 import LayerNotificationPopup from "./components/page/LayerNotificationPopup";
 import LayerToolbox from "./components/page/LayerToolbox";
 import SeparateMap from "./components/SeparateMap";
@@ -26,7 +28,7 @@ import LayerLog from "./components/page/LayerLog";
 export default {
   name: 'App',
   components: {
-    SeparateMap,
+    SeparateMap,LayerSoundEffect,
     PageLayerBackground,PageLayerHomePage,PageLayerMenuPanel,PageLayerConnectionInterface,
     LayerBottomAnchor,LayerLog,LayerToolbox,
     LayerNotificationPopup,

@@ -290,7 +290,7 @@
           <br/>
           2.在弹出的窗口中填写服务器地址、用户名、密码
           <br/>
-          3.点击窗口右下角的创建按钮
+          3.点击窗口右下角的添加按钮
           <br>
           4.在服务器列表即可看到您所添加的服务器，点击即可连接
           <br>
@@ -320,6 +320,9 @@
           </div>
           <div class="shortcut">
             <span class="cutA">4</span><span class="cutB">创建曲线</span>
+          </div>
+          <div class="shortcut">
+            <span class="cutA">F</span><span class="cutB">打开左侧菜单</span>
           </div>
           <div class="shortcut">
             <span class="cutA">L</span><span class="cutB">打开日志面板</span>
@@ -496,12 +499,27 @@ export default {
       this.$refs.SettingsBox.style.height=window.innerHeight+'px';
       this.findLocalAccounts();//查找本地账号配置
       this.checkRouter();
+      this.keyboardListen();
     },
     onFocusMode(){//聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=true;
     },
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
+    },
+    keyboardListen(){
+      document.body.addEventListener('keyup',(e)=>{
+        if(this.$store.state.mapConfig.inputFocusStatus){//在聚焦模式下拒绝操作
+          return false;
+        }
+        let KEY=e.key;
+        switch (KEY){
+          case 'f':{
+            this.panelShow=!this.panelShow;
+            break;
+          }
+        }
+      });
     },
     isValidPassword(password){//检测密码合理性
       const pattern = new RegExp('^[a-zA-Z0-9_!@$%^&*-+?\;:]*$');

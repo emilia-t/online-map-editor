@@ -22,29 +22,21 @@
         </div>
       </div>
     </div>
-    <div class="memberTeamPage" v-if="itemCount>=50">
-      <div :class="pageCount<7?'memberTeamPageRA':'memberTeamPageRB'">
-        <div class="memberTeamPageBt" @click="pageBtUp()">上-页</div>
-        <div :class="pageBtClass(num)"  v-for="num in pageList" v-text="num" @click="pageBtClick(num)"/>
-        <div class="memberTeamPageBt" @click="pageBtDown()">下-页</div>
-      </div>
-    </div>
-    <div class="memberTeamVS">
-      <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in extractLatter()" v-show="groupExpand">
-        <div class="memberTeamContent" v-if="!isArray(item)">
-          <div class="memberKeyInfo" :title="getItemName(layer.members[item])"
-               @mouseenter="expandOrderCase($event,layer.members[item].id)"
-               @mouseleave="restoreOrderCase($event)"
-               @mouseup="confirmOrderCase($event,layer.members[item].id)">
-            <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].custom.tmpId)">
-              <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'"
-                     v-if="layer.members[item].type==='point'"/>
-              <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
-                            v-if="layer.members[item].type==='line'"/>
-              <curve :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
-                     v-if="layer.members[item].type==='curve'"/>
-              <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'"
-                      v-if="layer.members[item].type==='area'"/>
+    <!--虚拟列表 hasRuleCW -->
+    <div class="VirtualTeamZone" v-if="false">
+      <div class="colorTeamBox">
+        <!--每个规则循环从成员列表中抽取符合此规则的成员成为虚拟分组成员-->
+        <!--当某个元素能够匹配多条规则时，只有第一条规则(排在最前面的)能够生效-->
+        <div class="colorTeam" v-for="team in colorVirtualTeam">
+          <div class="teamName">
+            虚拟列表名称
+          </div>
+          <div class="memberKeyInfo" v-for="item in team.members" :title="getItemName(layer.members[item])">
+            <div class="memberLeft">
+              <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'" v-if="layer.members[item].type==='point'"/>
+              <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='line'"/>
+              <curve :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='curve'"/>
+              <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='area'"/>
               <span class="memberName" v-text="getItemName(layer.members[item])"/>
             </div>
             <div :ref="'memberRightEye'+layer.members[item].id">
@@ -56,17 +48,55 @@
               </div>
             </div>
           </div>
-          <div class="memberActivityInfo">
-            <div class="memberPick" v-if="false">
-              <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑形状中</span>
+        </div>
+      </div>
+    </div>
+    <!--虚拟列表 hasRuleCW -->
+    <!--实际列表 hasRuleCW -->
+    <div class="memberTeamZone" v-if="true">
+      <div class="memberTeamPage" v-if="itemCount>=50">
+        <div :class="pageCount<7?'memberTeamPageRA':'memberTeamPageRB'">
+          <div class="memberTeamPageBt" @click="pageBtUp()">上-页</div>
+          <div :class="pageBtClass(num)"  v-for="num in pageList" v-text="num" @click="pageBtClick(num)"/>
+          <div class="memberTeamPageBt" @click="pageBtDown()">下-页</div>
+        </div>
+      </div>
+      <div class="memberTeamVS">
+        <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in extractLatter()" v-show="groupExpand">
+          <div class="memberTeamContent" v-if="!isArray(item)">
+            <div class="memberKeyInfo" :title="getItemName(layer.members[item])"
+                 @mouseenter="expandOrderCase($event,layer.members[item].id)"
+                 @mouseleave="restoreOrderCase($event)"
+                 @mouseup="confirmOrderCase($event,layer.members[item].id)">
+              <div class="memberLeft" @click="clickMemberEvent(layer.members[item])" @mousedown.stop="grabLayerStart($event,index,layer.members[item].id,layer.members[item].custom.tmpId)">
+                <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'" v-if="layer.members[item].type==='point'"/>
+                <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='line'"/>
+                <curve :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='curve'"/>
+                <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='area'"/>
+                <span class="memberName" v-text="getItemName(layer.members[item])"/>
+              </div>
+              <div :ref="'memberRightEye'+layer.members[item].id">
+                <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
+                  <eye-visible custom="cursor:pointer"/>
+                </div>
+                <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
+                  <eye-not-visible custom="cursor:pointer"/>
+                </div>
+              </div>
             </div>
-            <div class="memberSelect" v-if="false">
-              <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑属性中</span>
+            <div class="memberActivityInfo">
+              <div class="memberPick" v-if="false">
+                <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑形状中</span>
+              </div>
+              <div class="memberSelect" v-if="false">
+                <span class="memberSpanA" v-text="'emilia-text'"/><span>编辑属性中</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <!--实际列表 hasRuleCW -->
     <div class="memberMenuClose" @contextmenu.prevent="void 1" @click.stop="contextmenuHeadClose()" v-show="memberHeadMenu.show"></div>
     <div class="memberMenu" :style="headContextmenuPos" v-show="memberHeadMenu.show">
       <div class="menuListBox">
@@ -117,6 +147,7 @@ export default {
   },
   data(){
     return {
+      hasRuleCW:false,//是否该分组含有color和width rule
       tmpId:null,
       page:1,//当前页
       itemCount:0,//成员总数
@@ -155,6 +186,15 @@ export default {
       firmMessage:'',
       tmpProof:null,
       sticky:false,//置顶图层头部
+      colorVirtualTeam:[//颜色虚拟列表
+        // {
+        //   formula:"equ100",//公式
+        //   name:"面积等于0",//虚拟列表显示名称
+        //   members:[//成员列表 element 对象
+        //
+        //   ]
+        // }
+      ],
     }
   },
   props:{
@@ -251,6 +291,8 @@ export default {
   methods:{
     startSetting(){
       this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
+      let state=this.setHasRuleCW();
+      if(state)this.buildVirtualTeam();
       this.bindTemplate();
       this.tmpId=this.structure[1].template.id;
     },
@@ -728,6 +770,35 @@ export default {
     inHiddenElements(id){
       return this.mapHiddenElements.has(id);
     },
+    setHasRuleCW(){//是否该分组含有color和width rule
+      if(typeof this.structure[1]!=='object'){return false;}
+      if(!('template' in this.structure[1])){return false;}
+      if(typeof this.structure[1].template!=='object'){return false;}
+      if(this.structure[1].template.colorRule.condition.length>0){
+        this.hasRuleCW=true;
+        return true;
+      }
+      if(this.structure[1].template.widthRule.condition.length>0){
+        this.hasRuleCW=true;
+        return true;
+      }
+      this.hasRuleCW=false;
+      return false;
+    },
+    buildVirtualTeam(){//构建虚拟列表
+      let arr=Object.keys.call([],this.layer.members);
+      if(arr.length===0){
+        console.log("对象成员为空");
+        return false;
+      }
+      for(let element in this.layer.members){
+        if(typeof element!=='object'){
+          console.log("未初始化的成员，无法构建");
+        }else{
+          //分组
+        }
+      }
+    }
   },
   computed:{
     ...mapState({
@@ -771,7 +842,7 @@ export default {
       }
     },
     templateId(){
-      return this.$store.state.templateConfig.useTpId+this.$store.state.templateConfig.useTpName
+      return this.$store.state.templateConfig.useTpId;
     },
     mapHiddenElements(){
       let map=new Map();
@@ -842,17 +913,13 @@ export default {
     }
   },
   watch:{
-    // virtualLst:{
-    //   handler(newValue){
-    //     console.log(newValue);
-    //   }
-    // },
     modify:{
-      handler(){//当本分组模板更新后更新使用中的模板
+      handler(){//当本分组模板更新后执行的操作1.更新使用中的模板2.更新hasRuleCW
         let im='';
-        try{im=this.structure[1].template.id+this.structure[1].template.name;}catch (e) {}
+        try{im=this.structure[1].template.id;}catch (e) {}
         if(this.templateId===im){
           this.reuseTemplate();
+          this.setHasRuleCW();
         }
       }
     },
@@ -861,13 +928,8 @@ export default {
         if(newValue===this.editTpTaskId){//模板编辑任务回执
           if(this.resultCode===2){
             let newTemplate=this.resultTemplate;
-            let check=this.tmpProof.tpCheck(newTemplate);
-            if(check===true){
-              this.$store.state.serverData.socket.broadcastUpdateTemplateData(newTemplate);
-            }else{
-              let explain=this.tmpProof.codeExplain(check);
-              this.$store.commit('setCoLogMessage',{text:explain,from:'internal:OrangeGroupStructure',type:'warn'});
-            }
+            this.$store.state.serverData.socket.broadcastUpdateTemplateData(newTemplate);
+            //删除了重复的检查tpCheck在BananaTemplateEdit的submitEdit阶段就已经进行了检查
           }
         }
       }
@@ -960,6 +1022,14 @@ export default {
 </script>
 
 <style scoped>
+.VirtualTeamZone{
+  width: 100%;
+  height: auto;
+}
+.memberTeamZone{
+  width: 100%;
+  height: auto;
+}
 .memberTeamVS{
   width: 100%;
   height: auto;

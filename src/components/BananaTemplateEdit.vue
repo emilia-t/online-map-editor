@@ -355,7 +355,7 @@
                   设置颜色规则
                 </div>
                 <div class="setExplain">
-                  (*实验性的内容暂无法使用*)通过依据某项属性自动为成员设置颜色。注意：在点击“应用”之前都可以再次修改此项规则，一旦点击了“应用”之后，此分组内的所有元素成员将会按以下规则自动设置颜色同时会按照属性值自动分组，并且此分组将无法手动调整元素成员顺序。
+                  (*实验性的内容暂无法使用*)通过依据某项属性自动为成员设置颜色。注意：在点击“应用”之前都可以再次修改此项规则，一旦点击了“应用”之后，此分组内的所有元素成员将会按以下规则自动设置颜色同时会按照参数值自动形成分组，并且无法手动修改元素的颜色。
                 </div>
                 <div class="setTitle">
                   颜色依据
@@ -833,12 +833,12 @@
             this.editTemplate.modify=time;
             let template=this.editTemplate;
             let ckCode=this.tmpProof.tpCheck(template);
-            if(ckCode!==true){
+            if(ckCode!==true){//检查不通过
               let text='';
               text=this.tmpProof.codeExplain(ckCode);
               this.$store.commit('setCoLogMessage',{text:text,from:'internal:BananaTemplateEdit',type:'tip'});
               return false;
-            }else {
+            }else {//检查通过
               let product={
                 template,
                 code:this.taskCode

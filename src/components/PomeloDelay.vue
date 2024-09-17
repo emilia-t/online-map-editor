@@ -38,13 +38,13 @@ export default {
     pong:{
       handler(pong){
         this.time=Math.abs(pong-this.ping);
-        if(this.time<=30){
+        if(this.time<=40){
           this.color='#0BFF05';
           this.color2='#09A004';
-        }else if(this.time>30 && this.time<=80){
+        }else if(this.time>40 && this.time<=120){
           this.color='#ffd400';
           this.color2='#daca00';
-        }else if(this.time>80){
+        }else if(this.time>120){
           this.color='#ff4e61';
           this.color2='#ac1d00';
         }

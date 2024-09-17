@@ -1,41 +1,43 @@
 <template>
 <div id="SeparateMap" v-if="mapSeparateState">
 <!--  <layer-background v-if="this.$store.state.baseMapConfig.enableBaseMap"/>&lt;!&ndash;背景层&ndash;&gt;-->
-  <layer-realistic-base-map :opacity="loading?0:1" v-if="useBaseMap"/><!--背景层-->
-  <layer-fictitious-base-map :opacity="loading?0:1" v-if="!useBaseMap"/><!--背景层-->
-  <layer-user :server-key="serverKey" v-show="!loading"/><!--用户层-->
-  <layer-data v-show="!loading"/><!--数据层-->
-  <layer-message v-show="!loading"/><!--消息层-->
+  <layer-realistic-base-map :opacity="loading?0:1" v-if="useBaseMap && configBaseMapOk"/><!--背景层-->
+  <layer-fictitious-base-map :opacity="loading?0:1" v-if="!useBaseMap && configBaseMapOk"/><!--背景层-->
+  <layer-data v-if="configBaseMapOk" v-show="!loading"/><!--数据层-->
 <!--  <layer-ruler/>标尺层-->
+  <layer-user :server-key="serverKey" v-show="!loading"/><!--用户层-->
+  <layer-message v-show="!loading"/><!--消息层-->
   <layer-control v-show="!loading"/><!--控制层-->
   <layer-element-panel v-show="!loading"/><!--元素面板层-->
   <layer-details-panel v-show="!loading"/><!--属性面板层-->
   <layer-console v-show="!loading"/><!--调试面板-->
   <pomelo-loading :view="loading"/><!--加载界面-->
   <pomelo-delay/>
+  <pomelo-float-tip :message="popMessage"/>
 </div>
 </template>
 
 <script>
+import PomeloFloatTip from "./PomeloFloatTip";
+import PomeloLoading from "./PomeloLoading";
+import PomeloDelay from "./PomeloDelay";
 import LayerData from "./LayerData";
-import LayerRuler from "./LayerRuler";
-import LayerBackground from "./LayerBackground";
+import LayerUser from "./LayerUser";
 import LayerRealisticBaseMap from "./LayerRealisticBaseMap";
 import LayerFictitiousBaseMap from "./LayerFictitiousBaseMap";
 import LayerControl from "./LayerControl";
 import LayerElementPanel from "./LayerElementPanel";
-import LayerConsole from "./LayerConsole";
-import LayerUser from "./LayerUser";
 import LayerDetailsPanel from "./LayerDetailsPanel";
 import LayerMessage from "./LayerMessage";
-import PomeloLoading from "./PomeloLoading";
-import PomeloDelay from "./PomeloDelay";
+import LayerRuler from "./LayerRuler";
+import LayerBackground from "./LayerBackground";
+import LayerConsole from "./LayerConsole";
 export default {
   name: "SeparateMap",
   components:{
     LayerData,LayerRuler,LayerBackground,LayerControl,LayerElementPanel,LayerConsole,
     LayerUser,LayerDetailsPanel,LayerMessage,LayerRealisticBaseMap,LayerFictitiousBaseMap,
-    PomeloLoading,PomeloDelay
+    PomeloLoading,PomeloDelay,PomeloFloatTip
   },
   props:{
     serverKey:{
@@ -45,9 +47,10 @@ export default {
   },
   data(){
     return {
-      MapServerAddress:null,
       tempLinked:false,
       nowLinkClock:false,
+      popMessage:[],
+      configBaseMapOk:false,//默认配置异常需要加载正确的配置后改为true
       loading:true,//加载中状态默认为true//开发可以关闭
     }
   },
@@ -79,7 +82,6 @@ export default {
         }
       }
       if(!find){
-        //this.$store.commit('setCoLogMessage',{text:'找不到本地服务器配置信息',from:'internal:SeparateMap',type:'warn'});
         needRouteSearch=true;
       }
       if(find){//找到了配置信息
@@ -105,7 +107,6 @@ export default {
       if(needRouteSearch){//向路由获取服务器地址
         let routeObject=null;
         if(this.$store.state.userRouteConfig.use!==null){
-          //this.$store.commit('setCoLogMessage',{text:'正在从路由获取服务器地址',from:'internal:SeparateMap',type:'tip'});
           routeObject=this.$store.state.userRouteConfig.use;
           let address=routeObject.address;
           let port=routeObject.port;
@@ -199,6 +200,10 @@ export default {
       }
     },
     initializeConfig(config){//初始化地图、底图配置
+      let hasEnableBaseMap=false;
+      let hasBaseMpType=false;
+      let hasDefaultX=false;
+      let hasDefaultY=false;
       let QIR={
         /**检测是否为对象类型的数据,是则返回t
          * @return boolean
@@ -232,11 +237,19 @@ export default {
           if(ref){
             return parseFloat(value);
           }else {
-            return ref
+            return ref;
           }
         },
       };
       if(!QIR.isObject(config)){return false;}
+      if(QIR.hasProperty(config,'version')!==false){//检测版本是否匹配
+        if(config['version']!==this.$root.Version){
+          this.popMessage.push('警告！服务器版本与客户端不匹配，可能存在兼容性问题');
+        }
+      }
+      else{
+        this.popMessage.push('警告！服务器版本过旧，可能存在兼容性问题');
+      }
       if(QIR.hasProperty(config,'p0_x')!==false){//检测是否存在default_x
         this.$store.state.mapConfig.p0.point.x=QIR.returnNumber(config['p0_x']);
       }
@@ -281,15 +294,21 @@ export default {
         this.$store.state.mapConfig.zoomSub=-add/(1+add);//-k/(1+k)
       }
       if(QIR.hasProperty(config,'default_x')!==false){
+        hasDefaultX=true;
         this.$store.state.baseMapConfig.options.center[1]=QIR.returnNumber(config['default_x']);
       }
       if(QIR.hasProperty(config,'default_y')!==false){
+        hasDefaultY=true;
         this.$store.state.baseMapConfig.options.center[0]=QIR.returnNumber(config['default_y']);
       }
       if(QIR.hasProperty(config,'enable_base_map')!==false){//地图底图相关配置，如果启用的话：
+        hasEnableBaseMap=true;
         this.$store.state.baseMapConfig.enableBaseMap=config['enable_base_map'];
-        this.$store.state.baseMapConfig.baseMapType=config['base_map_type'];
         if(config['enable_base_map']===true){
+          if(QIR.hasProperty(config,'base_map_type')!==false){
+            hasBaseMpType=true;
+            this.$store.state.baseMapConfig.baseMapType=config['base_map_type'];
+          }
           if(QIR.hasProperty(config,'max_zoom')!==false){
             this.$store.state.baseMapConfig.options.maxZoom=QIR.returnNumber(config['max_zoom']);
           }
@@ -308,7 +327,25 @@ export default {
           if(QIR.hasProperty(config,'resolution_y')!==false){
             this.$store.state.baseMapConfig.resolution.height=QIR.returnNumber(config['resolution_y']);
           }
+        }else{
+          if(QIR.hasProperty(config,'base_map_type')!==false){
+            hasBaseMpType=true;
+            this.$store.state.baseMapConfig.baseMapType=config['base_map_type'];
+          }
+          if(QIR.hasProperty(config,'resolution_x')!==false){
+            this.$store.state.baseMapConfig.resolution.width=QIR.returnNumber(config['resolution_x']);
+          }
+          if(QIR.hasProperty(config,'resolution_y')!==false){
+            this.$store.state.baseMapConfig.resolution.height=QIR.returnNumber(config['resolution_y']);
+          }
         }
+      }
+      if(hasEnableBaseMap && hasBaseMpType && hasDefaultX && hasDefaultY){
+        this.configBaseMapOk=true;
+      }
+      else{
+        this.configBaseMapOk=false;
+        this.popMessage.push('警告！地图底图配置异常，无法正确加载数据');
       }
     }
   },
