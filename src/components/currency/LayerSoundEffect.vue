@@ -2,13 +2,13 @@
 <template>
   <div class="LayerSoundEffect">
     <!--询问权限弹窗-->
-    <div class="alert" ref="alert" v-if="!choice">
-      <span class="row1">为您提供更好的体验</span>
-      <span class="row2">是否启用音效</span>
+    <div class="alert" ref="alert">
+      <span class="row1">我们十分重视您的隐私</span>
+      <span class="row2">申请播放音效权限</span>
       <button class="confirm-btn" @click="enableEffect()">是</button>
       <button class="cancel-btn" @click="disableEffect()">否</button>
     </div>
-    <canvas class="canvasDj" ref="canvasDj" width="300px" height="150px" v-if="!choice"/>
+    <canvas class="canvasDj" ref="canvasDj" width="300px" height="150px"/>
     <!--轨道1-音效-->
     <audio ref="track1"
            @play="track1OnPlay()"
@@ -80,7 +80,7 @@
   name: "LayerSoundEffect",
   data(){
     return{
-      choice:false,//选择了启用还是没启用
+      choice:false,//是否做出了选择
       track1:'',//各轨道使用的音效名称完播或被用户暂停后重置为空字符
       status1:false,//各轨道的使用状态为true的情况下不允许更改新的音效
       track2:'',
@@ -98,7 +98,14 @@
       track8:'',
       status8:false,
       effectList:{//音效名称列表
-        do_1:'static/audio/do_1.mp3',
+        do_1:'static/audio/do_1.mp3',//滑入、关注、注意
+        bell_sound: 'static/audio/bell_sound.mp3',//铃声、通知
+        confirm_1: 'static/audio/confirm_1.mp3',//确认
+        unconfirm_1: 'static/audio/unconfirm_1.mp3',//不确认、取消
+        click_a: 'static/audio/click_a.mp3',//单击、点按反馈
+        click_b: 'static/audio/click_b.mp3',//单击、点按反馈
+        fly_in: 'static/audio/fly_in.mp3',//飞入
+        fly_out: 'static/audio/fly_out.mp3',//飞出
       },
       audioList:{//预加载音效
 
@@ -115,7 +122,7 @@
             '#29ff00','#f6e384','#acbf4c'];
           this.x = Math.random() * this.width;
           this.y = Math.random() * this.height;
-          this.radius = Math.random() * 40;
+          this.radius =Math.floor(Math.random() * (50 - 40 + 1)) + 40;//50-30
           this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
           this.vx = (Math.random() - 0.5) * 2;
           this.vy = (Math.random() - 0.5) * 2;
@@ -125,7 +132,7 @@
           offScreenCanvas.width = this.width;
           offScreenCanvas.height = this.height;
           const offScreenCtx = offScreenCanvas.getContext('2d');
-          offScreenCtx.filter = 'blur(10px)';//高斯模糊效果
+          offScreenCtx.filter = 'blur(12px)';//高斯模糊效果
           offScreenCtx.beginPath();
           offScreenCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
           offScreenCtx.fillStyle = this.color;
@@ -147,38 +154,52 @@
     }
   },
   mounted(){
-    this.renderCanvas();
     this.preloadAudio();
     this.autoPlay();
+    if(this.enableSoundEffect===true){//如果设置中启用了音效，则弹出播放音效的权限申请弹窗
+      this.renderCanvas();
+      this.eject();
+    }
   },
   methods:{
     renderCanvas(){
       const canvas=this.$refs.canvasDj;
       this.ctx=canvas.getContext('2d');
-      for(let i=0;i<35;i++){//创建圆球
+      for(let i=0;i<15;i++){//创建圆球
         this.circles.push(new this.Circle(this.ctx));
       }
       this.animate();
     },
-    animate(){
+    eject(){
+      this.$refs.alert.classList.add('alertUp');
+      this.$refs.alert.classList.remove('alertDown');
+      this.$refs.canvasDj.classList.add('canvasDjUp');
+      this.$refs.canvasDj.classList.remove('canvasDjDown');
+    },
+    animate(){//不论做出任何选择都会关闭面板和关闭动画
+      if(this.choice)return;
       this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
       this.ctx.fillRect(0, 0, 300, 150);
       this.circles.forEach(circle => circle.update());
       requestAnimationFrame(this.animate);
     },
-    enableEffect(){
-      this.$store.commit('setCoLogMessage',{text:'已启用音效',from:'internal:LayerSoundEffect',type:'tip'});
+    enableEffect(){//不论做出任何选择都会关闭面板和关闭动画
       this.$store.commit('setCoEffectsSoundPermission',true);
+      this.$store.commit('setOpSoundEffect');
+      this.$refs.alert.classList.remove('alertUp');
       this.$refs.alert.classList.add('alertDown');
+      this.$refs.canvasDj.classList.remove('canvasDjUp');
       this.$refs.canvasDj.classList.add('canvasDjDown');
-      setTimeout(()=>this.choice=true,1000);
+      this.choice=true;
     },
-    disableEffect(){
-      this.$store.commit('setCoLogMessage',{text:'已禁用音效',from:'internal:LayerSoundEffect',type:'tip'});
+    disableEffect(){//不论做出任何选择都会关闭面板和关闭动画
       this.$store.commit('setCoEffectsSoundPermission',false);
+      this.$store.commit('setUnSoundEffect');
+      this.$refs.alert.classList.remove('alertUp');
       this.$refs.alert.classList.add('alertDown');
+      this.$refs.canvasDj.classList.remove('canvasDjUp');
       this.$refs.canvasDj.classList.add('canvasDjDown');
-      setTimeout(()=>this.choice=true,1000);
+      this.choice=true;
     },
     autoPlay(){
       document.body.addEventListener(
@@ -190,11 +211,11 @@
         });
     },
     preloadAudio(){//预加载音效文件
-      const audioFiles = {
-        do_1: 'static/audio/do_1.mp3',
-      };
-      for (const key in audioFiles) {
-        const audio = new Audio(audioFiles[key]);
+      const audioFiles = this.effectList;
+      let origin=location.origin+'/';
+      for (let key in audioFiles) {
+        if(!audioFiles.hasOwnProperty(key)){continue;}
+        let audio = new Audio(origin+audioFiles[key]);
         audio.load(); // 预加载
         this.audioList[key] = audio;
       }
@@ -214,17 +235,6 @@
       if(!this.status7)return 'track7';
       if(!this.status8)return 'track8';
       return false;
-    },
-    playDo_1() {
-      this.$nextTick(() =>{
-        let track=this.trackPlan();
-        if(track!==false){
-          if(this.$refs[track].paused===false){return;}
-          this[track]=this.effectList.do_1;
-          this.$refs[track].load();// 重新加载音频文件
-          this.$refs[track].play();// 播放音效
-        }
-      });
     },
     /**
      * 音效播放控制-end
@@ -352,12 +362,15 @@
     },
     trackBottomEnded(){
       // console.log("底音已完播");
-    }
+    },
     /**
      * 音效播放监听器-end
      **/
   },
   computed:{
+    enableSoundEffect(){
+      return this.$store.state.userSettingConfig.enableSoundEffect;
+    },
     permission(){
       return this.$store.state.effectsConfig.soundEffect.permission;
     },
@@ -371,15 +384,25 @@
   watch:{
     playCount:{
       handler(){
-        if(this.permission===false)return false;//没权限播放
+        if(this.enableSoundEffect===false)return false;//音效启用检查
+        if(this.permission===false)return false;//播放音效权限检查
         let name=this.needPlay;
-        switch(name){
-          case 'do_1':{
-            this.playDo_1();break;
+        this.$nextTick(() =>{
+          let track=this.trackPlan();
+          console.log(track);
+          if(track!==false){
+            if(this.$refs[track].paused===false){return;}
+            this[track]=location.origin+'/'+this.effectList[name];
+            this.$refs[track].load();// 重新加载音频文件
+            this.$refs[track].play();// 播放音效
           }
-          default:{
-            break;
-          }
+        });
+      }
+    },
+    enableSoundEffect:{
+      handler(newValue){
+        if(newValue===true){//用户在常规设置中手动启用音效的方式认定为给予了播放权限
+          this.$store.commit('setCoEffectsSoundPermission',true);
         }
       }
     }
@@ -400,9 +423,12 @@
     position: fixed;
     z-index: 690;
     left: calc(50% - 150px);
-    bottom: 0;
+    bottom: -150px;
+    opacity:0;
     border-radius: 10px;
     overflow: hidden;
+  }
+  .canvasDjUp{
     animation: slide-up 1s ease forwards;
   }
   .canvasDjDown{
@@ -415,16 +441,18 @@
     height: 120px;
     padding: 15px;
     left: calc(50% - 150px);
-    bottom: 0;
+    bottom: -150px;
     text-align: center;
     color: white;
     font-family: Arial, sans-serif;
     border-radius: 10px;
     overflow: hidden;
-    animation: slide-up 1s ease forwards;
-    opacity: 1;
+    opacity: 0;
     box-shadow: 0 10px 30px rgba(255, 198, 245, 0.67);
     pointer-events: all;
+  }
+  .alertUp{
+    animation: slide-up 1s ease forwards;
   }
   .alertDown{
     animation: slide-down 1s ease forwards;
@@ -469,22 +497,22 @@
   /* 动画：从底部缓缓上升 */
   @keyframes slide-up {
     0% {
-      transform: translateY(100%);
+      bottom: -150px;
       opacity: 0;
     }
     100% {
-      transform: translateY(0);
+      bottom: 0px;
       opacity: 1;
     }
   }
   /* 动画：从底部缓缓下降 */
   @keyframes slide-down {
     0% {
-      transform: translateY(0%);
+      bottom: 0px;
       opacity: 1;
     }
     100% {
-      transform: translateY(100%);
+      bottom: -150px;
       opacity: 0;
     }
   }

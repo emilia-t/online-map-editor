@@ -1,8 +1,8 @@
 <template>
-  <div class="toolboxLayerBox" ref="toolboxLayer" @click.stop="closePanel()">
+  <div class="toolboxLayerBox" ref="toolboxLayer" @click.stop="closePanel()" @mousedown.stop="playSoundEffect('unconfirm_1')">
     <div class="toolboxLayer" @click.stop="void 0">
       <div class="toolList">
-        <div class="toolBox" @click="openKmlToOmd()">
+        <div class="toolBox" @click="openKmlToOmd()" @mousedown.stop="playSoundEffect('confirm_1')">
           <kml-to-omd custom="background:white;cursor:pointer;"/>
           <span class="spanL">kml2omd</span>
         </div>
@@ -16,7 +16,7 @@
         </div>
       </div>
     </div>
-    <div class="toolApp" @click.stop="void 0">
+    <div class="toolApp" @click.stop="void 0" @mousedown.stop="void 0">
       <banana-kml-to-omd :showResponse="toolShow.kmlToOmd" @kmlToOmdCloseRequest="kmlToOmdCloseApproval"/>
     </div>
   </div>
@@ -37,6 +37,9 @@ export default {
     }
   },
   methods:{
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
     closePanel(){
       this.$store.commit('setCoToolboxShowPanel',false);
     },

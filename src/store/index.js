@@ -4200,6 +4200,8 @@ export default new Vuex.Store({
       suppressPickSelect:false,
       opAdsorptionNode:false,
       unAdsorptionNode:false,
+      opSoundEffect:false,
+      unSoundEffect:false,
     },
     /**
      * Config:可读可写 read write
@@ -4253,7 +4255,7 @@ export default new Vuex.Store({
       soundEffect:{//音效配置
         needPlay:'',//需要播放的音效名称
         playCount:0,//总播放次数
-        permission:false,//播放权限
+        permission:false,//播放权限-必须通过click事件获取此权限
       }
     },
     logConfig:{
@@ -4502,12 +4504,13 @@ export default new Vuex.Store({
     userSettingConfig:{//用户设置
       autoCheckServer:true,//自动搜索服务器状态
       adsorptionNode:true,//自动吸附节点
+      enableSoundEffect:true,//启用全局音效
       openFpsMonitor:false,//fps监控开启
       openElementPanel:false,//是否开启元素面板
       openStepRecorder:false,//步骤记录器
       mouseSamplingRate:'medium',//调整移动采样率
       closeDefaultLayer:false,//默认关闭默认图层
-      mixVisibleRange:'medium',
+      mixVisibleRange:'medium',//渲染范围
       autoGetRoute:false,//自动获取路由表
       enableSSL:false,//路由拉取时启用加密传输
       defaultAccountLogin:false,//自动使用默认账号登录
@@ -5013,6 +5016,12 @@ export default new Vuex.Store({
     },
     setUnAdsorptionNode(state){
       state.commits.unAdsorptionNode=!state.commits.unAdsorptionNode;
+    },
+    setOpSoundEffect(state){
+      state.commits.opSoundEffect=!state.commits.opSoundEffect;
+    },
+    setUnSoundEffect(state){
+      state.commits.unSoundEffect=!state.commits.unSoundEffect;
     },
   },
   actions: {

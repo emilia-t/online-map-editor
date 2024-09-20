@@ -1,10 +1,10 @@
 <template>
-  <div class="BananaConnectionBox" @mouseenter="playSoundEffect('do_1')"><!--连接盒子-->
+  <div class="BananaConnectionBox" @mouseenter.stop="playSoundEffect('do_1')"><!--连接盒子-->
     <div class="ConnectionImgBox"><!--图像-->
       <img class="ConnectionImg" alt="图片加载失败" v-if="ServerImage!==''" :src="ServerImage"/>
       <image-loading-failed v-if="ServerImage===''"/>
     </div>
-    <router-link :to="`/m/${MyConfig.serverKey}`" title="点击打开地图"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
+    <router-link :to="`/m/${MyConfig.serverKey}`" title="点击打开地图"><div class="ImgBoxShadow" @mousedown.stop="playSoundEffect('confirm_1')"></div></router-link><!--阴影-->
     <div class="onlineNumber" title="在线人数"><!--左上角在线人数-->
       <span v-text="onlineNumberView"/>
     </div>

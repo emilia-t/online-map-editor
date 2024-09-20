@@ -1,16 +1,16 @@
 <template>
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
     <div class="controlButtonBox1"><!--添加按钮-->
-      <div @click="pointButton()" class="ButtonOut">
+      <div @click="pointButton()" @mousedown.stop="enablePoint?playSoundEffect('confirm_1'):void 0" class="ButtonOut">
         <point :custom="'fill:'+Url1Color"/>
       </div>
-      <div @click="lineButton()" class="ButtonOut">
+      <div @click="lineButton()" @mousedown.stop="enableLine?playSoundEffect('confirm_1'):void 0" class="ButtonOut">
         <segment-line :custom="'fill:'+Url2Color"/>
       </div>
-      <div @click="areaButton()" class="ButtonOut">
+      <div @click="areaButton()" @mousedown.stop="enableArea?playSoundEffect('confirm_1'):void 0" class="ButtonOut">
         <region :custom="'fill:'+Url3Color"/>
       </div>
-      <div @click="curveButton()" class="ButtonOut">
+      <div @click="curveButton()" @mousedown.stop="enableCurve?playSoundEffect('confirm_1'):void 0" class="ButtonOut">
         <segment-curve :custom="'fill:'+Url4Color"/>
       </div>
     </div>
@@ -135,6 +135,9 @@ export default {
     startSetting(){
       this.KeyListen();//开启键盘监听
       this.MultiKeyListen();
+    },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
     },
     showBaseLayerList(){
       this.$refs.controlButtonBox2.classList.toggle('baseMapListShow');
@@ -541,6 +544,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加点已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
+            this.isAddPoint?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
             this.addPointStart();
             break;
           }
@@ -550,6 +554,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加线段已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
+            this.isAddLine?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
             this.addLineStart();
             break;
           }
@@ -559,6 +564,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加区域已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
+            this.isAddArea?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
             this.addAreaStart();
             break;
           }
@@ -568,6 +574,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加曲线已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
+            this.isAddCurve?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
             this.addCurveStart();
             break;
           }
@@ -579,15 +586,19 @@ export default {
           case 'Escape':{
             e.preventDefault();
             if(this.buttonA){
+              this.playSoundEffect('unconfirm_1');
               this.addPointStart();
             }
             if(this.buttonB){
+              this.playSoundEffect('unconfirm_1');
               this.addLineStart();
             }
             if(this.buttonC){
+              this.playSoundEffect('unconfirm_1');
               this.addAreaStart();
             }
             if(this.buttonD){
+              this.playSoundEffect('unconfirm_1');
               this.addCurveStart();
             }
             break;

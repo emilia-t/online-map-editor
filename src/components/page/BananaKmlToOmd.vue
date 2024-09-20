@@ -1,6 +1,6 @@
 <template>
-  <div class="BananaKmlToOmd" ref="BananaKmlToOmd" v-show="showResponse" @click="closePanel()">
-    <div class="KmlToOmdBox" @click.stop="void 0">
+  <div class="BananaKmlToOmd" ref="BananaKmlToOmd" v-show="showResponse" @click="closePanel()" @mousedown.stop="playSoundEffect('unconfirm_1')">
+    <div class="KmlToOmdBox" @click.stop="void 0" @mousedown.stop="void 0">
       <div class="filePutArea" ref="putAreaContent">
         <div class="AreaTitle">
           拖拽kml文件至此
@@ -57,6 +57,9 @@ export default {
     this.setDropEvent();
   },
   methods:{
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
     closePanel(){
       const a = document.getElementById('KmlToOmdResult');
       a.style.display='none';

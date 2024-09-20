@@ -274,20 +274,18 @@
         <br/>
         <div class="consoleMapItem">
           <div class="consoleMapItemL1">
-             采样率：
+             移动采样率：
           </div>
           <div class="consoleMapItemR1">
             {{$store.state.cameraConfig.frameTime}}
           </div>
         </div>
-        绘制状态
-        <br/>
         <div class="consoleMapItem">
           <div class="consoleMapItemL1">
-            状态：
+            mix渲染范围：
           </div>
           <div class="consoleMapItemR1">
-            {{$store.state.mapConfig.drawing}}
+            {{$store.state.userSettingConfig.mixVisibleRange}}
           </div>
         </div>
         <hr/>
@@ -355,6 +353,17 @@
           </div>
           <div class="consoleMapItemR8">
             {{leftTmpId}}
+          </div>
+        </div>
+        <hr/>
+        绘制状态
+        <br/>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            当前状态
+          </div>
+          <div class="consoleMapItemR8">
+            {{$store.state.mapConfig.drawing}}
           </div>
         </div>
       </div>

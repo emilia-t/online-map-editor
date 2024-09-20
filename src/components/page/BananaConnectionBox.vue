@@ -1,10 +1,10 @@
 <template>
-<div class="BananaConnectionBox" @mouseenter="playSoundEffect('do_1')"><!--连接盒子-->
+<div class="BananaConnectionBox" @mouseenter.stop="playSoundEffect('do_1')"><!--连接盒子-->
   <div class="ConnectionImgBox"><!--图像-->
     <img class="ConnectionImg" alt="图片加载失败" v-if="ServerImage!==''" :src="ServerImage"/>
     <image-loading-failed v-if="ServerImage===''"/>
   </div>
-  <router-link :to="`/m/${MyConfig.serverKey}`" title="点击进入"><div class="ImgBoxShadow"></div></router-link><!--阴影-->
+  <router-link :to="`/m/${MyConfig.serverKey}`"><div class="ImgBoxShadow" @mousedown.stop="playSoundEffect('confirm_1')"></div></router-link><!--阴影-->
   <div class="downloadButtonBox" title="下载OMS文件" v-if="source==='manual'" @click="downLoad()"><!--右上角更多属性按钮-->
     <download/>
   </div>

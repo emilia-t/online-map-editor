@@ -10,7 +10,7 @@
           <span v-text="notice"/>
         </div>
       </div>
-      <div class="advertisement" ref="advertisement" @mouseenter="showBackground()">
+      <div class="advertisement" ref="advertisement" @mouseenter.stop="showBackground()">
         <div class="picture"/>
       </div>
     </div>
@@ -23,7 +23,7 @@
                 <span class="InterfaceHeadIcon"><server :custom="'margin-right:10px;'"/></span>
                 <span class="InterfaceHeadTitle">服务器列表</span>
               </div>
-              <div class="addNewButton" ref="addNewConnectButton">
+              <div class="addNewButton" ref="addNewConnectButton" @mousedown.stop="playSoundEffect('confirm_1')">
                 <add-plus custom="margin:6px 10px 2px 10px"/>
               </div>
             </div>
@@ -101,7 +101,7 @@
           </div>
           <div class="udpText">
             <input  type="text" maxlength="12" placeholder="关键字" v-model="searchKeyWorld"/>
-            <button @click="interfaceSearch()">查找</button>
+            <button @click="interfaceSearch()" @mousedown.stop="playSoundEffect('confirm_1')">查找</button>
           </div>
           <div class="udpResult">
             <banana-connection-box v-for="value in searchResult" :key="value.serverAddress"
@@ -162,8 +162,8 @@
           </div>
         </div>
         <div class="AncButton"><!--提交按钮-->
-          <button @click="cancelANC()">取消</button>
-          <button @click="createServer()">添加</button>
+          <button @click="cancelANC()" @mousedown.stop="playSoundEffect('unconfirm_1')">取消</button>
+          <button @click="createServer()" @mousedown.stop="playSoundEffect('confirm_1')">添加</button>
         </div>
       </div>
     </div>
@@ -249,7 +249,11 @@ export default {
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
     interfaceSearch(){
+      if(this.searchKeyWorld==='')return;
       let serverLocalConfig=this.$root.general_script.handleLocalStorage('get','servers');//获取本地服务器配置
       let list=[];
       let find=false;
@@ -1043,6 +1047,10 @@ input:focus{
   outline: none;
   font-size: 16px;
 }
+.udpText input:hover{
+  border-color: #9ecdd2;
+  box-shadow: 0 4px 12px rgba(16, 161, 226, 0.31);
+}
 .udpText input::placeholder{
   color: #aaa;
 }
@@ -1184,6 +1192,10 @@ input:focus{
   cursor: pointer;
   animation: add_button  5s infinite;
   animation-timing-function: ease-in-out;
+}
+.addNewButton svg:hover{
+  transition: 0.3s linear;
+  transform: scale(1.1);
 }
 @keyframes add_button {
   0%{

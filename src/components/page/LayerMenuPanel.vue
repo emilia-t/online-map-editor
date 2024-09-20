@@ -8,43 +8,43 @@
           fill="currentColor"/></svg>
     </div>
   </div>
-  <div class="listButtonBox selected" @click="MenuButtonHomePage()"><!--菜单按钮-->
+  <div class="listButtonBox selected" @click="MenuButtonHomePage()" @mousedown.stop="playSoundEffect('confirm_1')"><!--菜单按钮-->
     <home-page custom="margin:4px"/>
     <span class="iconSpan">主页</span>
   </div>
   <hr/>
-  <div class="listButtonBox" @click="openSetting('a',$event)">
+  <div class="listButtonBox" @click="openSetting('a',$event)" @mousedown.stop="playSoundEffect('confirm_1')">
     <general-setting custom="margin:4px"/>
     <span class="iconSpan">常规</span>
   </div>
-  <div class="listButtonBox" @click="openSetting('b',$event)">
+  <div class="listButtonBox" @click="openSetting('b',$event)" @mousedown.stop="playSoundEffect('confirm_1')">
     <monitor custom="margin:4px"/>
     <span class="iconSpan">显示</span>
   </div>
-  <div class="listButtonBox" @click="openSetting('r',$event)">
+  <div class="listButtonBox" @click="openSetting('r',$event)" @mousedown.stop="playSoundEffect('confirm_1')">
     <split-o-m-r custom="margin:4px"/>
     <span class="iconSpan">路由</span>
   </div>
-  <div class="listButtonBox" @click="openSetting('c',$event)">
+  <div class="listButtonBox" @click="openSetting('c',$event)" @mousedown.stop="playSoundEffect('confirm_1')">
     <user-account custom="margin:4px"/>
     <span class="iconSpan">账户</span>
   </div>
   <hr/>
-  <div class="listButtonBox" @click="openSetting('o',$event)">
+  <div class="listButtonBox" @click="openSetting('o',$event)" @mousedown.stop="playSoundEffect('confirm_1')">
     <menu-about custom="margin:4px"/>
     <span class="iconSpan">关于</span>
   </div>
-  <div class="listButtonBox" @click="openSetting('p',$event)">
+  <div class="listButtonBox" @click="openSetting('p',$event)" @mousedown.stop="playSoundEffect('confirm_1')">
     <menu-help custom="margin:4px 8px 4px 7px;transform:translateY(1px)"/>
     <span class="iconSpan">帮助</span>
   </div>
   <hr/>
-  <div class="listButtonBox" @click="openToolbox($event)">
+  <div class="listButtonBox" @click="openToolbox($event)" @mousedown.stop="playSoundEffect('confirm_1')">
     <menu-tool custom="margin:4px"/>
     <span class="iconSpan">工具</span>
   </div>
-  <div class="SettingsBox" ref="SettingsBox" v-show="settingShow" @click.stop="settingShow=false">
-    <div class="Settings" ref="Settings" @click.stop="void 0"><!--具体的设置项目-->
+  <div class="SettingsBox" ref="SettingsBox" v-show="settingShow" @click.stop="settingShow=false" @mousedown.stop="playSoundEffect('unconfirm_1')">
+    <div class="Settings" ref="Settings" @click.stop="void 0" @mousedown.stop="void 0"><!--具体的设置项目-->
       <div class="Setting" v-show="GeneralSettings"><!--常规设置-->
         <div class="SettingTitle">常规设置</div>
         <div class="SettingList">
@@ -52,15 +52,23 @@
             <span class="spansA">启动时自动搜索服务器状态</span>
             <span class="spansB">这将有助于您选择地图服务器</span>
           </div>
-          <div class="switchOut" ref="GS01" @click="GS01($event)"><div ref="GS01_1" class="circle"></div></div>
+          <div class="switchOut" ref="GS01" @click="GS01($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="GS01_1" class="circle"></div></div>
         </div>
         <hr class="style-one"/>
         <div class="SettingList">
           <div class="spans">
-            <span class="spansA">节点自动吸附(Alt)</span>
+            <span class="spansA">启用节点自动吸附(Alt)</span>
             <span class="spansB">启用后绘制线段或曲线时可以吸附节点</span>
           </div>
-          <div class="switchOut" ref="GS02" @click="GS02($event)"><div ref="GS02_1" class="circle"></div></div>
+          <div class="switchOut" ref="GS02" @click="GS02($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="GS02_1" class="circle"></div></div>
+        </div>
+        <hr class="style-one"/>
+        <div class="SettingList">
+          <div class="spans">
+            <span class="spansA">启用全局音效</span>
+            <span class="spansB">我们仍然会在页面加载后向您征得同意</span>
+          </div>
+          <div class="switchOut" ref="GS03" @click="GS03($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="GS03_1" class="circle"></div></div>
         </div>
       </div>
       <div class="Setting" v-show="DisplaySettings"><!--显示设置-->
@@ -74,7 +82,7 @@
             <span class="spansA">显示元素与图层面板</span>
             <span class="spansB">开启后将会在左侧显示图层元素列表</span>
           </div>
-          <div class="switchOut" ref="DS01" @click="DS01($event)"><div ref="DS01_1" class="circle"></div></div>
+          <div class="switchOut" ref="DS01" @click="DS01($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="DS01_1" class="circle"></div></div>
         </div>
         <hr class="style-one"/>
         <div class="SettingList">
@@ -82,7 +90,7 @@
             <span class="spansA">显示历史编辑记录面板</span>
             <span class="spansB">在浏览器左上角显示历史记录面板</span>
           </div>
-          <div class="switchOut" ref="DS04" @click="DS04($event)"><div ref="DS04_1" class="circle"></div></div>
+          <div class="switchOut" ref="DS04" @click="DS04($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="DS04_1" class="circle"></div></div>
         </div>
         <hr class="style-one"/>
         <div class="settingGroupTitle">
@@ -94,7 +102,7 @@
             <span class="spansA">调整移动采样率</span>
             <span class="spansB">修改后会影响移动时的每秒采样次数</span>
           </div>
-          <div class="switchOut" ref="DS05" @click="DS05($event)"><div ref="DS05_1" class="circle"></div></div>
+          <div class="switchOut" ref="DS05" @click="DS05($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="DS05_1" class="circle"></div></div>
         </div>
         <hr class="style-one"/>
         <div class="SettingList">
@@ -102,7 +110,7 @@
             <span class="spansA">调整元素可视范围</span>
             <span class="spansB">修改后会影响元素显示的范围</span>
           </div>
-          <div class="switchOut" ref="DS08" @click="DS08($event)"><div ref="DS08_1" class="circle"></div></div>
+          <div class="switchOut" ref="DS08" @click="DS08($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="DS08_1" class="circle"></div></div>
         </div>
       </div>
       <div class="Setting" v-show="RouteSettings"><!--显示设置-->
@@ -112,14 +120,14 @@
             <span class="spansA">自动向路由拉取数据</span>
             <span class="spansB">开启后将自动从路由获取服务器列表</span>
           </div>
-          <div class="switchOut" ref="RS01" @click="RS01($event)"><div ref="RS01_1" class="circle"></div></div>
+          <div class="switchOut" ref="RS01" @click="RS01($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="RS01_1" class="circle"></div></div>
         </div>
         <div class="SettingList">
           <div class="spans">
             <span class="spansA">使用SSL加密传输</span>
             <span class="spansB">需要路由端支持SSL加密传输才能使用</span>
           </div>
-          <div class="switchOut" ref="RS02" @click="RS02($event)"><div ref="RS02_1" class="circle"></div></div>
+          <div class="switchOut" ref="RS02" @click="RS02($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="RS02_1" class="circle"></div></div>
         </div>
         <div class="routeListTitle">
           <menu-about-c/>
@@ -186,7 +194,7 @@
             <span class="spansA">使用默认账号进行登录</span>
             <span class="spansB">开启后将使用默认账号登录所有服务器</span>
           </div>
-          <div class="switchOut" ref="AS01" @click="AS01($event)"><div ref="AS01_1" class="circle"></div></div>
+          <div class="switchOut" ref="AS01" @click="AS01($event)" @mousedown.stop="playSoundEffect('click_b')"><div ref="AS01_1" class="circle"></div></div>
         </div>
         <hr class="style-one"/>
         <div class="sheetList">
@@ -865,6 +873,7 @@ export default {
         let nowLocalStorage=JSON.parse(this.handleLocalStorage('get','settings'));//格式化本地配置设置
         let hasAutoCheckServerStatus=nowLocalStorage.hasOwnProperty('set_GS_AutoCheckServerStatus');
         let hasAutoAdsorptionNode=nowLocalStorage.hasOwnProperty('set_GS_AutoAdsorptionNode');
+        let hasEnableSoundEffect=nowLocalStorage.hasOwnProperty('set_GS_EnableSoundEffect');
         let hasAutoGetRoute=nowLocalStorage.hasOwnProperty('set_RS_AutoGetRoute');
         let hasMouseSamplingRate=nowLocalStorage.hasOwnProperty('set_DS_MouseSamplingRate');
         let hasMixVisibleRange=nowLocalStorage.hasOwnProperty('set_DS_MixVisibleRange');
@@ -874,6 +883,10 @@ export default {
         }
         if(!hasAutoAdsorptionNode){
           nowLocalStorage.set_GS_AutoAdsorptionNode=true;
+          this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
+        }
+        if(!hasEnableSoundEffect){
+          nowLocalStorage.set_GS_EnableSoundEffect=true;
           this.handleLocalStorage('set','settings',JSON.stringify(nowLocalStorage));
         }
         if(!hasAutoGetRoute){
@@ -923,6 +936,18 @@ export default {
                 this.$store.state.userSettingConfig.adsorptionNode=false;
                 this.$refs.GS02.classList.remove('switchOutOn');
                 this.$refs.GS02_1.classList.remove('circleOn');
+              }
+              break;
+            }
+            case 'set_GS_EnableSoundEffect':{
+              if(nowLocalStorage[key]==true){
+                this.$store.state.userSettingConfig.enableSoundEffect=true;
+                this.$refs.GS03.classList.add('switchOutOn');//更新样式
+                this.$refs.GS03_1.classList.add('circleOn');
+              }else if(nowLocalStorage[key]==false){
+                this.$store.state.userSettingConfig.enableSoundEffect=false;
+                this.$refs.GS03.classList.remove('switchOutOn');
+                this.$refs.GS03_1.classList.remove('circleOn');
               }
               break;
             }
@@ -1028,6 +1053,8 @@ export default {
       else {
         let SetObj={//创建设置对象
           'set_GS_AutoCheckServerStatus':true,
+          'set_GS_AutoAdsorptionNode':true,
+          'set_GS_EnableSoundEffect':true,
           'set_RS_AutoGetRoute':true,
           'set_DS_MouseSamplingRate':'medium',
           'set_DS_MixVisibleRange':'medium',
@@ -1039,10 +1066,14 @@ export default {
         this.handleLocalStorage('set','A_tips_uk','Do not modify local configuration on the console');
         this.settingSwitch('set_GS_AutoCheckServerStatus',true);//按钮初始化
         this.settingSwitch('set_GS_AutoAdsorptionNode',true);//按钮初始化
+        this.settingSwitch('set_GS_EnableSoundEffect',true);//按钮初始化
         this.settingSwitch('set_RS_AutoGetRoute',true);//按钮初始化
         this.settingSwitch('set_DS_MouseSamplingRate','medium');//按钮初始化
         this.settingSwitch('set_DS_MixVisibleRange','medium');//按钮初始化
       }
+    },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
     },
     MenuButtonHomePage(){//主页按钮
       let newUrl=getDomainAndPort();
@@ -1308,7 +1339,25 @@ export default {
         this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
         this.$refs.GS02.classList.add('switchOutOn');//更改样式
         this.$refs.GS02_1.classList.add('circleOn');
-        this.$store.state.userSettingConfig.adsorptionNode=false;//更新状态
+        this.$store.state.userSettingConfig.adsorptionNode=true;//更新状态
+      }
+    },
+    GS03(ev){//常规设置（GS）下的全局音效开关
+      ev.stopPropagation();
+      let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+      let oldStatus=settingsObj.set_GS_EnableSoundEffect;
+      if(oldStatus===true){//修改storage中的值
+        settingsObj.set_GS_EnableSoundEffect=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.GS03.classList.remove('switchOutOn');//更改样式
+        this.$refs.GS03_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.enableSoundEffect=false;//更新状态
+      }else {
+        settingsObj.set_GS_EnableSoundEffect=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.GS03.classList.add('switchOutOn');//更改样式
+        this.$refs.GS03_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.enableSoundEffect=true;//更新状态
       }
     },
     watchStorage(){//实时监听storage变化
@@ -1381,6 +1430,18 @@ export default {
             this.$store.state.userSettingConfig.adsorptionNode=false;
             this.$refs.GS02.classList.remove('switchOutOn');
             this.$refs.GS02_1.classList.remove('circleOn');
+          }
+          break;
+        }
+        case 'set_GS_EnableSoundEffect':{
+          if(value==true){
+            this.$store.state.userSettingConfig.enableSoundEffect=true;
+            this.$refs.GS03.classList.add('switchOutOn');//更新样式
+            this.$refs.GS03_1.classList.add('circleOn');
+          }else if(value==false){
+            this.$store.state.userSettingConfig.enableSoundEffect=false;
+            this.$refs.GS03.classList.remove('switchOutOn');
+            this.$refs.GS03_1.classList.remove('circleOn');
           }
           break;
         }
@@ -1608,6 +1669,12 @@ export default {
     unAdsorptionNode(){
       return this.$store.state.commits.unAdsorptionNode;
     },
+    opSoundEffect(){
+      return this.$store.state.commits.opSoundEffect;
+    },
+    unSoundEffect(){
+      return this.$store.state.commits.unSoundEffect;
+    },
   },
   watch:{
     '$route'(to,from){
@@ -1631,6 +1698,7 @@ export default {
     },
     panelShow:{
       handler(){
+        this.panelShow?this.playSoundEffect('fly_in'):this.playSoundEffect('fly_out');
         this.$refs.menuPanelLayer.classList.toggle('HidePanel');
         this.$refs.closeButtonBox.classList.toggle('HideCloseBt');
         this.$refs.closeButton.classList.toggle('HideSvg');
@@ -1693,6 +1761,26 @@ export default {
         this.$refs.GS02.classList.remove('switchOutOn');//更改样式
         this.$refs.GS02_1.classList.remove('circleOn');
         this.$store.state.userSettingConfig.adsorptionNode=false;//更新状态
+      }
+    },
+    opSoundEffect:{//启用全局音效
+      handler(){
+        let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+        settingsObj.set_GS_EnableSoundEffect=true;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.GS03.classList.add('switchOutOn');//更改样式
+        this.$refs.GS03_1.classList.add('circleOn');
+        this.$store.state.userSettingConfig.enableSoundEffect=true;//更新状态
+      }
+    },
+    unSoundEffect:{//关闭全局音效
+      handler(){
+        let settingsObj=JSON.parse(this.handleLocalStorage('get','settings'));//获取设置对象
+        settingsObj.set_GS_EnableSoundEffect=false;
+        this.handleLocalStorage('set','settings',JSON.stringify(settingsObj));
+        this.$refs.GS03.classList.remove('switchOutOn');//更改样式
+        this.$refs.GS03_1.classList.remove('circleOn');
+        this.$store.state.userSettingConfig.enableSoundEffect=false;//更新状态
       }
     },
   }
@@ -2219,7 +2307,7 @@ a:hover, a:active {
   top:0px;
   padding: 10px 0px;
   color: rgba(0,0,0,0.9);
-  transition: 0.4s;
+  transition: 0.25s;
 }
 .HidePanel{
   left:-85px!important;
