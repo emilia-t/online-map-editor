@@ -366,6 +366,17 @@
             {{$store.state.mapConfig.drawing}}
           </div>
         </div>
+        <hr/>
+        音效状态
+        <br/>
+        <div class="consoleMapItem">
+          <div class="consoleMapItemL8">
+            最近播放
+          </div>
+          <div class="consoleMapItemR8">
+            {{$store.state.effectsConfig.soundEffect.needPlay}}
+          </div>
+        </div>
       </div>
     </div>
   </div>

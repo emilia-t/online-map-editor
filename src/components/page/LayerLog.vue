@@ -594,6 +594,9 @@ export default {
         this.externalFromList.push(name);
       }
     },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    }
   },
   computed:{
     message(){
@@ -615,12 +618,13 @@ export default {
     },
     showHistoryPanel(){
       return this.$store.state.logConfig.showPanel;
-    }
+    },
   },
   watch:{
     showHistoryPanel:{
       handler(newValue){
         if(newValue){
+          this.playSoundEffect('fly_in');
           this.$refs.logHistoryBox.animate(
             [
               {opacity:0,transform:'scale(0.95)'},
@@ -635,6 +639,8 @@ export default {
               easing:'ease',
             }
           );
+        }else{
+          this.playSoundEffect('fly_out');
         }
       }
     },

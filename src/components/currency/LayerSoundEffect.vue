@@ -4,7 +4,7 @@
     <!--询问权限弹窗-->
     <div class="alert" ref="alert">
       <span class="row1">我们十分重视您的隐私</span>
-      <span class="row2">申请播放音效权限</span>
+      <span class="row2">是否允许播放音效</span>
       <button class="confirm-btn" @click="enableEffect()">是</button>
       <button class="cancel-btn" @click="disableEffect()">否</button>
     </div>
@@ -70,7 +70,14 @@
            @play="trackBottomOnPlay"
            @pause="trackBottomOnPause"
            @ended="trackBottomEnded()">
-      <source src="static/audio/bottomSound.mp3" type="audio/mpeg">
+      <source :src="bottomSoundSrc" type="audio/mpeg">
+    </audio>
+    <!--轨道β‌-music-->
+    <audio ref="trackBottomSound"
+           @play="trackBottomOnPlay"
+           @pause="trackBottomOnPause"
+           @ended="trackBottomEnded()">
+      <source :src="music" type="audio/mpeg">
     </audio>
   </div>
 </template>
@@ -97,19 +104,19 @@
       status7:false,
       track8:'',
       status8:false,
+      music:'',
       effectList:{//音效名称列表
         do_1:'static/audio/do_1.mp3',//滑入、关注、注意
         bell_sound: 'static/audio/bell_sound.mp3',//铃声、通知
         confirm_1: 'static/audio/confirm_1.mp3',//确认
         unconfirm_1: 'static/audio/unconfirm_1.mp3',//不确认、取消
-        click_a: 'static/audio/click_a.mp3',//单击、点按反馈
-        click_b: 'static/audio/click_b.mp3',//单击、点按反馈
+        click_a: 'static/audio/click_a.mp3',//单击、点按反馈、比较尖锐
+        click_b: 'static/audio/click_b.mp3',//单击、点按反馈、比较柔和
         fly_in: 'static/audio/fly_in.mp3',//飞入
         fly_out: 'static/audio/fly_out.mp3',//飞出
+        unable_1: 'static/audio/unable_1.mp3',//飞出
       },
-      audioList:{//预加载音效
-
-      },
+      audioList:{},//预加载音效
       ctx:undefined,
       circles:[],
       Circle:class Circle {
@@ -215,9 +222,17 @@
       let origin=location.origin+'/';
       for (let key in audioFiles) {
         if(!audioFiles.hasOwnProperty(key)){continue;}
-        let audio = new Audio(origin+audioFiles[key]);
-        audio.load(); // 预加载
-        this.audioList[key] = audio;
+        const audioUrl = origin+audioFiles[key];//合成url
+        fetch(audioUrl)//获取音频资源
+          .then(response => response.arrayBuffer())//读取为 ArrayBuffer
+          .then(buffer => {
+            const base64String = btoa(
+              new Uint8Array(buffer)//建立8bit无符号0-255整型的视图1个字节1个字节的存储
+                .reduce((data, byte) => data + String.fromCharCode(byte), '')//将每个字节转换为字符,并将这些字符拼接成一个长字符串
+            );
+            this.audioList[key] = `data:audio/mpeg;base64,${base64String}`;//给数据加上数据标识
+          })
+          .catch(error => console.error('加载音频时出错:', error));
       }
     },
     /**
@@ -368,6 +383,9 @@
      **/
   },
   computed:{
+    bottomSoundSrc(){
+      return location.origin+'/static/audio/bottomSound.mp3';
+    },
     enableSoundEffect(){
       return this.$store.state.userSettingConfig.enableSoundEffect;
     },
@@ -389,10 +407,10 @@
         let name=this.needPlay;
         this.$nextTick(() =>{
           let track=this.trackPlan();
-          console.log(track);
           if(track!==false){
             if(this.$refs[track].paused===false){return;}
-            this[track]=location.origin+'/'+this.effectList[name];
+            if(!this.audioList.hasOwnProperty(name)){return;}
+            this[track]=this.audioList[name];
             this.$refs[track].load();// 重新加载音频文件
             this.$refs[track].play();// 播放音效
           }

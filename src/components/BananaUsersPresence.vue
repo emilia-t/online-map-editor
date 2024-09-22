@@ -1,6 +1,6 @@
 <template>
   <div class="BananaUsersPresence">
-    <div class="leftHandle" title="点击隐藏" ref="leftHandle">
+    <div class="leftHandle" title="点击隐藏" ref="leftHandle" @mousedown.stop="panelStatus?playSoundEffect('confirm_1'):playSoundEffect('unconfirm_1')">
       <img src="../../static/dropDown.png" alt="点击隐藏" ref="leftHandleImg">
     </div>
     <div class="collaborator" title="协作人员">
@@ -35,6 +35,9 @@ export default {
   methods:{
     startSetting(){
       this.$refs.leftHandle.addEventListener('click',()=>this.openAndClose());
+    },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
     },
     getPresence(){
       this.$store.state.serverData.socket.getPresence();

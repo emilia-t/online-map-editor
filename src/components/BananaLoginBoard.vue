@@ -8,12 +8,12 @@
       <div class="anonymousInput">
         <span class="anonymousAt">输入您的名称:</span>
         <input class="anonymousTp" type="text" maxlength="16" placeholder="怎么称呼您 ?" ref="anonymousTp" @focus="onFocusMode()" @blur="noFocusMode()"/>
-        <button class="buttonMini" @click="anyLogin()">Submit</button>
+        <button class="buttonMini" @click="anyLogin()" @mousedown.stop="playSoundEffect('confirm_1')">Submit</button>
       </div>
     </div>
     <div v-if="!isLogin" class="session"><!--登录面板-->
       <div class="left">
-        <svg @click="close()" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
+        <svg @click="close()" @mousedown.stop="playSoundEffect('unconfirm_1')" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
       </div>
       <div class="log-in LoginPage">
         <h4>登录至此 <span>OMS</span></h4>
@@ -32,13 +32,13 @@
             <svg t="1674466579161" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4618" width="200" height="200"><path d="M511.61088 557.78816c-45.73696 0-82.944 37.21216-82.944 82.94912 0 18.18112 5.77536 35.45088 16.72192 49.92512 0.22528 0.31232 0.48128 0.60416 0.73216 0.91136 20.49024 23.87968 21.98016 40.92416 22.07232 42.48576l0 47.37536c0 23.94624 19.4816 43.4176 43.4176 43.4176 23.94624 0 43.42272-19.48672 43.42272-43.4176l0-48.26624c0-0.54272-0.01536-1.09056-0.07168-1.62816 0-0.03584 0.10752-0.00512 0.11264-0.04608 0.11264-1.09056 0.48128-3.42016 1.59232-6.78912 2.23232-6.76864 7.47008-17.87392 19.79904-32.29184 0.1792-0.20992 0.35328-0.43008 0.52736-0.64 11.49952-14.69952 17.57696-32.34816 17.57696-51.03616C594.57024 595.00032 557.35808 557.78816 511.61088 557.78816L511.61088 557.78816M547.65056 668.35968c-28.99968 34.0736-30.41792 58.47552-30.14656 65.30048l0 47.77984c0 3.24608-2.64704 5.88288-5.89312 5.88288s-5.88288-2.64192-5.88288-5.88288l0-47.60576c0-3.50208-0.96256-31.30368-30.70464-66.21184-5.77536-7.82336-8.82688-17.10592-8.82688-26.88512 0-25.04704 20.37248-45.42464 45.4144-45.42464 25.04704 0 45.42976 20.3776 45.42976 45.42464C557.04064 650.83904 553.79456 660.38272 547.65056 668.35968L547.65056 668.35968M547.65056 668.35968 547.65056 668.35968z" fill="#262536" p-id="4619"></path><path d="M827.392 399.05792l-2.36032 0 0-0.27648-43.6736 0L781.35808 278.4512c0-0.7936-0.05632-1.59232-0.14848-2.39104-8.20736-64.08192-39.47008-123.07456-88.03328-166.13888-48.99328-43.43296-112.08192-67.3536-177.60768-67.3536-71.54176 0-138.79808 27.85792-189.3888 78.4384-50.5856 50.5856-78.4384 117.84704-78.4384 189.38368l0 88.64256L196.608 399.05792c-35.33824 0-64.09216 28.75392-64.09216 64.09728l0 454.18496c0 35.33824 28.75392 64.09216 64.09216 64.09216l391.6032 0c0.55808 0 1.13152-0.0256 1.68448-0.08192l235.80672 0c0.55296 0.05632 1.12128 0.08192 1.6896 0.08192 35.33312 0 64.09216-28.7488 64.09216-64.09216L891.48416 463.1552C891.47904 427.81696 862.73024 399.05792 827.392 399.05792L827.392 399.05792M285.30176 310.38976c0-61.51168 23.95136-119.33184 67.44064-162.816 43.48416-43.4944 101.30944-67.44576 162.816-67.44576 56.34048 0 110.57152 20.56704 152.68352 57.90208 41.472 36.77184 68.27008 87.02464 75.54048 141.63456l0 119.12192-458.48064 0.27648L285.30176 310.38976 285.30176 310.38976M853.90848 917.34016c0 13.95712-10.8288 25.42592-24.5248 26.4448l-0.14848 0L196.608 943.86176c-14.62272 0-26.52672-11.89376-26.52672-26.5216L170.08128 463.1552c0-14.62784 11.89888-26.53184 26.52672-26.53184l69.91872-0.03584c0.95744 0 1.8944-0.09728 2.81088-0.2304 1.00864 0.15872 2.03776 0.27648 3.09248 0.27648l354.5856 0c0.34304 0.00512 0.8704 0.01536 1.55648 0.01536 1.47968 0 3.7376-0.03584 6.6304-0.18432l125.3376 0c0.77824 0.09728 1.57184 0.15872 2.37056 0.15872L827.392 436.62336c14.6176 0 26.5216 11.90912 26.5216 26.53184L853.9136 917.34016 853.90848 917.34016M853.90848 917.34016 853.90848 917.34016z" fill="#262536" p-id="4620"></path></svg>
           </div>
         </div>
-        <button type="submit" @click="login()">Log in</button>
-        <span class="loginBordLevelTips" v-text="bordTipsText"></span>
+        <button type="submit" @click="login()" @mousedown.stop="playSoundEffect('confirm_1')">Log in</button>
+        <span class="loginBordLevelTips" v-text="bordTipsText"/>
       </div>
     </div>
     <div v-if="isLogin" class="session"><!--已登录面板-->
       <div class="left">
-        <svg @click="close()" t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
+        <svg @click="close()" @mousedown.stop="playSoundEffect('unconfirm_1')"  t="1674626678243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1474" width="200" height="200"><path d="M617.92 516.096l272 272L788.096 889.92l-272-272-272 272L142.24 788.096l272-272-275.008-275.04L241.056 139.2l275.04 275.04 275.04-275.04L892.96 241.024l-275.04 275.04z" p-id="1475" data-spm-anchor-id="a313x.7781069.0.i0" class="selected" fill="#ffffff"></path></svg>
       </div>
       <div class="log-in LoginPage">
         <h4>您已登录此 <span>OMS</span></h4>
@@ -58,10 +58,10 @@
           </div>
         </div>
         <div class="loginAndLogoutBut">
-          <button type="submit" @click="logout()">Log out</button>
-          <button type="submit" @click="login()">Log in</button>
+          <button type="submit" @click="logout()" @mousedown.stop="playSoundEffect('unconfirm_1')">Log out</button>
+          <button type="submit" @click="login()" @mousedown.stop="playSoundEffect('confirm_1')">Log in</button>
         </div>
-        <span class="loginBordLevelTips" v-text="bordTipsText"></span>
+        <span class="loginBordLevelTips" v-text="bordTipsText"/>
       </div>
     </div>
   </div>
@@ -79,7 +79,7 @@ export default {
       saveEmail:'',//仅用于登录，并不是用户的名称
       password:'',//仅用于登录，并不是用户的名称
       savePassword:'',//仅用于登录，并不是用户的名称
-      bordTipsText:'您只能输入数字、字母、下划线、@ . -',
+      bordTipsText:'您只能输入数字、字母、下划线、减号、点号和@',
       em:null,//自动登录的账号
       pd:null,//自动登录的密码
       automaticLoginCount:0,//自动登录次数
@@ -136,8 +136,15 @@ export default {
         this.pd=pd;
       }
     },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
     anyLogin(){
       let name=this.$refs.anonymousTp.value.replace(/[\n\r\s]+/g, '');
+      if(name==='' || name===null){
+        this.$store.commit('setCoLogMessage',{text:'名称不能为空！',from:'internal:BananaLoginBoard',type:'tip'});
+        return false;
+      }
       if(this.$store.state.serverData.socket){
         this.$store.state.serverData.socket.anonymousLogin(name);
       }else {

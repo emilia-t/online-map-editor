@@ -2,7 +2,7 @@
   <div class="userLayer selectNone"><!--登录\显示用户数据-->
     <div class="userLayerBox" ref="userLayer" v-bind:style="UserLayerTranslate">
       <div class="headImage"><!--头像-->
-        <img id="headImage" draggable="false" @click="openLoginBord()" :src="'http://q.qlogo.cn/g?b=qq&amp;nk='+qq+'&amp;s=640&amp;mType=friendlist'" alt="头像"/>
+        <img id="headImage" draggable="false" @click="openLoginBord()" @mousedown.stop="playSoundEffect('confirm_1')" :src="'http://q.qlogo.cn/g?b=qq&amp;nk='+qq+'&amp;s=640&amp;mType=friendlist'" alt="头像"/>
       </div>
       <div class="right">
         <div class="userName">{{name}}</div>
@@ -14,8 +14,8 @@
         </div>
       </div>
     </div>
-    <banana-login-board v-show="isOpenBord" :server-key="serverKey"></banana-login-board>
-    <banana-users-presence></banana-users-presence>
+    <banana-login-board v-show="isOpenBord" :server-key="serverKey"/>
+    <banana-users-presence/>
   </div>
 </template>
 
@@ -60,7 +60,10 @@ export default {
   },
   methods:{
     startSetting(){
-
+      void 0;
+    },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
     },
     openLoginBord(){//打开登录面板
       this.isOpenBord=true

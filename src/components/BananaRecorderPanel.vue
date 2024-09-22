@@ -22,10 +22,10 @@
       <div class="stepPile" v-for="step in reachIntent" :key="step.reachIntentSerial">
         <div class="stepContent" v-if="step.type==='updateElement'">
           <div class="stepContentImg">
-            <point v-if="step.class==='point'"></point>
-            <segment-line v-if="step.class==='line'"></segment-line>
-            <region v-if="step.class==='area'"></region>
-            <segment-curve v-if="step.class==='curve'"></segment-curve>
+            <point v-if="step.class==='point'"/>
+            <segment-line v-if="step.class==='line'"/>
+            <region v-if="step.class==='area'"/>
+            <segment-curve v-if="step.class==='curve'"/>
           </div>
           <div class="stepContentText">
             <span class="stepUpdate">已更新</span>
@@ -37,10 +37,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='updateNode'">
           <div class="stepContentImg">
-            <point v-if="step.class==='point'"></point>
-            <segment-line v-if="step.class==='line'"></segment-line>
-            <region v-if="step.class==='area'"></region>
-            <segment-curve v-if="step.class==='curve'"></segment-curve>
+            <point v-if="step.class==='point'"/>
+            <segment-line v-if="step.class==='line'"/>
+            <region v-if="step.class==='area'"/>
+            <segment-curve v-if="step.class==='curve'"/>
           </div>
           <div class="stepContentText">
             <span class="stepUpdate">已更新</span>
@@ -50,10 +50,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='upload'">
           <div class="stepContentImg">
-            <point v-if="step.class==='point'"></point>
-            <segment-line v-if="step.class==='line'"></segment-line>
-            <region v-if="step.class==='area'"></region>
-            <segment-curve v-if="step.class==='curve'"></segment-curve>
+            <point v-if="step.class==='point'"/>
+            <segment-line v-if="step.class==='line'"/>
+            <region v-if="step.class==='area'"/>
+            <segment-curve v-if="step.class==='curve'"/>
           </div>
           <div class="stepContentText">
             <span class="stepCreated">已创建</span>
@@ -62,10 +62,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='delete'">
           <div class="stepContentImg">
-            <point v-if="step.class==='point'"></point>
-            <segment-line v-if="step.class==='line'"></segment-line>
-            <region v-if="step.class==='area'"></region>
-            <segment-curve v-if="step.class==='curve'"></segment-curve>
+            <point v-if="step.class==='point'"/>
+            <segment-line v-if="step.class==='line'"/>
+            <region v-if="step.class==='area'"/>
+            <segment-curve v-if="step.class==='curve'"/>
           </div>
           <div class="stepContentText">
             <span class="stepDelete">已删除</span>
@@ -78,10 +78,10 @@
       <div class="stepPile InvalidText" v-for="step in failIntent">
         <div class="stepContent" v-if="step.type==='updateElement'">
           <div class="stepContentImg">
-            <point v-if="step.class==='point'"></point>
-            <segment-line v-if="step.class==='line'"></segment-line>
-            <region v-if="step.class==='area'"></region>
-            <segment-curve v-if="step.class==='curve'"></segment-curve>
+            <point v-if="step.class==='point'"/>
+            <segment-line v-if="step.class==='line'"/>
+            <region v-if="step.class==='area'"/>
+            <segment-curve v-if="step.class==='curve'"/>
           </div>
           <div class="stepContentText">
             <span class="stepUpdate">更新</span>
@@ -93,10 +93,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='updateNode'">
           <div class="stepContentImg">
-            <point v-if="step.class==='point'"></point>
-            <segment-line v-if="step.class==='line'"></segment-line>
-            <region v-if="step.class==='area'"></region>
-            <segment-curve v-if="step.class==='curve'"></segment-curve>
+            <point v-if="step.class==='point'"/>
+            <segment-line v-if="step.class==='line'"/>
+            <region v-if="step.class==='area'"/>
+            <segment-curve v-if="step.class==='curve'"/>
           </div>
           <div class="stepContentText">
             <span class="stepUpdate">更新</span>
@@ -106,10 +106,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='upload'">
           <div class="stepContentImg">
-            <point v-if="step.class==='point'"></point>
-            <segment-line v-if="step.class==='line'"></segment-line>
-            <region v-if="step.class==='area'"></region>
-            <segment-curve v-if="step.class==='curve'"></segment-curve>
+            <point v-if="step.class==='point'"/>
+            <segment-line v-if="step.class==='line'"/>
+            <region v-if="step.class==='area'"/>
+            <segment-curve v-if="step.class==='curve'"/>
           </div>
           <div class="stepContentText">
             <span class="stepCreated">创建</span>
@@ -118,10 +118,10 @@
         </div>
         <div class="stepContent" v-if="step.type==='delete'">
           <div class="stepContentImg">
-            <point v-if="step.class==='point'"></point>
-            <segment-line v-if="step.class==='line'"></segment-line>
-            <region v-if="step.class==='area'"></region>
-            <segment-curve v-if="step.class==='curve'"></segment-curve>
+            <point v-if="step.class==='point'"/>
+            <segment-line v-if="step.class==='line'"/>
+            <region v-if="step.class==='area'"/>
+            <segment-curve v-if="step.class==='curve'"/>
           </div>
           <div class="stepContentText">
             <span class="stepDelete">删除</span>

@@ -1,29 +1,29 @@
 <template>
   <div class="controlLayer" ref="controlLayer" style="pointer-events:auto" >
     <div class="controlButtonBox1"><!--添加按钮-->
-      <div @click="pointButton()" @mousedown.stop="enablePoint?playSoundEffect('confirm_1'):void 0" class="ButtonOut">
+      <div @click="pointButton()" @mousedown.stop="enablePoint?(isAddPoint?playSoundEffect('unconfirm_1'):playSoundEffect('confirm_1')):playSoundEffect('unable_1')" class="ButtonOut">
         <point :custom="'fill:'+Url1Color"/>
       </div>
-      <div @click="lineButton()" @mousedown.stop="enableLine?playSoundEffect('confirm_1'):void 0" class="ButtonOut">
+      <div @click="lineButton()" @mousedown.stop="enableLine?(isAddLine?playSoundEffect('unconfirm_1'):playSoundEffect('confirm_1')):playSoundEffect('unable_1')" class="ButtonOut">
         <segment-line :custom="'fill:'+Url2Color"/>
       </div>
-      <div @click="areaButton()" @mousedown.stop="enableArea?playSoundEffect('confirm_1'):void 0" class="ButtonOut">
+      <div @click="areaButton()" @mousedown.stop="enableArea?(isAddArea?playSoundEffect('unconfirm_1'):playSoundEffect('confirm_1')):playSoundEffect('unable_1')" class="ButtonOut">
         <region :custom="'fill:'+Url3Color"/>
       </div>
-      <div @click="curveButton()" @mousedown.stop="enableCurve?playSoundEffect('confirm_1'):void 0" class="ButtonOut">
+      <div @click="curveButton()" @mousedown.stop="enableCurve?(isAddCurve?playSoundEffect('unconfirm_1'):playSoundEffect('confirm_1')):playSoundEffect('unable_1')" class="ButtonOut">
         <segment-curve :custom="'fill:'+Url4Color"/>
       </div>
     </div>
     <div class="controlButtonBox2" ref="controlButtonBox2">
-      <div class="ButtonOut" @click="showBaseLayerList()">
+      <div class="ButtonOut" @click="showBaseLayerList()" @mousedown.stop="baseMapListView?playSoundEffect('unconfirm_1'):playSoundEffect('confirm_1')">
         <layer-switch :custom="'cursor:pointer'"/>
       </div>
       <div class="baseLayerList" v-if="baseMapListView">
-        <div class="defaultUseLayer">
+        <div class="defaultUseLayer" @mousedown.stop="playSoundEffect('click_a')">
           <input type="radio"  id="defaultBaseMapOpt" name="baseMapGroup" :checked="baseMapSelectId===-1" @click="baseMapSelectId=-1"/>
           <label for="defaultBaseMapOpt" v-text="'默认底图'"/>
         </div>
-        <div class="baseLayerSelect" v-for="map in baseMapList" :key="map.id">
+        <div class="baseLayerSelect" v-for="map in baseMapList" :key="map.id" @mousedown.stop="playSoundEffect('click_a')">
           <input type="radio"  :id="'baseMapOpt'+map.id" name="baseMapGroup" :value="map.url" :checked="baseMapSelectId===map.id" @click="baseMapSelectId=map.id"/>
           <label :for="'baseMapOpt'+map.id" v-text="map.name"/>
         </div>
@@ -1227,6 +1227,7 @@ export default {
   font-weight: 400;
 }
 .defaultUseLayer{
+  user-select: none;
   width: auto;
   height: 30px;
   margin: 0px 8px;
