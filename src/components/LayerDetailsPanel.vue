@@ -2,9 +2,9 @@
   <div class="detailsPanelLayer" ref="LayerDetailsPanel">
     <div class="boxSet"><!--面板本体设置，面板透明度、关闭按钮-->
       <img src="../../static/smallSlider.png" draggable="false" ref="smallSlider" class="smallSlider" alt="smallSlider" title="拖拽面板">
-      <img src="../../static/nail.png" class="nail" alt="nail" draggable="false" ref="nail" title="钉在地图上">
-      <img src="../../static/waterDroplet.png" class="waterDroplet" draggable="false" ref="waterDroplet" alt="waterDroplet" title="透明化面板">
-      <img @click="hidden()" src="../../static/close.png" class="closeIcon" draggable="false" alt="closeButton" title="关闭面板">
+      <img src="../../static/nail.png" class="nail" alt="nail" draggable="false" ref="nail" title="钉在地图上" @mousedown.stop="playSoundEffect('click_d')">
+      <img src="../../static/waterDroplet.png" class="waterDroplet" draggable="false" ref="waterDroplet" alt="waterDroplet" title="透明化面板" @mousedown.stop="playSoundEffect('click_d')">
+      <img src="../../static/close.png" class="closeIcon" draggable="false" alt="closeButton" title="关闭面板" @click="hidden()" @mousedown.stop="hiddenSound()">
     </div>
     <div class="items">
       <div class="item"><!--属性编辑，区域、名称、类型....-->
@@ -95,6 +95,17 @@ export default {
       this.dragEnd();
       this.nailEvent();
       this.waterDropletEvent();
+    },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
+    hiddenSound(){
+      if(this.nailStatus){
+        this.playSoundEffect('unable_1');
+      }
+      if(!this.nailStatus){
+        this.playSoundEffect('click_d');
+      }
     },
     getContent(value){
       if(this.tmpProof===null)return '';

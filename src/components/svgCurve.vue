@@ -300,6 +300,7 @@
         }
         if(this.selectConfig.id!==undefined){
           if(this.selectConfig.user!==this.$store.state.serverData.socket.userData.user_name){
+            this.playSoundEffect('unable_1');
             this.$store.commit('setCoLogMessage',{text:this.selectConfig.user+'正在编辑属性，请稍等',from:'internal:svgCurve',type:'tip'});
           }
           return false;
@@ -312,6 +313,9 @@
         this.$store.state.mapConfig.operated.data=this.curveConfig;
         return mouseEvent;
       },
+      playSoundEffect(name){
+        this.$store.commit('setCoEffectsSound',name);
+      },
       showDetails(){//显示详情
         if(this.suppressPickSelect===true){
           return false;
@@ -321,6 +325,7 @@
         }
         if(this.pickConfig.id!==undefined){
           if(this.pickConfig.user!==this.$store.state.serverData.socket.userData.user_name){
+            this.playSoundEffect('unable_1');
             this.$store.commit('setCoLogMessage',{text:this.pickConfig.user+'正在更新形状，请稍等',from:'internal:svgCurve',type:'tip'});
           }
           return false;

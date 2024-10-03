@@ -151,6 +151,9 @@ export default {
       //   }
       // ,3000);
     },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
     initialMapData(){
       this.initialPointData();
       this.initialLineData();
@@ -765,6 +768,7 @@ export default {
         if(this.svgMouseDown.target.getAttribute('data-t')==='node')return false;
         let element=this.mixCanvas.mixGetElementByXY(newValue.x,newValue.y);
         if(element!==false){
+          this.playSoundEffect('pick_a');
           if(element.type==='point'){
             let len=this.svgPointData.length;
             for(let i=0;i<len;i++){//遍历当前已弹入的元素，避免重复弹出
@@ -814,8 +818,8 @@ export default {
         if(newValue.x!==this.svgMouseRDown.x || newValue.y!==this.svgMouseRDown.y)return false;
         let element=this.mixCanvas.mixGetElementByXY(newValue.x,newValue.y);//源
         if(element!==false){
-          if
-          (element.type==='point'){
+          this.playSoundEffect('select_a');
+          if(element.type==='point'){
             for(let i=0;i<this.svgPointData.length;i++){
               if(this.svgPointData[i].id===element.id){
                 return false;
@@ -823,8 +827,7 @@ export default {
             }
             this.svgPointData.push(element);
           }
-          else if
-          (element.type==='line'){
+          else if(element.type==='line'){
             for(let i=0;i<this.svgLineData.length;i++){
               if(this.svgLineData[i].id===element.id){
                 return false;
@@ -832,14 +835,21 @@ export default {
             }
             this.svgLineData.push(element);
           }
-          else if
-          (element.type==='area'){
+          else if(element.type==='area'){
             for(let i=0;i<this.svgAreaData.length;i++){
               if(this.svgAreaData[i].id===element.id){
                 return false;
               }
             }
             this.svgAreaData.push(element)
+          }
+          else if(element.type==='curve'){
+            for(let i=0;i<this.svgCurveData.length;i++){
+              if(this.svgCurveData[i].id===element.id){
+                return false;
+              }
+            }
+            this.svgCurveData.push(element)
           }
           this.$store.state.operationBoardConfig.display=true;//对右侧悬浮条的位置和显示状态操作
           this.$store.state.operationBoardConfig.posX=newValue.x;

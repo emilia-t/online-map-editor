@@ -10,22 +10,21 @@
           <span contenteditable="false" class="groupLayerName" v-text="groupLayerHeadText" :title="'layer'+layer.id+' count'+(layer.structure.length-2)"/>
         </div>
       </div>
-      <div class="eyebrowRight" @click.stop="switchLayerActions()">
+      <div class="eyebrowRight" @click.stop="switchLayerActions()" @mousedown.stop="playSoundEffect('confirm_1')">
         <more custom="cursor:pointer;transform:translate(3px,1px)"/>
       </div>
-      <div class="layerMoreActionsClose" @contextmenu.prevent="void 1" @click.stop="switchLayerActions()" v-show="layerActionsOpen">
-      </div>
+      <div class="layerMoreActionsClose" @contextmenu.prevent="void 1" @click.stop="switchLayerActions()" @mousedown.stop="playSoundEffect('unconfirm_1')" v-show="layerActionsOpen"/>
       <div class="layerMoreActions" v-show="layerActionsOpen">
-        <div class="layerMoreAction" title="展开或收起此分组" @click.stop="switchAllExpand()">
+        <div class="layerMoreAction" title="展开或收起此分组" @click.stop="switchAllExpand()" @mousedown.stop="playSoundEffect('confirm_1')">
           <span v-show="!allExpand">展开</span><span v-show="allExpand">收起</span>所有分组
         </div>
-        <div class="layerMoreAction" title="删除图层，并且删除其中的元素" @click.stop="deleteLayerAndElement()">
+        <div class="layerMoreAction" title="删除图层，并且删除其中的元素" @click.stop="deleteLayerAndElement()" @mousedown.stop="playSoundEffect('confirm_1')">
           删除图层与元素
         </div>
-        <div class="layerMoreAction" title="点击打开图层模板设置" @click="openTemplate()">
+        <div class="layerMoreAction" title="点击打开图层模板设置" @click="openTemplate()" @mousedown.stop="playSoundEffect('confirm_1')">
           设置模板
         </div>
-        <div class="layerMoreAction" title="重命名" @click="openRename()">
+        <div class="layerMoreAction" title="重命名" @click="openRename()" @mousedown.stop="playSoundEffect('confirm_1')">
           重命名
         </div>
       </div>
@@ -43,15 +42,15 @@
                               @pickChildGroupRequest="pickChildGroupApproval">
       </orange-group-structure>
     </div>
-    <div class="renameClose" @click.stop="closeRename()" v-if="renameShow"></div>
+    <div class="renameClose" @click.stop="closeRename()" @mousedown.stop="playSoundEffect('unconfirm_1')" v-if="renameShow"></div>
     <div class="renameY" v-if="renameShow">
       <div class="renameRow">
         *新的分组名称不能与同级别分组名称重复*
       </div>
       <input ref="rename" type="text" maxlength="20" @focus="onFocusMode()" @blur="noFocusMode()">
       <div class="renameRow">
-        <button class="renameButton" @click.stop="closeRename()">取消</button>
-        <button class="renameButton" @click.stop="groupRename()">确定</button>
+        <button class="renameButton" @click.stop="closeRename()" @mousedown.stop="playSoundEffect('unconfirm_1')">取消</button>
+        <button class="renameButton" @click.stop="groupRename()" @mousedown.stop="groupRenameSound()">确定</button>
       </div>
     </div>
     <pomelo-confirm
@@ -228,8 +227,22 @@ export default {
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
+    groupRenameSound(){
+      let clean=(inputString)=>{return inputString.replace(/⇉|\n/g, '').trim()};
+      let newName=clean(this.$refs.rename.value);
+      if(newName===''){
+        this.playSoundEffect('unable_1');
+        return false;
+      }
+      if(newName===this.layer.structure[0]){//与原名称一致
+        this.playSoundEffect('unable_1');
+        return false;
+      }else{
+        this.playSoundEffect('confirm_1');
+      }
+    },
     groupRename(){
-      function clean(inputString){return inputString.replace(/⇉|\n/g, '').trim();}
+      let clean=(inputString)=>{return inputString.replace(/⇉|\n/g, '').trim()};
       let newName=clean(this.$refs.rename.value);
       if(newName===''){
         this.$store.commit('setCoLogMessage',{text:'名称不能为空字符',from:'internal:BananaGroupLayer',type:'tip'});
@@ -424,6 +437,9 @@ export default {
       this.firmMessage='即将删除此图层及其包含的元素，是否要继续？';
       this.firmView=true;//呼出确认菜单
     },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
   },
   computed:{
     taskEndCode(){
@@ -451,6 +467,7 @@ export default {
     pickLayerResponse:{
       handler(newValue){
         if(newValue.id==this.layer.id){
+          this.playSoundEffect('click_c');
           this.$refs.layerSeparate.classList.add('selectedLayer');
         }else {
           this.$refs.layerSeparate.classList.remove('selectedLayer');
@@ -484,6 +501,18 @@ export default {
 .selectedLayer{
   background: #f8f8f8;
   color: #4f4f4f;
+  animation: selectedLayerAM 0.3s ease-in-out;
+}
+@keyframes selectedLayerAM {
+  0%{
+    transform: scale(1);
+  }
+  50%{
+    transform: scale(0.95);
+  }
+  100%{
+    transform: scale(1);
+  }
 }
 .groupLayersBox{
   min-height: 100px;

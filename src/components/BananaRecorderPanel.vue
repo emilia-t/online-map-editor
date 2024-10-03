@@ -2,8 +2,8 @@
 <div class="BananaRecorderPanel" ref="BananaRecorderPanel">
   <div class="boxSet"><!--面板本体设置，面板透明度、关闭按钮-->
     <img src="../../static/smallSlider.png" draggable="false" ref="smallSlider" class="smallSlider" alt="smallSlider" title="拖拽面板">
-    <img @click="waterDroplet()" src="../../static/waterDroplet.png" class="waterDroplet" draggable="false" ref="waterDroplet" alt="waterDroplet" title="透明化面板">
-    <img ref="closeButton" src="../../static/close.png" class="closeIcon" draggable="false" alt="closeButton" title="关闭面板">
+    <img @click="waterDroplet()" src="../../static/waterDroplet.png" class="waterDroplet" draggable="false" ref="waterDroplet" alt="waterDroplet" title="透明化面板" @mousedown.stop="playSoundEffect('click_d')">
+    <img ref="closeButton" src="../../static/close.png" class="closeIcon" draggable="false" alt="closeButton" title="关闭面板" @mousedown.stop="playSoundEffect('click_d')">
   </div>
   <div class="initialIntentBox">
     <div class="stepPileTitle">
@@ -181,6 +181,9 @@ export default {
       this.detailsBox.text='ID '+id;
       this.detailsBox.x=ev.x+15;
       this.detailsBox.y=ev.y+15;
+    },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
     },
     showChangeDetails(ev,changes){
       let str='';

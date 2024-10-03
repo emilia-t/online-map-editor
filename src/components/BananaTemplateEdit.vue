@@ -7,32 +7,32 @@
       <div class="templateContent">
         <div class="templateLeft">
           <div class="templateSel">
-            <span :class="templateNifty===1?'nifty':'unNifty'" @click="switchTemplateNifty(1)">
+            <span :class="templateNifty===1?'nifty':'unNifty'" @click="switchTemplateNifty(1)" @mousedown.stop="playSoundEffect('confirm_1')">
               <doc-book/>&nbsp;&nbsp;使用说明
             </span>
           </div>
           <div class="templateSel">
-            <span :class="templateNifty===2?'nifty':'unNifty'" @click="switchTemplateNifty(2)">
+            <span :class="templateNifty===2?'nifty':'unNifty'" @click="switchTemplateNifty(2)" @mousedown.stop="playSoundEffect('confirm_1')">
               <information-state/>&nbsp;&nbsp;信息状态
             </span>
           </div>
           <div class="templateSel">
-            <span :class="templateNifty===3?'nifty':'unNifty'" @click="switchTemplateNifty(3)">
+            <span :class="templateNifty===3?'nifty':'unNifty'" @click="switchTemplateNifty(3)" @mousedown.stop="playSoundEffect('confirm_1')">
               <various-shapes/>&nbsp;&nbsp;基本类型
             </span>
           </div>
           <div class="templateSel">
-            <span :class="templateNifty===4?'nifty':'unNifty'" @click="switchTemplateNifty(4)">
+            <span :class="templateNifty===4?'nifty':'unNifty'" @click="switchTemplateNifty(4)" @mousedown.stop="playSoundEffect('confirm_1')">
               <rule-list/>&nbsp;&nbsp;属性规则
             </span>
           </div>
           <div class="templateSel">
-            <span :class="templateNifty===5?'nifty':'unNifty'" @click="switchTemplateNifty(5)">
+            <span :class="templateNifty===5?'nifty':'unNifty'" @click="switchTemplateNifty(5)" @mousedown.stop="playSoundEffect('confirm_1')">
               <rule-list/>&nbsp;&nbsp;颜色规则
             </span>
           </div>
           <div class="templateSel">
-            <span :class="templateNifty===6?'nifty':'unNifty'" @click="switchTemplateNifty(6)">
+            <span :class="templateNifty===6?'nifty':'unNifty'" @click="switchTemplateNifty(6)" @mousedown.stop="playSoundEffect('confirm_1')">
               <rule-list/>&nbsp;&nbsp;宽度规则
             </span>
           </div>
@@ -66,7 +66,7 @@
               <div class="textH2">
                 模板锁，是用于防止模板被误修改的一种限制状态，当模板锁处于锁定状态时，所有的规则将无法编辑，也无法更新模板。
                 <br/>
-                <span class="textH4">要解锁模板，您可以依次点击“模板状态”->“锁定状态”->“(点击解锁)”解除锁定。</span>
+                <span class="textH4">要解锁模板，您可以依次点击“信息状态”->“锁定状态”->“(点击解锁)”解除锁定。</span>
               </div>
               <div class="textH3">
                 设置基本类型：
@@ -137,12 +137,12 @@
             <div class="TContent" >
               <div class="statusList cursorDefault">
                 <div class="ListLeft">当前状态</div>
-                <div class="ListRight" style="cursor:pointer" @click.stop="tpManualCheck()">{{templateStatus}}</div>
+                <div class="ListRight" style="cursor:pointer" @click.stop="tpManualCheck()" @mousedown.stop="playSoundEffect('confirm_1')">{{templateStatus}}</div>
               </div>
               <div class="statusList cursorDefault">
                 <div class="ListLeft">锁定状态</div>
-                <div class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="!editTemplate.locked">未锁定(点击锁定)</div>
-                <div class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="editTemplate.locked">已锁定(点击解锁)</div>
+                <div class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="!editTemplate.locked" @mousedown.stop="playSoundEffect('confirm_1')">未锁定(点击锁定)</div>
+                <div class="ListRight" style="cursor:pointer" @click.stop="lockUnlock()" v-show="editTemplate.locked" @mousedown.stop="playSoundEffect('unconfirm_1')">已锁定(点击解锁)</div>
               </div>
               <div class="statusList">
                 <div class="ListLeft cursorDefault">模板名称</div>
@@ -157,7 +157,7 @@
                 </div>
               </div>
               <div class="statusList cursorDefault">
-                <div class="ListLeft">创建者</div>
+                <div class="ListLeft">创建人员</div>
                 <div class="ListRight">{{editTemplate.creator}}</div>
               </div>
               <div class="statusList cursorDefault">
@@ -165,7 +165,7 @@
                 <div class="ListRight">{{editTemplate.modify}}</div>
               </div>
               <div class="statusList cursorDefault">
-                <div class="ListLeft">应用规则一览</div>
+                <div class="ListLeft">规则一览</div>
                 <div class="ListRight"  style="align-items: start">
                   <div class="ListRightText">
                       允许类型：{{overviewType}}
@@ -178,7 +178,8 @@
                       颜色规则：
                     </div>
                       <div class="overviewRule" v-for="item in overviewColor">
-                        <div class="overviewText">{{item.str}} ⇒ </div>
+                        <div class="overviewText">{{item.str}}</div>
+                        <div class="overviewText">{{item.tag}}</div>
                         <div class="overviewColor" :style="{background:item.color}"></div>
                       </div>
                   </div>
@@ -188,7 +189,8 @@
                     </div>
                     <div class="overviewRule" v-for="item in overviewWidth">
                       <div class="overviewText">{{item.str}}</div>
-                      <div class="overviewText"> ⇒ {{item.width}}</div>
+                      <div class="overviewText">{{item.tag}}</div>
+                      <div class="overviewText">{{item.width}}</div>
                     </div>
                   </div>
                 </div>
@@ -206,7 +208,7 @@
                 </div>
                 <div class="setSelect">
                   <div  class="setSelectBox" :class="tmp.use?'useTemplate':'unUseTemplate'" :key="tmp.id" v-for="tmp in localTemplate">
-                    <span  :style="viewBoxStyle(tmp)" @click="useLocalTemplate(tmp.id)">
+                    <span  :style="viewBoxStyle(tmp)" @click="useLocalTemplate(tmp.id)" @mousedown.stop="normalClickSound()">
                       {{tmp.name}}
                     </span>
                   </div>
@@ -221,7 +223,7 @@
                 </div>
                 <div class="setChoice">
                   <div class="setChoiceBox" :class="status?'useTemplate':'unUseTemplate'" :key="type" v-for="(status,type) in editTemplate.typeRule">
-                    <span @click="allowType(type)">
+                    <span @click="allowType(type)" @mousedown.stop="allowTypeSound(type)">
                       {{type}}
                     </span>
                   </div>
@@ -289,20 +291,18 @@
                       </div>
                       <div class="SheetCo3">
                         <div class="inputCo3">text</div>
-                        <div class="iconCo3" @click.stop="alertTip('默认字段无法更改类型')">
-                          <dropdown-button/>
-                        </div>
+                        <div class="iconCo3"/>
                       </div>
                     </div>
                     <div class="rowTextOut" v-if="item.name!=='name'">
                       <div class="SheetCo0">
-                        <span @click.stop="deleteDetails(index)"><trash-can/></span>
+                        <span @click.stop="deleteDetails(index)" @mousedown.stop="normalClickSound()"><trash-can/></span>
                       </div>
                       <div class="SheetCo0">
-                        <span @click.stop="detailsUp(index)"><arrow-up/></span>
+                        <span @click.stop="detailsUp(index)" @mousedown.stop="detailsUpSound(index)"><arrow-up/></span>
                       </div>
                       <div class="SheetCo0">
-                        <span @click.stop="detailsDown(index)"><arrow-down/></span>
+                        <span @click.stop="detailsDown(index)" @mousedown.stop="detailsDownSound(index)"><arrow-down/></span>
                       </div>
                       <div class="SheetCo1">
                         <input class="SheetInput" type="text" v-model="item.name"
@@ -313,36 +313,36 @@
                         <pomelo-input :type="item.type" :value="item.default" :disabled="editTemplate.locked" :item="item" @inputChanged="detailsDefaultChanged"/>
                       </div>
                       <div class="SheetCo3" v-if="disabledA(item)">
-                        <div class="inputCo3" v-text="item.type"></div>
-                        <div class="iconCo3"></div>
+                        <div class="inputCo3" v-text="item.type"/>
+                        <div class="iconCo3"/>
                       </div>
                       <div class="SheetCo3" v-if="!disabledA(item)">
                         <div class="lopCo3" v-show="item.set">
                           <div class="listCo3">
-                            <div class="itemCo3" :class="item.type==='text'?'pickCo3':''" @click.stop="()=>{       item.type='text';             item.set=false;   item.default='☍tunknown'}">文本</div>
-                            <div class="itemCo3" :class="item.type==='number'?'pickCo3':''" @click.stop="()=>{item.type='number';      item.set=false;   item.default=0}">数字</div>
-                            <div class="itemCo3" :class="item.type==='bool'?'pickCo3':''" @click.stop="()=>{     item.type='bool';             item.set=false;   item.default=false}">布尔</div>
-                            <div class="itemCo3" :class="item.type==='list'?'pickCo3':''" @click.stop="()=>{        item.type='list';                item.set=false;   item.default='☍lunknown'}">列表</div>
-                            <div class="itemCo3" :class="item.type==='percent'?'pickCo3':''" @click.stop="()=>{item.type='percent';       item.set=false;   item.default='☍p0%'}">百分比</div>
-                            <div class="itemCo3" :class="item.type==='datetime'?'pickCo3':''" @click.stop="()=>{item.type='datetime';  item.set=false;   item.default='☍e2020-01-01T00:00:00'}">日期时间</div>
-                            <div class="itemCo3" :class="item.type==='date'?'pickCo3':''" @click.stop="()=>{     item.type='date';             item.set=false;   item.default='☍d2020-01-01'}">日期</div>
-                            <div class="itemCo3" :class="item.type==='time'?'pickCo3':''" @click.stop="()=>{     item.type='time';             item.set=false;   item.default='☍m00:00:00'}">时间</div>
-                            <div class="itemCo3" style="color:#1ba903" @click.stop="item.set=false">返回</div>
+                            <div class="itemCo3" :class="item.type==='text'?'pickCo3':''" @click.stop="()=>{       item.type='text';             item.set=false;   item.default='☍tunknown'}" @mousedown.stop="normalClickSound()">文本</div>
+                            <div class="itemCo3" :class="item.type==='number'?'pickCo3':''" @click.stop="()=>{item.type='number';      item.set=false;   item.default=0}" @mousedown.stop="normalClickSound()">数字</div>
+                            <div class="itemCo3" :class="item.type==='bool'?'pickCo3':''" @click.stop="()=>{     item.type='bool';             item.set=false;   item.default=false}" @mousedown.stop="normalClickSound()">布尔</div>
+                            <div class="itemCo3" :class="item.type==='list'?'pickCo3':''" @click.stop="()=>{        item.type='list';                item.set=false;   item.default='☍lunknown'}" @mousedown.stop="normalClickSound()">列表</div>
+                            <div class="itemCo3" :class="item.type==='percent'?'pickCo3':''" @click.stop="()=>{item.type='percent';       item.set=false;   item.default='☍p0%'}" @mousedown.stop="normalClickSound()">百分比</div>
+                            <div class="itemCo3" :class="item.type==='datetime'?'pickCo3':''" @click.stop="()=>{item.type='datetime';  item.set=false;   item.default='☍e2020-01-01T00:00:00'}" @mousedown.stop="normalClickSound()">日期时间</div>
+                            <div class="itemCo3" :class="item.type==='date'?'pickCo3':''" @click.stop="()=>{     item.type='date';             item.set=false;   item.default='☍d2020-01-01'}" @mousedown.stop="normalClickSound()">日期</div>
+                            <div class="itemCo3" :class="item.type==='time'?'pickCo3':''" @click.stop="()=>{     item.type='time';             item.set=false;   item.default='☍m00:00:00'}" @mousedown.stop="normalClickSound()">时间</div>
+                            <div class="itemCo3" style="color:#1ba903" @click.stop="item.set=false" @mousedown.stop="playSoundEffect('unconfirm_1')">返回</div>
                           </div>
                         </div>
                         <div class="inputCo3" v-show="!item.set" v-text="item.type">
                         </div>
-                        <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
+                        <div class="iconCo3" @click="item.set=true" @mousedown.stop="normalClickSound()" v-show="!item.set && editTemplate.locked===false">
                           <dropdown-button/>
                         </div>
-                        <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
+                        <div class="iconCo3" @click="alertTip('请先解锁模板')" @mousedown.stop="normalClickSound()" v-show="editTemplate.locked===true">
                           <dropdown-button/>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div class="SheetRow">
-                    <div class="RowButton" @click="addDetailsRule()">Add New ✚</div>
+                    <div class="RowButton" @click="addDetailsRule()" @mousedown.stop="normalClickSound()">Add New ✚</div>
                   </div>
                 </div>
               </div>
@@ -371,15 +371,16 @@
                          v-text="item.name"
                          :class="item.name===editTemplate.colorRule.basis?'pickCo3':''"
                          @click.stop="changeColorRuleBasis(item.name,item.type)"
+                         @mousedown.stop="normalClickSound()"
                          v-if="item.name!=='' && item.type!=='long'">
                     </div>
-                    <div class="basisCo3" style="color:#1ba903" @click.stop="setColorBasis=false">返回</div>
-                    <div class="basisCo3" style="color:#1ba903" @click.stop="restoreColorRule()">重置</div>
+                    <div class="basisCo3" style="color:#1ba903" @click.stop="setColorBasis=false" @mousedown.stop="playSoundEffect('unconfirm_1')">返回</div>
+                    <div class="basisCo3" style="color:#1ba903" @click.stop="restoreColorRule()" @mousedown.stop="playSoundEffect('unconfirm_1')">重置</div>
                   </div>
-                  <div class="iconCo3" @click="setColorBasis=true" v-show="!setColorBasis && editTemplate.locked===false">
+                  <div class="iconCo3" @click="setColorBasis=true" @mousedown.stop="normalClickSound()" v-show="!setColorBasis && editTemplate.locked===false">
                     <dropdown-button custom="transform:translateX(2px)"/>
                   </div>
-                  <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
+                  <div class="iconCo3" @click="alertTip('请先解锁模板')" @mousedown.stop="normalClickSound()" v-show="editTemplate.locked===true">
                     <dropdown-button custom="transform:translateX(2px)"/>
                   </div>
                 </div>
@@ -406,28 +407,28 @@
                   </div>
                   <div class="SheetRow RowText"  :class="index===editTemplate.colorRule.condition.length-1?'lastRow':''" v-for="(item,index) in editTemplate.colorRule.condition">
                     <div class="SheetCo0">
-                      <span @click.stop="deleteColor(index)"><trash-can/></span>
+                      <span @click.stop="deleteColor(index)" @mousedown.stop="normalClickSound()"><trash-can/></span>
                     </div>
                     <div class="SheetCo0">
-                      <span @click.stop="colorUp(index)"><arrow-up/></span>
+                      <span @click.stop="colorUp(index)" @mousedown.stop="colorUpSound(index)"><arrow-up/></span>
                     </div>
                     <div class="SheetCo0">
-                      <span @click.stop="colorDown(index)"><arrow-down/></span>
+                      <span @click.stop="colorDown(index)" @mousedown.stop="colorDownSound(index)"><arrow-down/></span>
                     </div>
                     <div class="SheetCo7">
                       <div class="lopCo3" v-show="item.set">
                         <div class="listCo3">
-                          <div class="itemCo3" v-for="(nn,oo) in allowType2Color" :class="item.method===oo?'pickCo3':''" @click.stop="()=>{item.method=oo;item.set=false}">{{nn}}</div>
-                          <div class="itemCo3" style="color:#1ba903" @click.stop="()=>{item.set=false}">返回</div>
+                          <div class="itemCo3" v-for="(nn,oo) in allowType2Color" :class="item.method===oo?'pickCo3':''" @click.stop="()=>{item.method=oo;item.set=false}" @mousedown.stop="playSoundEffect('confirm_1')">{{nn}}</div>
+                          <div class="itemCo3" style="color:#1ba903" @click.stop="()=>{item.set=false}" @mousedown.stop="playSoundEffect('unconfirm_1')">返回</div>
                         </div>
                       </div>
                       <div class="inputCo3" v-show="!item.set">
                         {{item.method}}
                       </div>
-                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
+                      <div class="iconCo3" @click="item.set=true" @mousedown.stop="normalClickSound()" v-show="!item.set && editTemplate.locked===false">
                         <dropdown-button/>
                       </div>
-                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
+                      <div class="iconCo3" @click="alertTip('请先解锁模板')" @mousedown.stop="normalClickSound()" v-show="editTemplate.locked===true">
                         <dropdown-button/>
                       </div>
                     </div>
@@ -437,15 +438,15 @@
                     <div class="SheetCo9">
                       <input class="inpCo9" type="color" v-model="item.color" :disabled="editTemplate.locked"/>
                       <div class="colCo9">
-                        <div class="lisCo9" v-for="color in colors" :style="'background:'+color" @click="()=>{if(!editTemplate.locked)item.color=color}"></div>
+                        <div class="lisCo9" v-for="color in colors" :style="'background:'+color" @click="()=>{if(!editTemplate.locked)item.color=color}" @mousedown.stop="normalClickSound()"></div>
                       </div>
                     </div>
                   </div>
                   <div class="SheetRow" v-show="editTemplate.colorRule.condition.length===0">
-                    <div class="RowEmpty" @click="addColorRule()" >Empty rule Click to add ✚</div>
+                    <div class="RowEmpty" @click="addColorRule()" @mousedown.stop="addColorRuleSound()">Empty rule Click to add ✚</div>
                   </div>
                   <div class="SheetRow" v-show="editTemplate.colorRule.condition.length!==0">
-                    <div class="RowButton" @click="addColorRule()">Add new rule ✚</div>
+                    <div class="RowButton" @click="addColorRule()" @mousedown.stop="addColorRuleSound()">Add new rule ✚</div>
                   </div>
                 </div>
               </div>
@@ -474,15 +475,16 @@
                          v-text="item.name"
                          :class="item.name===editTemplate.widthRule.basis?'pickCo3':''"
                          @click.stop="changeWidthRuleBasis(item.name,item.type)"
+                         @mousedown.stop="normalClickSound()"
                          v-if="item.name!=='' && item.type!=='long'">
                     </div>
-                    <div class="basisCo3" style="color:#1ba903" @click.stop="setWidthBasis=false">返回</div>
-                    <div class="basisCo3" style="color:#1ba903" @click.stop="restoreWidthRule()">重置</div>
+                    <div class="basisCo3" style="color:#1ba903" @click.stop="setWidthBasis=false" @mousedown.stop="playSoundEffect('unconfirm_1')">返回</div>
+                    <div class="basisCo3" style="color:#1ba903" @click.stop="restoreWidthRule()" @mousedown.stop="playSoundEffect('unconfirm_1')">重置</div>
                   </div>
-                  <div class="iconCo3" @click="setWidthBasis=true" v-show="!setWidthBasis && editTemplate.locked===false">
+                  <div class="iconCo3" @click="setWidthBasis=true" @mousedown.stop="normalClickSound()" v-show="!setWidthBasis && editTemplate.locked===false">
                     <dropdown-button custom="margin-left:2px"/>
                   </div>
-                  <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
+                  <div class="iconCo3" @click="alertTip('请先解锁模板')" @mousedown.stop="normalClickSound()" v-show="editTemplate.locked===true">
                     <dropdown-button custom="margin-left:2px"/>
                   </div>
                 </div>
@@ -509,28 +511,28 @@
                   </div>
                   <div class="SheetRow RowText" :class="index===editTemplate.widthRule.condition.length-1?'lastRow':''" v-for="(item,index) in editTemplate.widthRule.condition">
                     <div class="SheetCo0">
-                      <span @click.stop="deleteWidth(index)"><trash-can/></span>
+                      <span @click.stop="deleteWidth(index)" @mousedown.stop="normalClickSound()"><trash-can/></span>
                     </div>
                     <div class="SheetCo0">
-                      <span @click.stop="widthUp(index)"><arrow-up/></span>
+                      <span @click.stop="widthUp(index)" @mousedown.stop="widthUpSound(index)"><arrow-up/></span>
                     </div>
                     <div class="SheetCo0">
-                      <span @click.stop="widthDown(index)"><arrow-down/></span>
+                      <span @click.stop="widthDown(index)" @mousedown.stop="widthDownSound(index)"><arrow-down/></span>
                     </div>
                     <div class="SheetCo7">
                       <div class="lopCo3" v-show="item.set">
                         <div class="listCo3">
-                          <div class="itemCo3" v-for="(nn,oo) in allowType2Width" :class="item.method===oo?'pickCo3':''" @click.stop="()=>{item.method=oo;item.set=false}">{{nn}}</div>
-                          <div class="itemCo3" style="color:#1ba903" @click.stop="()=>{item.set=false}">返回</div>
+                          <div class="itemCo3" v-for="(nn,oo) in allowType2Width" :class="item.method===oo?'pickCo3':''" @click.stop="()=>{item.method=oo;item.set=false}" @mousedown.stop="playSoundEffect('confirm_1')">{{nn}}</div>
+                          <div class="itemCo3" style="color:#1ba903" @click.stop="()=>{item.set=false}" @mousedown.stop="playSoundEffect('unconfirm_1')">返回</div>
                         </div>
                       </div>
                       <div class="inputCo3" v-show="!item.set">
                         {{item.method}}
                       </div>
-                      <div class="iconCo3" @click="item.set=true" v-show="!item.set && editTemplate.locked===false">
+                      <div class="iconCo3" @click="item.set=true" @mousedown.stop="normalClickSound()" v-show="!item.set && editTemplate.locked===false">
                         <dropdown-button/>
                       </div>
-                      <div class="iconCo3" @click="alertTip('请先解锁模板')" v-show="editTemplate.locked===true">
+                      <div class="iconCo3" @click="alertTip('请先解锁模板')" @mousedown.stop="normalClickSound()" v-show="editTemplate.locked===true">
                         <dropdown-button/>
                       </div>
                     </div>
@@ -540,19 +542,19 @@
                     <div class="SheetCo9">
                       <input class="inpCo9" type="number" min="2" max="15" v-model.number="item.width" :disabled="editTemplate.locked"/>
                       <div class="widCo9">
-                        <span  @click="()=>{if(!editTemplate.locked)item.width=2}">2</span>
-                        <span  @click="()=>{if(!editTemplate.locked)item.width=4}">4</span>
-                        <span  @click="()=>{if(!editTemplate.locked)item.width=8}">8</span>
-                        <span  @click="()=>{if(!editTemplate.locked)item.width=12}">12</span>
-                        <span  @click="()=>{if(!editTemplate.locked)item.width=15}">15</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=2}" @mousedown.stop="normalClickSound()">2</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=4}" @mousedown.stop="normalClickSound()">4</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=8}" @mousedown.stop="normalClickSound()">8</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=12}" @mousedown.stop="normalClickSound()">12</span>
+                        <span  @click="()=>{if(!editTemplate.locked)item.width=15}" @mousedown.stop="normalClickSound()">15</span>
                       </div>
                     </div>
                   </div>
                   <div class="SheetRow" v-show="editTemplate.widthRule.condition.length===0">
-                    <div class="RowEmpty" @click="addWidthRule()" >Empty rule Click to add ✚</div>
+                    <div class="RowEmpty" @click="addWidthRule()" @mousedown.stop="addWidthRuleSound()">Empty rule Click to add ✚</div>
                   </div>
                   <div class="SheetRow" v-show="editTemplate.widthRule.condition.length!==0">
-                    <div class="RowButton" @click="addWidthRule()">Add new rule ✚</div>
+                    <div class="RowButton" @click="addWidthRule()" @mousedown.stop="addWidthRuleSound()">Add new rule ✚</div>
                   </div>
                 </div>
               </div>
@@ -561,15 +563,13 @@
         </div>
       </div>
       <div class="templateBottom">
-        <button @click.stop="niftyBack()">上一步</button>
-        <button @click.stop="niftyNext()">下一步</button>
-        <button @click.stop="closeAndCancel()">取消</button>
-        <button @click.stop="submitEdit()">应用</button>
+        <button @click.stop="niftyBack()" @mousedown.stop="playSoundEffect('confirm_1')">上一步</button>
+        <button @click.stop="niftyNext()" @mousedown.stop="playSoundEffect('confirm_1')">下一步</button>
+        <button @click.stop="closeAndCancel()" @mousedown.stop="playSoundEffect('unconfirm_1')">取消</button>
+        <button @click.stop="submitEdit()" @mousedown.stop="playSoundEffect('confirm_1')">应用</button>
       </div>
     </div>
-    <div class="templateMenuClose"  @click.stop="closeAndCancel()"  v-if="templateShow">
-
-    </div>
+    <div class="templateMenuClose"  @click.stop="closeAndCancel()" @mousedown.stop="playSoundEffect('unconfirm_1')"  v-if="templateShow"/>
     <pomelo-confirm
       :view="firmView"
       :plan="firmPlan"
@@ -726,6 +726,9 @@
     this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
   },
   methods:{
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
     detailsDefaultChanged(data){
       data.item.default=data.value;
     },
@@ -995,7 +998,7 @@
     },
     colorUp(index){
       if(this.editTemplate.locked){this.alertTip('请先解锁模板');return false;}
-      if(index===0){
+      if(index<=0){
         this.$store.commit('setCoLogMessage',{text:'已经在最上方了',from:'internal:BananaTemplateEdit',type:'tip'});
         return false;
       }
@@ -1032,6 +1035,95 @@
       this.firmPlan={method:'useLocalTemplate',value:id};
       this.firmMessage='即将覆盖当前编辑，是否要继续？';
       this.firmView=true;//呼出确认菜单
+    },
+    addWidthRuleSound(){
+      if(this.editTemplate.locked){this.playSoundEffect('unable_1');return false;}
+      if(this.editTemplate.widthRule.basis===null || this.editTemplate.widthRule.type===null){this.playSoundEffect('unable_1');return false;}
+      if(this.editTemplate.widthRule.basis==='' || this.editTemplate.widthRule.type===''){this.playSoundEffect('unable_1');return false;}
+      this.playSoundEffect('confirm_1');
+    },
+    addColorRuleSound(){
+      if(this.editTemplate.locked){this.playSoundEffect('unable_1');return false;}
+      if(this.editTemplate.colorRule.basis===null || this.editTemplate.colorRule.type===null){this.playSoundEffect('unable_1');return false;}
+      if(this.editTemplate.colorRule.basis==='' || this.editTemplate.colorRule.type===''){this.playSoundEffect('unable_1');return false;}
+      this.playSoundEffect('confirm_1');
+    },
+    normalClickSound(){
+      if(this.editTemplate.locked){
+        this.playSoundEffect('unable_1');return false;
+      }
+      this.playSoundEffect('confirm_1');
+    },
+    widthUpSound(index){
+      if(this.editTemplate.locked){
+        this.playSoundEffect('unable_1');return false;
+      }
+      if(index<=0){
+        this.playSoundEffect('unable_1');return false;
+      }
+      this.playSoundEffect('confirm_1');
+    },
+    widthDownSound(index){
+      if(this.editTemplate.locked){
+        this.playSoundEffect('unable_1');return false;
+      }
+      if(index+1>=this.editTemplate.widthRule.condition.length){
+        this.playSoundEffect('unable_1');return false;
+      }
+      this.playSoundEffect('confirm_1');
+    },
+    colorUpSound(index){
+      if(this.editTemplate.locked){
+        this.playSoundEffect('unable_1');return false;
+      }
+      if(index<=0){
+        this.playSoundEffect('unable_1');return false;
+      }
+      this.playSoundEffect('confirm_1');
+    },
+    colorDownSound(index){
+      if(this.editTemplate.locked){
+        this.playSoundEffect('unable_1');return false;
+      }
+      if(index+1>=this.editTemplate.colorRule.condition.length){
+        this.playSoundEffect('unable_1');return false;
+      }
+      this.playSoundEffect('confirm_1');
+    },
+    detailsUpSound(index){
+      if(this.editTemplate.locked){
+        this.playSoundEffect('unable_1');return false;
+      }
+      if(index<=1){
+        this.playSoundEffect('unable_1');return false;
+      }
+      this.playSoundEffect('confirm_1');
+    },
+    detailsDownSound(index){
+      if(this.editTemplate.locked){
+        this.playSoundEffect('unable_1');return false;
+      }
+      if(index+1>=this.editTemplate.detailsRule.length){
+        this.playSoundEffect('unable_1');return false;
+      }
+      this.playSoundEffect('confirm_1');
+    },
+    allowTypeSound(type){
+      if(this.editTemplate.locked){
+        this.playSoundEffect('unable_1');return false;
+      }
+      let ct=0;
+      for(let i in this.editTemplate.typeRule){
+        if(this.editTemplate.typeRule.hasOwnProperty(i)){
+          if(this.editTemplate.typeRule[i]===true){
+            ct++;
+          }
+        }
+      }
+      if(ct<=1 && this.editTemplate.typeRule[type]===true){
+        this.playSoundEffect('unable_1');return false;
+      }
+      this.editTemplate.typeRule[type]?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
     },
     allowType(type){//更改模板
       if(this.editTemplate.locked){
@@ -1292,6 +1384,7 @@
       }
       let str=[];
       let len=this.editTemplate.widthRule.condition.length;
+      let tag='⇒';
       for(let i=0;i<len;i++){
         let sym=this.editTemplate.widthRule.condition[i].method;
         let val=this.editTemplate.widthRule.condition[i].value;
@@ -1299,49 +1392,49 @@
         switch (sym){
           case 'equ':{
             str.push({
-              str:basis+' = '+val,width
+              str:basis+' = '+val,width,tag
             });
             break;
           }
           case 'nequ':{
             str.push({
-              str:basis+' ≠ '+val,width
+              str:basis+' ≠ '+val,width,tag
             });
             break;
           }
           case 'gre':{
             str.push({
-              str:basis+' > '+val,width
+              str:basis+' > '+val,width,tag
             });
             break;
           }
           case 'greq':{
             str.push({
-              str:basis+' ≥ '+val,width
+              str:basis+' ≥ '+val,width,tag
             });
             break;
           }
           case 'les':{
             str.push({
-              str:basis+' < '+val,width
+              str:basis+' < '+val,width,tag
             });
             break;
           }
           case 'lesq':{
             str.push({
-              str:basis+' ≤ '+val,width
+              str:basis+' ≤ '+val,width,tag
             });
             break;
           }
           case 'mod0':{
             str.push({
-              str:basis+' mod '+val+' = 0',width
+              str:basis+' mod '+val+' = 0',width,tag
             });
             break;
           }
           case 'nmod0':{
             str.push({
-              str:basis+' mod '+val+' ≠ 0',width
+              str:basis+' mod '+val+' ≠ 0',width,tag
             });
             break;
           }
@@ -1355,6 +1448,7 @@
         return '无';
       }
       let str=[];
+      let tag='⇒';
       let len=this.editTemplate.colorRule.condition.length;
       for(let i=0;i<len;i++){
         let sym=this.editTemplate.colorRule.condition[i].method;
@@ -1363,49 +1457,49 @@
         switch (sym){
           case 'equ':{
             str.push({
-              str:basis+' = '+val,color
+              str:basis+' = '+val,color,tag
             });
             break;
           }
           case 'nequ':{
             str.push({
-              str:basis+' ≠ '+val,color
+              str:basis+' ≠ '+val,color,tag
             });
             break;
           }
           case 'gre':{
             str.push({
-              str:basis+' > '+val,color
+              str:basis+' > '+val,color,tag
             });
             break;
           }
           case 'greq':{
             str.push({
-              str:basis+' ≥ '+val,color
+              str:basis+' ≥ '+val,color,tag
             });
             break;
           }
           case 'les':{
             str.push({
-              str:basis+' < '+val,color
+              str:basis+' < '+val,color,tag
             });
             break;
           }
           case 'lesq':{
             str.push({
-              str:basis+' ≤ '+val,color
+              str:basis+' ≤ '+val,color,tag
             });
             break;
           }
           case 'mod0':{
             str.push({
-              str:basis+' mod '+val+' = 0',color
+              str:basis+' mod '+val+' = 0',color,tag
             });
             break;
           }
           case 'nmod0':{
             str.push({
-              str:basis+' mod '+val+' ≠ 0',color
+              str:basis+' mod '+val+' ≠ 0',color,tag
             });
             break;
           }

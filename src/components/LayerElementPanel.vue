@@ -3,16 +3,16 @@
     <div class="panelHead">
       <div class="headTitle">
         <span v-text="this.$store.state.serverData.socket.config.name"/>
-        <div class="headTitleMore" @click.stop="switchMapMoreActions()">
+        <div class="headTitleMore" @click.stop="switchMapMoreActions()" @mousedown.stop="playSoundEffect('confirm_1')">
           <more/>
         </div>
-        <div class="mapMoreActionsClose" @contextmenu.prevent="void 1" @click.stop="switchMapMoreActions()" v-show="mapMoreActionsOpen">
+        <div class="mapMoreActionsClose" @contextmenu.prevent="void 1" @click.stop="switchMapMoreActions()" @mousedown.stop="playSoundEffect('unconfirm_1')" v-show="mapMoreActionsOpen">
         </div>
         <div class="mapMoreActions" v-show="mapMoreActionsOpen">
-          <div class="mapMoreAction" @click.stop="importData()" title="可以导入其他在线地图的数据">
+          <div class="mapMoreAction" @click.stop="importData()" @mousedown.stop="playSoundEffect('confirm_1')" title="可以导入其他在线地图的数据">
             导入 OMD 地图数据
           </div>
-          <div class="mapMoreAction" @click.stop="exportData()" title="可以导出此地图数据至本地">
+          <div class="mapMoreAction" @click.stop="exportData()" @mousedown.stop="playSoundEffect('confirm_1')" title="可以导出此地图数据至本地">
             导出地图数据为 OMD
           </div>
         </div>
@@ -27,7 +27,7 @@
     <div class="panelButton">
       <div class="buttonBox">
         <add-new-group/>
-        <div class="buttonBoxText" @click="createGroupLayer()">
+        <div class="buttonBoxText" @click="createGroupLayer()" @mousedown.stop="playSoundEffect('confirm_1')">
           新建分组图层
         </div>
       </div>
@@ -70,10 +70,10 @@
         <div class="searchContent" contenteditable="true" ref="searchInput" @keydown.enter="search()" @focus="onFocusMode()" @blur="noFocusMode()">
 
         </div>
-        <div class="searchIcon" @click="resetSearch()">
+        <div class="searchIcon" @click="resetSearch()" @mousedown.stop="playSoundEffect('unconfirm_1')">
           <reset-refresh custom="transform:translate(2px,0px);"/>
         </div>
-        <div class="searchIcon" @click="search()">
+        <div class="searchIcon" @click="search()" @mousedown.stop="playSoundEffect('confirm_1')">
           <search custom="transform:translate(1px,2px);"/>
         </div>
       </div>
@@ -194,6 +194,9 @@ export default {
       }else {
         this.showPanel=false;
       }
+    },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
     },
     handleLocalStorage(method, key, value) {//本地存储接口
       switch (method){

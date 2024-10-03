@@ -112,9 +112,13 @@
         unconfirm_1: 'static/audio/unconfirm_1.mp3',//不确认、取消
         click_a: 'static/audio/click_a.mp3',//单击、点按反馈、比较尖锐
         click_b: 'static/audio/click_b.mp3',//单击、点按反馈、比较柔和
+        click_c: 'static/audio/click_c.mp3',//单击、点按反馈、弹性的、有两个音
+        click_d: 'static/audio/click_d.mp3',//单击、点按反馈、普通窗口右上角按钮
         fly_in: 'static/audio/fly_in.mp3',//飞入
         fly_out: 'static/audio/fly_out.mp3',//飞出
-        unable_1: 'static/audio/unable_1.mp3',//飞出
+        unable_1: 'static/audio/unable_1.mp3',//不行、不可以的
+        pick_a: 'static/audio/pick_a.mp3',//左键选中元素
+        select_a: 'static/audio/select_a.mp3',//右键选中元素
       },
       audioList:{},//预加载音效
       ctx:undefined,

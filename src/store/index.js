@@ -1830,9 +1830,6 @@ export default new Vuex.Store({
                 }
                 case 'updateElement':{//更新某一元素的广播
                   try{
-                    if(!Object.hasOwnProperty.call(jsonData.data,'details') && !Object.hasOwnProperty.call(jsonData.data,'custom')){
-                      throw new Error('cannot parse data');//本地捕获异常
-                    }
                     if(Object.hasOwnProperty.call(jsonData.data,'details')){
                       if(typeof jsonData.data.details!=='object'){
                         throw new Error('cannot parse data');//本地捕获异常
@@ -1916,8 +1913,20 @@ export default new Vuex.Store({
                 }
                 case 'updateElementNode':{//更新某一元素的节点的广播
                   try{
-                    if(typeof jsonData.data.point!=='object' || typeof jsonData.data.points!=='object'){
+                    if(!Object.hasOwnProperty.call(jsonData.data,'id')){
                       throw new Error('cannot parse data');//本地捕获异常
+                    }
+                    if(!Object.hasOwnProperty.call(jsonData.data,'points')){
+                      throw new Error('cannot parse data');//本地捕获异常
+                    }else{
+                      if(typeof jsonData.data.points!=='object'){
+                        throw new Error('cannot parse data');//本地捕获异常
+                      }
+                    }
+                    if(Object.hasOwnProperty.call(jsonData.data,'point')){
+                      if(typeof jsonData.data.point!=='object'){
+                        throw new Error('cannot parse data');//本地捕获异常
+                      }
                     }
                     let pointsObj=JSON.parse(JSON.stringify(jsonData.data.points));//不再使用base64编码数据也不再使用json重复打包数据
                     let basePointsObj=JSON.parse(JSON.stringify(jsonData.data.points));//不再使用base64编码数据也不再使用json重复打包数据

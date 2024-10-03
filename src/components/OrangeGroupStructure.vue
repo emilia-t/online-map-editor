@@ -5,10 +5,10 @@
          @contextmenu.stop.prevent="contextmenuHeadOpen($event)"
          @mouseup="confirmItemJoinGroup($event)">
       <div class="memberTeamNameL">
-        <div class="expandMoreL" @click.stop="expandGroup()" v-show="!groupExpand">
+        <div class="expandMoreL" @click.stop="expandGroup()" @mousedown.stop="playSoundEffect('confirm_1')" v-show="!groupExpand">
           <expand-more custom="transform:translate(0px,-1px) rotate(180deg);cursor:pointer;"/>
         </div>
-        <div class="expandMoreL" @click.stop="expandGroup()" v-show="groupExpand">
+        <div class="expandMoreL" @click.stop="expandGroup()" @mousedown.stop="playSoundEffect('unconfirm_1')" v-show="groupExpand">
           <expand-more custom="transform:translate(0px,2px);cursor:pointer;"/>
         </div>
         <span class="groupListName" v-text="structure[0]"/>
@@ -100,23 +100,23 @@
     <div class="memberMenuClose" @contextmenu.prevent="void 1" @click.stop="contextmenuHeadClose()" v-show="memberHeadMenu.show"></div>
     <div class="memberMenu" :style="headContextmenuPos" v-show="memberHeadMenu.show">
       <div class="menuListBox">
-        <div class="menuList" title="点击打开模板设置界面" @click="openTemplate()">
+        <div class="menuList" title="点击打开模板设置界面" @click="openTemplate()" @mousedown.stop="playSoundEffect('confirm_1')">
           设置模板
         </div>
-        <div class="menuList" @click="openRename()">
+        <div class="menuList" @click="openRename()" @mousedown.stop="playSoundEffect('confirm_1')">
           重命名
         </div>
       </div>
     </div>
-    <div class="renameClose" @click.stop="closeRename()" v-if="renameShow"></div>
+    <div class="renameClose" @click.stop="closeRename()" @mousedown.stop="playSoundEffect('unconfirm_1')" v-if="renameShow"></div>
     <div class="renameY" v-if="renameShow">
       <div class="renameRow">
         *新的分组名称不能与同级别分组名称重复*
       </div>
       <input ref="rename" type="text" maxlength="20" @focus="onFocusMode()" @blur="noFocusMode()">
       <div class="renameRow">
-        <button class="renameButton" @click.stop="closeRename()">取消</button>
-        <button class="renameButton" @click.stop="groupRename()">确定</button>
+        <button class="renameButton" @click.stop="closeRename()" @mousedown.stop="playSoundEffect('unconfirm_1')">取消</button>
+        <button class="renameButton" @click.stop="groupRename()" @mousedown.stop="groupRenameSound()">确定</button>
       </div>
     </div>
     <pomelo-confirm
@@ -295,6 +295,9 @@ export default {
       if(state)this.buildVirtualTeam();
       this.bindTemplate();
       this.tmpId=this.structure[1].template.id;
+    },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
     },
     pageBtUp(){//上一页
       if(this.page<=1)return;
@@ -563,8 +566,22 @@ export default {
     noFocusMode(){//非聚焦模式
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
+    groupRenameSound(){
+      let clean=(inputString)=>{return inputString.replace(/⇉|\n/g, '').trim()};
+      let newName=clean(this.$refs.rename.value);
+      if(newName===''){
+        this.playSoundEffect('unable_1');
+        return false;
+      }
+      if(newName===this.structure[0]){//与原名称一致
+        this.playSoundEffect('unable_1');
+        return false;
+      }else{
+        this.playSoundEffect('confirm_1');
+      }
+    },
     groupRename(){
-      function clean(inputString){return inputString.replace(/⇉|\n/g, '').trim();}
+      let clean=(inputString)=>{return inputString.replace(/⇉|\n/g, '').trim()};
       let newName=clean(this.$refs.rename.value);
       if(newName===''){
         this.$store.commit('setCoLogMessage',{text:'名称不能为空字符',from:'internal:OrangeGroupStructure',type:'tip'});
