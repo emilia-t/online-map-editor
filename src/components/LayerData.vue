@@ -566,6 +566,13 @@ export default {
     drawing(){
       return this.$store.state.mapConfig.drawing;
     },
+    loadActive(){
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.loadActive;
+      }else {
+        return false;
+      }
+    },
     pauseInitialSvgId(){
       return this.$store.state.cameraConfig.pauseInitialSvgId
     },
@@ -602,22 +609,46 @@ export default {
       return this.$store.state.mapConfig.movingDistance;
     },
     pickElements(){
-      return this.$store.state.serverData.socket.pickElements;
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.pickElements;
+      }else{
+        return [];
+      }
     },
     selectElements(){
-      return this.$store.state.serverData.socket.selectElements;
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.selectElements;
+      }else{
+        return [];
+      }
     },
     lastPickIng(){
-      return this.$store.state.serverData.socket.lastPickIng;
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.lastPickIng;
+      }else{
+        return '0:0';
+      }
     },
     lastPickEnd(){
-      return this.$store.state.serverData.socket.lastPickEnd;
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.lastPickEnd;
+      }else{
+        return '0:0';
+      }
     },
     lastSelectIng(){
-      return this.$store.state.serverData.socket.lastSelectIng;
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.lastSelectIng;
+      }else{
+        return '0:0';
+      }
     },
     lastSelectEnd(){
-      return this.$store.state.serverData.socket.lastSelectEnd;
+      if(this.$store.state.serverData.socket){
+        return this.$store.state.serverData.socket.lastSelectEnd;
+      }else{
+        return '0:0';
+      }
     },
     cursor(){
       return this.$store.state.mapConfig.cursor;
@@ -697,6 +728,106 @@ export default {
     },
   },
   watch:{
+    loadActive:{
+      handler(newValue){
+        if(newValue){
+          let pickElements=this.pickElements;
+          let len1=pickElements.length;
+          let selectElements=this.selectElements;
+          let len2=selectElements.length;
+          for(let i=0;i<len1;i++){
+            let ID=parseInt(pickElements[i].id);
+            let addElement = this.MyPointData.find(item => item.id === ID);
+            if(addElement===undefined){
+              addElement = this.MyPolyLineData.find(item => item.id === ID);
+            }
+            if(addElement===undefined){
+              addElement = this.MyAreaData.find(item => item.id === ID);
+            }
+            if(addElement===undefined){
+              addElement = this.MyCurveData.find(item => item.id === ID);
+            }
+            if(addElement!==undefined){
+              this.mixPipeLine.options.mapEjectElements.set(addElement.id,addElement);
+              switch (addElement.type) {
+                case 'point':{
+                  if(this.svgPointData.findIndex(item => item.id === addElement.id)===-1){
+                    this.svgPointData.push(JSON.parse(JSON.stringify(addElement)));
+                  }
+                  break;
+                }
+                case 'line':{
+                  if(this.svgLineData.findIndex(item => item.id === addElement.id)===-1) {
+                    this.svgLineData.push(JSON.parse(JSON.stringify(addElement)));
+                  }
+                  break;
+                }
+                case 'area':{
+                  if(this.svgAreaData.findIndex(item => item.id === addElement.id)===-1) {
+                    this.svgAreaData.push(JSON.parse(JSON.stringify(addElement)));
+                  }
+                  break;
+                }
+                case 'curve':{
+                  if(this.svgCurveData.findIndex(item => item.id === addElement.id)===-1) {
+                    this.svgCurveData.push(JSON.parse(JSON.stringify(addElement)));
+                  }
+                  break;
+                }
+              }
+              this.mixCanvas.moveDrawJoin(addElement.id,false);
+              this.mixCanvas.moveDrawOut(addElement.id,true);
+            }
+
+          }
+          for(let i=0;i<len2;i++){
+            let ID=parseInt(selectElements[i].id);
+            let addElement = this.MyPointData.find(item => item.id === ID);
+            if(addElement===undefined){
+              addElement = this.MyPolyLineData.find(item => item.id === ID);
+            }
+            if(addElement===undefined){
+              addElement = this.MyAreaData.find(item => item.id === ID);
+            }
+            if(addElement===undefined){
+              addElement = this.MyCurveData.find(item => item.id === ID);
+            }
+            if(addElement!==undefined){
+              this.mixPipeLine.options.mapEjectElements.set(addElement.id,addElement);
+              switch (addElement.type) {
+                case 'point':{
+                  if(this.svgPointData.findIndex(item => item.id === addElement.id)===-1){
+                    this.svgPointData.push(JSON.parse(JSON.stringify(addElement)));
+                  }
+                  break;
+                }
+                case 'line':{
+                  if(this.svgLineData.findIndex(item => item.id === addElement.id)===-1) {
+                    this.svgLineData.push(JSON.parse(JSON.stringify(addElement)));
+                  }
+                  break;
+                }
+                case 'area':{
+                  if(this.svgAreaData.findIndex(item => item.id === addElement.id)===-1) {
+                    this.svgAreaData.push(JSON.parse(JSON.stringify(addElement)));
+                  }
+                  break;
+                }
+                case 'curve':{
+                  if(this.svgCurveData.findIndex(item => item.id === addElement.id)===-1) {
+                    this.svgCurveData.push(JSON.parse(JSON.stringify(addElement)));
+                  }
+                  break;
+                }
+              }
+              this.mixCanvas.moveDrawJoin(addElement.id,false);
+              this.mixCanvas.moveDrawOut(addElement.id,true);
+            }
+          }
+          this.mixCanvas.mixDraw();
+        }
+      }
+    },
     mixVisibleRange:{
       handler(newValue){
         switch (newValue){
@@ -953,7 +1084,6 @@ export default {
             case 'point':{
               if(this.svgPointData.findIndex(item => item.id === addElement.id)===-1){
                 this.svgPointData.push(JSON.parse(JSON.stringify(addElement)));
-
               }
               break;
             }

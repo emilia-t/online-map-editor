@@ -20,6 +20,7 @@
       </div>
       <div class="pomeloLDC">地图数据&nbsp;&nbsp;<span v-if="!loadData">加载中</span><span v-if="loadData">加载完毕</span></div>
       <div class="pomeloLDC">图层数据&nbsp;&nbsp;<span v-if="!loadLayer">加载中</span><span v-if="loadLayer">加载完毕</span></div>
+      <div class="pomeloLDC">活动数据&nbsp;&nbsp;<span v-if="!loadActive">加载中</span><span v-if="loadActive">加载完毕</span></div>
       <div class="pomeloLDR">长期处于加载中&nbsp;&nbsp;请刷新页面重试</div>
     </div>
 </template>
@@ -45,7 +46,8 @@ mounted(){
 },
 computed:{
   loadData(){return this.$store.state.serverData.socket.loadData},
-  loadLayer(){return this.$store.state.serverData.socket.loadLayer}
+  loadLayer(){return this.$store.state.serverData.socket.loadLayer},
+  loadActive(){return this.$store.state.serverData.socket.loadActive}
 },
 watch:{
   view:{

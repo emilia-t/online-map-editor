@@ -436,6 +436,7 @@ export default new Vuex.Store({
           this.url=url;
           this.loadData=false;//首次加载数据的状态
           this.loadLayer=false;//首次加载图层的状态
+          this.loadActive=false;//首次加载活动数据的状态
           this.isLink=false;
           this.isLogin=false;
           this.localId=-1;//元素创建后的本地虚拟id
@@ -1308,6 +1309,7 @@ export default new Vuex.Store({
             }
             case 'send_activeData':{//活动的数据
               if(jsonData.data.length===0){
+                this.loadActive=true;
                 return false;
               }
               let pickElements=[];
@@ -1331,8 +1333,11 @@ export default new Vuex.Store({
                   });
                 }
               }
+              console.log(pickElements);
+              console.log(selectElements);
               this.selectElements=selectElements;
               this.pickElements=pickElements;
+              this.loadActive=true;
               break;
             }
             case 'send_mapData':{//服务器发来的地图数据

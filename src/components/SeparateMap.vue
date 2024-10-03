@@ -170,7 +170,7 @@ export default {
         ()=>{
           if(this.$store.state.serverData.socket!==undefined){
             if(this.$store.state.serverData.socket.isLogin){//对于已登录的用户等待数据加载
-              if(this.$store.state.serverData.socket.loadData===true && this.$store.state.serverData.socket.loadLayer===true){
+              if(this.$store.state.serverData.socket.loadData===true && this.$store.state.serverData.socket.loadLayer===true && this.$store.state.serverData.socket.loadActive===true){
                 this.loading=false;
               }else {
                 this.changeLoad();

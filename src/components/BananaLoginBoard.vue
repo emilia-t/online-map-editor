@@ -135,6 +135,17 @@ export default {
         this.em=em;
         this.pd=pd;
       }
+      this.alertLoginBoard();
+    },
+    alertLoginBoard(){
+      setTimeout(
+        ()=>{
+          if(this.isLink!==true){return false;}
+          if(this.isLogin===false){
+            this.open();
+          }
+        }
+      ,3500);
     },
     playSoundEffect(name){
       this.$store.commit('setCoEffectsSound',name);
@@ -223,6 +234,9 @@ export default {
     },
     closeLink(){//关闭连接
       this.$store.state.serverData.socket.closeLink();
+    },
+    open(){//打开面板
+      this.$parent.isOpenBord=true;
     },
     close(){//关闭面板
       this.$parent.isOpenBord=false;

@@ -1080,7 +1080,6 @@ input:focus{
 .updOut{
   width: 100%;
   height: auto;
-  margin-top: 150px;/*stripBoxHeight*/
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -1132,13 +1131,13 @@ input:focus{
   background: rgba(255,255,255,0.8);
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center;
 }
 .InterfaceBox{
   width: 89%;
   height:auto;
   min-height: 100%;
-  position: absolute;
   z-index: 500;
 }
 .contentItemL{
