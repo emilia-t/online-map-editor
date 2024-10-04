@@ -1949,21 +1949,18 @@ export default new Vuex.Store({
                       let length=this.mapData[type].length;
                       for(let k=0;k<length;k++){
                         if(this.mapData[type][k].id===CgID){
-                          let copyObj={};
-                          Object.assign(copyObj,this.mapData[type][k]);
-                          copyObj.points=pointsObj;
-                          copyObj.basePoints=basePointsObj;
-                          if(pointObj!==null){
-                            copyObj.point=pointObj;
-                            copyObj.basePoint=basePointObj;
+                          let mergeObj=Object.create(null);
+                          mergeObj.basePoints=basePointsObj;
+                          if(basePointObj!==null){
+                            mergeObj.basePoint=basePointObj;
                           }
-                          this.mapData[type].splice(k,1,copyObj);//删除旧数据
-                          this.reinitializeSourcePoints=copyObj.points;//同步源
+                          Object.assign(this.mapData[type][k],mergeObj);
+                          this.reinitializeSourcePoints=pointsObj;//同步源
                           if(pointObj!==null){
-                            this.reinitializeSourcePoint=copyObj.point;//同步源
+                            this.reinitializeSourcePoint=pointObj;//同步源
                           }
                           this.reinitializeElement++;//更改初始化
-                          this.reinitializeId=copyObj.id;
+                          this.reinitializeId=CgID;
                           break;
                         }
                       }
