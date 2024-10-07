@@ -3,7 +3,9 @@ import router from './router';
 import App from "./App";
 import general_script from './js/general_script_v1.1';//a
 import store from './store';
+import globalValue from './plugin/globalValue';//全局变量
 Vue.config.productionTip = false;//不允许生产环境输入错误信息
+Vue.use(globalValue);
 Array.prototype.remove=function(val){//查找一维的数组内的成员并删除
   const ind=this.indexOf(val);
   if(ind>-1)return this.splice(ind,1);

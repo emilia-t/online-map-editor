@@ -1198,9 +1198,11 @@ export default new Vuex.Store({
               // }
               // 指令截取
               // 始终输出发送的指令
-              console.log("%c↓↓↓发送出去的指令↓↓↓","color:blue;");
-              console.log(JSON.parse(JSON.stringify(instructObj)));
-              console.log("%c↑↑↑发送出去的指令↑↑↑","color:blue;");
+              if(Vue.G_PrintInstructAll){
+                console.log("%c↓↓↓发送出去的指令↓↓↓","color:blue;");
+                console.log(JSON.parse(JSON.stringify(instructObj)));
+                console.log("%c↑↑↑发送出去的指令↑↑↑","color:blue;");
+              }
               // 始终输出发送的指令
               this.socket.send(json);
             }else{
@@ -1258,9 +1260,11 @@ export default new Vuex.Store({
           // }
           // 指令截取
           // 始终输出接收的指令
-          console.log("%c↓↓↓接收到的指令↓↓↓","color:green;");
-          console.log(JSON.parse(JSON.stringify(jsonData)));
-          console.log("%c↑↑↑接收到的指令↑↑↑","color:green;");
+          if(Vue.G_PrintInstructAll){
+            console.log("%c↓↓↓接收到的指令↓↓↓","color:green;");
+            console.log(JSON.parse(JSON.stringify(jsonData)));
+            console.log("%c↑↑↑接收到的指令↑↑↑","color:green;");
+          }
           // 始终输出接收的指令
           if(jsonData.type!==undefined && typeof jsonData.type==='string'){
           let nowType=jsonData.type;
@@ -1949,18 +1953,46 @@ export default new Vuex.Store({
                       let length=this.mapData[type].length;
                       for(let k=0;k<length;k++){
                         if(this.mapData[type][k].id===CgID){
-                          let mergeObj=Object.create(null);
-                          mergeObj.basePoints=basePointsObj;
-                          if(basePointObj!==null){
-                            mergeObj.basePoint=basePointObj;
+                          let newPointsCount=basePointsObj.length;
+                          let oldPointsCount=this.mapData[type][k].points.length;
+                          let frontCount=Math.min(newPointsCount,oldPointsCount);
+                          let rearCount=Math.abs(newPointsCount-oldPointsCount);
+                          for(let f=0;f<frontCount;f++){//对齐长度一致的部位(前部)
+                            this.mapData[type][k].basePoints[f].x=basePointsObj[f].x;
+                            this.mapData[type][k].points[f].x=pointsObj[f].x;
+                            this.mapData[type][k].basePoints[f].y=basePointsObj[f].y;
+                            this.mapData[type][k].points[f].y=pointsObj[f].y;
                           }
-                          Object.assign(this.mapData[type][k],mergeObj);
+                          if(rearCount>0){//新旧长度不一致
+                            if(newPointsCount>oldPointsCount){//新增坐标
+                              let newPointsArr1=basePointsObj.slice(-rearCount);
+                              let newPointsArr2=pointsObj.slice(-rearCount);
+                              this.mapData[type][k].basePoints.push(...newPointsArr1);
+                              this.mapData[type][k].points.push(...newPointsArr2);
+                            }else{//移除坐标
+                              this.mapData[type][k].basePoints.splice(-rearCount);
+                              this.mapData[type][k].points.splice(-rearCount);
+                            }
+                          }
+                          if(basePointObj!==null){
+                            this.mapData[type][k].basePoint.x=basePointObj.x;
+                            this.mapData[type][k].point.x=pointObj.x;
+                            this.mapData[type][k].basePoint.y=basePointObj.y;
+                            this.mapData[type][k].point.y=pointObj.y;
+                          }
+
                           this.reinitializeSourcePoints=pointsObj;//同步源
                           if(pointObj!==null){
                             this.reinitializeSourcePoint=pointObj;//同步源
                           }
                           this.reinitializeElement++;//更改初始化
                           this.reinitializeId=CgID;
+
+
+                          console.log(this.mapData[type][k].points[0].x);
+
+
+
                           break;
                         }
                       }

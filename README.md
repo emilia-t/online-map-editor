@@ -86,6 +86,7 @@ root
     └───components[存放vue组件的地方(Where to store Vue components)]
     └───icons[旧时存放icon的地方,现已弃用(The place where icons were stored in the past has been abandoned)]
     └───js[存放js脚本的地方(JS scripts)]
+    └───plugin[存放插件的地方(JS plugin)]
     └───router[存放vue路由的地方(vue route)]
     └───store[存放vueX的地方(VueX)]
     └───App.vue[根组件(root component)]
