@@ -23,7 +23,7 @@ new Vue({
   data(){
     return{
       Copyright:'Minxi Wan',//除作者以外的人禁止修改此处，Anyone other than the author is prohibited from modifying Copyright
-      Version:'0.6.5',
+      Version:'0.7',
       lastTime:0,
       fps:0,
       general_script,

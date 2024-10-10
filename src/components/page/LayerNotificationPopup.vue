@@ -2,7 +2,7 @@
   <div class="notificationPopupLayer" v-if="popupShow">
     <div class="notificationPopupBox">
       <div class="PopupIcon">
-        <notification-icon></notification-icon>
+        <notification-icon/>
       </div>
       <div class="PopupContent">
         <div class="PopupInner">
@@ -10,15 +10,17 @@
             版本更新通知
           </div>
           <div class="PopupVerChange">
-            当前版本{{this.$root.Version}}
+            当前版本 {{this.$root.Version}}
           </div>
           <div class="PopupText">本次版本更新了以下内容，请阅读：
-            1.增加了对曲线的支持(快捷键"4"
-            2.增加了对模板的支持(位于图层模板设置
-            3.增加了路由的支持(位于左侧菜单面板
-            4.增加了网咯延迟检测
-            5.修复了已知的bug
-            6.优化了渲染方式
+            1.增加了全局音效功能(在常规设置中可以设置
+            2.更新主页UI界面并增加本地服务器搜索功能
+            3.增加了更多的底图(在地图右侧图层按钮
+            4.增加了节点自动吸附的功能(Alt键
+            5.增加了打开和关闭菜单的快捷键(F键
+            6.优化了部分图标和UI显示效果
+            7.增加了对OMS版本的匹配功能
+            8.修复了已知的Bug
           </div>
         </div>
         <div class="PopupButtonBox">
@@ -210,7 +212,7 @@ export default {
   margin: 5px 4px 3px 4px;
 }
 .PopupVerChange{
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 100;
   padding: 0px 10px;
 }
