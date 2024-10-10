@@ -544,7 +544,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加点已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
-            this.isAddPoint?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
+            //this.isAddPoint?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
             this.addPointStart();
             break;
           }
@@ -554,7 +554,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加线段已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
-            this.isAddLine?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
+            //this.isAddLine?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
             this.addLineStart();
             break;
           }
@@ -564,7 +564,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加区域已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
-            this.isAddArea?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
+            //this.isAddArea?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
             this.addAreaStart();
             break;
           }
@@ -574,7 +574,7 @@ export default {
               this.$store.commit('setCoLogMessage',{text:'添加曲线已被禁用，请选择其他图层',from:'internal:LayerControl',type:'tip'});
               break;
             }
-            this.isAddCurve?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
+            //this.isAddCurve?this.playSoundEffect('unconfirm_1'):this.playSoundEffect('confirm_1');
             this.addCurveStart();
             break;
           }

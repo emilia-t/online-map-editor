@@ -3,7 +3,7 @@
     <div class="BananaAttributeBoard">
       <div class="headName mouseType1" contenteditable="false">编辑元素</div>
       <div class="boxSet"><!--面板本体设置，面板透明度、关闭按钮-->
-        <img src="../../static/waterDroplet.png" ref="waterDroplet" class="icon15" alt="waterDroplet" title="透明化面板">
+        <img src="../../static/waterDroplet.png" ref="waterDroplet" class="icon15" alt="waterDroplet" title="透明化面板" @mousedown.stop="playSoundEffect('click_d')">
       </div>
       <div class="item iStyle"><!--样式设置，修改颜色、宽度、透明度-->
         <div class="iTitle"><!--标题-->
@@ -48,8 +48,8 @@
       </div>
     </div>
     <div class="bottomButtons mouseType1"><!--底部按钮-->
-      <div class="bottomButton" @click="cancelEdit($event)">取消</div>
-      <div class="bottomButton" @click="submitEdit($event)">上传</div>
+      <div class="bottomButton" @click="cancelEdit($event)" @mousedown.stop="playSoundEffect('unconfirm_1')">取消</div>
+      <div class="bottomButton" @click="submitEdit($event)" @mousedown.stop="playSoundEffect('confirm_1')">上传</div>
     </div>
   </div>
 </template>
@@ -94,6 +94,9 @@
         this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
         this.waterDropletEvent();
       },
+      playSoundEffect(name){
+        this.$store.commit('setCoEffectsSound',name);
+      },
       detailsChanged(data){
         data.item.value=data.value;
       },
@@ -124,9 +127,11 @@
         this.$store.state.mapConfig.inputFocusStatus=false;
       },
       paletteHandle(data){//调色板的监听
+        this.playSoundEffect('click_b');
         this.color=data;
       },
       sliderHandle(data){//滑块的监听
+        this.playSoundEffect('click_b');
         this.width=data;
       },
       submitEdit(){//提交-更新缓存-同时上传数据

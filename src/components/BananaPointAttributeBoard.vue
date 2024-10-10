@@ -3,7 +3,7 @@
     <div class="BananaAttributeBoard">
       <div class="headName mouseType1" contenteditable="false">编辑元素</div>
       <div class="boxSet"><!--面板本体设置，面板透明度、关闭按钮-->
-        <img src="../../static/waterDroplet.png" ref="waterDroplet" class="icon15" alt="waterDroplet" title="透明化面板">
+        <img src="../../static/waterDroplet.png" ref="waterDroplet" class="icon15" alt="waterDroplet" title="透明化面板" @mousedown.stop="playSoundEffect('click_d')">
       </div>
       <div class="item iStyle"><!--样式设置，修改颜色、宽度、透明度-->
         <div class="iTitle"><!--标题-->
@@ -12,15 +12,13 @@
         <div class="iStyContent"><!--内容-->
           <div class="iStyP">
             <div class="iStyName">选择图标</div>
-            <div class="iStyWidth" title="当前图标">
-              <img src="../../static/icons/usualIcon000.png" alt=""/>
-            </div>
+            <div class="iStyWidth"/>
           </div>
           <div class="iStySlide">
             <orange-icons-custom @OrangeIconsCustomCall="iconsHandle"/>
           </div>
           <div class="iStyP">
-            <div class="iStyName">挑选颜色</div>
+            <div class="iStyName">当前颜色</div>
             <div class="iStyView" title="当前颜色" :style="styleColor"></div>
             <div class="iStyName">自选颜色</div>
             <orange-color-palette @OrangeColorPaletteCall="paletteHandle" class="iStyInput" :default="'#'+color"/>
@@ -56,8 +54,8 @@
       </div>
     </div>
     <div class="bottomButtons mouseType1"><!--底部按钮-->
-      <div class="bottomButton" @click="cancelEdit($event)">取消</div>
-      <div class="bottomButton" @click="submitEdit($event)">上传</div>
+      <div class="bottomButton" @click="cancelEdit($event)" @mousedown.stop="playSoundEffect('unconfirm_1')">取消</div>
+      <div class="bottomButton" @click="submitEdit($event)" @mousedown.stop="playSoundEffect('confirm_1')">上传</div>
     </div>
   </div>
 </template>
@@ -102,6 +100,9 @@ export default {
       this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
       this.waterDropletEvent();
     },
+    playSoundEffect(name){
+      this.$store.commit('setCoEffectsSound',name);
+    },
     detailsChanged(data){
       data.item.value=data.value;
     },
@@ -132,12 +133,15 @@ export default {
       this.$store.state.mapConfig.inputFocusStatus=false;
     },
     paletteHandle(data){
+      this.playSoundEffect('click_b');
       this.color=data;
     },
     sliderHandle(data){
+      this.playSoundEffect('click_b');
       this.width=data;
     },
     iconsHandle(data){
+      this.playSoundEffect('click_b');
       this.custom.icon=data;
     },
     submitEdit(){//提交-更新缓存-同时上传数据

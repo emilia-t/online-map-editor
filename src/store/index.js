@@ -1337,8 +1337,6 @@ export default new Vuex.Store({
                   });
                 }
               }
-              console.log(pickElements);
-              console.log(selectElements);
               this.selectElements=selectElements;
               this.pickElements=pickElements;
               this.loadActive=true;
@@ -1980,19 +1978,12 @@ export default new Vuex.Store({
                             this.mapData[type][k].basePoint.y=basePointObj.y;
                             this.mapData[type][k].point.y=pointObj.y;
                           }
-
                           this.reinitializeSourcePoints=pointsObj;//同步源
                           if(pointObj!==null){
                             this.reinitializeSourcePoint=pointObj;//同步源
                           }
                           this.reinitializeElement++;//更改初始化
                           this.reinitializeId=CgID;
-
-
-                          console.log(this.mapData[type][k].points[0].x);
-
-
-
                           break;
                         }
                       }
@@ -4948,20 +4939,15 @@ export default new Vuex.Store({
       state.mapConfig.operated.data=null;
     },
     setCoLogMessage(state,product){//product:{text:'text',from:'[internal:name ] | [external:name]',type:'warn | error'}
-      function formatDate(date) {
-        let y=date.getFullYear();
-        let m=date.getMonth()+1;
-        let d=date.getDate();
-        let h=date.getHours();
-        let u=date.getMinutes();
-        let s=date.getSeconds();
-        return `${y}-${m}-${d} ${h}:${u}:${s}`;
-      }
+      let formatDate=()=>{
+        let date=new Date();
+        return `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+      };
       state.logConfig.message.text=product.text;
       state.logConfig.message.from=product.from;
       state.logConfig.message.type=product.type;
       state.logConfig.message.data=product.data;
-      state.logConfig.message.time=formatDate(new Date());
+      state.logConfig.message.time=formatDate();
       state.logConfig.message.code+=1;//code更新应在末尾
     },
     setCoLogShowPanel(state,product){//product:true/false

@@ -138,8 +138,8 @@
           let KEY=e.key;
           switch (KEY){
             case 'Delete':{
-              if(this.dataSourcePoints.length<3 || this.curveConfig.points.length<3){
-                this.$store.commit('setCoLogMessage',{text:'至少需要保留两个节点',from:'internal:svgCurve',type:'tip'});
+              if(this.dataSourcePoints.length<4 || this.curveConfig.points.length<4){
+                this.$store.commit('setCoLogMessage',{text:'至少需要保留三个节点',from:'internal:svgCurve',type:'tip'});
                 return false;
               }
               if(this.$store.state.detailsPanelConfig.targetNode!==null){
@@ -569,6 +569,15 @@
         let newArr = this.curveConfig.points;
         let refStr = '';
         let Len = newArr.length;
+        if(Len===3){
+          let x1 = newArr[0].x / this.unit1X;
+          let y1 = newArr[0].y / this.unit1Y;
+          let x2= newArr[1].x / this.unit1X;
+          let y2 = newArr[1].y / this.unit1Y;
+          let x3 = newArr[2].x / this.unit1X;
+          let y3 = newArr[2].y / this.unit1Y;
+          return `M ${x1} ${y1} Q ${x2} ${y2} , ${x3} ${y3}`;
+        }
         let x = newArr[0].x / this.unit1X;// 起始点
         let y = newArr[0].y / this.unit1Y;
         refStr += 'M' + x + ',' + y + ' ';
