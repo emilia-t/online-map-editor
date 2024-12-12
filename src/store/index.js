@@ -3762,7 +3762,7 @@ export default new Vuex.Store({
               if(typeof value!=='string')return false;
               return this.isValidDatetime(value);
             }
-            case 'data':{
+            case 'date':{
               if(typeof value!=='string')return false;
               return this.isValidDate(value);
             }
@@ -4128,7 +4128,7 @@ export default new Vuex.Store({
 
           if(!Object.prototype.hasOwnProperty.call(template.colorRule,'condition'))return 40700;
           if(!Array.isArray(template.colorRule.condition))return  40800;
-          if(template.colorRule.basis===''){//rule(A)
+          if(template.colorRule.basis===''){//rule(A)如果basis为空则type和condition必须为空，如果basis不为空则type不能为空
             if(template.colorRule.type!=='')return 40900;
             if(template.colorRule.condition.length!==0)return 41000;
           }else{
@@ -4156,7 +4156,7 @@ export default new Vuex.Store({
 
               if(!Object.prototype.hasOwnProperty.call(arr[i],'value'))return 45000+i+1;
               if(!this.isAllowValueTyp(cType,arr[i].value))return 45100+i+1;
-              if(typeof arr[i].value==='string'){//rule(E)
+              if(typeof arr[i].value==='string'){//rule(E)value的数据类型要与type一致，如果value为字符串，则字符长度不能超过100
                 if(arr[i].value.length>100)return 45200+i+1;
               }
             }

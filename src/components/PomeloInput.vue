@@ -29,7 +29,7 @@ item : Object | Null, //可选的属性，props.item源对象，可用于传递�
     </div>
   </div>
   <div class="PomeloInput-universal" v-if="type==='number'">
-    <input class="PomeloInput-input" type="number" :value="getNumValue(value)" :disabled="disabled"
+    <input class="PomeloInput-input" type="number" ref="numberInput" :value="getNumValue(value)" :disabled="disabled"
            @focus="focus()" @change="change()" @blur="blur($event)"/>
   </div>
   <div class="PomeloInput-bool" v-if="type==='bool'">
@@ -82,6 +82,11 @@ export default {
     disabled:{
       type:Boolean,
       default:false,
+      required:false
+    },
+    ruleMethod:{//在规则设置中需要传入方法类型
+      type:String,
+      default:'equ',
       required:false
     },
     /**
@@ -206,6 +211,9 @@ export default {
             if(isNaN(newValue) || newValue===Infinity){
               lock=true;
             }
+            if(this.ruleMethod==='mod0' || this.ruleMethod==='nmod0'){//模等于0和模不等于0需要转化为整数
+              newValue=Math.ceil(newValue);
+            }
             break;
           }
           case 'percent':{
@@ -257,6 +265,20 @@ export default {
         item:this.item
       });//返回新值
     },
+  },
+  watch:{
+    ruleMethod:{
+      handler(newValue){//监听在切换到mod方法时将原本的value转化为整数
+        if(newValue==='mod0' || newValue==='nmod0'){
+          let value=Math.ceil(this.$refs.numberInput.value);
+          if(isNaN(value))value=0;
+          this.$emit('inputChanged',{
+            value:value,
+            item:this.item
+          });
+        }
+      }
+    }
   }
 }
 </script>

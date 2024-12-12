@@ -292,7 +292,7 @@ export default {
 .iAttItem{
   width: 100%;
   height: auto;
-  padding: 5px 0px;
+  padding: 4px 0px;
 }
 .leftProperty{
   width: 100%;

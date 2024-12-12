@@ -28,6 +28,9 @@
           <div class="iTitle"><!--标题-->
             样式设置
           </div>
+          <div class="iTitleExp" v-if="viewColorSet===false || viewWidthSet===false"><!--解释文字-->
+            此元素的样式由其所属的图层模板管理
+          </div>
           <div class="iStyContent"><!--内容-->
             <div class="iStyP" v-if="this.operated.type==='point'">
               <div class="iStyName">选择图标</div>
@@ -36,7 +39,7 @@
               <orange-icons-custom @OrangeIconsCustomCall="instantChangeCustom"
                                    @OrangeIconsCustomMousedown="beforeChangeCustom"/>
             </div>
-            <div class="iStyP">
+            <div class="iStyP" v-if="viewColorSet"><!--选中的元素具有颜色规则时限制编辑颜色-->
               <div class="iStyName">当前颜色</div>
               <div class="iStyView" title="当前颜色" :style="operatedColor"></div>
               <div class="iStyName">自选颜色</div>
@@ -45,14 +48,14 @@
                                     @OrangeColorPaletteMousedown="beforeChangeColor()" class="iStyInput"
                                     :default="'#'+operated.color"/>
             </div>
-            <div class="iStyColors"><!--选择区域-->
+            <div class="iStyColors" v-if="viewColorSet"><!--颜色推荐选择区域-->
               <div class="iStyColor" v-for="color in colors" :style="'background:#'+color" @mousedown="beforeChangeColor()" @click="instantChangeColor(color)"></div>
             </div>
-            <div class="iStyP" v-if="this.operated.type!=='area'">
+            <div class="iStyP" v-if="this.operated.type!=='area' && viewWidthSet">
               <div class="iStyName">当前宽度</div>
               <div class="iStyWidth" title="当前宽度">{{this.operatedCache.width}}</div>
             </div>
-            <div class="iStySlide" v-if="this.operated.type!=='area'">
+            <div class="iStySlide" v-if="this.operated.type!=='area' && viewWidthSet">
               <orange-slide-block @OrangeSlideBlockFocusout="instantChangeWidth" @OrangeSlideBlockCall="sliderHandle"
                                   @OrangeSlideBlockMousedown="beforeChangeWidth()"
                                   :div-style="'width:267px;left:-92px;top:34%'" :max="15" :min="slideMin"
@@ -106,6 +109,8 @@ export default {
         '993300','ff6600','ffcc00','996600','669933','006633','006699','333366','6633cc','cccccc','666666','333333','000000'],
       translucent:false,
       tmpProof:null,
+      viewColorSet:false,
+      viewWidthSet:false
     }
   },
   mounted() {
@@ -291,6 +296,23 @@ export default {
       this.$store.state.recorderConfig.initialIntent.push(recordObj);
       this.$store.state.serverData.socket.broadcastDeleteElement(id,tmpId);
       this.$store.state.operationBoardConfig.display=false;
+    },
+    checkHasRule(tmpId){//检查模板的规则是否有颜色规则或宽度规则
+      let layers=this.$store.state.serverData.socket.mapLayerData;
+      let viewColorSet=false;//默认不显示
+      let viewWidthSet=false;
+      for(let i=0;i<layers.length;i++){
+        try{
+          if(tmpId===layers[i].structure[1].template.id){
+            viewColorSet = layers[i].structure[1].template.colorRule.basis === "";//检查颜色规则是否存在
+            viewWidthSet = layers[i].structure[1].template.widthRule.basis === "";//检查宽度规则是否存在
+            break;
+          }
+        }
+        catch(e){}
+      }
+      this.viewColorSet=viewColorSet;
+      this.viewWidthSet=viewWidthSet;
     }
   },
   computed:{
@@ -391,12 +413,16 @@ export default {
     },
     operated:{
       handler(newValue,oldValue){
+        if(this.$store.state.mapConfig.operated.data!==null){
+          this.checkHasRule(this.$store.state.mapConfig.operated.data.custom.tmpId);
+        }
         this.operatedCache=newValue;
         if(this.operatedBack!==null){//备份
           if(this.operatedBack.id!==newValue.id){//出现选择了不同的id则更新备份
             this.operatedBack=Lodash.cloneDeep(newValue);
           }
-        }else {
+        }
+        else{
           this.operatedBack=Lodash.cloneDeep(newValue);
         }
       },
@@ -503,7 +529,7 @@ export default {
 .iAttItem{
   width: 100%;
   height: auto;
-  padding: 10px 0px;
+  padding: 0px 0px;
 }
 .leftProperty{
   width: 100%;
@@ -577,6 +603,16 @@ export default {
   justify-content: flex-start;
   align-items: center;
   font-weight: 600;
+}
+.iTitleExp{
+  width: 100%;
+  height: 22px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  font-weight: 100;
 }
 .iStyContent{
   width: 100%;

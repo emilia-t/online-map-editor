@@ -433,7 +433,7 @@
                       </div>
                     </div>
                     <div class="SheetCo8">
-                      <pomelo-input :type="editTemplate.colorRule.type" :value="item.value" :disabled="editTemplate.locked" :item="item" @inputChanged="detailsValueChanged"/>
+                      <pomelo-input :type="editTemplate.colorRule.type" :value="item.value" :disabled="editTemplate.locked" :ruleMethod="item.method" :item="item" @inputChanged="detailsValueChanged"/>
                     </div>
                     <div class="SheetCo9">
                       <input class="inpCo9" type="color" v-model="item.color" :disabled="editTemplate.locked"/>
