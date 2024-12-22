@@ -23,28 +23,43 @@
       </div>
     </div>
     <!--虚拟列表 hasRuleCW -->
-    <div class="VirtualTeamZone" v-if="false">
-      <div class="colorTeamBox">
-        <!--每个规则循环从成员列表中抽取符合此规则的成员成为虚拟分组成员-->
-        <!--当某个元素能够匹配多条规则时，只有第一条规则(排在最前面的)能够生效-->
-        <div class="colorTeam" v-for="team in colorVirtualTeam">
-          <div class="teamName">
-            虚拟列表名称
-          </div>
-          <div class="memberKeyInfo" v-for="item in team.members" :title="getItemName(layer.members[item])">
-            <div class="memberLeft">
-              <point :custom="'fill:#'+layer.members[item].color+';transform:translate(-2px,0px)'" v-if="layer.members[item].type==='point'"/>
-              <segment-line :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='line'"/>
-              <curve :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='curve'"/>
-              <region :custom="'fill:#'+layer.members[item].color+';transform:translateX(-5px);'" v-if="layer.members[item].type==='area'"/>
-              <span class="memberName" v-text="getItemName(layer.members[item])"/>
+    <div class="VirtualTeamZone" v-if="hasRuleCW">
+      <div class="VirtualTeamPart" v-for="(team,teamKey) in virtualTeam" :key="teamKey" v-if="Object.keys(team.members).length!==0">
+        <div class="memberTeamHead">
+          <div class="memberTeamNameL">
+            <div class="expandMoreL" @click="expandVirtualTeam(teamKey)">
+              <expand-more custom="transform:translate(0px,-1px);cursor:pointer;"/>
             </div>
-            <div :ref="'memberRightEye'+layer.members[item].id">
-              <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
-                <eye-visible custom="cursor:pointer"/>
-              </div>
-              <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(layer.members[item].id,layer.members[item].type)">
-                <eye-not-visible custom="cursor:pointer"/>
+            <span class="groupListName" v-text="team.name"/>
+          </div>
+          <div class="memberTeamNameR" title="隐藏操作仅对您可见">
+            <div class="memberRightEyeA" @click.stop="hiddenTeamElements(teamKey)" v-show="!teamHiddenStatus(teamKey)">
+              <eye-visible custom="cursor:pointer"/>
+            </div>
+            <div class="memberRightEyeB" @click.stop="unHiddenTeamElements(teamKey)" v-show="teamHiddenStatus(teamKey)">
+              <eye-not-visible custom="cursor:pointer"/>
+            </div>
+          </div>
+        </div>
+        <div class="memberTeamVS" :ref="'VS'+teamKey" data-s="false">
+          <div class="memberTeamBox" ref="memberTeamBox" :key="index" v-for="(item,index) in team.members" v-show="groupExpand">
+            <div class="memberTeamContent" v-if="!isArray(item)">
+              <div class="memberKeyInfo" :title="getItemName(item)">
+                <div class="memberLeft" @click="clickMemberEvent(item)">
+                  <point :custom="'fill:#'+item.color+';transform:translate(-2px,0px)'" v-if="item.type==='point'"/>
+                  <segment-line :custom="'fill:#'+item.color+';transform:translateX(-5px);'" v-if="item.type==='line'"/>
+                  <curve :custom="'fill:#'+item.color+';transform:translateX(-5px);'" v-if="item.type==='curve'"/>
+                  <region :custom="'fill:#'+item.color+';transform:translateX(-5px);'" v-if="item.type==='area'"/>
+                  <span class="memberName" v-text="getItemName(item)"/>
+                </div>
+                <div :ref="'memberRightEye'+item.id">
+                  <div class="memberRightEyeA" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(item.id,item.type)">
+                    <eye-visible custom="cursor:pointer"/>
+                  </div>
+                  <div class="memberRightEyeB" title="隐藏操作仅对您可见" @click.stop="hiddenUnhiddenElement(item.id,item.type)">
+                    <eye-not-visible custom="cursor:pointer"/>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -53,7 +68,7 @@
     </div>
     <!--虚拟列表 hasRuleCW -->
     <!--实际列表 hasRuleCW -->
-    <div class="memberTeamZone" v-if="true">
+    <div class="memberTeamZone" v-if="!hasRuleCW">
       <div class="memberTeamPage" v-if="itemCount>=50">
         <div :class="pageCount<7?'memberTeamPageRA':'memberTeamPageRB'">
           <div class="memberTeamPageBt" @click="pageBtUp()">上-页</div>
@@ -186,15 +201,20 @@ export default {
       firmMessage:'',
       tmpProof:null,
       sticky:false,//置顶图层头部
-      colorVirtualTeam:[//颜色虚拟列表
-        // {
-        //   formula:"equ100",//公式
-        //   name:"面积等于0",//虚拟列表显示名称
-        //   members:[//成员列表 element 对象
-        //
-        //   ]
+      virtualTeamType:'none',//color and width and none
+      virtualTeam:{
+        unFiled:{
+          name:'未归类',
+          show:true,
+          members:{}
+        }
+        // color:{//如果是颜色虚拟列表则属性名为颜色字符串(例如#123456)，如果是宽度虚拟列表则属性名为整数
+        //   name:"",//名称
+        //   show:"",//是否全展示
+        //   members:{},//分组成员，用于显示哪些元素是显示此颜色的
+        //   rules:[]//规则条列，用于展示哪些规则是分配此颜色的通常只有一条规则
         // }
-      ],
+      },
     }
   },
   props:{
@@ -292,7 +312,10 @@ export default {
     startSetting(){
       this.tmpProof=new this.$store.state.classList.tmpProof('chinese');
       let state=this.setHasRuleCW();
-      if(state)this.buildVirtualTeam();
+      if(state){
+        this.buildVirtualTeam();//构建虚拟分组
+        this.classifyMembers();//对成员进行分类
+      }
       this.bindTemplate();
       this.tmpId=this.structure[1].template.id;
     },
@@ -802,25 +825,303 @@ export default {
       this.hasRuleCW=false;
       return false;
     },
-    buildVirtualTeam(){//构建虚拟列表
-      let arr=Object.keys.call([],this.layer.members);
-      if(arr.length===0){
-        console.log("对象成员为空");
-        return false;
+    getTeamName(rule,language){//依据规则返回虚拟分组名称(string)，如果出现异常则返回false
+      let value=rule.value;
+      let type='';//值的数据类型
+      let str='';//字符串类型数据的前缀
+      let str2='';//后面的字符串
+      let method='';
+      if(typeof value === 'number'){
+        type='number';
       }
-      for(let element in this.layer.members){
-        if(typeof element!=='object'){
-          console.log("未初始化的成员，无法构建");
-        }else{
-          //分组
+      else if(typeof value === 'boolean'){
+        type='bool'
+      }
+      else if(typeof value === 'string'){
+        str=value.substring(0,2);
+        str2=value.substring(2,value.length);
+        switch(str){
+          case '☍t':{
+            type='text';
+            break;
+          }
+          case '☍l':{
+            type='list';
+            break;
+          }
+          case '☍p':{
+            type='percent';
+            break;
+          }
+          case '☍e':{
+            type='datetime';
+            break;
+          }
+          case '☍d':{
+            type='date';
+            break;
+          }
+          case '☍m':{
+            type='time';
+            break;
+          }
         }
       }
+      else{
+        return false;
+      }
+      switch(rule.method){
+        case 'equ':{
+          method=language==='english'?'equal to ':'等于';
+          break;
+        }
+        case 'nequ':{
+          method=language==='english'?'not equal to ':'不等于';
+          break;
+        }
+        case 'gre':{
+          method=language==='english'?'greater than ':'大于';
+          break;
+        }
+        case 'greq':{
+          method=language==='english'?'greater than or equal ':'大于等于';
+          break;
+        }
+        case 'les':{
+          method=language==='english'?'less than ':'小于';
+          break;
+        }
+        case 'lesq':{
+          method=language==='english'?'less than or equal ':'小于等于';
+          break;
+        }
+        case 'mod0':{
+          method=language==='english'?'mod0 ':'模等于0 ';
+          break;
+        }
+        case 'nmod0':{
+          method=language==='english'?'not mod0 ':'模不等于0 ';
+          break;
+        }
+      }
+      switch(type){
+        case 'number':{
+          return method+value;
+        }
+        case 'bool':{
+          return value===true?method+'true':method+'false';
+        }
+        case 'text':{
+          return method+str2;
+        }
+        case 'list':{
+          return method+str2;
+        }
+        case 'percent':{
+          return method+str2;
+        }
+        case 'datetime':{
+          return method+str2;
+        }
+        case 'date':{
+          return method+str2;
+        }
+        case 'time':{
+          return method+str2;
+        }
+      }
+      return language==='english'?'AbnormalGroup':'异常的分组';
+    },
+    buildVirtualTeam(){//构建虚拟分组
+      for(let key in this.virtualTeam){
+        if(key==='unFiled')continue;
+        if(Object.hasOwnProperty.call(this.virtualTeam,key)){
+          delete this.virtualTeam[key];//重置分组
+        }
+      }
+      if(typeof this.structure[1]!=='object'){return false;}
+      if(!('template' in this.structure[1])){return false;}
+      if(typeof this.structure[1].template!=='object'){return false;}
+      if(this.structure[1].template.colorRule.condition.length>0){//按颜色分组(优先)
+        this.virtualTeamType='color';
+        let length=this.structure[1].template.colorRule.condition.length;
+        let reg=/^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/;
+        for(let i=0;i<length;i++){
+          let color=this.structure[1].template.colorRule.condition[i].color;
+          if(typeof color!=='string'){continue;}//不是字符串
+          if(reg.test(color)===false){continue;}//不是正确的颜色字符串
+          let teamName=this.getTeamName(this.structure[1].template.colorRule.condition[i]);
+          this.virtualTeam[color]={
+            name:teamName,
+            members:{},
+            show:true,
+            rules:[this.structure[1].template.colorRule.condition[i]]
+          }
+        }
+        return true;
+      }
+      if(this.structure[1].template.widthRule.condition.length>0){//按宽度分组
+        this.virtualTeamType='width';
+        let length=this.structure[1].template.widthRule.condition.length;
+        for(let i=0;i<length;i++){
+          let width=this.structure[1].template.widthRule.condition[i].width;
+          if(typeof width!=='number'){continue;}//不是数字
+          let teamName=this.getTeamName(this.structure[1].template.widthRule.condition[i]);
+          this.virtualTeam[width]={
+            name:teamName,
+            members:{},
+            show:true,
+            rules:[this.structure[1].template.widthRule.condition[i]]
+          }
+        }
+        return true;
+      }
+    },
+    classifyMembers(){//对成员进行分类
+      for(let key in this.virtualTeam.unFiled.members){
+        if(Object.hasOwnProperty.call(this.virtualTeam.unFiled.members,key)){
+          delete this.virtualTeam.unFiled.members[key];//重置未分组组别
+        }
+      }
+      let arr=Object.keys.call([],this.layer.members);
+      if(arr.length===0){return false;}
+      Object.keys(this.layer.members).forEach(
+        id=>{
+          if(typeof this.layer.members[id]!=='object'){//等待图层成员构建完毕
+            setTimeout(()=>this.classifyMembers,1);
+            return false;
+          }
+          if(this.virtualTeamType==='color'){
+            let color='#'+this.layer.members[id].color;
+            if(Object.hasOwnProperty.call(this.virtualTeam,color)){
+              this.virtualTeam[color].members[id]=this.layer.members[id];
+            }
+            else{
+              this.virtualTeam.unFiled.members[id]=this.layer.members[id];
+            }
+          }
+          else if(this.virtualTeamType==='width'){
+            let width=this.layer.members[id].width;
+            if(Object.hasOwnProperty.call(this.virtualTeam,width)){
+              this.virtualTeam[width].members[id]=this.layer.members[id];
+            }
+            else{
+              this.virtualTeam.unFiled.members[id]=this.layer.members[id];
+            }
+          }
+          else{
+            return true;
+          }
+        }
+      );
+    },
+    expandVirtualTeam(teamKey){//展开或关闭虚拟分组
+      let dom=null;
+      try{
+        dom=this.$refs['VS'+teamKey][0];
+      }catch(e){}
+      if(dom!==null){
+        let height=dom.clientHeight;
+        let status=dom.getAttribute('data-s');
+        let animation=null;
+        if(status==='false'){
+          animation=[
+            {
+              height: height+'px',
+              opacity:1
+            },
+            {
+              height: '0px',
+              opacity:0
+            }
+          ];
+          dom.setAttribute('data-s','true');
+        }else{
+          animation=[
+            {
+              height: height+'px',
+              opacity:0
+            },
+            {
+              height: 'auto',
+              opacity:1
+            }
+          ];
+          dom.setAttribute('data-s','false');
+        }
+        dom.animate(
+          animation,
+          {
+            duration: 400, // 动画时间0.4秒
+            easing: 'ease', // 平滑过渡
+            iterations: 1,   // 执行1次
+            fill: 'forwards' // 动画结束后保持在终点
+          }
+        );
+        if(status==='false'){//动画结束后隐藏虚拟分组图层
+          setTimeout(
+            ()=>{
+              dom.style.display='none';
+            },400
+          );
+        }else{
+          dom.style.display='block';
+        }
+      }
+    },
+    teamHiddenStatus(teamKey){//返回虚拟分组成员是否处于全部隐藏状态
+      if(this.layer.members===[]){
+        return false;
+      }
+      if(typeof this.layer.members[0]==='string'){
+        return false;
+      }
+      let hideNum=0;
+      const map=new Map(this.hiddenElements.map(item=>[item.id,item]));
+      const Members=Object.keys(this.virtualTeam[teamKey].members);
+      const length=Members.length;
+      for(let i=0;i<length;i++){
+        if(map.has(parseInt(Members[i]))){
+          hideNum++;
+        }
+      }
+      return hideNum === length;
+    },
+    hiddenTeamElements(teamKey){
+      const member=Object.keys(this.virtualTeam[teamKey].members);//[id...]
+      const length=member.length;
+      let joinArray=[];
+      for(let i=0;i<length;i++){
+        let id=parseInt(member[i]);
+        let type=this.layer.members[member[i]].type;
+        joinArray.push({id,type});
+      }
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'join',data:joinArray});
+    },
+    unHiddenTeamElements(teamKey){
+      const member=Object.keys(this.virtualTeam[teamKey].members);//[id...]
+      const length=member.length;
+      let quitArray=[];
+      for(let i=0;i<length;i++){
+        let id=parseInt(member[i]);
+        let type=this.layer.members[member[i]].type;
+        quitArray.push({id,type});
+      }
+      this.$store.commit('arrCoElementPanelHiddenElements',
+        {type:'quit',data:quitArray});
     }
   },
   computed:{
     ...mapState({
       hiddenElements:state=>state.elementPanelConfig.hiddenElements
     }),
+    membersKeys(){
+      return Object.keys(this.layer.members);
+    },
+    structureCustom(){
+      return this.layer.structure[1];
+    },
     pageList(){
       if(this.pageCount<=1){
         return [];
@@ -927,9 +1228,35 @@ export default {
       }else{
         return 'id:0';
       }
+    },
+    updateCount(){
+      if(this.$store.state.serverData.socket!==undefined){
+        return this.$store.state.serverData.socket.updateCount;
+      }else{
+        return 0;
+      }
+    },
+    lastUpdateId(){
+      if(this.$store.state.serverData.socket!==undefined){
+        return this.$store.state.serverData.socket.lastUpdateId;
+      }else{
+        return -1;
+      }
     }
   },
   watch:{
+    membersKeys:{
+      handler(){//主要针对图层元素的新增和删除场景
+        this.buildVirtualTeam();//构建虚拟分组
+        this.classifyMembers();//对成员进行分类
+      }
+    },
+    structureCustom:{
+      handler(){//主要针对图层模板规则变动的场景
+        this.buildVirtualTeam();//构建虚拟分组
+        this.classifyMembers();//对成员进行分类
+      }
+    },
     modify:{
       handler(){//当本分组模板更新后执行的操作1.更新使用中的模板2.更新hasRuleCW
         let im='';
@@ -1033,6 +1360,95 @@ export default {
         }
       },
       deep:true
+    },
+    updateCount:{
+      handler(){
+        let lastUpdateId=this.lastUpdateId;
+        if(!Object.hasOwnProperty.call(this.layer.members,lastUpdateId)){
+          return void 0;//被更新的元素不属于此图层
+        }
+        let elementId=-1;//需要变动的元素id
+        let newColor='';//迁移的颜色图层
+        let newWidth=-1;//迁移的宽度图层
+        if(this.virtualTeamType==='color'){
+          let keys=Object.keys(this.virtualTeam);
+          let length=keys.length;
+          let find=false;
+          for(let i=0;i<length;i++){//遍历所有虚拟分组
+            let color=keys[i];
+            if(color==='unFiled'){continue;}
+            let members=Object.keys(this.virtualTeam[color].members);
+            let LENGTH=members.length;
+            for(let p=0;p<LENGTH;p++){//遍历该虚拟分组的成员
+              let eid=members[p];
+              if(eid==lastUpdateId){
+                let nowColor='#'+this.virtualTeam[color].members[eid].color;
+                if(nowColor!==color){//颜色变动
+                  elementId=lastUpdateId;
+                  newColor=nowColor;
+                  delete this.virtualTeam[color].members[eid];//移除此元素
+                }
+                find=true;
+                break;
+              }
+            }
+            if(find){break;}
+          }
+          if(elementId!==-1 && newColor!==''){
+            let added=false;
+            for(let i=0;i<length;i++){//遍历所有虚拟分组
+              let color=keys[i];
+              if(color===newColor){
+                this.virtualTeam[color].members[elementId]=this.layer.members[elementId];//添加至另一个虚拟分组
+                added=true;
+                break;
+              }
+            }
+            if(added===false){//无法分类
+              this.virtualTeam.unFiled.members[elementId]=this.layer.members[elementId];//添加至未分类组
+            }
+          }
+        }
+        if(this.virtualTeamType==='width'){
+          let keys=Object.keys(this.virtualTeam);
+          let length=keys.length;
+          let find=false;
+          for(let i=0;i<length;i++){//遍历所有虚拟分组
+            let width=keys[i];
+            if(width==='unFiled'){continue;}
+            let members=Object.keys(this.virtualTeam[width].members);
+            let LENGTH=members.length;
+            for(let p=0;p<LENGTH;p++){//遍历该虚拟分组的成员
+              let eid=members[p];
+              if(eid==lastUpdateId){
+                let nowWidth=this.virtualTeam[width].members[eid].width;
+                if(nowWidth!==width){//宽度变动
+                  elementId=lastUpdateId;
+                  newWidth=nowWidth;
+                  delete this.virtualTeam[width].members[eid];//移除此元素
+                }
+                find=true;
+                break;
+              }
+            }
+            if(find){break;}
+          }
+          if(elementId!==-1 && newWidth!==-1){
+            let added=false;
+            for(let i=0;i<length;i++){//遍历所有虚拟分组
+              let width=keys[i];
+              if(width==newWidth){
+                this.virtualTeam[width].members[elementId]=this.layer.members[elementId];//添加至另一个虚拟分组
+                added=true;
+                break;
+              }
+            }
+            if(added===false){//无法分类
+              this.virtualTeam.unFiled.members[elementId]=this.layer.members[elementId];//添加至未分类组
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -1046,6 +1462,18 @@ export default {
 .memberTeamZone{
   width: 100%;
   height: auto;
+}
+.VirtualTeamPart{
+  width: 100%;
+  height: auto;
+}
+.memberTeamHead{
+  width: calc(100% - 7px);
+  height: 25px;
+  padding-left: 7px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 .memberTeamVS{
   width: 100%;
@@ -1265,6 +1693,15 @@ button:active{
   flex-direction: row;
   color: #000000;
 }
+.memberTeamHead:hover .memberRightEyeA{
+  opacity: 1;
+}
+.memberTeamHead .memberRightEyeA{
+  transform: translateX(-2px);
+}
+.memberTeamHead .memberRightEyeB{
+  transform: translateX(-2px);
+}
 .memberTeamName:hover .memberRightEyeA{
   opacity: 1;
 }
@@ -1359,6 +1796,7 @@ button:active{
   align-items: center;
   -webkit-transition: 0.2s;
   transition: 0.2s;
+  user-select: none;
   opacity: 1;
 }
 .memberTeamBox{
@@ -1447,6 +1885,7 @@ button:active{
   align-items: center;
   -webkit-transition: 0.2s;
   transition: 0.2s;
+  user-select: none;
   opacity: 0;
 }
 .memberRightEyeB{

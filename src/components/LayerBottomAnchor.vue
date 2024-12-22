@@ -1,7 +1,8 @@
 <!---除作者以外的人如果需要修改此文件，请备注原因！If anyone other than the author needs to modify this file, please indicate the reason!--->
 <template>
-  <div class="bottomAnchorLayer">
+  <div class="bottomAnchorLayer" v-show="showAnchor">
     <div class="bottomAnchorLayerBox">
+      <span @mousedown="hideBottomAnchor()">▼</span>
       <span class="bottomAnchorSpan">PowerBy</span><a href="https://github.com/emilia-t/online-map-editor" target="_blank">online-map-editor</a>
       <span class="bottomAnchorSpan">©</span><a target="_blank">{{$root.Copyright}}</a>
       <span class="bottomAnchorSpan">Ver</span><a target="_blank">{{$root.Version}}</a>
@@ -17,7 +18,13 @@ export default {
   name: "LayerBottomAnchor",
   data(){
     return {
-      batb:require('../../static/batb.png')
+      batb:require('../../static/batb.png'),
+      showAnchor:false
+    }
+  },
+  methods:{
+    hideBottomAnchor(){
+      this.showAnchor=false;
     }
   }
 }

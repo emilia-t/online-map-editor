@@ -468,7 +468,8 @@ export default new Vuex.Store({
           this.config={};
           this.getConfigTime=0;//最后一次获取的服务器配置的时间
           this.lastEdit='很久以前';
-          this.updateCount=0;//对更新元素属性和节点的统计
+          this.updateCount=0;//对更新元素属性次数的统计
+          this.lastUpdateId=-1;//最后一次更新的元素的属性的元素id
           this.lastDeleteId=-1;
           this.lastAddPoint=null;//主要用于mixMove()
           this.lastAddLine=null;
@@ -1861,6 +1862,7 @@ export default new Vuex.Store({
                           this.messages.push(jsonData);//更新message
                           this.lastEdit=jsonData.time;
                           this.updateCount+=1;
+                          this.lastUpdateId=eId;
                           found=true;
                           break;
                         }
@@ -3747,13 +3749,17 @@ export default new Vuex.Store({
           return !(value === -Infinity || value === Infinity);
         }
         isColor16(color){//检测一个字符串是否是标准的16进制颜色-正确则返回true
-          const regex=/^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/;
+          const regex=/^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/;
           return regex.test(color);
         }
         isAllowValueTyp(type,value){//依据type检测value(或default)是否是正确的type类型-正确则返回true
           switch (type) {
             case 'text':{
-              return typeof value==='string';
+              if(typeof value==='string'){
+                return value.substring(0, 2) === '☍t';
+              }else{
+                return false;
+              }
             }
             case 'number':{
               return typeof value === 'number';

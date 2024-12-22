@@ -355,7 +355,7 @@
                   设置颜色规则
                 </div>
                 <div class="setExplain">
-                  (*实验性的内容暂无法使用*)通过依据某项属性自动为成员设置颜色。注意：在点击“应用”之前都可以再次修改此项规则，一旦点击了“应用”之后，此分组内的所有元素成员将会按以下规则自动设置颜色同时会按照参数值自动形成分组，并且无法手动修改元素的颜色。
+                  通过依据某项属性自动为成员设置颜色。注意：在点击“应用”之前都可以再次修改此项规则，一旦点击了“应用”之后，此分组内的所有元素成员将会按以下规则自动设置颜色同时会按照参数值自动形成分组，并且无法手动修改元素的颜色。
                 </div>
                 <div class="setTitle">
                   颜色依据
@@ -459,7 +459,7 @@
                   设置宽度规则
                 </div>
                 <div class="setExplain">
-                  (*实验性的内容暂无法使用*)通过依据某项属性自动为成员设置宽度。注意：在点击“应用”之前都可以再次修改此项规则，一旦点击了“应用”之后，此分组内的所有元素将会按下面的规则自动设置宽度，并且无法手动调整宽度。
+                  通过依据某项属性自动为成员设置宽度。注意：在点击“应用”之前都可以再次修改此项规则，一旦点击了“应用”之后，此分组内的所有元素将会按下面的规则自动设置宽度，并且无法手动调整宽度。
                 </div>
                 <div class="setTitle">
                   宽度依据
@@ -1206,17 +1206,28 @@
       let obj=Object.create(null);
       let wType='';
       wType=this.editTemplate.widthRule.type;
-      if(wType==='long'){//依据颜色依据类型给定默认value
-        this.alertTip('此颜色依据类型不支持，请选择其他依据');return false;
-      }else if(wType==='text' || wType==='list'){
-        obj.value='unknown';
-      }else if(wType==='score' || wType==='number'){
+      if(wType==='text'){//依据宽度依据类型给定默认value
+        obj.value='☍tunknown';
+      }
+      else if(wType==='list'){
+        obj.value='☍lunknown';
+      }
+      else if(wType==='number'){
         obj.value=0;
-      }else if(wType==='percent'){
-        obj.value='0%';
-      }else if(wType==='datetime'){
-        obj.value='Sat Jan 01 2000 08:01:01 GMT+8';
-      }else if(wType==='bool'){
+      }
+      else if(wType==='percent'){
+        obj.value='☍p0%';
+      }
+      else if(wType==='datetime'){
+        obj.value="☍e2020-01-01T00:00:00";
+      }
+      else if(wType==='date'){
+        obj.value="☍d2020-01-01";
+      }
+      else if(wType==='time'){
+        obj.value="☍m00:00:00";
+      }
+      else if(wType==='bool'){
         obj.value=false;
       }
       obj.set=false;
@@ -1231,17 +1242,28 @@
       let obj=Object.create(null);
       let cType='';
       cType=this.editTemplate.colorRule.type;
-      if(cType==='long'){//依据颜色依据类型给定默认value
-        this.alertTip('此颜色依据类型不支持，请选择其他依据');return false;
-      }else if(cType==='text' || cType==='list'){
-        obj.value='unknown';
-      }else if(cType==='score' || cType==='number'){
+      if(cType==='text'){//依据颜色依据类型给定默认value
+        obj.value='☍tunknown';
+      }
+      else if(cType==='list'){
+        obj.value='☍lunknown';
+      }
+      else if(cType==='number'){
         obj.value=0;
-      }else if(cType==='percent'){
-        obj.value='0%';
-      }else if(cType==='datetime'){
-        obj.value='Sat Jan 01 2000 08:01:01 GMT+8';
-      }else if(cType==='bool'){
+      }
+      else if(cType==='percent'){
+        obj.value='☍p0%';
+      }
+      else if(cType==='datetime'){
+        obj.value="☍e2020-01-01T00:00:00";
+      }
+      else if(cType==='date'){
+        obj.value="☍d2020-01-01";
+      }
+      else if(cType==='time'){
+        obj.value="☍m00:00:00";
+      }
+      else if(cType==='bool'){
         obj.value=false;
       }
       obj.set=false;
@@ -1285,30 +1307,6 @@
         this.tpRepair();
       }else {
         this.$store.commit('setCoLogMessage',{text:'模板检查结果：正常',from:'internal:BananaTemplateEdit',type:'tip'});
-      }
-    },
-    maxLength2Type(type){//依据属性类型返回该属性的最大长度
-      switch (type) {
-        case 'text':return 100;
-        case 'long':return 1000;
-        case 'number':return 0;
-        case 'datetime':return 0;
-        case 'bool':return 0;
-        case 'list':return 0;
-        case 'percent':return 0;
-        case 'score':return 10;
-      }
-    },
-    input2Type(type){//依据Type类型判断输入框应该是数字(1)还是文本(2)还是checkbox(3)
-      switch (type) {
-        case 'datetime':return 4;
-        case 'bool':return 3;
-        case 'text':return 2;
-        case 'long':return 2;
-        case 'list':return 2;
-        case 'percent':return 2;
-        case 'number':return 1;
-        case 'score':return 1;
       }
     },
     disabledA(item){

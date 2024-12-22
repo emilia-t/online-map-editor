@@ -1,5 +1,5 @@
 <template>
-  <svg :copyright="this.$root.Copyright" :style="custom"
+  <svg :copyright="this.$root.Copyright" :style="custom" class="iconPoint20X"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     width="14px" height="19px">
@@ -22,7 +22,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

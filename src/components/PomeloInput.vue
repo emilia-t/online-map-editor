@@ -111,6 +111,14 @@ export default {
     }
   },
   methods:{
+    mod0InputChanged(){
+      let value=Math.ceil(this.$refs.numberInput.value);
+      if(isNaN(value))value=0;
+      this.$emit('inputChanged',{
+        value:value,
+        item:this.item
+      });
+    },
     changeSelect(select,value){
       let arr=value.substr(2).split(',');
       arr.remove(select);
@@ -270,12 +278,11 @@ export default {
     ruleMethod:{
       handler(newValue){//监听在切换到mod方法时将原本的value转化为整数
         if(newValue==='mod0' || newValue==='nmod0'){
-          let value=Math.ceil(this.$refs.numberInput.value);
-          if(isNaN(value))value=0;
-          this.$emit('inputChanged',{
-            value:value,
-            item:this.item
-          });
+          if(this.$refs.numberInput===undefined){//等待dom同步
+            setTimeout(()=>this.mod0InputChanged(),1);
+          }else{
+            this.mod0InputChanged();
+          }
         }
       }
     }

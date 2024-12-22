@@ -750,30 +750,6 @@ export default {
         }
       }
     },
-    mapHiddenElements:{
-      handler(newValue,oldValue){
-        function compareMaps(newValue,oldValue) {
-          let newKeys=Array.from(newValue.keys());
-          let oldKeys=Array.from(oldValue.keys());
-          let addedKeys=newKeys.filter(key=>!oldValue.has(key));
-          let removedKeys=oldKeys.filter(key=>!newValue.has(key));
-          return {addedKeys,removedKeys}
-        }
-        let difference=compareMaps(newValue,oldValue);
-        let addLength=difference.addedKeys.length;
-        let removeLength=difference.removedKeys.length;
-        for(let i=0;i<addLength;i++){
-          let Member=this.$refs['memberRightEye'+difference.addedKeys[i]][0];
-          Member.firstChild.style.display='none';
-          Member.lastChild.style.display='flex';
-        }
-        for(let j=0;j<removeLength;j++){
-          let Member=this.$refs['memberRightEye'+difference.removedKeys[j]][0];
-          Member.firstChild.style.display='flex';
-          Member.lastChild.style.display='none';
-        }
-      }
-    },
     updateLayerIds:{//图层更新监听
       handler(newValue){
         for(let k=0;k<newValue.length;k++){
