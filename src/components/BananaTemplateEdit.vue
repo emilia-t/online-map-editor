@@ -44,16 +44,16 @@
                 模板使用说明
               </div>
               <div class="textH2">
-                欢迎使用模板，在使用模板之前，您需要仔细阅读此说明书以更好的使用模板的相关功能，您在使用过程中如遇到任何问题请在此页面内寻找相应的帮助信息，感谢您的使用。
+                欢迎使用模板，在使用模板之前，您需要仔细阅读此说明书以更好的使用模板的相关功能，您在使用过程中如遇到任何问题请在此页面内寻找相应的帮助信息。
               </div>
               <div class="textH3">
-                模板简介：
+                模板简介
               </div>
               <div class="textH2">
-                模板，是分组图层内置的一个用于规范分组内元素成员的基本规则或条例。使用模板可以限制分组内可添加的元素类型，规定成员的属性名称，或者依据成员的某项属性来自动改变其颜色、宽度。为便于理解，我们会在之后的文档中，逐一介绍模板的各项功能与使用方法：包括模板状态、模板锁、设置基本类型、设置属性规则、设置颜色规则、设置宽度规则。<span class="textH4">我们会在需要重点关注的地方使用红色字体以显著。</span>
+                模板，是分组图层内置的自定义规范条例。它可以用于限制成员元素类型，规范成员的属性，或依据某项属性来自动修改其地图元素的颜色、宽度。我们会在此文档中，逐一介绍模板的各项功能与使用方法。<span class="textH4">我们会在需要重点关注的地方使用红色字体以显著。</span>
               </div>
               <div class="textH3">
-                模板状态：
+                模板状态
               </div>
               <div class="textH2">
                 模板状态，是指该分组的模板的基本状态，有以下几种状态：1.正常，2.异常，3.空的，其中第3种状态是指此分组的模板不存在或为null值。如果模板状态为异常，则此分组模板无法正常运作，需要进行修复。
@@ -61,7 +61,7 @@
                 <span class="textH4">*通常不会出现异常，但如果出现异常则需要服务端修复异常的模板*</span>
               </div>
               <div class="textH3">
-                模板锁：
+                模板锁
               </div>
               <div class="textH2">
                 模板锁，是用于防止模板被误修改的一种限制状态，当模板锁处于锁定状态时，所有的规则将无法编辑，也无法更新模板。
@@ -69,59 +69,57 @@
                 <span class="textH4">要解锁模板，您可以依次点击“信息状态”->“锁定状态”->“(点击解锁)”解除锁定。</span>
               </div>
               <div class="textH3">
-                设置基本类型：
+                设置基本类型
               </div>
               <div class="textH2">
-                在此页可以设置该图层允许添加的元素类型，例如设置公交站点图层为仅允许"point"类型元素添加，则将除"point"类型元素之外的元素全部取消选中，并选中"point"类型，然后点击"应用"即可将此图层内的非"point"元素清除
+                在“基本类型”页，可以设置该分组允许添加的元素类型，例如将一个名为“公交站点”的图层设置为仅允许“point”类型元素，则将除“point”类型元素之外的元素全部取消选中，然后点击“应用”即可。
                 <br/>
-                <span class="textH4">请注意，这些被移除的元素将会被删除。</span>
+                <span class="textH4">请注意，这些不允许的元素将会被自动删除。</span>
               </div>
               <div class="textH3">
-                设置属性规则：
+                设置属性规则
               </div>
               <div class="textH2">
-                在此页面可以设置该图层的元素的属性，这些属性规则会应用在新添加的元素之上，并且这些属性可以为颜色规则和宽度规则提供依据。
-              </div>
-              <div class="textH2">
-                所有元素的属性都是键值对的集合，此页即是设置元素的"键"的名称、类型以及设置"值"的默认值；
+                所有地图元素的属性都是以键值对的形式存在的，“属性规则”页即是用于设置属性中“键”的名称、类型、默认值，这些属性会应用在新添加的元素之上，并且这些属性可以为后续的颜色规则和宽度规则提供依据
                 <br/><br/>
-                <span class="textH4">----属性规则页面的图示----</span>
+                <span>----以下为属性规则页面的图示----</span>
                 <br/><br/>
                 <img class="diagram" src="../../static/diagram_1.jpg" alt="图示1">
                 <br/>
-                上图从往右分别是 删除单条按钮、向上移动按钮、向下移动按钮
+                上图是操作按钮，从往右分别是 <span class="textH4">删除此行</span>、<span class="textH4">向上移动</span>、<span class="textH4">向下移动</span>
                 <br/><br/>
                 <img class="diagram" src="../../static/diagram_2.jpg" alt="图示1">
                 <br/>
-                上图是元素属性值允许的所有类型，其中：
+                上图是元素属性值的数据类型，从上往下分别是
                 <br/>
-                文本&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;普通的文本字符串类型，最长是2000个字符。
                 <br/>
-                数字&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;普通的数字类型，可以是整数或小数也可以是null值。
+                <span class="textH4">文本</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;普通的文本字符串类型
                 <br/>
-                布尔&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;只有两个值true/false，不能为null。
+                <span class="textH4">数字</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;普通的数字类型
                 <br/>
-                列表&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;特殊的文本字符串类型，用于设置选项列表，每个选项使用","分开，第一个选项为默认选项。
+                  <span class="textH4">布尔</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;表示开或者关的数据类型
                 <br/>
-                百分比&nbsp;&nbsp;&nbsp;&nbsp;特殊的数字类型，可以是整数或小数，不能是null值。
+                  <span class="textH4">列表</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;表示单选项的数据类型
                 <br/>
-                日期时间&nbsp;特殊的字符串类型，格式为"YYYY-MM-DDTHH:MM:SS"。
+                  <span class="textH4">百分</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;表示百分比的数据类型
                 <br/>
-                日期&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;特殊的字符串类型，格式为"YYYY-MM-DD"。
+                  <span class="textH4">日期时间</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;特殊的数据类型，格式为"YYYY-MM-DDTHH:MM:SS"
                 <br/>
-                时间&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;特殊的字符串类型，格式为"HH:MM:SS"。
+                  <span class="textH4">日期</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;特殊的数据类型，格式为"YYYY-MM-DD"
+                <br/>
+                  <span class="textH4">时间</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;特殊的数据类型，格式为"HH:MM:SS"
                 <br/><br/>
                 <img class="diagram" src="../../static/diagram_3.jpg" alt="图示1">
                 <br/>
-                上图是布尔类型的属性值显示方式，左侧表示false，右侧表示true。
+                上图是布尔类型的属性值显示方式，左侧表示false，右侧表示true
                 <br/><br/>
                 <img class="diagram" src="../../static/diagram_4.jpg" alt="图示1">
                 <br/>
-                上图是一个类型选项区域，点击右侧的倒三角按钮选择属性类型。
+                上图是一个单选项，点击右侧的倒三角按钮展开选项
                 <br/><br/>
                 <img class="diagram" src="../../static/diagram_5.jpg" height="40px" alt="图示1">
                 <br/>
-                上图是添加新属性规则的按钮。
+                上图是添加新增一行的按钮
               </div>
             </div>
             <div class="Navigation">
@@ -2246,19 +2244,20 @@ input[disabled]{
 }
 .textH2{
   font-weight: 400;
-  font-size: 15px;
+  font-size: 16px;
   text-align: start;
   margin: 20px;
   text-indent: 32px;
 }
 .textH3{
-  font-weight: 400;
-  font-size: 17px;
+  font-weight: 600;
+  font-size: 19px;
   text-align: start;
   margin: 10px;
 }
 .textH4{
   color: #ff4f4f;
+  font-weight: 600;
 }
 .templateTitle{
   width: 100%;
