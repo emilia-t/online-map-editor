@@ -19,7 +19,7 @@ export default {
   data(){
     return {
       batb:require('../../static/batb.png'),
-      showAnchor:false
+      showAnchor:true
     }
   },
   methods:{
