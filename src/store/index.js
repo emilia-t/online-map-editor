@@ -487,7 +487,26 @@ export default new Vuex.Store({
           this.typeList=['ping','pong','broadcast','get_serverConfig','get_publickey','publickey','login','loginStatus','anonymousLogin','anonymousLoginStatus','get_userData','send_userData','get_mapData','send_mapData','get_presence','send_presence','get_activeData','send_activeData','send_error','send_correct','get_mapLayer','send_mapLayer'];//指令类型合集
           this.Instruct={//指令合集
             ping(){
-              return {type:'ping'};
+              /**
+               * 生成格式为 'YYYY-MM-DD HH:mm:ss:SSS' 的时间字符串
+               * @param date 可选，Date对象，默认为当前时间
+               * @returns 格式化的时间字符串
+               */
+              function getFormatTimeMs(date = new Date()) {
+                  const y = date.getFullYear();
+                  const m = String(date.getMonth() + 1).padStart(2, '0');
+                  const d = String(date.getDate()).padStart(2, '0');
+                  const h = String(date.getHours()).padStart(2, '0');
+                  const u = String(date.getMinutes()).padStart(2, '0');
+                  const s = String(date.getSeconds()).padStart(2, '0');
+                  const c = String(date.getMilliseconds()).padStart(3, '0');
+                  
+                  return `${y}-${m}-${d} ${h}:${u}:${s}:${c}`;
+              }
+              return {
+                type:'ping',
+                time:getFormatTimeMs()
+              };
             },
             login(email,password) {//登录指令
               this.email=email || '';
@@ -834,9 +853,18 @@ export default new Vuex.Store({
               if(this.isLogin){
                 this.lastPing=new Date().getTime();
                 this.send(this.Instruct.ping());
-                setTimeout(()=>{if(Math.abs(this.lastPong-this.lastPing)>1000){this.onLog('服务器连接超时(>1S)','warn');this.socket.close();}},1000);//连接超时检测
+                setTimeout(
+                  ()=>{
+                    if(Math.abs(this.lastPong-this.lastPing)>10000)
+                      {
+                        this.onLog('服务器连接超时(>10S)','warn');
+                        this.socket.close();
+                      }
+                    }
+                    ,1000
+                  );//连接超时检测
               }
-            },
+            },  
             5000
           );
         }
@@ -1272,7 +1300,17 @@ export default new Vuex.Store({
           if(!this.unicastInstructCheck(jsonData,nowType)){this.onLog('无法解析指令','error',jsonData);return false;}
           switch (nowType){
             case 'pong':{
-              this.lastPong=new Date().getTime();
+              if(jsonData.hasOwnProperty('time')){
+                try{
+                  this.lastPong = new Date(jsonData.time).getTime();
+                }catch(e){
+                  //unable get time
+                }finally{
+                  this.lastPong = new Date().getTime();
+                }
+              }else{
+                this.lastPong=new Date().getTime(); 
+              }
               break;
             }
             case 'send_presence':{
